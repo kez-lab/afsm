@@ -22,6 +22,7 @@ updated: 2026-05-01
 - [[03-engineering/fsm-runtime-roadmap|FSM Runtime Roadmap]] - Suggested build order for the Android FSM foundation.
 - [[03-engineering/library-delivery-plan|Library Delivery Plan]] - End-to-end plan for turning the FSM architecture into a usable Android library.
 - [[03-engineering/reference-flow-signup-identity-retry|Reference Flow - Signup Identity Retry]] - First reference flow design with State/Event/Command/Effect policy.
+- [[03-engineering/signup-state-machine-pseudo-implementation|Signup StateMachine Pseudo Implementation]] - Kotlin-like pseudo implementation used to validate Afsm API ergonomics.
 - [[03-engineering/state-event-command-effect|State, Event, Command, Effect]] - Terms and boundaries for the FSM model.
 - [[03-engineering/viewmodel-fsm-boundaries|ViewModel and FSM Boundaries]] - Responsibility split across View, ViewModel, FSM, and UseCase layers.
 - [[03-engineering/testing-strategy|Testing Strategy]] - How to test transitions, ViewModel command execution, and UI rendering.
@@ -33,6 +34,10 @@ updated: 2026-05-01
 ## LLM Operations
 
 - [[07-llm/wiki-maintenance-guide|Wiki Maintenance Guide]] - How this project uses the LLM Wiki pattern.
+
+## Meetings
+
+- [[08-meetings/2026-05-01-afsm-api-pseudo-implementation-review|Afsm API Pseudo Implementation Review]] - Review of signup pseudo-implementation and Afsm API ergonomics.
 
 ## Raw Sources
 
