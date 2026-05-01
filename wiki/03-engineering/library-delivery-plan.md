@@ -13,6 +13,7 @@ Deliverables:
 - Clear target users and non-goals.
 - Official Android guidance constraints.
 - First sample flow selected: [[reference-flow-signup-identity-retry|Signup Identity Retry]].
+- Public API draft: [[afsm-public-api-draft|Afsm Public API Draft]].
 
 Exit criteria:
 
@@ -25,7 +26,7 @@ Build one full feature without creating a broad framework.
 Deliverables:
 
 - sample feature contract: `State`, `Event`, `Command`, optional `Effect`
-- pure `StateMachine`
+- pure `AfsmStateMachine`
 - ViewModel integration
 - Compose route/screen integration
 - transition tests
@@ -41,10 +42,11 @@ Extract the smallest reusable core.
 
 Candidate modules:
 
-- `fsm-core`: pure Kotlin transition types and policies.
-- `fsm-viewmodel`: AndroidX ViewModel integration.
-- `fsm-test`: coroutine and transition testing helpers.
-- `fsm-compose`: optional Compose helpers, if they are truly useful.
+- `afsm-core`: pure Kotlin transition types and policies.
+- `afsm-runtime`: coroutine-based host and command execution.
+- `afsm-viewmodel`: AndroidX ViewModel integration.
+- `afsm-test`: coroutine and transition testing helpers.
+- `afsm-compose`: optional Compose helpers, if they are truly useful.
 
 Exit criteria:
 

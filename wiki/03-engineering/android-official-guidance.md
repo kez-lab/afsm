@@ -56,7 +56,7 @@ It should not hold references to Views, `Context`, `Resources`, or lifecycle-sco
 - be deterministic,
 - avoid Android dependencies,
 - avoid direct use case/repository calls,
-- return `TransitionResult<State, Command>`.
+- return `AfsmTransition<State, Command, Effect>`.
 
 ### UI owns UI behavior
 

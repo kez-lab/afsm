@@ -37,6 +37,13 @@ Resolved:
 
 ## Reference Flow
 
-- Should `TransitionResult` carry effects directly, or should effects be a ViewModel integration concern?
+- Should `AfsmTransition` carry effects directly, or should effects be a ViewModel integration concern?
 - Should retry policy be configured by the library or modeled by each feature state machine?
 - Should saved state restoration be implemented as a reusable helper in v1, or kept as sample guidance?
+
+## Public API
+
+- Is `AfsmTransition<S, C, F>` too verbose for users who do not use effects?
+- Should `AfsmHost.dispatch` be synchronous, suspending, or fire-and-forget?
+- Should the MVP include `afsm-runtime`, or only `afsm-core` plus a sample ViewModel pattern?
+- Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?

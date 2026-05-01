@@ -7,7 +7,7 @@ updated: 2026-05-01
 
 ## Product Goal
 
-Build an Android-focused FSM library that helps teams make complex ViewModel-driven UI flows explicit, testable, and lifecycle-aware without fighting official Android architecture guidance.
+Build `Afsm`, an Android-focused FSM library that helps teams make complex ViewModel-driven UI flows explicit, testable, and lifecycle-aware without fighting official Android architecture guidance.
 
 ## Target Users
 
@@ -73,8 +73,8 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 
 The first usable library version should include:
 
-- `StateMachine<S, E, C>`
-- `TransitionResult<S, C>`
+- `AfsmStateMachine<S, E, C, F>`
+- `AfsmTransition<S, C, F>`
 - invalid transition policy
 - command handling abstraction
 - ViewModel runner/composition helper

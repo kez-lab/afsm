@@ -13,8 +13,8 @@ Start without a heavy framework.
 
 Deliverables:
 
-- `TransitionResult<S, C>`
-- `StateMachine<S, E, C>`
+- `AfsmTransition<S, C, F>`
+- `AfsmStateMachine<S, E, C, F>`
 - one sample feature using `State`, `Event`, `Command`
 - plain JVM tests for transitions
 - ViewModel tests for command execution

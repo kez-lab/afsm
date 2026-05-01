@@ -35,6 +35,8 @@ Delivery plan: [[../03-engineering/library-delivery-plan|Library Delivery Plan]]
 
 First reference flow: [[../03-engineering/reference-flow-signup-identity-retry|Reference Flow - Signup Identity Retry]].
 
+Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draft]].
+
 ## Current Source Material
 
 - Raw discussion: [Android ViewModel FSM Discussion](../../raw/conversations/2026-05-01-android-viewmodel-fsm-discussion.md)

@@ -391,7 +391,7 @@ The UI should:
 
 ## Library API Questions Exposed By This Flow
 
-- Should `TransitionResult` include effects in core, or should effect handling be a ViewModel integration concern?
+- Should `AfsmTransition` include effects in core, or should effect handling be a ViewModel integration concern?
 - Should command execution be configured globally or per command type?
 - Should invalid transition diagnostics be part of the core result type?
 - Should saved state restoration be a library helper or sample-level guidance?

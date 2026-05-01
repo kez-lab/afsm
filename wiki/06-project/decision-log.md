@@ -71,3 +71,19 @@ Consequences:
 - Stage 1 implementation should build this flow before extracting reusable runtime helpers.
 - API design questions should be evaluated against this flow first.
 - Sample and documentation should use this flow to teach State/Event/Command/Effect boundaries.
+
+## [2026-05-01] Use Afsm as the working library name
+
+Decision: Use `Afsm` as the working product/API name, expanded as Android FSM.
+
+Rationale:
+
+- The name is short and maps directly to the product category.
+- Kotlin public types can use `Afsm` idiomatically, while artifacts can use lowercase `afsm-*`.
+- The risk is acronym ambiguity, so README and documentation must define it immediately.
+
+Consequences:
+
+- Public API drafts use `AfsmStateMachine`, `AfsmTransition`, `AfsmHost`, and related names.
+- Package and artifact naming should use lowercase `afsm`.
+- The name can still be revisited before external release if user testing shows confusion.

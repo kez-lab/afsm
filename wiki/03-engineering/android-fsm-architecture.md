@@ -17,8 +17,8 @@ Make user interaction -> business logic -> state update -> view rendering easier
 View / Compose
 -> sends Event
 -> ViewModel.onEvent(event)
--> StateMachine.transition(currentState, event)
--> TransitionResult(newState, commands)
+-> AfsmStateMachine.transition(currentState, event)
+-> AfsmTransition(newState, commands, effects)
 -> ViewModel updates StateFlow
 -> ViewModel executes commands
 -> command result is fed back as Event
@@ -28,13 +28,14 @@ View / Compose
 ## Recommended Interfaces
 
 ```kotlin
-data class TransitionResult<S, C>(
+data class AfsmTransition<S, C, F>(
     val state: S,
     val commands: List<C> = emptyList(),
+    val effects: List<F> = emptyList(),
 )
 
-interface StateMachine<S, E, C> {
-    fun transition(state: S, event: E): TransitionResult<S, C>
+interface AfsmStateMachine<S, E, C, F> {
+    fun transition(state: S, event: E): AfsmTransition<S, C, F>
 }
 ```
 
