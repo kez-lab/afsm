@@ -37,6 +37,8 @@ First reference flow: [[../03-engineering/reference-flow-signup-identity-retry|R
 
 Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draft]].
 
+Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
+
 ## Current Source Material
 
 - Raw discussion: [Android ViewModel FSM Discussion](../../raw/conversations/2026-05-01-android-viewmodel-fsm-discussion.md)

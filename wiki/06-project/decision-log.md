@@ -87,3 +87,18 @@ Consequences:
 - Public API drafts use `AfsmStateMachine`, `AfsmTransition`, `AfsmHost`, and related names.
 - Package and artifact naming should use lowercase `afsm`.
 - The name can still be revisited before external release if user testing shows confusion.
+
+## [2026-05-03] Afsm public API v2 candidate
+
+Decision: Draft v2 keeps the `Afsm` public prefix and proposes `AfsmDecision.Stayed`, `Afsm.stay(...)`, `AfsmNoEffect`, best-effort no-replay effect delivery, non-suspending serialized dispatch, and sequential command execution as MVP candidates.
+
+Rationale:
+
+- The CEO confirmed that the API should communicate Android State Machine directly.
+- Signup pseudo-implementation review showed generic verbosity is acceptable with typealiases, but `Ignored` was semantically overloaded.
+- Android lifecycle review showed effect delivery and dispatch semantics must be explicit before implementation.
+
+Consequences:
+
+- Implementation should not start until this v2 candidate is explicitly accepted.
+- The next design/implementation pass should validate `AfsmNoEffect` and dispatch/effect behavior with real Kotlin tests.

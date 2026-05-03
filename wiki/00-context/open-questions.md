@@ -43,15 +43,15 @@ Resolved:
 
 ## Public API
 
-- Is `AfsmTransition<S, C, F>` too verbose for users who do not use effects?
-- Should `AfsmHost.dispatch` be synchronous, suspending, or fire-and-forget?
 - Should the MVP include `afsm-runtime`, or only `afsm-core` plus a sample ViewModel pattern?
 - Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
-- What exact lifecycle delivery semantics should `effects: Flow<F>` use?
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
-- What no-effect convention should be used: `Nothing`, `AfsmNoEffect` sealed interface, or `AfsmNoEffect` object?
 
 Resolved:
 
 - `AfsmTransition<S, C, F>` is acceptable if feature-local typealiases are documented as the standard convention.
 - `Ignored` is overloaded; the API should add `AfsmDecision.Stayed` and `Afsm.stay(...)` before implementation.
+- Use `Afsm` as public type prefix because the product name is Android State Machine.
+- Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
+- Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.
+- Use best-effort `Flow<F>` effect delivery with no replay by default.
