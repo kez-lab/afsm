@@ -19,7 +19,13 @@ It incorporates the signup pseudo-implementation review:
 - define effect delivery semantics,
 - define dispatch serialization semantics.
 
-This is still a design document. Do not implement until the CEO explicitly accepts this draft.
+This is still the design source for the v2 API. The CEO has authorized a minimal `afsm-core` skeleton to validate the core type shape, but runtime/ViewModel implementation remains pending.
+
+Validation note:
+
+- `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile in `afsm-core` with feature-local typealiases.
+- Compile check command: `./gradlew :afsm-core:compileTestKotlin`.
+- Details: [[afsm-core-compile-validation|Afsm Core Compile Validation]].
 
 ## Naming Decision
 

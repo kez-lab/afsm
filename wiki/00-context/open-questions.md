@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-01
+updated: 2026-05-03
 ---
 
 # Open Questions
@@ -55,3 +55,4 @@ Resolved:
 - Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
 - Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.
 - Use best-effort `Flow<F>` effect delivery with no replay by default.
+- `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile cleanly in `afsm-core` when used with feature-local typealiases and both no-effect and effectful flows.

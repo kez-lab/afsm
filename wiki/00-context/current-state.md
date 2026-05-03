@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-01
+updated: 2026-05-03
 ---
 
 # Current State
@@ -15,6 +15,8 @@ The current direction is:
 - Use the `ViewModel` as the Android lifecycle and UI integration layer, not as the place where all transition rules live.
 - Store durable architecture reasoning in this LLM Wiki so future Codex sessions can continue without rediscovering the same context.
 - Use official Android UI layer, ViewModel, Compose state, coroutine, Flow testing, and saved state guidance as constraints for the FSM design.
+- A minimal Kotlin/JVM `afsm-core` project now exists and compiles with the v2 core API shape.
+- `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
 
 ## Core Architecture Position
 
@@ -38,6 +40,8 @@ First reference flow: [[../03-engineering/reference-flow-signup-identity-retry|R
 Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draft]].
 
 Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
+
+Core compile validation: [[../03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]].
 
 ## Current Source Material
 

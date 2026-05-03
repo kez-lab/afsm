@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-05-01
+updated: 2026-05-03
 ---
 
 # Decision Log
@@ -102,3 +102,19 @@ Consequences:
 
 - Implementation should not start until this v2 candidate is explicitly accepted.
 - The next design/implementation pass should validate `AfsmNoEffect` and dispatch/effect behavior with real Kotlin tests.
+
+## [2026-05-03] Start afsm-core as plain Kotlin core module
+
+Decision: Create the first implementation skeleton as a Kotlin/JVM `afsm-core` module with Kotlin stdlib as the only core dependency.
+
+Rationale:
+
+- The v2 API candidate needs real compiler feedback before runtime or ViewModel work.
+- `afsm-core` should remain free of Android, AndroidX, coroutine, Compose, serialization, DI, and code generation dependencies.
+- Plain Kotlin compile checks are enough to validate public type ergonomics before adding runtime behavior.
+
+Consequences:
+
+- The initial source package is `afsm.core`.
+- `AfsmTransition<S, C, F>`, `AfsmNoEffect`, `AfsmDecision`, `AfsmStateMachine`, and the `Afsm` builder object are now concrete public source files.
+- Runtime dispatch, command execution, effect delivery, ViewModel integration, and test helper APIs remain outside `afsm-core` for later tasks.

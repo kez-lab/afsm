@@ -83,3 +83,9 @@
 - Source: user request
 - Action: Added implementation-candidate API draft v2 covering `Stayed`, `AfsmNoEffect`, effect delivery semantics, dispatch serialization, and MVP command execution policy.
 - Updated: `wiki/03-engineering/afsm-public-api-draft-v2.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-05-03] implementation | afsm-core minimal Kotlin skeleton
+
+- Source: user request
+- Action: Added Gradle wrapper, root Kotlin project, `afsm-core` module, v2 core public API source files, and compile-check usage for effectful and no-effect flows.
+- Updated: `settings.gradle.kts`, `build.gradle.kts`, `afsm-core/`, `wiki/03-engineering/afsm-core-compile-validation.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
