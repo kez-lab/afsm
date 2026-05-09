@@ -286,3 +286,28 @@ Conclusion:
 - Future agents should read the v3 page as the current answer, not reconstruct the answer from previous corrections.
 - Design corrections should update canonical synthesis pages directly before appending supporting history.
 - The `Afsm v3 Typed Handler API` content was later superseded by `Afsm v3 Phased State API`.
+
+## [2026-05-09] afsm-core phased-state API spike
+
+Change:
+
+- Added `AfsmPhasedState`, `AfsmPhaseEntry`, `AfsmPhaseEntryPolicy`, and `AfsmPhasedTransitionScope` to `afsm-core`.
+- Added `Afsm.phased(state, event, entryPolicy)` as the scope factory.
+- Added scope functions for `transitionTo(Phase)`, `updateContext`, `stay`, `ignore`, and `invalid`.
+- Added `AfsmPhasedCompileCheckTest` with a ProductEditor-like flow to validate compile ergonomics and behavior.
+- Added `kotlin("test-junit5")` to `afsm-core` test dependencies so core API spikes can have executable tests instead of compile-only checks.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileTestKotlin
+./gradlew :afsm-core:test
+./gradlew :afsm-core:check :afsm-runtime:test
+```
+
+Conclusion:
+
+- `transitionTo(Phase)` works when reducer code runs inside `AfsmPhasedTransitionScope`.
+- `PhaseEntryPolicy` can hide context assembly and emit commands from the next context.
+- `updateContext { ... }` requires a dedicated single-lambda overload for Kotlin trailing-lambda ergonomics.
+- The next proof should apply the phased profile to the real ProductEditor sample before treating the API as stable.

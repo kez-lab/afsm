@@ -173,3 +173,9 @@
 - Source: user discussion on abstract state diagrams, phase-only transitions, and hidden context update rules
 - Action: Reworked the canonical v3 direction from typed sealed-state handlers to a phased-state profile where reducers call `transitionTo(Phase)` and feature-local `PhaseEntryPolicy` owns context normalization plus command/effect entry rules.
 - Updated: `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | afsm-core phased-state spike
+
+- Source: user request to validate `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `transitionTo(Phase)`, and `updateContext` as real Kotlin code
+- Action: Added a minimal phased-state API spike to `afsm-core`, executable ProductEditor-like tests, and verification notes.
+- Updated: `afsm-core/`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

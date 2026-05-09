@@ -73,3 +73,4 @@ Resolved:
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.
 - The current v3 direction is `State = Phase + Context` with reducers calling `transitionTo(Phase)` and feature-local entry policy hiding context update, command, and effect assembly.
+- The phased-state API compiles as an `afsm-core` spike; final public module placement remains open.
