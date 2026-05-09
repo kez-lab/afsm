@@ -60,3 +60,4 @@ Resolved:
 - `afsm-viewmodel` exists as a thin AndroidX integration module with `ViewModel.afsmHost(...)`.
 - Compose helpers and test helpers remain future modules.
 - A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
+- Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.

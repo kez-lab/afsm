@@ -29,7 +29,8 @@ No external DI, networking, MVI framework, or reducer framework is used.
 
 Use Afsm for screens where state transitions are the behavior:
 
-- signup/login submission
+- signup/login editing, submitting, and completion
+- product draft, mock upload, review rejection, resubmission, approval, publishing, and completion
 - payment loading, failure, retry, and completion
 
 Use ordinary ViewModel state for screens where the behavior is mostly data observation:
@@ -37,7 +38,6 @@ Use ordinary ViewModel state for screens where the behavior is mostly data obser
 - product list
 - product detail
 - likes
-- product registration
 - review registration
 - review list
 
@@ -68,7 +68,8 @@ TextField/Button interaction
 
 Contract:
 
-- `AuthState` keeps visible form state, loading, and validation errors.
+- `AuthState` is a sealed phase model: `Editing`, `Submitting`, and `Authenticated`.
+- `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
 - `AuthCommand` models async work the ViewModel must execute.
 - `AuthEffect.OpenCatalog` models one-shot navigation after successful auth.
@@ -77,9 +78,9 @@ Key usage shape:
 
 ```kotlin
 private val host = afsmHost(
-    initialState = AuthState(),
+    initialState = AuthState.Editing(),
     stateMachine = AuthStateMachine(),
-    commandHandler = AfsmCommandHandler { command, dispatch ->
+    commandHandler = { command, dispatch ->
         // Execute repository work, then dispatch result events.
     },
 )
@@ -91,6 +92,37 @@ fun onEvent(event: AuthEvent) {
     host.dispatch(event)
 }
 ```
+
+## Product Registration Flow
+
+Files:
+
+- `feature/editor/ProductEditorContract.kt`
+- `feature/editor/ProductEditorStateMachine.kt`
+- `feature/editor/ProductEditorViewModel.kt`
+- `feature/editor/ProductEditorScreen.kt`
+
+Flow:
+
+```text
+EditingDraft
+-> SaveDraftClicked: SavingDraft -> DraftSaved
+-> SubmitClicked: UploadingImages
+-> ImageUploadSucceeded: SubmittingForReview
+-> first ReviewRejected: Rejected
+-> ResubmitClicked: UploadingImages
+-> second ReviewApproved: Approved
+-> PublishClicked: Publishing
+-> PublishSucceeded: Published
+-> DoneClicked: CloseEditor effect
+```
+
+Policy:
+
+- Text changes inside `EditingDraft` and `Rejected` are self-transitions that update form data.
+- Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
+- The product is inserted into Room only after `PublishSucceeded`.
+- `DoneClicked` emits a close effect instead of making navigation a state machine dependency.
 
 ## Checkout Flow
 
@@ -129,6 +161,7 @@ State machine tests are plain JVM tests:
 
 - `AuthStateMachineTest`
 - `CheckoutStateMachineTest`
+- `ProductEditorStateMachineTest`
 
 These tests are executable specs. If a test fails, treat it as a product behavior signal first. Do not weaken tests just to make implementation pass.
 
@@ -146,7 +179,7 @@ The current sample suggests:
 - `ViewModel.afsmHost(...)` reads naturally in real Android ViewModels.
 - `Command` is easier to explain than making transition functions suspend.
 - `Effect` should stay rare and focused on UI-side one-shot work.
-- Simple CRUD/data screens should not be forced into Afsm.
+- Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:
 

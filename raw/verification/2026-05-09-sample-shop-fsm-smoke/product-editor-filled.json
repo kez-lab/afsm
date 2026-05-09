@@ -1,0 +1,86 @@
+[
+  {
+    "text": "Register product",
+    "center": "[284,95]",
+    "key": 3506402
+  },
+  {
+    "text": "Status: Editing draft",
+    "center": "[245,189]",
+    "key": 3506402
+  },
+  {
+    "text": "JourneyMug",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,347]",
+    "key": 3506402
+  },
+  {
+    "text": "Durable commuter mug",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,599]",
+    "key": 3506402
+  },
+  {
+    "text": "21.50",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "state": [
+      "focused"
+    ],
+    "center": "[540,851]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[291,1046]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[788,1046]",
+    "key": 3506402
+  },
+  {
+    "text": "Title",
+    "center": "[128,284]",
+    "key": 3506402
+  },
+  {
+    "text": "Description",
+    "center": "[179,473]",
+    "key": 3506402
+  },
+  {
+    "text": "Price",
+    "center": "[133,788]",
+    "key": 3506402
+  },
+  {
+    "text": "Save draft",
+    "center": "[291,1045]",
+    "key": 3506402
+  },
+  {
+    "text": "Submit for review",
+    "center": "[789,1045]",
+    "key": 3506402
+  }
+]

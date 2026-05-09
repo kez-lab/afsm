@@ -2,95 +2,65 @@ package afsm.sample.shop.feature.editor
 
 import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
+import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-
-data class ProductEditorUiState(
-    val title: String = "",
-    val description: String = "",
-    val priceText: String = "",
-    val isSaving: Boolean = false,
-    val isSaved: Boolean = false,
-    val errorMessage: String? = null,
-)
+import kotlinx.coroutines.delay
 
 class ProductEditorViewModel(
     private val productRepository: ProductRepository,
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(ProductEditorUiState())
+    private val host = afsmHost(
+        initialState = ProductEditorState.EditingDraft(),
+        stateMachine = ProductEditorStateMachine(),
+        commandHandler = { command: ProductEditorCommand, dispatch ->
+            when (command) {
+                is ProductEditorCommand.SaveDraft -> {
+                    delay(120)
+                    dispatch(ProductEditorEvent.DraftSaved)
+                }
 
-    val uiState: StateFlow<ProductEditorUiState> = _uiState.asStateFlow()
+                is ProductEditorCommand.UploadImages -> {
+                    delay(250)
+                    dispatch(ProductEditorEvent.ImageUploadSucceeded("mock-upload-token"))
+                }
 
-    fun updateTitle(value: String) {
-        _uiState.update { state -> state.copy(title = value, errorMessage = null) }
-    }
+                is ProductEditorCommand.SubmitForReview -> {
+                    delay(250)
+                    if (command.draft.reviewAttempt == 1) {
+                        dispatch(
+                            ProductEditorEvent.ReviewRejected(
+                                "Mock reviewer asks for one resubmission.",
+                            ),
+                        )
+                    } else {
+                        dispatch(ProductEditorEvent.ReviewApproved)
+                    }
+                }
 
-    fun updateDescription(value: String) {
-        _uiState.update { state -> state.copy(description = value, errorMessage = null) }
-    }
-
-    fun updatePrice(value: String) {
-        _uiState.update { state -> state.copy(priceText = value, errorMessage = null) }
-    }
-
-    fun save() {
-        val state = _uiState.value
-        if (state.isSaving) {
-            return
-        }
-
-        val priceCents = parsePriceCents(state.priceText)
-        when {
-            state.title.isBlank() -> {
-                _uiState.update { it.copy(errorMessage = "Title is required.") }
-            }
-
-            state.description.isBlank() -> {
-                _uiState.update { it.copy(errorMessage = "Description is required.") }
-            }
-
-            priceCents == null || priceCents <= 0 -> {
-                _uiState.update { it.copy(errorMessage = "Enter a valid price.") }
-            }
-
-            else -> {
-                viewModelScope.launch {
-                    _uiState.update { it.copy(isSaving = true, errorMessage = null) }
-                    productRepository.addProduct(
-                        title = state.title,
-                        description = state.description,
-                        priceCents = priceCents,
-                        sellerUserId = sessionRepository.currentSession()?.userId,
-                    )
-                    _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                is ProductEditorCommand.PublishProduct -> {
+                    val form = command.draft.form
+                    val priceCents = form.priceCentsOrNull()
+                    if (priceCents == null) {
+                        dispatch(ProductEditorEvent.PublishFailed("Enter a valid price."))
+                    } else {
+                        val productId = productRepository.addProduct(
+                            title = form.title,
+                            description = form.description,
+                            priceCents = priceCents,
+                            sellerUserId = sessionRepository.currentSession()?.userId,
+                        )
+                        dispatch(ProductEditorEvent.PublishSucceeded(productId))
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 
-    private fun parsePriceCents(priceText: String): Long? {
-        val normalized = priceText.trim()
-        if (normalized.isBlank()) {
-            return null
-        }
+    val state = host.state
+    val effects = host.effects
 
-        val parts = normalized.split(".")
-        return when (parts.size) {
-            1 -> parts[0].toLongOrNull()?.times(100)
-            2 -> {
-                val dollars = parts[0].toLongOrNull() ?: return null
-                val centsText = parts[1].padEnd(2, '0').take(2)
-                val cents = centsText.toLongOrNull() ?: return null
-                dollars * 100 + cents
-            }
-
-            else -> null
-        }
+    fun onEvent(event: ProductEditorEvent) {
+        host.dispatch(event)
     }
 }

@@ -123,3 +123,36 @@ Conclusion:
 - `ViewModel.afsmHost(...)` remains readable in real Android ViewModels.
 - Afsm is useful for auth and checkout retry flows.
 - Ordinary ViewModel + Flow remains preferable for simple Room-backed data screens.
+
+## [2026-05-09] sample-shop sealed FSM rewrite and Android smoke verification
+
+Change:
+
+- Rewrote auth from flat `AuthState` to sealed phases: `Editing`, `Submitting`, and `Authenticated`.
+- Added `AuthForm` so text inputs are context data updated by self-transitions.
+- Replaced product registration's ordinary ViewModel with an Afsm-backed state machine.
+- Added product registration phases for draft saving, mock image upload, review rejection, resubmission, approval, publishing, and completion.
+- Added `ProductEditorStateMachineTest`.
+- Updated sample documentation and wiki pages.
+- Added raw Android CLI verification evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --no-daemon
+./gradlew test :sample-shop:assembleDebug --warning-mode all --no-daemon
+android run --device=emulator-5556 --apks="/Users/kwak-euijin/Documents/New project 2/sample-shop/build/outputs/apk/debug/sample-shop-debug.apk" --activity=.MainActivity
+android layout --device=emulator-5556 --pretty --output=...
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+Android CLI smoke journey PASSED
+```
+
+Conclusion:
+
+- The reference app now better separates self-transitions from phase transitions.
+- Product registration is the clearest current demonstration of Afsm value.

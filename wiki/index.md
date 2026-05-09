@@ -37,6 +37,10 @@ updated: 2026-05-09
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
 - [[06-project/implementation-log|Implementation Log]] - Chronological implementation changes and verification commands.
 
+## QA
+
+- [[05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]] - Android CLI layout/screenshot verification for signup and product registration FSM flows.
+
 ## LLM Operations
 
 - [[07-llm/ai-engineering-guardrails|AI Engineering Guardrails]] - Project-scoped software engineering, TDD, and verification integrity rules for AI agents.

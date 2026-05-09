@@ -189,3 +189,20 @@ Consequences:
 - Catalog, product editor, product detail, likes, and reviews remain ordinary ViewModel + Flow screens.
 - Manual DI is used for now to keep dependencies focused on Android/Kotlin and avoid hiding Afsm usage behind a DI framework.
 - The sample creates pressure for a public tutorial and possibly a Compose effect collection helper.
+
+## [2026-05-09] Use explicit sealed phases for stronger reference FSMs
+
+Decision: Rewrite sample-shop auth and product registration to use explicit sealed phase states instead of flat UI state for the core FSM examples.
+
+Rationale:
+
+- A flat state data class with fields like `isLoading` can compile, but it does not make the state diagram obvious.
+- Android forms still need self-transitions for text changes, but those should happen inside named phases such as `Editing`.
+- Product registration with review rejection, resubmission, approval, and publishing better demonstrates why Afsm is useful than simple CRUD.
+
+Consequences:
+
+- Auth uses `Editing`, `Submitting`, and `Authenticated`.
+- Product registration uses `EditingDraft`, `SavingDraft`, `DraftSaved`, `UploadingImages`, `SubmittingForReview`, `Rejected`, `Approved`, `Publishing`, and `Published`.
+- Text edits are treated as self-transitions inside editable phases.
+- Product registration is now an Afsm-backed reference flow instead of an ordinary ViewModel screen.

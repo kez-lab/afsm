@@ -113,3 +113,15 @@
 - Source: user request
 - Action: Added `:sample-shop` Compose + Room app with Afsm-backed auth and checkout flows, ordinary ViewModel-backed catalog/product/review screens, JVM state machine tests, and sample usage documentation.
 - Updated: `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `sample-shop/`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | sample-shop sealed FSM rewrite
+
+- Source: user request
+- Action: Rewrote auth as a sealed phase FSM and rewrote product registration as a richer Afsm review/publish flow with tests and documentation.
+- Updated: `sample-shop/`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/log.md`.
+
+## [2026-05-09] verification | sample-shop FSM smoke test
+
+- Source: `raw/verification/2026-05-09-sample-shop-fsm-smoke/`
+- Action: Ran Android CLI smoke test for signup and product registration review/publish flow on `emulator-5556`; captured layout JSON and final screenshot evidence.
+- Updated: `raw/verification/2026-05-09-sample-shop-fsm-smoke/`, `raw/README.md`, `wiki/05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke.md`, `wiki/index.md`, `wiki/log.md`.

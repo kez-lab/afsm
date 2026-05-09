@@ -11,22 +11,26 @@ class AuthStateMachineTest {
 
     @Test
     fun `register submit trims inputs enters loading and emits register command`() {
-        val state = AuthState(
+        val state = AuthState.Editing(
             mode = AuthMode.Register,
-            name = "  Mina  ",
-            email = "  mina@example.com  ",
-            password = "secret1",
+            form = AuthForm(
+                name = "  Mina  ",
+                email = "  mina@example.com  ",
+                password = "secret1",
+            ),
         )
 
         val result = machine.transition(state, AuthEvent.SubmitClicked)
 
         assertEquals(AfsmDecision.Transitioned, result.decision)
         assertEquals(
-            state.copy(
-                name = "Mina",
-                email = "mina@example.com",
-                isLoading = true,
-                errorMessage = null,
+            AuthState.Submitting(
+                mode = AuthMode.Register,
+                form = AuthForm(
+                    name = "Mina",
+                    email = "mina@example.com",
+                    password = "secret1",
+                ),
             ),
             result.state,
         )
@@ -44,50 +48,79 @@ class AuthStateMachineTest {
 
     @Test
     fun `submit with invalid password stays and does not emit command`() {
-        val state = AuthState(
+        val state = AuthState.Editing(
             mode = AuthMode.Login,
-            email = "mina@example.com",
-            password = "123",
+            form = AuthForm(
+                email = "mina@example.com",
+                password = "123",
+            ),
         )
 
         val result = machine.transition(state, AuthEvent.SubmitClicked)
 
         assertIs<AfsmDecision.Stayed>(result.decision)
-        assertEquals("Password must be at least 6 characters.", result.state.errorMessage)
+        assertEquals(
+            "Password must be at least 6 characters.",
+            (result.state as AuthState.Editing).errorMessage,
+        )
         assertEquals(emptyList(), result.commands)
     }
 
     @Test
-    fun `auth success stops loading and emits catalog effect`() {
-        val state = AuthState(
+    fun `auth success moves from submitting to authenticated and emits catalog effect`() {
+        val session = UserSession(
+            userId = 1,
+            name = "Mina",
             email = "mina@example.com",
-            password = "secret1",
-            isLoading = true,
+        )
+        val state = AuthState.Submitting(
+            mode = AuthMode.Login,
+            form = AuthForm(
+                email = "mina@example.com",
+                password = "secret1",
+            ),
         )
 
         val result = machine.transition(
             state = state,
-            event = AuthEvent.AuthSucceeded(
-                UserSession(
-                    userId = 1,
-                    name = "Mina",
-                    email = "mina@example.com",
-                ),
-            ),
+            event = AuthEvent.AuthSucceeded(session),
         )
 
-        assertEquals(false, result.state.isLoading)
+        assertEquals(AuthState.Authenticated(session), result.state)
         assertEquals(listOf(AuthEffect.OpenCatalog), result.effects)
     }
 
     @Test
     fun `auth command result without loading is invalid`() {
+        val state = AuthState.Editing()
+
         val result = machine.transition(
-            state = AuthState(),
+            state = state,
             event = AuthEvent.AuthFailed("late failure"),
         )
 
         assertIs<AfsmDecision.Invalid>(result.decision)
-        assertEquals(AuthState(), result.state)
+        assertEquals(state, result.state)
+    }
+
+    @Test
+    fun `form changes are self transitions inside editing phase`() {
+        val state = AuthState.Editing(
+            mode = AuthMode.Login,
+            form = AuthForm(email = "old@example.com"),
+        )
+
+        val result = machine.transition(
+            state = state,
+            event = AuthEvent.EmailChanged("new@example.com"),
+        )
+
+        assertEquals(
+            AuthState.Editing(
+                mode = AuthMode.Login,
+                form = AuthForm(email = "new@example.com"),
+            ),
+            result.state,
+        )
     }
 }

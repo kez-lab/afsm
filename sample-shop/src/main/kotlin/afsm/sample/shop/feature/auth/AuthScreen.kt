@@ -65,6 +65,8 @@ fun AuthScreen(
     state: AuthState,
     onEvent: (AuthEvent) -> Unit,
 ) {
+    val renderState = state.toRenderState()
+
     Surface {
         Column(
             modifier = Modifier
@@ -85,23 +87,23 @@ fun AuthScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(
-                    enabled = state.mode != AuthMode.Login && !state.isLoading,
-                    onClick = { onEvent(AuthEvent.LoginModeSelected) },
+                    enabled = renderState.mode != AuthMode.Login && !renderState.isLoading,
+                    onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Login)) },
                 ) {
                     Text("Login")
                 }
                 TextButton(
-                    enabled = state.mode != AuthMode.Register && !state.isLoading,
-                    onClick = { onEvent(AuthEvent.RegisterModeSelected) },
+                    enabled = renderState.mode != AuthMode.Register && !renderState.isLoading,
+                    onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Register)) },
                 ) {
                     Text("Register")
                 }
             }
 
-            if (state.mode == AuthMode.Register) {
+            if (renderState.mode == AuthMode.Register) {
                 OutlinedTextField(
-                    value = state.name,
-                    enabled = !state.isLoading,
+                    value = renderState.form.name,
+                    enabled = !renderState.isLoading,
                     onValueChange = { onEvent(AuthEvent.NameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -111,8 +113,8 @@ fun AuthScreen(
             }
 
             OutlinedTextField(
-                value = state.email,
-                enabled = !state.isLoading,
+                value = renderState.form.email,
+                enabled = !renderState.isLoading,
                 onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -121,8 +123,8 @@ fun AuthScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = state.password,
-                enabled = !state.isLoading,
+                value = renderState.form.password,
+                enabled = !renderState.isLoading,
                 onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -130,7 +132,7 @@ fun AuthScreen(
                 visualTransformation = PasswordVisualTransformation(),
             )
 
-            state.errorMessage?.let { message ->
+            renderState.errorMessage?.let { message ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = message,
@@ -141,18 +143,18 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
             Button(
-                enabled = !state.isLoading,
+                enabled = !renderState.isLoading,
                 onClick = { onEvent(AuthEvent.SubmitClicked) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                if (state.isLoading) {
+                if (renderState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.CenterVertically),
                         strokeWidth = 2.dp,
                     )
                 } else {
                     Text(
-                        text = when (state.mode) {
+                        text = when (renderState.mode) {
                             AuthMode.Login -> "Login"
                             AuthMode.Register -> "Create account"
                         },

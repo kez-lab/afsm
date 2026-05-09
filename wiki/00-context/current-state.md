@@ -22,8 +22,11 @@ The current direction is:
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
 - A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`.
 - A `:sample-shop` Android app module now exists to validate Afsm in a realistic Compose + Room shopping app.
-- The sample app uses Afsm for auth and checkout retry flows, while keeping product list/detail/editor/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
+- The sample app uses Afsm for auth, product registration review/publish, and checkout retry flows, while keeping product list/detail/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
 - Public sample documentation now lives in `docs/sample-shop-afsm-guide.md`.
+- Auth now uses sealed phases (`Editing`, `Submitting`, `Authenticated`) so text edits read as self-transitions and submit reads as a real phase transition.
+- Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
+- Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 
 ## Core Architecture Position
 

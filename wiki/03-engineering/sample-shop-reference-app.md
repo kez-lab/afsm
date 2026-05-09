@@ -40,12 +40,12 @@ Manual DI is used through `ShopAppContainer` to avoid introducing Hilt/Koin befo
 Afsm is used for screens where transition correctness is the core behavior:
 
 - `feature/auth/AuthStateMachine.kt`
+- `feature/editor/ProductEditorStateMachine.kt`
 - `feature/checkout/CheckoutStateMachine.kt`
 
 Ordinary ViewModel + Flow is used for data-oriented screens:
 
 - `feature/catalog`
-- `feature/editor`
 - `feature/product`
 
 This is an intentional product signal. Afsm should clarify complex flows without forcing simple screens into FSM ceremony.
@@ -58,6 +58,12 @@ Auth files:
 - `AuthStateMachine.kt`
 - `AuthViewModel.kt`
 - `AuthScreen.kt`
+
+State model:
+
+- `Editing`
+- `Submitting`
+- `Authenticated`
 
 Flow:
 
@@ -73,6 +79,43 @@ User input
 ```
 
 The sample validates that `ViewModel.afsmHost(...)` reads naturally inside a real Android `ViewModel`.
+
+## Product Registration Flow
+
+Product editor files:
+
+- `ProductEditorContract.kt`
+- `ProductEditorStateMachine.kt`
+- `ProductEditorViewModel.kt`
+- `ProductEditorScreen.kt`
+
+State model:
+
+- `EditingDraft`
+- `SavingDraft`
+- `DraftSaved`
+- `UploadingImages`
+- `SubmittingForReview`
+- `Rejected`
+- `Approved`
+- `Publishing`
+- `Published`
+
+Flow:
+
+```text
+EditingDraft
+-> UploadingImages
+-> SubmittingForReview
+-> Rejected
+-> UploadingImages
+-> SubmittingForReview
+-> Approved
+-> Publishing
+-> Published
+```
+
+This flow is now the stronger sample for explaining why Afsm exists. Text edits are self-transitions inside editable phases, while submit/review/publish actions move between explicit phases.
 
 ## Checkout Flow
 
@@ -121,8 +164,11 @@ Result:
 BUILD SUCCESSFUL
 ```
 
+Android CLI journey verification:
+
+- [[../05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]]
+
 ## Next Gaps
 
-- Add instrumentation or Android journey smoke tests for signup, product detail, review, and checkout retry.
 - Add a public README-level tutorial using the Auth flow.
 - Consider a small lifecycle-aware effect collection helper for Compose users.
