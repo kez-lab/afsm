@@ -445,3 +445,24 @@ Conclusion:
 
 - The executable DSL is now validated in a real Android sample flow, not only an isolated core test.
 - The next verification gap is Android CLI smoke testing the product registration journey after the migration.
+
+## [2026-05-09] ProductEditor executable DSL Android smoke
+
+Change:
+
+- Ran Android CLI smoke verification against the ProductEditor executable DSL migration.
+- Captured layout JSON and annotated screenshots under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
+- Added a QA report linking the evidence.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:assembleDebug --no-daemon
+android run --device=emulator-5556 --apks=sample-shop/build/outputs/apk/debug/sample-shop-debug.apk --activity=.MainActivity
+android layout --device=emulator-5556 --pretty --output=...
+android screen capture --annotate --output=...
+```
+
+Conclusion:
+
+- The migrated ProductEditor flow works on device through register, draft entry, first rejection, resubmission, approval, publish, and return to catalog.

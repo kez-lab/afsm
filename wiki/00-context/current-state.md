@@ -39,6 +39,7 @@ The current direction is:
 - ProductEditor was refactored to the phased-state helper as an intermediate spike: `ProductEditorState = ProductEditorPhase + ProductEditorContext`, `ProductDraft` lives in context, and reducers call `transitionTo(ProductEditorPhase.X)`.
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
 - ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes graph metadata from the real sample implementation.
+- Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 
 ## Core Architecture Position
 

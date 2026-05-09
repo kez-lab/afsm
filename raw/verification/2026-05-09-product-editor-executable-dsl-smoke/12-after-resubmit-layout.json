@@ -1,0 +1,67 @@
+[
+  {
+    "text": "Register product",
+    "center": "[284,95]",
+    "key": 3506402
+  },
+  {
+    "text": "Status: Review approved",
+    "center": "[291,189]",
+    "key": 3506402
+  },
+  {
+    "text": "DslMug",
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,347]",
+    "key": 3506402
+  },
+  {
+    "text": "Leakproof mug for executable DSL smoke test",
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,599]",
+    "key": 3506402
+  },
+  {
+    "text": "24.50",
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,851]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,1046]",
+    "key": 3506402
+  },
+  {
+    "text": "Title",
+    "center": "[128,284]",
+    "key": 3506402
+  },
+  {
+    "text": "Description",
+    "center": "[179,473]",
+    "key": 3506402
+  },
+  {
+    "text": "Price",
+    "center": "[133,788]",
+    "key": 3506402
+  },
+  {
+    "text": "Publish",
+    "center": "[540,1045]",
+    "key": 3506402
+  }
+]

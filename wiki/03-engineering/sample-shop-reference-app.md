@@ -188,6 +188,7 @@ BUILD SUCCESSFUL
 Android CLI journey verification:
 
 - [[../05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]]
+- [[../05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke|ProductEditor Executable DSL Smoke Verification]]
 
 ## Next Gaps
 

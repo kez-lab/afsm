@@ -215,3 +215,9 @@
 - Source: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`
 - Action: Migrated ProductEditor from the phased helper to the executable DSL, preserved `State = Phase + Context`, added topology assertions, and updated sample documentation.
 - Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] verification | ProductEditor executable DSL smoke
+
+- Source: `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`
+- Action: Ran Android CLI smoke journey after the ProductEditor executable DSL migration and captured layout/screenshot evidence for register, review rejection, resubmission, approval, publish, and catalog return.
+- Updated: `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`, `raw/README.md`, `wiki/05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

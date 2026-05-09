@@ -501,7 +501,7 @@ Result on 2026-05-09:
 - Kept `ProductEditorState = ProductEditorPhase + ProductEditorContext` as the Android-facing state shape.
 - Wrapped the DSL `AfsmMachine<ProductEditorPhase, ProductEditorContext, ...>` in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmStateMachine<ProductEditorState, ...>`.
 - Added a ProductEditor unit test that verifies topology export without sample events.
-- Current limitation: the real sample still needs Android CLI smoke verification after the migration.
+- Android CLI smoke verification passed after the migration.
 
 ### Step 5: Public API Decision
 
