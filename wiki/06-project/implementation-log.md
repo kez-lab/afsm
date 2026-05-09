@@ -383,3 +383,23 @@ Conclusion:
 
 - Afsm v3 should make the machine definition itself executable and graphable.
 - The next engineering step is a small `afsm-core` or isolated test spike that validates Kotlin DSL ergonomics before changing sample-shop runtime code.
+
+## [2026-05-09] Afsm executable DSL core spike
+
+Change:
+
+- Added `AfsmMachine<P, X, E, A, F>` and `AfsmSnapshot<P, X>` to `afsm-core`.
+- Added a minimal executable DSL builder/interpreter with `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `guard`, `otherwise`, `assign`, `transitionTo`, `action`, and `effect`.
+- Added a ProductEditor-like DSL test proving phase transitions, context assignment, entry actions, typed payload phase access, guard fallback, and effect-only stayed transitions.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileTestKotlin --no-daemon
+./gradlew :afsm-core:test --no-daemon
+```
+
+Conclusion:
+
+- The executable DSL direction is viable in Kotlin without source-scanning or a separate graph-only definition.
+- The current spike is not public API-final because graph metadata/export, exit actions, duplicate handler validation, and ProductEditor migration remain unresolved.

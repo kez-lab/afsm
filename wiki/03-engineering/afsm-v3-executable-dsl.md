@@ -385,7 +385,7 @@ val ProductEditorMachine = afsmMachine<
 }
 ```
 
-This is intentionally pseudo-code. The next implementation spike should validate which generic overloads Kotlin accepts cleanly.
+This started as pseudo-code. The first `afsm-core` spike now validates the core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `guard`, `otherwise`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
 
 ## Graph Output
 
@@ -525,6 +525,14 @@ Success criteria:
 - Phase subtype access works for payload phases like `ReviewSubmissionInProgress`.
 - Builder syntax is readable enough for Android developers.
 
+Result on 2026-05-09:
+
+- Added `AfsmMachine<P, X, E, A, F>` and `AfsmSnapshot<P, X>` to `afsm-core`.
+- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `guard`, `otherwise`, `assign`, `transitionTo`, `action`, and `effect`.
+- Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
+- Verified that event subtype access, typed payload phase access, guard fallback, entry action emission, and effect-only stayed transitions work in compiled Kotlin tests.
+- Current limitation: the machine is executable but does not yet expose graph/topology metadata for Mermaid generation.
+
 ### Step 2: Interpreter Spike
 
 Implement enough interpreter behavior to execute one event:
@@ -536,6 +544,11 @@ Implement enough interpreter behavior to execute one event:
 - apply one transition target,
 - run exit/transition/entry outputs in deterministic order,
 - return `AfsmTransition<AfsmSnapshot<P, X>, A, F>`.
+
+Current spike status:
+
+- Implemented current state lookup, event handler lookup, ordered `assign`, single `transitionTo`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
+- `onExit`, transition-level metadata, duplicate handler validation, and topology export remain unimplemented.
 
 ### Step 3: Graph Exporter
 

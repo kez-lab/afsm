@@ -197,3 +197,9 @@
 - Source: user request to rely on deeper FSM analysis and external references for the best Android FSM structure
 - Action: Added the canonical `Afsm v3 Executable DSL` plan, superseded the phased-state helper as the public v3 recommendation, and recorded the implementation plan for DSL compile/interpreter/graph/ProductEditor migration spikes.
 - Updated: `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | Afsm executable DSL core spike
+
+- Source: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`
+- Action: Added a minimal executable DSL builder/interpreter and ProductEditor-like tests for phase transitions, context assignment, entry actions, guard fallback, typed payload phases, and effect emission.
+- Updated: `afsm-core/`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
