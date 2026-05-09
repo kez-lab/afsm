@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "afsm"
 
 include(":afsm-core")
+include(":afsm-runtime")

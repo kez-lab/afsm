@@ -1,13 +1,12 @@
 ---
 title: Open Questions
-updated: 2026-05-03
+updated: 2026-05-09
 ---
 
 # Open Questions
 
 ## Architecture
 
-- Should the project provide a small reusable FSM runtime, or start with per-screen state machine classes and extract later?
 - Should UI one-shot actions be modeled as `Effect`, as terminal `State`, or through UI state flags depending on the case?
 - How strict should invalid transitions be: ignored result, explicit error, or debug-only assertion?
 - Should state machines support hierarchical/nested state machines from the start?
@@ -17,7 +16,6 @@ updated: 2026-05-03
 - How should process restoration be handled: reconstruct from `SavedStateHandle`, persist only selected state, or require domain reload?
 - Which FSM states are safe to restore directly, and which should be reconstructed from a minimal key plus repository data?
 - Should commands be cancellable by default when a new event arrives, or should cancellation be explicit per command?
-- Should command execution be serialized, parallelized, or policy-driven?
 
 ## Scope
 
@@ -43,7 +41,6 @@ Resolved:
 
 ## Public API
 
-- Should the MVP include `afsm-runtime`, or only `afsm-core` plus a sample ViewModel pattern?
 - Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
 
@@ -56,3 +53,6 @@ Resolved:
 - Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.
 - Use best-effort `Flow<F>` effect delivery with no replay by default.
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile cleanly in `afsm-core` when used with feature-local typealiases and both no-effect and effectful flows.
+- Provide a small reusable `afsm-runtime` module after `afsm-core`; keep Android ViewModel integration in a later module.
+- MVP command execution policy is sequential and verified by `afsm-runtime` tests.
+- MVP includes `afsm-runtime`; `afsm-viewmodel`, Compose helpers, and test helpers remain future modules.

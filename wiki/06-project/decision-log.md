@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-05-03
+updated: 2026-05-09
 ---
 
 # Decision Log
@@ -118,3 +118,22 @@ Consequences:
 - The initial source package is `afsm.core`.
 - `AfsmTransition<S, C, F>`, `AfsmNoEffect`, `AfsmDecision`, `AfsmStateMachine`, and the `Afsm` builder object are now concrete public source files.
 - Runtime dispatch, command execution, effect delivery, ViewModel integration, and test helper APIs remain outside `afsm-core` for later tasks.
+
+## [2026-05-09] Add afsm-runtime as coroutine-based runtime module
+
+Decision: Implement `afsm-runtime` as a small Kotlin coroutine runtime that depends on `afsm-core` and `kotlinx-coroutines-core`, but not on Android or AndroidX.
+
+Rationale:
+
+- Dispatch serialization, command execution, effects, and diagnostics are reusable runtime mechanics, not ViewModel-specific behavior.
+- Android developers can still use the runtime naturally by attaching `AfsmHost` to `viewModelScope`.
+- Keeping AndroidX out of runtime preserves a clean module boundary before adding `afsm-viewmodel`.
+- Sequential command execution is easier to reason about and test than parallel/cancel-latest behavior in the MVP.
+
+Consequences:
+
+- `AfsmHost.dispatch(event)` is non-suspending and queues events for serialized FIFO processing.
+- Commands execute sequentially and dispatch result events back into the same queue.
+- Effects are best-effort `Flow<F>` outputs with no replay by default.
+- `Ignored` and `Invalid` decisions keep the current runtime state and drop outputs.
+- ViewModel integration remains a separate next module.

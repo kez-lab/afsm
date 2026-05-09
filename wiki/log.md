@@ -89,3 +89,9 @@
 - Source: user request
 - Action: Added Gradle wrapper, root Kotlin project, `afsm-core` module, v2 core public API source files, and compile-check usage for effectful and no-effect flows.
 - Updated: `settings.gradle.kts`, `build.gradle.kts`, `afsm-core/`, `wiki/03-engineering/afsm-core-compile-validation.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | afsm-runtime dispatch loop
+
+- Source: user request
+- Action: Added `afsm-runtime` with `AfsmHost`, command handling, effect delivery, diagnostics, invalid transition policy, and tests proving serialized dispatch and decision behavior.
+- Updated: `settings.gradle.kts`, `afsm-runtime/`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.

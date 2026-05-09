@@ -1,6 +1,6 @@
 ---
 title: Afsm Public API Draft v2
-updated: 2026-05-03
+updated: 2026-05-09
 ---
 
 # Afsm Public API Draft v2
@@ -26,6 +26,12 @@ Validation note:
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile in `afsm-core` with feature-local typealiases.
 - Compile check command: `./gradlew :afsm-core:compileTestKotlin`.
 - Details: [[afsm-core-compile-validation|Afsm Core Compile Validation]].
+
+Runtime validation note:
+
+- `AfsmHost` has been implemented in `afsm-runtime` with serialized FIFO dispatch, sequential command execution, best-effort effect delivery, and invalid transition policies.
+- Verification command: `./gradlew test --no-daemon`.
+- Details: [[afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]].
 
 ## Naming Decision
 

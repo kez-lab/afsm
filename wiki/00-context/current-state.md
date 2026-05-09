@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-03
+updated: 2026-05-09
 ---
 
 # Current State
@@ -17,6 +17,8 @@ The current direction is:
 - Use official Android UI layer, ViewModel, Compose state, coroutine, Flow testing, and saved state guidance as constraints for the FSM design.
 - A minimal Kotlin/JVM `afsm-core` project now exists and compiles with the v2 core API shape.
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
+- A minimal coroutine-based `afsm-runtime` module now exists.
+- `AfsmHost` serializes non-suspending `dispatch(event)` calls through a FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially.
 
 ## Core Architecture Position
 
@@ -42,6 +44,8 @@ Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draf
 Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
 
 Core compile validation: [[../03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]].
+
+Runtime dispatch validation: [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]].
 
 ## Current Source Material
 
