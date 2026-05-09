@@ -9,6 +9,10 @@ This spike validates the current v3 phased-state idea in real Kotlin code inside
 
 It is not a public API freeze.
 
+Status: superseded as the recommended public authoring model by [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
+
+The phased helper remains useful background because it proved `Phase + Context` is viable, but the real ProductEditor spike showed that `when + PhaseEntryPolicy` is still too convention-heavy for Afsm's public v3 goal.
+
 ## Implemented Surface
 
 Files:
@@ -161,6 +165,6 @@ Result: all passed.
 
 ## Current Verdict
 
-The phased-state profile is viable enough to continue, but only if the authoring style preserves explicit flow phases.
+The phased-state profile is viable as a lower-level implementation idea, but it should not be the primary public v3 authoring model.
 
-The next proof should focus on API naming and documentation so Android developers understand that phases describe the state diagram, while context stores data carried across phases.
+The next proof should be an executable DSL compile spike where the machine definition itself owns `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and graph metadata.

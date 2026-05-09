@@ -18,7 +18,8 @@ updated: 2026-05-09
 
 - [[03-engineering/afsm-public-api-draft|Afsm Public API Draft]] - Initial public API proposal, naming, modules, dependency policy, runtime, ViewModel, and test APIs.
 - [[03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]] - Implementation-candidate API draft covering Stayed, AfsmNoEffect, effect delivery, and dispatch serialization.
-- [[03-engineering/afsm-v3-topology-first-api|Afsm v3 Phased State API]] - Canonical v3 direction: `State = Phase + Context`, `transitionTo(Phase)`, hidden phase entry policy, and graph extraction from phase transitions.
+- [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Canonical v3 direction: a scoped executable statechart DSL that is runtime definition, graph source, and test target.
+- [[03-engineering/afsm-v3-topology-first-api|Superseded Afsm v3 Phased State API]] - Historical phased-state helper direction superseded by the executable DSL plan.
 - [[03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]] - Kotlin compile/test validation for `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `transitionTo(Phase)`, and `updateContext`.
 - [[03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]] - Clarifies Command as a transition action, separates Event/Action/Effect directionality, and defines ProductEditor naming policy.
 - [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.

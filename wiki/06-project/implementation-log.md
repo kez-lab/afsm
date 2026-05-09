@@ -285,7 +285,7 @@ Conclusion:
 
 - Future agents should read the v3 page as the current answer, not reconstruct the answer from previous corrections.
 - Design corrections should update canonical synthesis pages directly before appending supporting history.
-- The `Afsm v3 Typed Handler API` content was later superseded by `Afsm v3 Phased State API`.
+- The `Afsm v3 Typed Handler API` content was later superseded by `Afsm v3 Phased State API`, and then by `Afsm v3 Executable DSL`.
 
 ## [2026-05-09] afsm-core phased-state API spike
 
@@ -362,3 +362,24 @@ Conclusion:
 - The helper can make ProductEditor reducer code read more like a state diagram.
 - The failed intermediate `saveStatus` context flag shape was rejected because it hid flow states and degraded state-machine readability.
 - The remaining API issue is how much `phase/context` boilerplate should be exposed to Android UI code and public documentation.
+
+## [2026-05-09] v3 executable DSL planning
+
+Change:
+
+- Added `wiki/03-engineering/afsm-v3-executable-dsl.md` as the new canonical v3 direction.
+- Marked the previous phased-state v3 page as superseded history.
+- Updated terminology, current state, open questions, and decision log to reflect the shift from `when + PhaseEntryPolicy` to a scoped executable DSL.
+- Added ProductEditor pseudo implementation showing `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- Added an implementation plan for a Kotlin compile spike, interpreter spike, graph exporter, ProductEditor migration, and public API naming decision.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Afsm v3 should make the machine definition itself executable and graphable.
+- The next engineering step is a small `afsm-core` or isolated test spike that validates Kotlin DSL ergonomics before changing sample-shop runtime code.

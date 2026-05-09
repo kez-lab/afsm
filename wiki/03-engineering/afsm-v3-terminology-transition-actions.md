@@ -58,7 +58,7 @@ Effect = please show/navigate/launch
 
 ## Phase, Context, And Entry Policy
 
-The current v3 direction adds another distinction for Android screen state:
+The current v3 direction keeps the same distinction for Android screen state:
 
 ```text
 State = Phase + Context
@@ -68,7 +68,7 @@ Where:
 
 - `Phase` is the finite state-machine node used for diagrams.
 - `Context` is the durable data carried across phases.
-- `PhaseEntryPolicy` owns context normalization and transition actions when a phase is entered.
+- scoped DSL blocks such as `state`, `on`, `guard`, `assign`, `onEnter`, and `action` own transition behavior.
 
 Example edge:
 
@@ -76,22 +76,32 @@ Example edge:
 EditingDraft -- SubmitClicked / StartImageUpload --> ImageUploadInProgress
 ```
 
-In code, the reducer should be able to say only:
+In the current v3 DSL direction, the machine definition should say:
 
 ```kotlin
-transitionTo(ProductEditorPhase.ImageUploadInProgress)
+state(ProductEditorPhase.EditingDraft) {
+    on<ProductEditorEvent.SubmitClicked> {
+        guard({ context.draft.isValidForSubmission() }) {
+            assign { copy(draft = draft.normalized(), errorMessage = null) }
+            transitionTo(ProductEditorPhase.ImageUploadInProgress)
+        }
+    }
+}
 ```
 
-The feature-local entry policy then applies the hidden phase entry rules:
+The target phase can declare visible entry actions:
 
-- normalize the product draft,
-- clear stale error messages,
-- set secondary operation flags if needed,
-- emit `StartImageUpload`.
+```kotlin
+state(ProductEditorPhase.ImageUploadInProgress) {
+    onEnter {
+        action(ProductEditorAction.StartImageUpload(context.draft))
+    }
+}
+```
 
-This keeps the graph-oriented flow visible while preventing every transition from manually passing common context through each phase constructor.
+This keeps graph-oriented flow visible without hiding behavior in a separate phase entry policy.
 
-Canonical v3 page: [[afsm-v3-topology-first-api|Afsm v3 Phased State API]].
+Canonical v3 page: [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
 
 ## Naming Policy
 
@@ -198,6 +208,8 @@ This separates:
 
 This rename has been applied to the sample-shop ProductEditor reference flow and verified with JVM tests plus Android CLI smoke testing.
 
+The next v3 naming decision is whether the public API should keep `Command` for compatibility or switch the DSL-facing term to `Action` / `TransitionAction`.
+
 ## Why Not Put Commands Into State?
 
 An alternative is:
@@ -265,19 +277,18 @@ Recommendation:
 - Use the term "transition action" in documentation immediately.
 - Run one naming-only spike before public API freeze to compare `Command` vs `Action` in real sample code.
 
-## Plain Kotlin Before DSL
+## Executable DSL Direction
 
-The CEO feedback is that a DSL-like API can feel suspicious if it is not needed.
+Earlier guidance preferred plain Kotlin `when` and then the phased-state helper before introducing a DSL.
 
-Current recommendation:
+Current recommendation has changed:
 
-- Do not force a DSL yet.
-- Keep the v2 `AfsmTransition<S, C, F>` runtime model as the implemented engine.
-- For complex Android screens that need diagrams, prefer the v3 phased-state profile.
-- Let reducers call `transitionTo(Phase)` while `PhaseEntryPolicy` owns context update and transition action assembly.
-- Keep graph extraction focused on phase transitions, not every context-only `copy` update.
+- Use the v2 `AfsmTransition<S, C, F>` runtime model as the lower-level engine.
+- Make the public v3 authoring model a scoped executable DSL.
+- Keep `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo` in one machine definition.
+- Generate graphs from that machine definition, not from source-code inference over `when` branches.
 
-Canonical v3 direction: [[afsm-v3-topology-first-api|Afsm v3 Phased State API]].
+Canonical v3 direction: [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
 
 ## Graph Generation Implication
 
@@ -295,9 +306,9 @@ In unconstrained v2 reducer code, this topology is still hidden in executable Ko
 
 Better names make graphs understandable, but they do not make graphs automatically extractable. Current v3 direction is to make extraction possible through:
 
-- reducer branches by current phase and event,
-- `transitionTo(ProductEditorPhase.X(...))`,
-- feature-local `PhaseEntryPolicy` for commands/effects where practical,
-- optional source scanning first, KSP later only if needed.
+- structural DSL scopes for phase and event,
+- explicit `transitionTo(...)` calls inside event handlers,
+- explicit `action(...)` and `effect(...)` outputs,
+- machine-definition metadata, without requiring KSP or source scanning for the first proof.
 
 The naming cleanup should remain because any generated graph will only be useful if phase, event, and transition action names are already understandable.

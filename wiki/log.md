@@ -191,3 +191,9 @@
 - Source: user request and correction that only real data should be separated from state
 - Action: Refactored ProductEditor to `State = Phase + Context`, kept flow states such as `SavingDraft` and `DraftSaved` as phases, moved `ProductDraft` into context, and made reducers call `transitionTo(ProductEditorPhase.X)` while phase entry policy updates context and emits commands.
 - Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] decision | v3 executable statechart DSL
+
+- Source: user request to rely on deeper FSM analysis and external references for the best Android FSM structure
+- Action: Added the canonical `Afsm v3 Executable DSL` plan, superseded the phased-state helper as the public v3 recommendation, and recorded the implementation plan for DSL compile/interpreter/graph/ProductEditor migration spikes.
+- Updated: `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

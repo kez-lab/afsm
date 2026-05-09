@@ -44,14 +44,14 @@ Resolved:
 
 - Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
-- Should Afsm implement the v3 phased-state profile as `afsm-core` helpers, a separate `afsm-phased` module, or only documentation at first?
-- If v3 exists, should it become the recommended API or remain an optional graph-oriented layer over v2?
-- How should graph extraction handle invalid/ignored branches while preserving Kotlin `when` exhaustiveness?
+- Should the executable DSL live in `afsm-core`, `afsm-dsl`, or another module before public release?
+- How should graph extraction represent invalid/ignored branches declared in the executable DSL?
 - Should graph labels default to type names, require explicit human labels, or support both?
 - Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
-- Can automatic graph generation be supported through `transitionTo(Phase)` source analysis before introducing KSP?
-- Should `PhaseEntryPolicy` be allowed to emit effects, or should it only update context and emit commands?
+- Should the DSL support nested/hierarchical states in v3 MVP or defer them?
+- Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
+- How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
 
 Resolved:
 
@@ -71,7 +71,8 @@ Resolved:
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.
-- The current v3 direction is `State = Phase + Context` with reducers calling `transitionTo(Phase)` and feature-local entry policy hiding context update, command, and effect assembly.
+- The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - The phased-state API compiles as an `afsm-core` spike, including `AfsmPhasedStateMachine` hiding direct `Afsm.phased(...)` setup; final public module placement remains open.
 - In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
 - Context-only updates should be reserved for actual data updates, while ProductEditor's public reducer style should prefer `transitionTo(Phase)` and let entry policy update context or emit commands.
+- The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.

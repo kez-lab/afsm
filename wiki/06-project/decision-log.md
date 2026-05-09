@@ -294,6 +294,7 @@ Consequences:
 - Helpers like `startUpload(draft, currentState: ProductEditorState)` are graph-hostile because they erase the concrete `FromState` and event.
 - A future graph proof should first scan `ProductEditorStateMachine.kt` for handler signatures and `Afsm.transitionTo(...)` calls before introducing DSL or KSP.
 - `transitionTo<From, Event, To>` should not be recommended because `From` and `Event` duplicate information already present in the handler signature.
+- Superseded later by the executable statechart DSL direction.
 
 ## [2026-05-09] Keep v3 as a canonical synthesis page
 
@@ -307,7 +308,7 @@ Rationale:
 
 Consequences:
 
-- The v3 page title was then `Afsm v3 Typed Handler API`; it is now superseded by `Afsm v3 Phased State API`.
+- The v3 page title was then `Afsm v3 Typed Handler API`; it was later superseded by `Afsm v3 Phased State API` and then by `Afsm v3 Executable DSL`.
 - Superseded ideas stay in one short section at the end of the page.
 - Future design corrections must rewrite the canonical page directly and then append logs/decisions as supporting history.
 - `AGENTS.md` and the wiki maintenance guide now include this canonical synthesis rule.
@@ -326,8 +327,27 @@ Rationale:
 
 Consequences:
 
-- The canonical v3 page is now `Afsm v3 Phased State API`.
+- At that time, the canonical v3 page was `Afsm v3 Phased State API`. This was later superseded by `Afsm v3 Executable DSL`.
 - `transitionTo(Phase)` is the preferred target experience for complex Android screen FSMs that need diagrams.
 - `PhaseEntryPolicy` must remain feature-local and unit-tested so hidden context updates do not become invisible magic.
 - Context-only updates such as form text changes or draft-save status should use `updateContext(...)`/`stay(...)` and should usually be omitted from the primary state diagram.
 - The existing v2 runtime remains valid; phased state is an authoring profile layered over `AfsmTransition<S, C, F>` and `AfsmHost`.
+
+## [2026-05-09] Make v3 an executable statechart DSL
+
+Decision: Shift the recommended Afsm v3 public authoring model from `when + transitionTo(Phase) + PhaseEntryPolicy` to a scoped executable statechart DSL.
+
+Rationale:
+
+- The ProductEditor phased-helper spike improved data separation but still made behavior depend on conventions spread across reducers and entry policy.
+- Graph extraction from `when` code would require fragile source inference and could drift from runtime behavior.
+- Statechart references such as XState and SCXML center the model around explicit state scopes, event handlers, guards, entry/exit actions, and transition actions.
+- Android guidance still requires `ViewModel` as the screen-level business state holder adapter, so the DSL must remain plain Kotlin and Android-free.
+
+Consequences:
+
+- The new canonical v3 page is `wiki/03-engineering/afsm-v3-executable-dsl.md`.
+- The previous phased-state page is preserved only as superseded history.
+- The v3 DSL must be executable; there must not be a separate graph-only DSL.
+- The first implementation proof should be a Kotlin compile spike for `afsmMachine`, `state`, `on`, `guard`, `otherwise`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- ProductEditor remains the reference flow for validating whether the DSL is readable and graphable.
