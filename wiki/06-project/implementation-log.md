@@ -526,3 +526,21 @@ Verification:
 Conclusion:
 
 - The first KSP loop is working end to end. The remaining proof is to add a second graphable state machine without duplicating topology by hand.
+
+## [2026-05-09] Executable DSL ignore and invalid branches
+
+Change:
+
+- Added `ignore(reason = ...)` and `invalid(reason = ...)` branches to `AfsmEventBranchScope`.
+- These branches preserve `AfsmDecision.Ignored` and `AfsmDecision.Invalid` without adding topology edges.
+- Added core DSL tests proving the decision behavior and no-edge topology behavior.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test --no-daemon
+```
+
+Conclusion:
+
+- The DSL can now migrate existing reducers that distinguish ignored events from invalid transitions without polluting the state diagram.

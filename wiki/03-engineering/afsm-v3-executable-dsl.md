@@ -167,6 +167,7 @@ Important properties:
 - `on<Event>` creates a structural event scope.
 - `AfsmEventBranchScope` is the receiver behind `on<Event> { ... }`; its job is only to declare ordered graphable branches for that event.
 - `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)` create graphable branches inside the event scope.
+- `ignore(...)` and `invalid(...)` handle events without adding state-diagram edges.
 - `onEnter` and `onExit` are state-local and visible.
 - `updateContext` updates context immutably.
 - `action` emits host-executed work.
@@ -447,6 +448,8 @@ transitionTo(phase, guard = { ... }) { ... }
 transitionTo<PayloadPhase>(phase = { ... }) { ... }
 stay { ... }
 otherwise { ... }
+ignore(reason = "...")
+invalid(reason = "...")
 updateContext { ... }
 action(action)
 effect(effect)
@@ -483,6 +486,7 @@ Current spike status:
 
 - Implemented current state lookup, event handler lookup, ordered branch matching, ordered `updateContext`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
 - `onExit`, duplicate handler validation, and action labels in topology remain unimplemented.
+- `ignore(...)` and `invalid(...)` now preserve `AfsmDecision.Ignored` / `AfsmDecision.Invalid` for handled non-graph transitions.
 
 ### Step 3: Graph Exporter
 

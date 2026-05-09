@@ -222,6 +222,32 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, A : Any, F : Any, P
         )
     }
 
+    /**
+     * Declares a handled event that should be ignored without changing state or graph topology.
+     */
+    public fun ignore(
+        reason: String? = null,
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
+    ) {
+        addDecisionBranch(
+            decision = AfsmDecision.Ignored(reason),
+            guard = guard,
+        )
+    }
+
+    /**
+     * Declares a handled event that represents an invalid transition without changing graph topology.
+     */
+    public fun invalid(
+        reason: String? = null,
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
+    ) {
+        addDecisionBranch(
+            decision = AfsmDecision.Invalid(reason),
+            guard = guard,
+        )
+    }
+
     @PublishedApi
     internal fun addBranch(
         targetLabel: String,
@@ -252,6 +278,32 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, A : Any, F : Any, P
 
             AfsmBranchResult.Matched(
                 targetPhase = scope.targetFactory(),
+                decision = null,
+            )
+        }
+    }
+
+    @PublishedApi
+    internal fun addDecisionBranch(
+        decision: AfsmDecision,
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean,
+    ) {
+        branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
+            val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
+            val typedEvent = eventMatcher(currentEvent) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
+            val scope = AfsmTransitionScope<P, X, E, A, F, PS, EV>(
+                phase = typedPhase,
+                event = typedEvent,
+                execution = execution,
+            )
+
+            if (!scope.guard()) {
+                return@AfsmEventBranch AfsmBranchResult.Unmatched
+            }
+
+            AfsmBranchResult.Matched(
+                targetPhase = null,
+                decision = decision,
             )
         }
     }
@@ -358,6 +410,7 @@ internal sealed interface AfsmBranchResult<out P : Any> {
 
     data class Matched<P : Any>(
         val targetPhase: P?,
+        val decision: AfsmDecision?,
     ) : AfsmBranchResult<P>
 }
 
@@ -428,7 +481,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, A : Any, F : Any>(
             state = nextSnapshot,
             commands = execution.actions.toList(),
             effects = execution.effects.toList(),
-            decision = if (targetPhase != null) {
+            decision = branchResult.decision ?: if (targetPhase != null) {
                 AfsmDecision.Transitioned
             } else {
                 AfsmDecision.Stayed()

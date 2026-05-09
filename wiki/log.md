@@ -239,3 +239,9 @@
 - Source: `afsm-graph-ksp/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`
 - Action: Implemented `@AfsmGraph` class discovery, generated graph registry code, registry-driven `.mmd` writing, and ProductEditor annotation-based graph export.
 - Updated: `afsm-core/`, `afsm-graph-ksp/`, `sample-shop/build.gradle.kts`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorMmdExportTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | Executable DSL ignored and invalid branches
+
+- Source: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`
+- Action: Added `ignore(...)` and `invalid(...)` DSL branches so reducers can preserve non-graph transition decisions while keeping diagrams focused on real state transitions.
+- Updated: `afsm-core/`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

@@ -117,6 +117,45 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
+    fun `ignore and invalid branches preserve decisions without topology edges`() {
+        val machine = afsmMachine<
+            DslProductEditorPhase,
+            DslProductEditorContext,
+            DslProductEditorEvent,
+            DslProductEditorAction,
+            DslProductEditorEffect,
+            > {
+            initial(
+                phase = DslProductEditorPhase.EditingDraft,
+                context = DslProductEditorContext(),
+            )
+
+            state(DslProductEditorPhase.EditingDraft) {
+                on<DslProductEditorEvent.SaveDraftClicked> {
+                    ignore(reason = "Draft save is disabled.")
+                }
+
+                on<DslProductEditorEvent.DoneClicked> {
+                    invalid(reason = "Editor cannot close before publish.")
+                }
+            }
+        }
+
+        val ignored = machine.transition(
+            snapshot = machine.initialSnapshot,
+            event = DslProductEditorEvent.SaveDraftClicked,
+        )
+        val invalid = machine.transition(
+            snapshot = machine.initialSnapshot,
+            event = DslProductEditorEvent.DoneClicked,
+        )
+
+        assertEquals(AfsmDecision.Ignored("Draft save is disabled."), ignored.decision)
+        assertEquals(AfsmDecision.Invalid("Editor cannot close before publish."), invalid.decision)
+        assertEquals(emptyList(), machine.topology.transitions)
+    }
+
+    @Test
     fun `topology can be exported without sample events`() {
         val machine = productEditorMachine()
 
