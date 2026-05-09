@@ -89,3 +89,37 @@ Conclusion:
 
 - The ViewModel integration can stay as a thin extension function.
 - The natural ViewModel usage shape is `private val host = afsmHost(...)`, `val state = host.state`, `val effects = host.effects`, and `fun onEvent(event) = host.dispatch(event)`.
+
+## [2026-05-09] sample-shop reference app
+
+Change:
+
+- Added `:sample-shop` Android application module.
+- Added Compose Material 3, Navigation Compose, Lifecycle Compose, Room, and KSP dependencies.
+- Added Room entities/DAOs/database for users, products, favorites, reviews, and orders.
+- Added repository layer and manual `ShopAppContainer`.
+- Added Afsm-backed auth flow.
+- Added Afsm-backed checkout flow with mock payment failure and retry.
+- Added ordinary ViewModel + Flow screens for catalog, product registration, product detail, likes, review registration, and review list.
+- Added state machine tests for auth and checkout.
+- Added `docs/sample-shop-afsm-guide.md`.
+- Increased Gradle JVM heap for app module builds.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:assembleDebug --warning-mode all --no-daemon
+./gradlew test :sample-shop:assembleDebug --warning-mode all --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- `ViewModel.afsmHost(...)` remains readable in real Android ViewModels.
+- Afsm is useful for auth and checkout retry flows.
+- Ordinary ViewModel + Flow remains preferable for simple Room-backed data screens.

@@ -21,6 +21,9 @@ The current direction is:
 - `AfsmHost` serializes non-suspending `dispatch(event)` calls through a FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially.
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
 - A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`.
+- A `:sample-shop` Android app module now exists to validate Afsm in a realistic Compose + Room shopping app.
+- The sample app uses Afsm for auth and checkout retry flows, while keeping product list/detail/editor/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
+- Public sample documentation now lives in `docs/sample-shop-afsm-guide.md`.
 
 ## Core Architecture Position
 
@@ -52,6 +55,8 @@ Runtime dispatch validation: [[../03-engineering/afsm-runtime-dispatch-loop|Afsm
 AI engineering guardrails: [[../07-llm/ai-engineering-guardrails|AI Engineering Guardrails]].
 
 ViewModel integration validation: [[../03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]].
+
+Sample app validation: [[../03-engineering/sample-shop-reference-app|Sample Shop Reference App]].
 
 ## Current Source Material
 

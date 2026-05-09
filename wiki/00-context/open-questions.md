@@ -26,6 +26,7 @@ updated: 2026-05-09
 Resolved:
 
 - First real reference flow: signup + identity verification + retry.
+- The first complex app-level validation is a shopping sample with auth, product, review, like, and checkout retry flows.
 
 ## Product
 
@@ -58,3 +59,4 @@ Resolved:
 - MVP includes `afsm-runtime`.
 - `afsm-viewmodel` exists as a thin AndroidX integration module with `ViewModel.afsmHost(...)`.
 - Compose helpers and test helpers remain future modules.
+- A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.

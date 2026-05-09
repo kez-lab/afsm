@@ -172,3 +172,20 @@ Consequences:
 - `ViewModel.afsmHost(...)` supplies `viewModelScope`.
 - `SavedStateHandle`, navigation, and Compose helpers remain outside this module for now.
 - AndroidX is enabled with `android.useAndroidX=true`.
+
+## [2026-05-09] Add sample-shop as the first complex app validation
+
+Decision: Add a `:sample-shop` Android app module that uses Compose, ViewModel, Room, Navigation Compose, and Afsm to validate real-world ergonomics.
+
+Rationale:
+
+- Public API drafts and pseudo implementations do not prove whether Android developers can use Afsm naturally in a multi-screen app.
+- A shopping app exercises authentication, local persistence, likes, product creation, detail screens, review creation/listing, fake payment, failure, and retry.
+- Afsm should be applied where state transition correctness matters, not forced into every data screen.
+
+Consequences:
+
+- Auth and checkout are Afsm-backed reference flows.
+- Catalog, product editor, product detail, likes, and reviews remain ordinary ViewModel + Flow screens.
+- Manual DI is used for now to keep dependencies focused on Android/Kotlin and avoid hiding Afsm usage behind a DI framework.
+- The sample creates pressure for a public tutorial and possibly a Compose effect collection helper.

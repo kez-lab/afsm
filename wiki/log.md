@@ -107,3 +107,9 @@
 - Source: user request
 - Action: Added `afsm-viewmodel` as an Android library module with `ViewModel.afsmHost(...)`, AndroidX Lifecycle dependency, ViewModel usage tests, and Gradle Android configuration.
 - Updated: `settings.gradle.kts`, `build.gradle.kts`, `gradle/wrapper/gradle-wrapper.properties`, `gradle.properties`, `afsm-viewmodel/`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | sample-shop reference app
+
+- Source: user request
+- Action: Added `:sample-shop` Compose + Room app with Afsm-backed auth and checkout flows, ordinary ViewModel-backed catalog/product/review screens, JVM state machine tests, and sample usage documentation.
+- Updated: `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `sample-shop/`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
