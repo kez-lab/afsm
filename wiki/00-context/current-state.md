@@ -55,7 +55,7 @@ Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draf
 
 Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
 
-Topology-first API exploration: [[../03-engineering/afsm-v3-topology-first-api|Afsm v3 Topology-First API]].
+v3 typed-handler direction: [[../03-engineering/afsm-v3-topology-first-api|Afsm v3 Typed Handler API]].
 
 Transition action terminology: [[../03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]].
 

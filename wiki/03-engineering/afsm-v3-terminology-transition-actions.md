@@ -236,10 +236,10 @@ Current recommendation:
 
 - Do not force a DSL yet.
 - Keep the v2 plain Kotlin `when (state)` reducer API as the implemented engine.
-- Improve terminology and sample naming first.
-- Revisit graph generation after the state/action vocabulary is clear.
+- Use concrete State/Event handler signatures when a state machine needs graph extraction.
+- Let `transitionTo` expose the next state instead of repeating `From` and `Event` generics.
 
-The next v3 design should prove whether graph generation can be supported without making normal state machine code feel unfamiliar.
+Canonical v3 direction: [[afsm-v3-topology-first-api|Afsm v3 Typed Handler API]].
 
 ## Graph Generation Implication
 
@@ -253,12 +253,13 @@ optional transition actions
 optional effects
 ```
 
-In v2 reducer code, this topology is still hidden in executable Kotlin.
+In unconstrained v2 reducer code, this topology is still hidden in executable Kotlin.
 
-Better names make graphs understandable, but they do not make graphs automatically extractable. Automatic graph extraction still needs one of these:
+Better names make graphs understandable, but they do not make graphs automatically extractable. Current v3 direction is to make extraction possible through:
 
-- declarative transition registration,
-- explicit edge metadata beside the reducer,
-- or a code generation/static analysis strategy.
+- concrete State/Event handler signatures,
+- `transitionTo(state = NextState(...))`,
+- command/effect expression types where practical,
+- optional source scanning first, KSP later only if needed.
 
 The naming cleanup should happen first because any generated graph will only be useful if state, event, and action names are already understandable.

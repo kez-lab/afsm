@@ -264,3 +264,24 @@ Conclusion:
 
 - v3 should not require a DSL as the main authoring style.
 - The next proof should test whether ProductEditor can be refactored into concrete handlers and whether a simple graph extractor can infer state edges from that code.
+
+## [2026-05-09] v3 canonical synthesis cleanup
+
+Change:
+
+- Rewrote `wiki/03-engineering/afsm-v3-topology-first-api.md` into a canonical current-direction page titled `Afsm v3 Typed Handler API`.
+- Updated `wiki/03-engineering/afsm-v3-terminology-transition-actions.md` to point at the canonical v3 direction.
+- Consolidated the accepted direction around plain Kotlin `when`, concrete State/Event handlers, and `transitionTo` next-state extraction.
+- Moved rejected `transition<From, Event, To>`, `from/on/to`, and `goTo` ideas into a short `Superseded Ideas` section.
+- Added canonical synthesis rules to `AGENTS.md` and `wiki/07-llm/wiki-maintenance-guide.md`.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Future agents should read the v3 page as the current answer, not reconstruct the answer from previous corrections.
+- Design corrections should update canonical synthesis pages directly before appending supporting history.

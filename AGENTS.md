@@ -15,6 +15,8 @@ Before working on architecture, ViewModel, UDF, MVI, Compose state handling, or 
 
 - Treat `raw/` as source material. Do not rewrite raw conversation/source files except to add new evidence or indexes.
 - Treat `wiki/` as the maintained synthesis layer. Keep pages short, linked, and current.
+- When the user corrects a design direction, update the canonical wiki page so it states the current conclusion directly; do not only append a new log or decision entry.
+- Keep rejected or superseded ideas in a clearly labeled section such as `Superseded Ideas` when they remain useful, but do not let them obscure the current recommendation.
 - Update `wiki/index.md` when durable wiki pages are added or renamed.
 - Append chronological changes to `wiki/log.md`.
 - Append architecture decisions to `wiki/06-project/decision-log.md`.

@@ -277,3 +277,20 @@ Consequences:
 - Helpers like `startUpload(draft, currentState: ProductEditorState)` are graph-hostile because they erase the concrete `FromState` and event.
 - A future graph proof should first scan `ProductEditorStateMachine.kt` for handler signatures and `Afsm.transitionTo(...)` calls before introducing DSL or KSP.
 - `transitionTo<From, Event, To>` should not be recommended because `From` and `Event` duplicate information already present in the handler signature.
+
+## [2026-05-09] Keep v3 as a canonical synthesis page
+
+Decision: Maintain `wiki/03-engineering/afsm-v3-topology-first-api.md` as the canonical v3 API direction page, despite the historical filename.
+
+Rationale:
+
+- Repeated corrections created a fragmented document that read like chat history instead of a current design.
+- Future agents should not reconstruct the accepted v3 direction from logs, decision history, or superseded API sketches.
+- The current accepted direction is typed-handler Kotlin, not DSL-first topology registration.
+
+Consequences:
+
+- The v3 page title is now `Afsm v3 Typed Handler API`.
+- Superseded ideas stay in one short section at the end of the page.
+- Future design corrections must rewrite the canonical page directly and then append logs/decisions as supporting history.
+- `AGENTS.md` and the wiki maintenance guide now include this canonical synthesis rule.

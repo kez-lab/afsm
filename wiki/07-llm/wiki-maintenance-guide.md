@@ -25,6 +25,19 @@ When new architecture discussion, implementation notes, test evidence, or source
 5. Append durable decisions to `wiki/06-project/decision-log.md`.
 6. Add unresolved items to `wiki/00-context/open-questions.md`.
 
+## Canonical Synthesis Workflow
+
+When the user corrects an architecture direction or a design conclusion changes:
+
+1. Update the canonical engineering/product page so it reads as the current answer, not as a chronological argument.
+2. Move rejected alternatives into a short `Superseded Ideas` or `Rejected Alternatives` section when they are still useful context.
+3. Update `wiki/00-context/current-state.md` with only the current direction.
+4. Update `wiki/00-context/open-questions.md` by removing or rewriting stale questions.
+5. Append the change to `wiki/log.md` as history.
+6. Append durable decisions to `wiki/06-project/decision-log.md`, but do not rely on the decision log as the only source of truth.
+
+Do not leave future agents to reconstruct the current answer from a chain of corrections. The canonical page should be readable on its own.
+
 ## Query Workflow
 
 When answering project architecture questions:
@@ -64,6 +77,7 @@ Periodically check:
 
 - stale claims,
 - contradictions,
+- pages that read like chat history instead of current synthesis,
 - pages missing inbound links,
 - open questions that have been resolved,
 - decisions not reflected in engineering pages,

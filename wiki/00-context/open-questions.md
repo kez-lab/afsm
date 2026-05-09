@@ -46,11 +46,11 @@ Resolved:
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
 - Should Afsm document a v3 typed-handler convention with concrete State/Event handler signatures and `transitionTo` next-state extraction for state diagram generation?
 - If v3 exists, should it become the recommended API or remain an optional graph-oriented layer over v2?
-- How should v3 preserve Kotlin exhaustiveness for unhandled events when transitions are registered declaratively?
+- How should graph extraction handle invalid/ignored branches while preserving Kotlin `when` exhaustiveness?
 - Should graph labels default to type names, require explicit human labels, or support both?
 - Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
-- Can automatic graph generation be supported while preserving a plain Kotlin `when (state)` authoring style, or is explicit edge metadata unavoidable?
+- Can automatic graph generation be supported through typed-handler source analysis before introducing KSP?
 
 Resolved:
 

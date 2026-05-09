@@ -161,3 +161,9 @@
 - Source: user feedback recalling the prior no-DSL discussion
 - Action: Corrected the v3 topology-first page again to prefer plain Kotlin `when`, concrete State/Event handler signatures, and `transitionTo` next-state extraction instead of a `from/on/to` DSL companion.
 - Updated: `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] maintenance | v3 canonical synthesis cleanup
+
+- Source: user feedback about poor conversation/wiki sync and fragmented v3 documentation
+- Action: Rewrote the v3 page as the canonical `Afsm v3 Typed Handler API` synthesis and added rules requiring future design corrections to update canonical pages, not only append logs.
+- Updated: `AGENTS.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
