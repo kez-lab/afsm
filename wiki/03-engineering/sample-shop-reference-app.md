@@ -126,8 +126,9 @@ The ProductEditor sample now uses the v3 executable DSL:
 - Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `onEnter` owns phase-entry command emission.
-- `ProductEditorStateMachine.topology` exposes `.mmd` graph metadata without sample fixtures.
-- `./gradlew :sample-shop:generateAfsmMmd` writes `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and implements `AfsmGraphSource`.
+- KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
+- `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 
 Text edits are stayed branches inside editable phases, while submit/review/publish actions move between explicit phases.
 

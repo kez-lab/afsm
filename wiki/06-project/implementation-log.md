@@ -506,3 +506,23 @@ Verification:
 Conclusion:
 
 - The next implementation spike should add `AfsmGraph`/`AfsmGraphSource`, add `afsm-graph-ksp`, generate a registry from annotated state-machine classes, and replace ProductEditor-only sample generation with registry-driven generation.
+
+## [2026-05-09] KSP `.mmd` generation implementation slice
+
+Change:
+
+- Added graph API types to `afsm-core`: `AfsmGraph`, `AfsmGraphSource`, `AfsmGraphEntry`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
+- Added `afsm-graph-ksp` with `AfsmGraphProcessorProvider` and `AfsmGraphProcessor`.
+- The processor discovers `@AfsmGraph` state-machine classes, validates `AfsmStateMachine`/`AfsmGraphSource` conformance and no-required-arg construction, then generates `afsm.generated.AfsmGeneratedGraphRegistry`.
+- Annotated `ProductEditorStateMachine` and changed sample `.mmd` export to use the generated registry instead of directly constructing ProductEditor.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-graph-ksp:test --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The first KSP loop is working end to end. The remaining proof is to add a second graphable state machine without duplicating topology by hand.

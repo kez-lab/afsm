@@ -74,6 +74,7 @@ Resolved:
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation now works through executable DSL topology and `.mmd` export.
 - KSP graph generation should discover annotated `StateMachine` classes, generate a registry, then execute compiled `AfsmGraphSource.topology.toMmd()`; it should not parse DSL bodies or create graph-only models.
+- The first `afsm-graph-ksp` slice works for `ProductEditorStateMachine`; proving a second real graphable state machine remains open.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.

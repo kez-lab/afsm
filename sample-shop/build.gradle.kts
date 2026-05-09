@@ -50,6 +50,7 @@ dependencies {
 
     implementation("androidx.room:room-ktx:2.8.4")
     implementation("androidx.room:room-runtime:2.8.4")
+    ksp(project(":afsm-graph-ksp"))
     ksp("androidx.room:room-compiler:2.8.4")
 
     testImplementation(kotlin("test-junit5"))
@@ -69,5 +70,5 @@ tasks.register("generateAfsmMmd") {
     group = "documentation"
     description = "Generates Afsm state machine .mmd graph files."
     dependsOn("testDebugUnitTest")
-    outputs.file(layout.buildDirectory.file("generated/afsm/mmd/ProductEditorStateMachine.mmd"))
+    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
 }

@@ -31,8 +31,8 @@ The current direction is:
 - A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
 - The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
-- The `sample-shop` module now has `generateAfsmMmd`, which writes the ProductEditor graph as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
-- The next graph-generation direction is KSP-based discovery: annotate `StateMachine` classes with `@AfsmGraph`, require an `AfsmGraphSource` topology contract, generate a registry, then write one `.mmd` per registered machine.
+- The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
+- `ProductEditorStateMachine` is the first annotated graph source and writes `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.

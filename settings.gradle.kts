@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 rootProject.name = "afsm"
 
 include(":afsm-core")
+include(":afsm-graph-ksp")
 include(":afsm-runtime")
 include(":afsm-viewmodel")
 include(":sample-shop")

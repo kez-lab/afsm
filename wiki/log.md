@@ -233,3 +233,9 @@
 - Source: user request to design KSP-based automatic `.mmd` discovery for multiple state machines.
 - Action: Corrected the KSP graph generation design to annotate `StateMachine` classes, generate a registry, execute real compiled topology through `AfsmGraphSource`, and write one `.mmd` per registered machine.
 - Updated: `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | KSP mmd generation slice
+
+- Source: `afsm-graph-ksp/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`
+- Action: Implemented `@AfsmGraph` class discovery, generated graph registry code, registry-driven `.mmd` writing, and ProductEditor annotation-based graph export.
+- Updated: `afsm-core/`, `afsm-graph-ksp/`, `sample-shop/build.gradle.kts`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorMmdExportTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

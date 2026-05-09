@@ -356,16 +356,16 @@ Avoid cross-module KSP aggregation at first. KSP should stay module-local.
 
 ## Acceptance Criteria For The Next Spike
 
-The next implementation spike should prove:
+Implementation status:
 
-- `@AfsmGraph` on `ProductEditorStateMachine` compiles.
-- `ProductEditorStateMachine` implements `AfsmGraphSource`.
-- KSP generates `AfsmGeneratedGraphRegistry`.
-- `generateAfsmMmd` no longer references ProductEditor directly.
-- `generateAfsmMmd` writes `ProductEditorStateMachine.mmd`.
-- Adding a second annotated `StateMachine` writes a second `.mmd`.
-- Invalid annotated classes fail compilation with useful messages.
-- No explanatory markdown is generated as graph output.
+- Done: `@AfsmGraph` on `ProductEditorStateMachine` compiles.
+- Done: `ProductEditorStateMachine` implements `AfsmGraphSource`.
+- Done: KSP generates `AfsmGeneratedGraphRegistry`.
+- Done: `generateAfsmMmd` no longer references ProductEditor directly.
+- Done: `generateAfsmMmd` writes `ProductEditorStateMachine.mmd`.
+- Open: adding a second real annotated `StateMachine` should write a second `.mmd`.
+- Open: invalid annotated classes should fail compilation with useful messages in processor tests.
+- Done: no explanatory markdown is generated as graph output.
 
 Initial test targets:
 

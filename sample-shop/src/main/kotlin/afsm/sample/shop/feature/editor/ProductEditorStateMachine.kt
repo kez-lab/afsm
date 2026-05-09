@@ -1,12 +1,18 @@
 package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmEventBranchScope
+import afsm.core.AfsmGraph
+import afsm.core.AfsmGraphSource
 import afsm.core.AfsmMachine
 import afsm.core.AfsmSnapshot
 import afsm.core.AfsmStateMachine
 import afsm.core.AfsmTopology
 import afsm.core.afsmMachine
 
+@AfsmGraph(
+    id = "ProductEditor",
+    fileName = "ProductEditorStateMachine.mmd",
+)
 class ProductEditorStateMachine(
     private val machine: AfsmMachine<
         ProductEditorPhase,
@@ -15,8 +21,9 @@ class ProductEditorStateMachine(
         ProductEditorCommand,
         ProductEditorEffect,
         > = productEditorMachine(),
-) : AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
-    val topology: AfsmTopology
+) : AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>,
+    AfsmGraphSource {
+    override val topology: AfsmTopology
         get() = machine.topology
 
     override fun transition(

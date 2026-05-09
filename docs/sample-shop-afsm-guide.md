@@ -124,8 +124,9 @@ Policy:
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
-- `ProductEditorStateMachine.topology` can render the phase graph as `.mmd` without sample state/event fixtures.
-- `./gradlew :sample-shop:generateAfsmMmd` writes `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and implements `AfsmGraphSource`.
+- KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
+- `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `updateContext`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.

@@ -1,25 +1,26 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.toMmd
+import afsm.core.AfsmMmdWriter
+import afsm.generated.AfsmGeneratedGraphRegistry
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ProductEditorMmdExportTest {
     @Test
-    fun `writes ProductEditor state graph mmd`() {
+    fun `writes registered state graph mmd files`() {
         val outputDir = File(
             System.getProperty("afsm.mmd.outputDir")
                 ?: "build/generated/afsm/mmd",
         )
         val outputFile = outputDir.resolve("ProductEditorStateMachine.mmd")
-        val mmd = ProductEditorStateMachine().topology.toMmd()
 
-        outputDir.mkdirs()
-        outputFile.writeText("$mmd\n")
+        AfsmMmdWriter.writeAll(
+            registry = AfsmGeneratedGraphRegistry,
+            outputDir = outputDir,
+        )
 
         assertTrue(outputFile.isFile)
-        assertEquals(mmd, outputFile.readText().trimEnd())
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in outputFile.readText())
     }
 }
