@@ -44,6 +44,7 @@ The current direction is:
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 - ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL chart, removing the previous phase/context adapter mapping.
 - Kotlin `typealias` cannot share a same-named factory with the aliased constructor, so ProductEditor uses a lowercase `productEditorState()` factory for default initial state construction.
+- A reference architecture review now compares Afsm against XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance. It concludes the direction is sound, but naming, validation, entry/exit semantics, topology metadata, and command failure policy need hardening before public API freeze.
 
 ## Core Architecture Position
 
@@ -71,6 +72,8 @@ Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2
 v3 executable DSL direction: [[../03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
 
 KSP `.mmd` generation: [[../03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
+
+Reference architecture review: [[../03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]].
 
 Phased core spike: [[../03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]].
 

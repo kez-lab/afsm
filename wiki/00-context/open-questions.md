@@ -48,11 +48,15 @@ Resolved:
 - How should graph extraction represent invalid/ignored branches declared in the executable DSL?
 - Should graph labels default to type names, require explicit human labels, or support both?
 - Should `AfsmStateChart` remain the public name for executable charts, or should it be renamed before release to reduce user confusion?
+- Should the low-level `AfsmStateMachine<S, E, C, F>` contract be renamed to `AfsmReducer` if the executable chart becomes the primary public machine type?
 - Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
 - Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
+- Should initial state entry run `onEnter`, or should Android features keep using explicit `ScreenEntered` events?
+- Should the DSL add `onExit` before public release, even if nested states are deferred?
+- Should command-handler exceptions fail the host, be logged, or be routed through a configurable policy?
 - Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 

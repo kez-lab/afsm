@@ -263,3 +263,9 @@
 - Source: user request to verify whether all Afsm state should use `phase + context`.
 - Action: Added `AfsmState<P, X>` as the standard phase/context state data class, deprecated `AfsmChartState`, made `AfsmStateChart` implement `AfsmStateMachine<AfsmState<P, X>, ...>` and `AfsmGraphSource`, migrated ProductEditor to a typealias plus chart delegation, and verified `.mmd` generation still works.
 - Updated: `afsm-core/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-10] planning | Afsm reference architecture review
+
+- Source: user request to compare Afsm against external state-machine and reducer references.
+- Action: Added a reference review comparing current Afsm to XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance; identified API hardening priorities before public release.
+- Updated: `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/log.md`.
