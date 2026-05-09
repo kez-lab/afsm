@@ -10,6 +10,11 @@ package afsm.core
 public interface AfsmMachine<P : Any, X : Any, E : Any, A : Any, F : Any> {
     public val initialSnapshot: AfsmSnapshot<P, X>
 
+    /**
+     * Static state and transition metadata declared by this machine.
+     */
+    public val topology: AfsmTopology
+
     public fun transition(
         snapshot: AfsmSnapshot<P, X>,
         event: E,

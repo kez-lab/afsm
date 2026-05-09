@@ -403,3 +403,24 @@ Conclusion:
 
 - The executable DSL direction is viable in Kotlin without source-scanning or a separate graph-only definition.
 - The current spike is not public API-final because graph metadata/export, exit actions, duplicate handler validation, and ProductEditor migration remain unresolved.
+
+## [2026-05-09] Afsm executable DSL topology spike
+
+Change:
+
+- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMermaidStateDiagram()`.
+- Added `AfsmMachine.topology`.
+- Refined the executable DSL so event branches are graphable at build time through `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- Updated the ProductEditor-like DSL test to verify Mermaid/topology export without executing sample events.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileTestKotlin --no-daemon
+./gradlew :afsm-core:test --no-daemon
+```
+
+Conclusion:
+
+- The executable DSL can now be both runtime behavior and graph source without source scanning or sample-state fixtures.
+- Topology currently records state/event edges only; action labels, guard labels, entry rendering, and duplicate declaration diagnostics remain future work.

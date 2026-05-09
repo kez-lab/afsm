@@ -28,8 +28,9 @@ The current direction is:
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable statechart DSL: `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo` in one machine definition.
-- A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `guard`, `otherwise`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `assign`, `onEnter`, `action`, and `effect`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context assignment, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
+- The executable DSL now exposes `AfsmMachine.topology` plus a Mermaid renderer; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - A minimal `afsm-core` phased-state spike now compiles and passes tests with `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `AfsmPhasedStateMachine`, `transitionTo(Phase)`, and `updateContext`.
 - The phased-state helper is now treated as a superseded public authoring direction and useful lower-level learning, not the recommended v3 API.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.

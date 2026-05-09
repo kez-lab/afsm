@@ -72,7 +72,8 @@ Resolved:
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
-- A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests; graph metadata/export and ProductEditor migration remain unresolved.
+- A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests; ProductEditor migration remains unresolved.
+- `AfsmMachine.topology` and Mermaid export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.
 - The phased-state API compiles as an `afsm-core` spike, including `AfsmPhasedStateMachine` hiding direct `Afsm.phased(...)` setup; final public module placement remains open.
 - In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
 - Context-only updates should be reserved for actual data updates, while ProductEditor's public reducer style should prefer `transitionTo(Phase)` and let entry policy update context or emit commands.

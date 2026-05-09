@@ -119,11 +119,13 @@ val ProductEditorMachine = afsmMachine<
 
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            assign {
-                copy(
-                    draft = draft.withTitle(event.value),
-                    errorMessage = null,
-                )
+            stay {
+                assign {
+                    copy(
+                        draft = draft.withTitle(event.value),
+                        errorMessage = null,
+                    )
+                }
             }
         }
 
@@ -132,9 +134,14 @@ val ProductEditorMachine = afsmMachine<
         }
 
         on<ProductEditorEvent.SubmitClicked> {
-            if (context.draft.isValidForSubmission()) {
-                transitionTo(ProductEditorPhase.ImageUploadInProgress)
-            } else {
+            transitionTo(
+                phase = ProductEditorPhase.ImageUploadInProgress,
+                guard = { context.draft.isValidForSubmission() },
+            ) {
+                assign { copy(draft = draft.normalized(), errorMessage = null) }
+            }
+
+            otherwise {
                 assign {
                     copy(errorMessage = draft.validationMessage())
                 }
@@ -157,17 +164,20 @@ val ProductEditorMachine = afsmMachine<
 Important properties:
 
 - `state(Phase)` creates a structural state scope.
-- `on<Event>` creates a structural edge scope.
+- `on<Event>` creates a structural event scope.
+- `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)` create graphable branches inside the event scope.
 - `onEnter` and `onExit` are state-local and visible.
 - `assign` mutates context immutably.
 - `action` emits host-executed work.
 - `effect` emits UI-side one-shot output.
-- `transitionTo` changes phase.
+- `transitionTo` changes phase; `stay` handles context/effect updates without changing phase.
 - The same definition is executable and graphable.
 
 ## ProductEditor Pseudo Implementation
 
-Types:
+The current spike uses a ProductEditor-like subset to validate the authoring style before migrating the real sample.
+
+Core shape:
 
 ```kotlin
 sealed interface ProductEditorPhase {
@@ -199,7 +209,7 @@ data class ProductEditorContext(
 )
 ```
 
-Machine:
+Graphable machine excerpt:
 
 ```kotlin
 val ProductEditorMachine = afsmMachine<
@@ -213,15 +223,9 @@ val ProductEditorMachine = afsmMachine<
 
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            assign { copy(draft = draft.withTitle(event.value), errorMessage = null) }
-        }
-
-        on<ProductEditorEvent.DescriptionChanged> {
-            assign { copy(draft = draft.withDescription(event.value), errorMessage = null) }
-        }
-
-        on<ProductEditorEvent.PriceChanged> {
-            assign { copy(draft = draft.withPriceText(event.value), errorMessage = null) }
+            stay {
+                assign { copy(draft = draft.withTitle(event.value), errorMessage = null) }
+            }
         }
 
         on<ProductEditorEvent.SaveDraftClicked> {
@@ -229,9 +233,11 @@ val ProductEditorMachine = afsmMachine<
         }
 
         on<ProductEditorEvent.SubmitClicked> {
-            guard({ context.draft.isValidForSubmission() }) {
+            transitionTo(
+                phase = ProductEditorPhase.ImageUploadInProgress,
+                guard = { context.draft.isValidForSubmission() },
+            ) {
                 assign { copy(draft = draft.normalized(), errorMessage = null) }
-                transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
 
             otherwise {
@@ -250,52 +256,26 @@ val ProductEditorMachine = afsmMachine<
         }
     }
 
-    state(ProductEditorPhase.DraftSaved) {
-        on<ProductEditorEvent.ContinueEditingClicked> {
-            transitionTo(ProductEditorPhase.EditingDraft)
-        }
-
-        on<ProductEditorEvent.SubmitClicked> {
-            guard({ context.draft.isValidForSubmission() }) {
-                assign { copy(draft = draft.normalized(), errorMessage = null) }
-                transitionTo(ProductEditorPhase.ImageUploadInProgress)
-            }
-
-            otherwise {
-                assign { copy(errorMessage = draft.validationMessage()) }
-                transitionTo(ProductEditorPhase.EditingDraft)
-            }
-        }
-
-        on<ProductEditorEvent.TitleChanged> {
-            assign { copy(draft = draft.withTitle(event.value), errorMessage = null) }
-            transitionTo(ProductEditorPhase.EditingDraft)
-        }
-    }
-
     state(ProductEditorPhase.ImageUploadInProgress) {
         onEnter {
             action(ProductEditorAction.StartImageUpload(context.draft))
         }
 
         on<ProductEditorEvent.ImageUploadSucceeded> {
-            assign {
-                copy(
-                    draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
-                    errorMessage = null,
-                )
+            transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
+                phase = {
+                    ProductEditorPhase.ReviewSubmissionInProgress(
+                        uploadToken = event.uploadToken,
+                    )
+                },
+            ) {
+                assign {
+                    copy(
+                        draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
+                        errorMessage = null,
+                    )
+                }
             }
-
-            transitionTo(
-                ProductEditorPhase.ReviewSubmissionInProgress(
-                    uploadToken = event.uploadToken,
-                ),
-            )
-        }
-
-        on<ProductEditorEvent.ImageUploadFailed> {
-            assign { copy(errorMessage = event.message) }
-            transitionTo(ProductEditorPhase.EditingDraft)
         }
     }
 
@@ -308,84 +288,19 @@ val ProductEditorMachine = afsmMachine<
                 ),
             )
         }
-
-        on<ProductEditorEvent.ReviewApproved> {
-            transitionTo(ProductEditorPhase.Approved)
-        }
-
-        on<ProductEditorEvent.ReviewRejected> {
-            transitionTo(ProductEditorPhase.Rejected(reason = event.reason))
-        }
-    }
-
-    state<ProductEditorPhase.Rejected> {
-        on<ProductEditorEvent.TitleChanged> {
-            assign { copy(draft = draft.withTitle(event.value), errorMessage = null) }
-        }
-
-        on<ProductEditorEvent.DescriptionChanged> {
-            assign { copy(draft = draft.withDescription(event.value), errorMessage = null) }
-        }
-
-        on<ProductEditorEvent.PriceChanged> {
-            assign { copy(draft = draft.withPriceText(event.value), errorMessage = null) }
-        }
-
-        on<ProductEditorEvent.ContinueEditingClicked> {
-            transitionTo(ProductEditorPhase.EditingDraft)
-        }
-
-        on<ProductEditorEvent.ResubmitClicked> {
-            guard({ context.draft.isValidForSubmission() }) {
-                assign { copy(draft = draft.normalized(), errorMessage = null) }
-                transitionTo(ProductEditorPhase.ImageUploadInProgress)
-            }
-
-            otherwise {
-                assign { copy(errorMessage = draft.validationMessage()) }
-            }
-        }
-    }
-
-    state(ProductEditorPhase.Approved) {
-        on<ProductEditorEvent.ContinueEditingClicked> {
-            transitionTo(ProductEditorPhase.EditingDraft)
-        }
-
-        on<ProductEditorEvent.PublishClicked> {
-            transitionTo(ProductEditorPhase.PublishInProgress)
-        }
-    }
-
-    state(ProductEditorPhase.PublishInProgress) {
-        onEnter {
-            action(ProductEditorAction.StartProductPublish(context.draft))
-        }
-
-        on<ProductEditorEvent.PublishSucceeded> {
-            transitionTo(
-                ProductEditorPhase.Published(
-                    productId = event.productId,
-                    title = context.draft.form.title.trim(),
-                ),
-            )
-        }
-
-        on<ProductEditorEvent.PublishFailed> {
-            assign { copy(errorMessage = event.message) }
-            transitionTo(ProductEditorPhase.Approved)
-        }
     }
 
     state<ProductEditorPhase.Published> {
         on<ProductEditorEvent.DoneClicked> {
-            effect(ProductEditorEffect.CloseEditor)
+            stay {
+                effect(ProductEditorEffect.CloseEditor)
+            }
         }
     }
 }
 ```
 
-This started as pseudo-code. The first `afsm-core` spike now validates the core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `guard`, `otherwise`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `transitionTo`, `transitionTo<PayloadPhase>`, `stay`, `otherwise`, `assign`, `onEnter`, `action`, and `effect`.
 
 ## Graph Output
 
@@ -421,6 +336,7 @@ Execution contract:
 ```kotlin
 interface AfsmMachine<P : Any, X : Any, E : Any, A : Any, F : Any> {
     val initialSnapshot: AfsmSnapshot<P, X>
+    val topology: AfsmTopology
 
     fun transition(
         snapshot: AfsmSnapshot<P, X>,
@@ -510,10 +426,11 @@ state(phase) { ... }
 state<PSubtype> { ... }
 on<EventSubtype> { ... }
 onEnter { ... }
-guard(predicate) { ... }
+transitionTo(phase, guard = { ... }) { ... }
+transitionTo<PayloadPhase>(phase = { ... }) { ... }
+stay { ... }
 otherwise { ... }
 assign { ... }
-transitionTo(phase)
 action(action)
 effect(effect)
 ```
@@ -528,10 +445,10 @@ Success criteria:
 Result on 2026-05-09:
 
 - Added `AfsmMachine<P, X, E, A, F>` and `AfsmSnapshot<P, X>` to `afsm-core`.
-- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `guard`, `otherwise`, `assign`, `transitionTo`, `action`, and `effect`.
+- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `assign`, `action`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, guard fallback, entry action emission, and effect-only stayed transitions work in compiled Kotlin tests.
-- Current limitation: the machine is executable but does not yet expose graph/topology metadata for Mermaid generation.
+- Superseded by the follow-up graphability spike: branch targets now need to be declared in `transitionTo(...)`/`stay(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
 
 ### Step 2: Interpreter Spike
 
@@ -547,8 +464,8 @@ Implement enough interpreter behavior to execute one event:
 
 Current spike status:
 
-- Implemented current state lookup, event handler lookup, ordered `assign`, single `transitionTo`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
-- `onExit`, transition-level metadata, duplicate handler validation, and topology export remain unimplemented.
+- Implemented current state lookup, event handler lookup, ordered branch matching, ordered `assign`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
+- `onExit`, duplicate handler validation, and action labels in topology remain unimplemented.
 
 ### Step 3: Graph Exporter
 
@@ -559,6 +476,14 @@ Success criteria:
 - ProductEditor graph is generated from the machine object.
 - No source scanning is required.
 - `action(...)` labels can appear on edges or entry nodes.
+
+Result on 2026-05-09:
+
+- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMermaidStateDiagram()`.
+- Added `AfsmMachine.topology`.
+- Changed event declarations so branch targets are known at build time: `on<Event> { transitionTo(...) { ... } }`, `on<Event> { transitionTo<PayloadPhase>(phase = { ... }) { ... } }`, `stay { ... }`, and `otherwise { ... }`.
+- Verified topology export without executing sample events.
+- Current limitation: topology currently records phase/event edges only; action labels, guard labels, entry nodes, and duplicate declaration diagnostics remain future work.
 
 ### Step 4: ProductEditor Migration
 

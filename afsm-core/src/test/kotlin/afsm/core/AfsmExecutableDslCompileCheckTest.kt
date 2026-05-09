@@ -3,6 +3,7 @@ package afsm.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class AfsmExecutableDslCompileCheckTest {
     @Test
@@ -115,6 +116,57 @@ class AfsmExecutableDslCompileCheckTest {
         assertIs<AfsmDecision.Stayed>(result.decision)
     }
 
+    @Test
+    fun `topology can be exported without sample events`() {
+        val machine = productEditorMachine()
+
+        assertEquals(
+            listOf(
+                AfsmTopologyTransition(
+                    from = "EditingDraft",
+                    event = "TitleChanged",
+                    to = "EditingDraft",
+                ),
+                AfsmTopologyTransition(
+                    from = "EditingDraft",
+                    event = "SaveDraftClicked",
+                    to = "SavingDraft",
+                ),
+                AfsmTopologyTransition(
+                    from = "EditingDraft",
+                    event = "SubmitClicked",
+                    to = "ImageUploadInProgress",
+                ),
+                AfsmTopologyTransition(
+                    from = "EditingDraft",
+                    event = "SubmitClicked [otherwise]",
+                    to = "EditingDraft",
+                ),
+                AfsmTopologyTransition(
+                    from = "SavingDraft",
+                    event = "DraftSaved",
+                    to = "DraftSaved",
+                ),
+                AfsmTopologyTransition(
+                    from = "ImageUploadInProgress",
+                    event = "ImageUploadSucceeded",
+                    to = "ReviewSubmissionInProgress",
+                ),
+                AfsmTopologyTransition(
+                    from = "Published",
+                    event = "DoneClicked",
+                    to = "Published",
+                ),
+            ),
+            machine.topology.transitions,
+        )
+
+        val mermaid = machine.topology.toMermaidStateDiagram()
+
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mermaid)
+        assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mermaid)
+    }
+
     private fun productEditorMachine(): AfsmMachine<
         DslProductEditorPhase,
         DslProductEditorContext,
@@ -130,11 +182,13 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.EditingDraft) {
                 on<DslProductEditorEvent.TitleChanged> {
-                    assign {
-                        copy(
-                            draft = draft.withTitle(event.value),
-                            errorMessage = null,
-                        )
+                    stay {
+                        assign {
+                            copy(
+                                draft = draft.withTitle(event.value),
+                                errorMessage = null,
+                            )
+                        }
                     }
                 }
 
@@ -143,14 +197,16 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.SubmitClicked> {
-                    guard({ context.draft.validationMessage() == null }) {
+                    transitionTo(
+                        phase = DslProductEditorPhase.ImageUploadInProgress,
+                        guard = { context.draft.validationMessage() == null },
+                    ) {
                         assign {
                             copy(
                                 draft = draft.normalized(),
                                 errorMessage = null,
                             )
                         }
-                        transitionTo(DslProductEditorPhase.ImageUploadInProgress)
                     }
 
                     otherwise {
@@ -177,17 +233,20 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
-                    assign {
-                        copy(
-                            draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
-                            errorMessage = null,
-                        )
+                    transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress>(
+                        phase = {
+                            DslProductEditorPhase.ReviewSubmissionInProgress(
+                                uploadToken = event.uploadToken,
+                            )
+                        },
+                    ) {
+                        assign {
+                            copy(
+                                draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
+                                errorMessage = null,
+                            )
+                        }
                     }
-                    transitionTo(
-                        DslProductEditorPhase.ReviewSubmissionInProgress(
-                            uploadToken = event.uploadToken,
-                        ),
-                    )
                 }
             }
 
@@ -204,7 +263,9 @@ class AfsmExecutableDslCompileCheckTest {
 
             state<DslProductEditorPhase.Published> {
                 on<DslProductEditorEvent.DoneClicked> {
-                    effect(DslProductEditorEffect.CloseEditor)
+                    stay {
+                        effect(DslProductEditorEffect.CloseEditor)
+                    }
                 }
             }
         }

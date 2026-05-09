@@ -203,3 +203,9 @@
 - Source: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`
 - Action: Added a minimal executable DSL builder/interpreter and ProductEditor-like tests for phase transitions, context assignment, entry actions, guard fallback, typed payload phases, and effect emission.
 - Updated: `afsm-core/`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | Afsm executable DSL topology spike
+
+- Source: `afsm-core/src/main/kotlin/afsm/core/AfsmTopology.kt`
+- Action: Added static topology metadata and Mermaid export, then refined the DSL branch shape so graph edges are declared at build time rather than inferred from runtime-only `transitionTo` calls.
+- Updated: `afsm-core/`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
