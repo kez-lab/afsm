@@ -133,11 +133,11 @@ Prefer:
 
 Use effects sparingly. If the behavior can be durable state, prefer state.
 
-## ProductEditor Rename Candidate
+## ProductEditor Rename
 
-The current ProductEditor sample works, but its state and command names are too close.
+The previous ProductEditor sample worked, but its state and command names were too close.
 
-| Current state | Candidate state | Current command | Candidate transition action |
+| Previous state | Current state | Previous command | Current transition action |
 |---|---|---|---|
 | `UploadingImages` | `ImageUploadInProgress` | `UploadImages` | `StartImageUpload` |
 | `SubmittingForReview` | `ReviewSubmissionInProgress` | `SubmitForReview` | `StartReviewSubmission` |
@@ -158,6 +158,8 @@ This separates:
 - the phase the UI can render,
 - the event that entered the machine,
 - the work the ViewModel host must run.
+
+This rename has been applied to the sample-shop ProductEditor reference flow and verified with JVM tests plus Android CLI smoke testing.
 
 ## Why Not Put Commands Into State?
 

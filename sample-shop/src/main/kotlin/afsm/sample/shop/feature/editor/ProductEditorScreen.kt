@@ -245,9 +245,9 @@ private fun ProductEditorActions(
         }
 
         is ProductEditorState.SavingDraft,
-        is ProductEditorState.UploadingImages,
-        is ProductEditorState.SubmittingForReview,
-        is ProductEditorState.Publishing -> {
+        is ProductEditorState.ImageUploadInProgress,
+        is ProductEditorState.ReviewSubmissionInProgress,
+        is ProductEditorState.PublishInProgress -> {
             Button(
                 enabled = false,
                 onClick = {},
@@ -264,11 +264,11 @@ private fun ProductEditorState.statusText(): String {
         is ProductEditorState.EditingDraft -> "Editing draft"
         is ProductEditorState.SavingDraft -> "Saving draft"
         is ProductEditorState.DraftSaved -> "Draft saved"
-        is ProductEditorState.UploadingImages -> "Uploading mock images"
-        is ProductEditorState.SubmittingForReview -> "Submitting for review"
+        is ProductEditorState.ImageUploadInProgress -> "Uploading mock images"
+        is ProductEditorState.ReviewSubmissionInProgress -> "Submitting for review"
         is ProductEditorState.Rejected -> "Review rejected"
         is ProductEditorState.Approved -> "Review approved"
-        is ProductEditorState.Publishing -> "Publishing product"
+        is ProductEditorState.PublishInProgress -> "Publishing product"
         is ProductEditorState.Published -> "Product published"
     }
 }

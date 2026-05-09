@@ -21,8 +21,8 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
 
-        assertEquals(ProductEditorState.UploadingImages(validDraft), result.state)
-        assertEquals(listOf(ProductEditorCommand.UploadImages(validDraft)), result.commands)
+        assertEquals(ProductEditorState.ImageUploadInProgress(validDraft), result.state)
+        assertEquals(listOf(ProductEditorCommand.StartImageUpload(validDraft)), result.commands)
     }
 
     @Test
@@ -45,7 +45,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `image upload success increments review attempt and submits review command`() {
-        val state = ProductEditorState.UploadingImages(validDraft)
+        val state = ProductEditorState.ImageUploadInProgress(validDraft)
 
         val result = machine.transition(
             state = state,
@@ -54,7 +54,7 @@ class ProductEditorStateMachineTest {
 
         val reviewedDraft = validDraft.copy(reviewAttempt = 1)
         assertEquals(
-            ProductEditorState.SubmittingForReview(
+            ProductEditorState.ReviewSubmissionInProgress(
                 draft = reviewedDraft,
                 uploadToken = "upload-1",
             ),
@@ -62,7 +62,7 @@ class ProductEditorStateMachineTest {
         )
         assertEquals(
             listOf(
-                ProductEditorCommand.SubmitForReview(
+                ProductEditorCommand.StartReviewSubmission(
                     draft = reviewedDraft,
                     uploadToken = "upload-1",
                 ),
@@ -81,8 +81,8 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.ResubmitClicked)
 
-        assertEquals(ProductEditorState.UploadingImages(reviewedDraft), result.state)
-        assertEquals(listOf(ProductEditorCommand.UploadImages(reviewedDraft)), result.commands)
+        assertEquals(ProductEditorState.ImageUploadInProgress(reviewedDraft), result.state)
+        assertEquals(listOf(ProductEditorCommand.StartImageUpload(reviewedDraft)), result.commands)
     }
 
     @Test
@@ -91,9 +91,9 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.PublishClicked)
 
-        assertEquals(ProductEditorState.Publishing(validDraft.copy(reviewAttempt = 2)), result.state)
+        assertEquals(ProductEditorState.PublishInProgress(validDraft.copy(reviewAttempt = 2)), result.state)
         assertEquals(
-            listOf(ProductEditorCommand.PublishProduct(validDraft.copy(reviewAttempt = 2))),
+            listOf(ProductEditorCommand.StartProductPublish(validDraft.copy(reviewAttempt = 2))),
             result.commands,
         )
     }

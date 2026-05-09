@@ -1,0 +1,107 @@
+[
+  {
+    "text": "Products",
+    "center": "[180,95]",
+    "key": 3506402
+  },
+  {
+    "text": "CodexSeller",
+    "center": "[151,163]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[938,123]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,286]",
+    "key": 3506402
+  },
+  {
+    "text": "Logout",
+    "center": "[938,122]",
+    "key": 3506402
+  },
+  {
+    "text": "Register product",
+    "center": "[540,285]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,480]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,684]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,888]",
+    "key": 3506402
+  },
+  {
+    "text": "Desk Light",
+    "center": "[155,448]",
+    "key": 3506402
+  },
+  {
+    "text": "$54.00",
+    "center": "[959,448]",
+    "key": 3506402
+  },
+  {
+    "text": "Low-glare LED task light with three brightness levels.",
+    "center": "[489,517]",
+    "key": 3506402
+  },
+  {
+    "text": "Studio Headphones",
+    "center": "[243,652]",
+    "key": 3506402
+  },
+  {
+    "text": "$129.00",
+    "center": "[946,652]",
+    "key": 3506402
+  },
+  {
+    "text": "Closed-back headphones tuned for long focus sessions.",
+    "center": "[519,721]",
+    "key": 3506402
+  },
+  {
+    "text": "Everyday Backpack",
+    "center": "[241,856]",
+    "key": 3506402
+  },
+  {
+    "text": "$89.00",
+    "center": "[959,856]",
+    "key": 3506402
+  },
+  {
+    "text": "A compact city bag with padded laptop storage.",
+    "center": "[448,925]",
+    "key": 3506402
+  }
+]

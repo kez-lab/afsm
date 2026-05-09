@@ -137,3 +137,15 @@
 - Source: user discussion
 - Action: Clarified that Afsm commands are transition actions emitted by the machine, documented Event/Action/Effect directionality, and defined ProductEditor naming candidates.
 - Updated: `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/03-engineering/state-event-command-effect.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | ProductEditor transition action naming cleanup
+
+- Source: user request
+- Action: Renamed ProductEditor phase states and commands to `ImageUploadInProgress`/`StartImageUpload`, `ReviewSubmissionInProgress`/`StartReviewSubmission`, and `PublishInProgress`/`StartProductPublish`; updated tests and documentation.
+- Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] verification | ProductEditor transition action rename smoke
+
+- Source: `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`
+- Action: Ran Gradle unit/build verification and Android CLI smoke journey for signup plus product registration after ProductEditor naming cleanup.
+- Updated: `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`, `raw/README.md`, `wiki/05-qa/verification-report-2026-05-09-product-editor-transition-action-rename-smoke.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/log.md`.

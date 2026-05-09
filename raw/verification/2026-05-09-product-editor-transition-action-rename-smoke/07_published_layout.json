@@ -1,0 +1,69 @@
+[
+  {
+    "text": "Register product",
+    "center": "[284,95]",
+    "key": 3506402
+  },
+  {
+    "text": "Status: Product published",
+    "center": "[303,189]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,347]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,599]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "long-clickable"
+    ],
+    "center": "[540,851]",
+    "key": 3506402
+  },
+  {
+    "text": "Published product: SmokeLamp",
+    "center": "[369,998]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,1141]",
+    "key": 3506402
+  },
+  {
+    "text": "Title",
+    "center": "[139,357]",
+    "key": 3506402
+  },
+  {
+    "text": "Description",
+    "center": "[209,546]",
+    "key": 3506402
+  },
+  {
+    "text": "Price",
+    "center": "[146,861]",
+    "key": 3506402
+  },
+  {
+    "text": "Done",
+    "center": "[540,1140]",
+    "key": 3506402
+  }
+]

@@ -20,12 +20,12 @@ class ProductEditorViewModel(
                     dispatch(ProductEditorEvent.DraftSaved)
                 }
 
-                is ProductEditorCommand.UploadImages -> {
+                is ProductEditorCommand.StartImageUpload -> {
                     delay(250)
                     dispatch(ProductEditorEvent.ImageUploadSucceeded("mock-upload-token"))
                 }
 
-                is ProductEditorCommand.SubmitForReview -> {
+                is ProductEditorCommand.StartReviewSubmission -> {
                     delay(250)
                     if (command.draft.reviewAttempt == 1) {
                         dispatch(
@@ -38,7 +38,7 @@ class ProductEditorViewModel(
                     }
                 }
 
-                is ProductEditorCommand.PublishProduct -> {
+                is ProductEditorCommand.StartProductPublish -> {
                     val form = command.draft.form
                     val priceCents = form.priceCentsOrNull()
                     if (priceCents == null) {

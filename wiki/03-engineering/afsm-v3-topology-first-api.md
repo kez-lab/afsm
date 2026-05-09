@@ -30,7 +30,7 @@ For example:
 ProductEditorEvent.SubmitClicked -> startUpload(state.draft, state)
 ```
 
-The transition `EditingDraft -- SubmitClicked --> UploadingImages` is hidden in `startUpload(...)`, not declared at the transition site.
+The transition `EditingDraft -- SubmitClicked --> ImageUploadInProgress` is hidden in `startUpload(...)`, not declared at the transition site.
 
 That is why Mermaid graph generation is hard: the code is behavior-first, not topology-first.
 
@@ -39,15 +39,15 @@ That is why Mermaid graph generation is hard: the code is behavior-first, not to
 The ProductEditor business flow should be readable as a transition table:
 
 ```text
-EditingDraft          -- SubmitClicked          --> UploadingImages
-UploadingImages       -- ImageUploadSucceeded   --> SubmittingForReview
-UploadingImages       -- ImageUploadFailed      --> EditingDraft
-SubmittingForReview   -- ReviewRejected         --> Rejected
-Rejected              -- ResubmitClicked        --> UploadingImages
-SubmittingForReview   -- ReviewApproved         --> Approved
-Approved              -- PublishClicked         --> Publishing
-Publishing            -- PublishSucceeded       --> Published
-Publishing            -- PublishFailed          --> Approved
+EditingDraft          -- SubmitClicked          --> ImageUploadInProgress
+ImageUploadInProgress       -- ImageUploadSucceeded   --> ReviewSubmissionInProgress
+ImageUploadInProgress       -- ImageUploadFailed      --> EditingDraft
+ReviewSubmissionInProgress   -- ReviewRejected         --> Rejected
+Rejected              -- ResubmitClicked        --> ImageUploadInProgress
+ReviewSubmissionInProgress   -- ReviewApproved         --> Approved
+Approved              -- PublishClicked         --> PublishInProgress
+PublishInProgress            -- PublishSucceeded       --> Published
+PublishInProgress            -- PublishFailed          --> Approved
 Published             -- DoneClicked            --> Published + CloseEditor effect
 ```
 
@@ -55,15 +55,15 @@ Rendered as Mermaid:
 
 ```mermaid
 stateDiagram-v2
-  EditingDraft --> UploadingImages: SubmitClicked
-  UploadingImages --> SubmittingForReview: ImageUploadSucceeded
-  UploadingImages --> EditingDraft: ImageUploadFailed
-  SubmittingForReview --> Rejected: ReviewRejected
-  Rejected --> UploadingImages: ResubmitClicked
-  SubmittingForReview --> Approved: ReviewApproved
-  Approved --> Publishing: PublishClicked
-  Publishing --> Published: PublishSucceeded
-  Publishing --> Approved: PublishFailed
+  EditingDraft --> ImageUploadInProgress: SubmitClicked
+  ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded
+  ImageUploadInProgress --> EditingDraft: ImageUploadFailed
+  ReviewSubmissionInProgress --> Rejected: ReviewRejected
+  Rejected --> ImageUploadInProgress: ResubmitClicked
+  ReviewSubmissionInProgress --> Approved: ReviewApproved
+  Approved --> PublishInProgress: PublishClicked
+  PublishInProgress --> Published: PublishSucceeded
+  PublishInProgress --> Approved: PublishFailed
   Published --> Published: DoneClicked / CloseEditor
 ```
 
@@ -80,11 +80,11 @@ override fun transition(
         is EditingDraft -> reduceEditing(state, event)
         is SavingDraft -> reduceSaving(state, event)
         is DraftSaved -> reduceDraftSaved(state, event)
-        is UploadingImages -> reduceUploading(state, event)
-        is SubmittingForReview -> reduceSubmittingReview(state, event)
+        is ImageUploadInProgress -> reduceImageUploadInProgress(state, event)
+        is ReviewSubmissionInProgress -> reduceReviewSubmissionInProgress(state, event)
         is Rejected -> reduceRejected(state, event)
         is Approved -> reduceApproved(state, event)
-        is Publishing -> reducePublishing(state, event)
+        is PublishInProgress -> reducePublishInProgress(state, event)
         is Published -> reducePublished(state, event)
     }
 }
@@ -99,8 +99,8 @@ private fun reduceApproved(
 ): ProductEditorTransition {
     return when (event) {
         PublishClicked -> Afsm.transitionTo(
-            state = Publishing(state.draft),
-            commands = listOf(PublishProduct(state.draft)),
+            state = PublishInProgress(state.draft),
+            commands = listOf(StartProductPublish(state.draft)),
         )
 
         ContinueEditingClicked -> Afsm.transitionTo(
@@ -205,7 +205,7 @@ class ProductEditorMachine :
             )
         }
 
-        transition<EditingDraft, SubmitClicked, UploadingImages>("submit for review") { state, _ ->
+        transition<EditingDraft, SubmitClicked, ImageUploadInProgress>("submit for review") { state, _ ->
             val validationError = state.draft.form.validationError()
             if (validationError != null) {
                 stay(
@@ -215,8 +215,8 @@ class ProductEditorMachine :
             } else {
                 val draft = state.draft.normalized()
                 goTo(
-                    state = UploadingImages(draft),
-                    commands = listOf(UploadImages(draft)),
+                    state = ImageUploadInProgress(draft),
+                    commands = listOf(StartImageUpload(draft)),
                 )
             }
         }
@@ -229,25 +229,25 @@ class ProductEditorMachine :
             goTo(EditingDraft(state.draft))
         }
 
-        transition<DraftSaved, SubmitClicked, UploadingImages>("submit saved draft") { state, _ ->
+        transition<DraftSaved, SubmitClicked, ImageUploadInProgress>("submit saved draft") { state, _ ->
             val draft = state.draft.normalized()
             goTo(
-                state = UploadingImages(draft),
-                commands = listOf(UploadImages(draft)),
+                state = ImageUploadInProgress(draft),
+                commands = listOf(StartImageUpload(draft)),
             )
         }
 
-        transition<UploadingImages, ImageUploadSucceeded, SubmittingForReview>("image upload succeeded") { state, event ->
+        transition<ImageUploadInProgress, ImageUploadSucceeded, ReviewSubmissionInProgress>("image upload succeeded") { state, event ->
             val reviewedDraft = state.draft.copy(
                 reviewAttempt = state.draft.reviewAttempt + 1,
             )
             goTo(
-                state = SubmittingForReview(
+                state = ReviewSubmissionInProgress(
                     draft = reviewedDraft,
                     uploadToken = event.uploadToken,
                 ),
                 commands = listOf(
-                    SubmitForReview(
+                    StartReviewSubmission(
                         draft = reviewedDraft,
                         uploadToken = event.uploadToken,
                     ),
@@ -255,7 +255,7 @@ class ProductEditorMachine :
             )
         }
 
-        transition<UploadingImages, ImageUploadFailed, EditingDraft>("image upload failed") { state, event ->
+        transition<ImageUploadInProgress, ImageUploadFailed, EditingDraft>("image upload failed") { state, event ->
             goTo(
                 EditingDraft(
                     draft = state.draft,
@@ -264,7 +264,7 @@ class ProductEditorMachine :
             )
         }
 
-        transition<SubmittingForReview, ReviewRejected, Rejected>("review rejected") { state, event ->
+        transition<ReviewSubmissionInProgress, ReviewRejected, Rejected>("review rejected") { state, event ->
             goTo(
                 Rejected(
                     draft = state.draft,
@@ -273,7 +273,7 @@ class ProductEditorMachine :
             )
         }
 
-        transition<Rejected, ResubmitClicked, UploadingImages>("resubmit") { state, _ ->
+        transition<Rejected, ResubmitClicked, ImageUploadInProgress>("resubmit") { state, _ ->
             val validationError = state.draft.form.validationError()
             if (validationError != null) {
                 stay(
@@ -283,24 +283,24 @@ class ProductEditorMachine :
             } else {
                 val draft = state.draft.normalized()
                 goTo(
-                    state = UploadingImages(draft),
-                    commands = listOf(UploadImages(draft)),
+                    state = ImageUploadInProgress(draft),
+                    commands = listOf(StartImageUpload(draft)),
                 )
             }
         }
 
-        transition<SubmittingForReview, ReviewApproved, Approved>("review approved") { state, _ ->
+        transition<ReviewSubmissionInProgress, ReviewApproved, Approved>("review approved") { state, _ ->
             goTo(Approved(state.draft))
         }
 
-        transition<Approved, PublishClicked, Publishing>("publish") { state, _ ->
+        transition<Approved, PublishClicked, PublishInProgress>("publish") { state, _ ->
             goTo(
-                state = Publishing(state.draft),
-                commands = listOf(PublishProduct(state.draft)),
+                state = PublishInProgress(state.draft),
+                commands = listOf(StartProductPublish(state.draft)),
             )
         }
 
-        transition<Publishing, PublishSucceeded, Published>("publish succeeded") { state, event ->
+        transition<PublishInProgress, PublishSucceeded, Published>("publish succeeded") { state, event ->
             goTo(
                 Published(
                     productId = event.productId,
@@ -309,7 +309,7 @@ class ProductEditorMachine :
             )
         }
 
-        transition<Publishing, PublishFailed, Approved>("publish failed") { state, _ ->
+        transition<PublishInProgress, PublishFailed, Approved>("publish failed") { state, _ ->
             goTo(Approved(state.draft))
         }
 
@@ -330,14 +330,14 @@ With v3, graph generation does not need sample state/event values.
 Each call registers an edge:
 
 ```kotlin
-transition<EditingDraft, SubmitClicked, UploadingImages>("submit for review")
+transition<EditingDraft, SubmitClicked, ImageUploadInProgress>("submit for review")
 ```
 
 The graph renderer can output:
 
 ```mermaid
 stateDiagram-v2
-  EditingDraft --> UploadingImages: SubmitClicked
+  EditingDraft --> ImageUploadInProgress: SubmitClicked
 ```
 
 KSP is not required for an MVP if graph metadata is registered by executing `define()`.
@@ -379,8 +379,8 @@ Commands and effects remain valid state machine outputs.
 They should be understood as transition actions:
 
 ```text
-EditingDraft -- SubmitClicked --> UploadingImages
-  action: UploadImages command
+EditingDraft -- SubmitClicked --> ImageUploadInProgress
+  action: StartImageUpload command
 ```
 
 This is state-machine-compatible. UML state machines and Mealy-style machines can produce actions/outputs during transitions.

@@ -107,12 +107,12 @@ Flow:
 ```text
 EditingDraft
 -> SaveDraftClicked: SavingDraft -> DraftSaved
--> SubmitClicked: UploadingImages
--> ImageUploadSucceeded: SubmittingForReview
+-> SubmitClicked: ImageUploadInProgress
+-> ImageUploadSucceeded: ReviewSubmissionInProgress
 -> first ReviewRejected: Rejected
--> ResubmitClicked: UploadingImages
+-> ResubmitClicked: ImageUploadInProgress
 -> second ReviewApproved: Approved
--> PublishClicked: Publishing
+-> PublishClicked: PublishInProgress
 -> PublishSucceeded: Published
 -> DoneClicked: CloseEditor effect
 ```
@@ -120,6 +120,7 @@ EditingDraft
 Policy:
 
 - Text changes inside `EditingDraft` and `Rejected` are self-transitions that update form data.
+- Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.
 - `DoneClicked` emits a close effect instead of making navigation a state machine dependency.

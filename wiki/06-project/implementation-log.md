@@ -195,3 +195,34 @@ Conclusion:
 
 - Afsm can keep normal state-machine semantics while emitting host-executed actions during transitions.
 - The next ProductEditor refactor should prove whether clearer names reduce the need for a DSL before graph generation work continues.
+
+## [2026-05-09] ProductEditor transition action naming cleanup
+
+Change:
+
+- Renamed ProductEditor phase states from `UploadingImages`, `SubmittingForReview`, and `Publishing` to `ImageUploadInProgress`, `ReviewSubmissionInProgress`, and `PublishInProgress`.
+- Renamed ProductEditor commands from `UploadImages`, `SubmitForReview`, and `PublishProduct` to `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
+- Updated ProductEditor tests and sample documentation.
+- Added Android CLI regression evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --no-daemon
+./gradlew test :sample-shop:assembleDebug --warning-mode all --no-daemon
+android run --device=emulator-5556 --apks="/Users/kwak-euijin/Documents/New project 2/sample-shop/build/outputs/apk/debug/sample-shop-debug.apk" --activity=.MainActivity
+android layout --device=emulator-5556 --pretty --output=...
+android screen capture --output=...
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+Android CLI smoke journey PASSED
+```
+
+Conclusion:
+
+- The naming policy improves code readability without changing ProductEditor behavior.
+- The plain Kotlin `when (state)` implementation remains understandable after the terminology cleanup.

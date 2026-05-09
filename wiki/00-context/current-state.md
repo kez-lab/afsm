@@ -29,6 +29,8 @@ The current direction is:
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - A v3 topology-first API idea is now documented using `ProductEditorStateMachine`: v2 remains a low-level reducer-style engine, while v3 explores an optional `transition<From, Event, To>` authoring layer for state diagram generation.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
+- ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
+- Android CLI regression smoke verification passed after the ProductEditor naming cleanup, with evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
 
 ## Core Architecture Position
 

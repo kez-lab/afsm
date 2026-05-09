@@ -13,11 +13,11 @@ class ProductEditorStateMachine :
             is ProductEditorState.EditingDraft -> reduceEditing(state, event)
             is ProductEditorState.SavingDraft -> reduceSaving(state, event)
             is ProductEditorState.DraftSaved -> reduceDraftSaved(state, event)
-            is ProductEditorState.UploadingImages -> reduceUploading(state, event)
-            is ProductEditorState.SubmittingForReview -> reduceSubmittingReview(state, event)
+            is ProductEditorState.ImageUploadInProgress -> reduceImageUploadInProgress(state, event)
+            is ProductEditorState.ReviewSubmissionInProgress -> reduceReviewSubmissionInProgress(state, event)
             is ProductEditorState.Rejected -> reduceRejected(state, event)
             is ProductEditorState.Approved -> reduceApproved(state, event)
-            is ProductEditorState.Publishing -> reducePublishing(state, event)
+            is ProductEditorState.PublishInProgress -> reducePublishInProgress(state, event)
             is ProductEditorState.Published -> reducePublished(state, event)
         }
     }
@@ -146,20 +146,20 @@ class ProductEditorStateMachine :
         }
     }
 
-    private fun reduceUploading(
-        state: ProductEditorState.UploadingImages,
+    private fun reduceImageUploadInProgress(
+        state: ProductEditorState.ImageUploadInProgress,
         event: ProductEditorEvent,
     ): ProductEditorTransition {
         return when (event) {
             is ProductEditorEvent.ImageUploadSucceeded -> {
                 val reviewedDraft = state.draft.copy(reviewAttempt = state.draft.reviewAttempt + 1)
                 Afsm.transitionTo(
-                    state = ProductEditorState.SubmittingForReview(
+                    state = ProductEditorState.ReviewSubmissionInProgress(
                         draft = reviewedDraft,
                         uploadToken = event.uploadToken,
                     ),
                     commands = listOf(
-                        ProductEditorCommand.SubmitForReview(
+                        ProductEditorCommand.StartReviewSubmission(
                             draft = reviewedDraft,
                             uploadToken = event.uploadToken,
                         ),
@@ -194,8 +194,8 @@ class ProductEditorStateMachine :
         }
     }
 
-    private fun reduceSubmittingReview(
-        state: ProductEditorState.SubmittingForReview,
+    private fun reduceReviewSubmissionInProgress(
+        state: ProductEditorState.ReviewSubmissionInProgress,
         event: ProductEditorEvent,
     ): ProductEditorTransition {
         return when (event) {
@@ -283,8 +283,8 @@ class ProductEditorStateMachine :
     ): ProductEditorTransition {
         return when (event) {
             ProductEditorEvent.PublishClicked -> Afsm.transitionTo(
-                state = ProductEditorState.Publishing(state.draft),
-                commands = listOf(ProductEditorCommand.PublishProduct(state.draft)),
+                state = ProductEditorState.PublishInProgress(state.draft),
+                commands = listOf(ProductEditorCommand.StartProductPublish(state.draft)),
             )
 
             ProductEditorEvent.ContinueEditingClicked -> Afsm.transitionTo(
@@ -311,8 +311,8 @@ class ProductEditorStateMachine :
         }
     }
 
-    private fun reducePublishing(
-        state: ProductEditorState.Publishing,
+    private fun reducePublishInProgress(
+        state: ProductEditorState.PublishInProgress,
         event: ProductEditorEvent,
     ): ProductEditorTransition {
         return when (event) {
@@ -398,8 +398,8 @@ class ProductEditorStateMachine :
         }
 
         return Afsm.transitionTo(
-            state = ProductEditorState.UploadingImages(draft.normalized()),
-            commands = listOf(ProductEditorCommand.UploadImages(draft.normalized())),
+            state = ProductEditorState.ImageUploadInProgress(draft.normalized()),
+            commands = listOf(ProductEditorCommand.StartImageUpload(draft.normalized())),
         )
     }
 

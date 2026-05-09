@@ -27,11 +27,11 @@ sealed interface ProductEditorState {
         val draft: ProductDraft,
     ) : ProductEditorState
 
-    data class UploadingImages(
+    data class ImageUploadInProgress(
         val draft: ProductDraft,
     ) : ProductEditorState
 
-    data class SubmittingForReview(
+    data class ReviewSubmissionInProgress(
         val draft: ProductDraft,
         val uploadToken: String,
     ) : ProductEditorState
@@ -46,7 +46,7 @@ sealed interface ProductEditorState {
         val draft: ProductDraft,
     ) : ProductEditorState
 
-    data class Publishing(
+    data class PublishInProgress(
         val draft: ProductDraft,
     ) : ProductEditorState
 
@@ -93,14 +93,14 @@ sealed interface ProductEditorEvent {
 sealed interface ProductEditorCommand {
     data class SaveDraft(val draft: ProductDraft) : ProductEditorCommand
 
-    data class UploadImages(val draft: ProductDraft) : ProductEditorCommand
+    data class StartImageUpload(val draft: ProductDraft) : ProductEditorCommand
 
-    data class SubmitForReview(
+    data class StartReviewSubmission(
         val draft: ProductDraft,
         val uploadToken: String,
     ) : ProductEditorCommand
 
-    data class PublishProduct(val draft: ProductDraft) : ProductEditorCommand
+    data class StartProductPublish(val draft: ProductDraft) : ProductEditorCommand
 }
 
 sealed interface ProductEditorEffect {
@@ -115,11 +115,11 @@ fun ProductEditorState.draftOrNull(): ProductDraft? {
         is ProductEditorState.EditingDraft -> draft
         is ProductEditorState.SavingDraft -> draft
         is ProductEditorState.DraftSaved -> draft
-        is ProductEditorState.UploadingImages -> draft
-        is ProductEditorState.SubmittingForReview -> draft
+        is ProductEditorState.ImageUploadInProgress -> draft
+        is ProductEditorState.ReviewSubmissionInProgress -> draft
         is ProductEditorState.Rejected -> draft
         is ProductEditorState.Approved -> draft
-        is ProductEditorState.Publishing -> draft
+        is ProductEditorState.PublishInProgress -> draft
         is ProductEditorState.Published -> null
     }
 }

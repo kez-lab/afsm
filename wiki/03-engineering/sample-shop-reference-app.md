@@ -94,28 +94,36 @@ State model:
 - `EditingDraft`
 - `SavingDraft`
 - `DraftSaved`
-- `UploadingImages`
-- `SubmittingForReview`
+- `ImageUploadInProgress`
+- `ReviewSubmissionInProgress`
 - `Rejected`
 - `Approved`
-- `Publishing`
+- `PublishInProgress`
 - `Published`
 
 Flow:
 
 ```text
 EditingDraft
--> UploadingImages
--> SubmittingForReview
+-> ImageUploadInProgress
+-> ReviewSubmissionInProgress
 -> Rejected
--> UploadingImages
--> SubmittingForReview
+-> ImageUploadInProgress
+-> ReviewSubmissionInProgress
 -> Approved
--> Publishing
+-> PublishInProgress
 -> Published
 ```
 
 This flow is now the stronger sample for explaining why Afsm exists. Text edits are self-transitions inside editable phases, while submit/review/publish actions move between explicit phases.
+
+Transition action naming:
+
+- `ImageUploadInProgress` is paired with `StartImageUpload`.
+- `ReviewSubmissionInProgress` is paired with `StartReviewSubmission`.
+- `PublishInProgress` is paired with `StartProductPublish`.
+
+This keeps phase state names separate from host-executed transition actions.
 
 ## Checkout Flow
 

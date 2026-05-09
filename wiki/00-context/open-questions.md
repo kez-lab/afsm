@@ -69,4 +69,4 @@ Resolved:
 - A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
 - `Command` should be explained as a transition action/output, not as a user interaction event.
-- v3 should not force a DSL until a naming cleanup and ProductEditor refactor prove the simpler model is still insufficient for graph generation.
+- ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.

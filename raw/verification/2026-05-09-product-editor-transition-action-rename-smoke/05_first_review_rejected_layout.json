@@ -1,0 +1,75 @@
+[
+  {
+    "text": "Register product",
+    "center": "[284,95]",
+    "key": 3506402
+  },
+  {
+    "text": "Status: Review rejected",
+    "center": "[280,189]",
+    "key": 3506402
+  },
+  {
+    "text": "SmokeLamp",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,347]",
+    "key": 3506402
+  },
+  {
+    "text": "PortableDeskLamp",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,599]",
+    "key": 3506402
+  },
+  {
+    "text": "19.99",
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,851]",
+    "key": 3506402
+  },
+  {
+    "text": "Review note: Mock reviewer asks for one resubmission.",
+    "center": "[540,1030]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,1204]",
+    "key": 3506402
+  },
+  {
+    "text": "Title",
+    "center": "[128,284]",
+    "key": 3506402
+  },
+  {
+    "text": "Description",
+    "center": "[179,473]",
+    "key": 3506402
+  },
+  {
+    "text": "Price",
+    "center": "[133,788]",
+    "key": 3506402
+  },
+  {
+    "text": "Resubmit for review",
+    "center": "[540,1203]",
+    "key": 3506402
+  }
+]

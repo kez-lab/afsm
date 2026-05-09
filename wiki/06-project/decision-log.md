@@ -237,6 +237,6 @@ Rationale:
 Consequences:
 
 - Documentation should use "transition action" when teaching `Command`.
-- ProductEditor should be renamed toward phase states such as `ImageUploadInProgress` and transition actions such as `StartImageUpload`.
+- ProductEditor has been renamed toward phase states such as `ImageUploadInProgress` and transition actions such as `StartImageUpload`.
 - Before public API freeze, evaluate whether the public API should rename `Command`/`commands` to `Action`/`actions` or `TransitionAction`/`actions`.
 - v3 should not force a DSL until terminology and naming are clearer in the existing plain Kotlin implementation.
