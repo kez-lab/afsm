@@ -27,6 +27,7 @@ The current direction is:
 - Auth now uses sealed phases (`Editing`, `Submitting`, `Authenticated`) so text edits read as self-transitions and submit reads as a real phase transition.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
+- A v3 topology-first API idea is now documented using `ProductEditorStateMachine`: v2 remains a low-level reducer-style engine, while v3 explores an optional `transition<From, Event, To>` authoring layer for state diagram generation.
 
 ## Core Architecture Position
 
@@ -50,6 +51,8 @@ First reference flow: [[../03-engineering/reference-flow-signup-identity-retry|R
 Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draft]].
 
 Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
+
+Topology-first API exploration: [[../03-engineering/afsm-v3-topology-first-api|Afsm v3 Topology-First API]].
 
 Core compile validation: [[../03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]].
 

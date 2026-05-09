@@ -44,6 +44,10 @@ Resolved:
 
 - Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
+- Should Afsm add an optional v3 topology-first authoring layer with `transition<From, Event, To>` to support state diagram generation without static code analysis?
+- If v3 exists, should it become the recommended API or remain an optional graph-oriented layer over v2?
+- How should v3 preserve Kotlin exhaustiveness for unhandled events when transitions are registered declaratively?
+- Should graph labels default to type names, require explicit human labels, or support both?
 
 Resolved:
 

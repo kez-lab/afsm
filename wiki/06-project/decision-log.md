@@ -206,3 +206,19 @@ Consequences:
 - Product registration uses `EditingDraft`, `SavingDraft`, `DraftSaved`, `UploadingImages`, `SubmittingForReview`, `Rejected`, `Approved`, `Publishing`, and `Published`.
 - Text edits are treated as self-transitions inside editable phases.
 - Product registration is now an Afsm-backed reference flow instead of an ordinary ViewModel screen.
+
+## [2026-05-09] Explore topology-first API without replacing v2 yet
+
+Decision: Treat `transition<From, Event, To>` as a v3 exploration, not an immediate replacement for the v2 reducer-style API.
+
+Rationale:
+
+- v2 is plain Kotlin and already works with `AfsmHost`, but it hides graph topology inside reducer bodies and helper functions.
+- Automatic state diagram generation is much easier if the edge is declared explicitly.
+- A new DSL-like API could feel framework-heavy, so it should be proven with ProductEditor before becoming a recommendation.
+
+Consequences:
+
+- v2 remains the current implemented low-level engine.
+- v3 should first be prototyped as an optional topology-first authoring layer.
+- ProductEditor is the reference flow for evaluating whether the readability and graph-generation benefits justify the added API surface.

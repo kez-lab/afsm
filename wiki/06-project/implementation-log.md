@@ -156,3 +156,22 @@ Conclusion:
 
 - The reference app now better separates self-transitions from phase transitions.
 - Product registration is the clearest current demonstration of Afsm value.
+
+## [2026-05-09] v3 topology-first API design note
+
+Change:
+
+- Added `wiki/03-engineering/afsm-v3-topology-first-api.md`.
+- Compared current v2 ProductEditor reducer implementation with a possible `transition<From, Event, To>` topology-first API.
+- Documented graph generation implications and prototype plan.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- v2 should remain the low-level reducer-style engine.
+- v3 should be explored as an optional graph-friendly authoring layer before any implementation commitment.

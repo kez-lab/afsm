@@ -18,6 +18,7 @@ updated: 2026-05-09
 
 - [[03-engineering/afsm-public-api-draft|Afsm Public API Draft]] - Initial public API proposal, naming, modules, dependency policy, runtime, ViewModel, and test APIs.
 - [[03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]] - Implementation-candidate API draft covering Stayed, AfsmNoEffect, effect delivery, and dispatch serialization.
+- [[03-engineering/afsm-v3-topology-first-api|Afsm v3 Topology-First API]] - ProductEditor-based comparison of v2 reducer-style state machines and a graph-friendly `transition<From, Event, To>` authoring layer.
 - [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.
 - [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Minimal coroutine runtime implementation and verification for serialized dispatch, decisions, commands, and effects.
 - [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
