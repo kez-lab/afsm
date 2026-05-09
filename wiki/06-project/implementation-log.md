@@ -243,5 +243,24 @@ git diff --check
 
 Conclusion:
 
-- The v3 document now matches the intended from-state-scoped direction.
+- This intermediate from-state-scoped direction was later superseded by the typed-handler convention.
 - Graph generation remains a topology metadata concern, while transition execution can remain readable Kotlin code.
+
+## [2026-05-09] v3 typed-handler API correction
+
+Change:
+
+- Revised `wiki/03-engineering/afsm-v3-topology-first-api.md` again after CEO feedback that the previous `from/on/to` correction still introduced a DSL-like authoring surface.
+- Documented the preferred v3 direction as plain Kotlin `when` plus concrete State/Event handler signatures.
+- Documented that `FromState` and `Event` should come from handler parameters, while `ToState` should come from the `transitionTo` state argument or optional `transitionTo<ToState>`.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- v3 should not require a DSL as the main authoring style.
+- The next proof should test whether ProductEditor can be refactored into concrete handlers and whether a simple graph extractor can infer state edges from that code.

@@ -253,7 +253,27 @@ Rationale:
 
 Consequences:
 
-- The preferred v3 shape is now `from<FromState> { on<Event>().to<ToState>() }`.
+- Superseded later: this intermediate shape was `from<FromState> { on<Event>().to<ToState>() }`.
 - Runtime transition examples should use typed receiver functions such as `EditingDraft.transition(event)`.
 - Transition actions should be chained from returned states, for example `ImageUploadInProgress(draft).withAction(StartImageUpload(draft))`, instead of passing `state`, `commands`, and `effects` together.
 - A future prototype must verify that topology metadata and runtime reducers stay synchronized.
+
+## [2026-05-09] Prefer typed handlers over a topology DSL for v3
+
+Decision: Supersede the `from/on/to` topology companion idea as the preferred v3 direction. Keep state machine authoring as plain Kotlin `when` code, and make graph extraction possible through concrete State/Event handler signatures plus `transitionTo` next-state extraction.
+
+Rationale:
+
+- The CEO had already rejected DSL-like structure as the main authoring style.
+- `from<FromState> { on<Event>().to<ToState>() }` still feels like framework syntax even though it is cleaner than `transition<From, Event, To>`.
+- `FromState` is available from a concrete state parameter or typed receiver.
+- `Event` is available from a concrete event parameter.
+- `ToState` is available from the `transitionTo(state = NextState(...))` argument, with optional `transitionTo<ToState>(...)` only if extraction needs help.
+- This keeps Android/Kotlin developers in ordinary Kotlin control flow and preserves breakpoint/debug ergonomics.
+
+Consequences:
+
+- v3 documentation should recommend concrete handlers such as `submitClicked(state: EditingDraft, event: SubmitClicked)`.
+- Helpers like `startUpload(draft, currentState: ProductEditorState)` are graph-hostile because they erase the concrete `FromState` and event.
+- A future graph proof should first scan `ProductEditorStateMachine.kt` for handler signatures and `Afsm.transitionTo(...)` calls before introducing DSL or KSP.
+- `transitionTo<From, Event, To>` should not be recommended because `From` and `Event` duplicate information already present in the handler signature.

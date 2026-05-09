@@ -155,3 +155,9 @@
 - Source: user feedback on `wiki/03-engineering/afsm-v3-topology-first-api.md`
 - Action: Corrected the v3 topology-first pseudo API away from `transition<From, Event, To>` plus `goTo(state, commands, effects)` and toward a `from<FromState> { on<Event>().to<ToState>() }` topology companion with plain Kotlin typed receiver reducers.
 - Updated: `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] planning | v3 typed-handler API correction
+
+- Source: user feedback recalling the prior no-DSL discussion
+- Action: Corrected the v3 topology-first page again to prefer plain Kotlin `when`, concrete State/Event handler signatures, and `transitionTo` next-state extraction instead of a `from/on/to` DSL companion.
+- Updated: `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

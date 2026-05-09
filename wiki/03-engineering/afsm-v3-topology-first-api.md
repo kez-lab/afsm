@@ -128,74 +128,36 @@ Weaknesses:
 - Graph generation either needs fragile static analysis or representative runtime samples.
 - The API reads more like `Reducer<State, Event>` than a topology-first state machine.
 
-## v3 Topology-First Idea
+## v3 Topology-Friendly Kotlin Style
 
-The previous pseudo API in this document was still too close to v2:
+DSL-like APIs are not the preferred direction.
+
+The rejected shapes are:
 
 ```kotlin
-transition<FromState, Event, ToState>("label") {
-    goTo(
-        state = ToState(...),
-        commands = listOf(...),
-        effects = listOf(...),
-    )
-}
+transition<FromState, Event, ToState>("label") { ... }
 ```
 
-That shape has two problems:
-
-- `FromState` is repeated on every edge even though the current typed state should already define the scope.
-- `goTo(state, commands, effects)` still reads like assembling an `AfsmTransition` result object, not like authoring a state machine.
-
-The revised v3 direction should split graph topology from runtime transition behavior.
-
-Topology should be declared from a state scope:
+and:
 
 ```kotlin
 topology {
-    from<EditingDraft> {
-        on<TitleChanged>().self("edit title")
-        on<DescriptionChanged>().self("edit description")
-        on<PriceChanged>().self("edit price")
-        on<SaveDraftClicked>().to<SavingDraft>("save draft").action<SaveDraft>()
-        on<SubmitClicked>().to<ImageUploadInProgress>("submit for review").action<StartImageUpload>()
-    }
-
-    from<ImageUploadInProgress> {
-        on<ImageUploadSucceeded>()
-            .to<ReviewSubmissionInProgress>("image upload succeeded")
-            .action<StartReviewSubmission>()
-
-        on<ImageUploadFailed>().to<EditingDraft>("image upload failed")
-    }
-
-    from<ReviewSubmissionInProgress> {
-        on<ReviewRejected>().to<Rejected>("review rejected")
-        on<ReviewApproved>().to<Approved>("review approved")
-    }
-
-    from<Rejected> {
-        on<ResubmitClicked>().to<ImageUploadInProgress>("resubmit").action<StartImageUpload>()
-        on<ContinueEditingClicked>().to<EditingDraft>("continue editing")
-    }
-
-    from<Approved> {
-        on<PublishClicked>().to<PublishInProgress>("publish").action<StartProductPublish>()
-        on<ContinueEditingClicked>().to<EditingDraft>("continue editing")
-    }
-
-    from<PublishInProgress> {
-        on<PublishSucceeded>().to<Published>("publish succeeded")
-        on<PublishFailed>().to<Approved>("publish failed")
-    }
-
-    from<Published> {
-        on<DoneClicked>().self("done").effect<CloseEditor>()
+    from<FromState> {
+        on<Event>().to<ToState>()
     }
 }
 ```
 
-Runtime behavior should stay plain Kotlin:
+Both make graph metadata explicit, but both add framework-shaped authoring syntax. The better v3 direction is to keep state machine implementation as ordinary Kotlin and make the existing code graph-friendly by convention.
+
+The core rule:
+
+```text
+Use concrete State/Event handler signatures.
+Let transitionTo expose the next state; do not repeat From/Event there.
+```
+
+ProductEditor should still start with normal `when` dispatch:
 
 ```kotlin
 override fun transition(
@@ -216,109 +178,207 @@ override fun transition(
 }
 ```
 
-The `FromState` is now the typed receiver:
+Then each meaningful branch should delegate to a concrete handler:
 
 ```kotlin
 private fun EditingDraft.transition(
     event: ProductEditorEvent,
 ): ProductEditorTransition {
     return when (event) {
-        is TitleChanged -> copy(
-            draft = draft.updateForm { it.copy(title = event.value) },
-            errorMessage = null,
-        ).asTransition()
-
-        SaveDraftClicked -> SavingDraft(draft)
-            .withAction(SaveDraft(draft))
-
-        SubmitClicked -> submitForReview()
-
+        is TitleChanged -> titleChanged(this, event)
+        SaveDraftClicked -> saveDraftClicked(this, event)
+        SubmitClicked -> submitClicked(this, event)
         else -> invalid("Event is not valid while editing a draft.")
     }
 }
 ```
 
-And the transition body should read from the current state to the next state:
+The handler signature carries the graph source:
 
 ```kotlin
-private fun EditingDraft.submitForReview(): ProductEditorTransition {
-    val validationError = draft.form.validationError()
-    if (validationError != null) {
-        return copy(errorMessage = validationError)
-            .stay(reason = validationError)
-    }
+private fun submitClicked(
+    state: EditingDraft,
+    event: SubmitClicked,
+): ProductEditorTransition {
+    val nextDraft = state.draft.normalized()
 
-    val nextDraft = draft.normalized()
-
-    return ImageUploadInProgress(nextDraft)
-        .withAction(StartImageUpload(nextDraft))
+    return Afsm.transitionTo(
+        state = ImageUploadInProgress(nextDraft),
+        commands = listOf(StartImageUpload(nextDraft)),
+    )
 }
 ```
 
-This is the important API direction:
+The graph extractor can read:
 
 ```text
-FromState = typed receiver/current state
-Event = when branch or typed topology edge
-ToState = returned next state
-Transition action = chained output, not a constructor parameter list
-Effect = chained UI output, not mixed into every transition call
+From = state parameter type = EditingDraft
+Event = event parameter type = SubmitClicked
+To = transitionTo state argument type = ImageUploadInProgress
+Action = command expression type = StartImageUpload
 ```
 
-The topology declaration gives graph metadata. The plain Kotlin transition functions keep local readability and breakpoint-friendly debugging.
+If static extraction of the `state` argument is too fragile, v3 may allow an optional To generic:
+
+```kotlin
+private fun submitClicked(
+    state: EditingDraft,
+    event: SubmitClicked,
+): ProductEditorTransition {
+    val nextDraft = state.draft.normalized()
+
+    return Afsm.transitionTo<ImageUploadInProgress>(
+        state = ImageUploadInProgress(nextDraft),
+        commands = listOf(StartImageUpload(nextDraft)),
+    )
+}
+```
+
+This is acceptable because only `ToState` is explicit.
+
+Do not require this:
+
+```kotlin
+Afsm.transitionTo<EditingDraft, SubmitClicked, ImageUploadInProgress>(...)
+```
+
+`FromState` and `Event` are already in the handler signature. Repeating them at the transition call site is noisy and not justified.
+
+## Handler Shape
+
+Good graph-friendly handlers use concrete types:
+
+```kotlin
+private fun imageUploadSucceeded(
+    state: ImageUploadInProgress,
+    event: ImageUploadSucceeded,
+): ProductEditorTransition {
+    val reviewedDraft = state.draft.copy(
+        reviewAttempt = state.draft.reviewAttempt + 1,
+    )
+
+    return Afsm.transitionTo(
+        state = ReviewSubmissionInProgress(
+            draft = reviewedDraft,
+            uploadToken = event.uploadToken,
+        ),
+        commands = listOf(
+            StartReviewSubmission(
+                draft = reviewedDraft,
+                uploadToken = event.uploadToken,
+            ),
+        ),
+    )
+}
+```
+
+Avoid helpers that erase graph source types:
+
+```kotlin
+private fun startUpload(
+    draft: ProductDraft,
+    currentState: ProductEditorState,
+): ProductEditorTransition
+```
+
+This helper is flexible but graph-hostile:
+
+- `currentState` is the sealed parent type, not a concrete `FromState`.
+- The event is absent from the function signature.
+- A graph extractor cannot know whether this represents `SubmitClicked`, `ResubmitClicked`, or another edge without deeper call-chain analysis.
+
+If two states share validation logic, keep shared validation as a helper, but keep the transition handler concrete:
+
+```kotlin
+private fun submitClicked(
+    state: EditingDraft,
+    event: SubmitClicked,
+): ProductEditorTransition {
+    return startImageUploadFromEditing(state)
+}
+
+private fun resubmitClicked(
+    state: Rejected,
+    event: ResubmitClicked,
+): ProductEditorTransition {
+    return startImageUploadFromRejected(state)
+}
+```
+
+This keeps edges visible:
+
+```text
+EditingDraft -- SubmitClicked --> ImageUploadInProgress
+Rejected -- ResubmitClicked --> ImageUploadInProgress
+```
+
+## API Direction
+
+```text
+FromState = concrete state parameter or typed receiver
+Event = concrete event parameter
+ToState = transitionTo state argument, optionally transitionTo<ToState>
+Transition action = command expression type
+Effect = effect expression type
+```
+
+The important change is not a new DSL. The important change is a stricter authoring convention that makes plain Kotlin analyzable.
 
 ## Graph Generation
 
 With v3, graph generation does not need sample state/event values.
 
-Each call registers an edge:
+Each concrete handler plus `transitionTo` call exposes an edge:
 
 ```kotlin
-from<EditingDraft> {
-    on<SubmitClicked>().to<ImageUploadInProgress>("submit for review")
+private fun submitClicked(
+    state: EditingDraft,
+    event: SubmitClicked,
+): ProductEditorTransition {
+    return Afsm.transitionTo(
+        state = ImageUploadInProgress(state.draft.normalized()),
+        commands = listOf(StartImageUpload(state.draft.normalized())),
+    )
 }
 ```
 
-The graph renderer can output:
+The graph extractor can output:
 
 ```mermaid
 stateDiagram-v2
-  EditingDraft --> ImageUploadInProgress: SubmitClicked
+  EditingDraft --> ImageUploadInProgress: SubmitClicked / StartImageUpload
 ```
 
-KSP is not required for an MVP if graph metadata is registered by executing `topology()`.
+KSP is not required for the first proof if a simple source scanner can parse project-local Kotlin conventions.
 
 Possible MVP flow:
 
 ```text
-ProductEditorMachine.topology()
--> from/on/to definitions registered in memory
--> AfsmGraphRenderer.toMermaid(machine.graph)
--> docs/graphs/product-editor-state-machine.mmd
+Scan ProductEditorStateMachine.kt
+-> find concrete handler functions with state/event parameters
+-> find Afsm.transitionTo(...) calls in those handlers
+-> infer ToState from the state argument or optional transitionTo<ToState>
+-> infer actions/effects from command/effect expressions where practical
+-> write docs/graphs/product-editor-state-machine.mmd
 ```
 
-KSP can be considered later for automatic discovery of annotated machines, but it should not be needed to prove the concept.
+KSP can be considered later if source scanning is too fragile or if compile-time validation is needed.
 
 ## Invalid and Ignored Events
 
 v2 forces each reducer to list invalid/ignored events to keep `when` exhaustive.
 
-The topology companion can choose a default policy for missing edges:
+The typed-handler convention can keep that behavior. Missing handler branches are still normal Kotlin:
 
 ```kotlin
-defaultUnhandled = AfsmUnhandledPolicy.Invalid
+else -> Afsm.invalid(state, reason = "Event is not valid while editing a draft.")
 ```
 
-Then the ProductEditor topology can list only meaningful edges.
+This keeps the runtime behavior explicit and testable.
 
-This reduces noise but changes the mental model:
+Graph extraction should usually ignore invalid/ignored branches by default. If the team wants invalid edges rendered later, that should be an optional graph mode.
 
-- v2: Kotlin exhaustiveness makes unhandled events explicit.
-- v3 topology: the graph registry handles missing edges through a policy.
-
-The v3 prototype must test this carefully because hidden unhandled behavior could make bugs less visible.
-
-Runtime behavior can still keep explicit invalid/ignored branches in the plain Kotlin reducers. The graph topology and runtime reducer do not have to use the same exhaustiveness mechanism.
+The important point: v3 should not trade Kotlin exhaustiveness for a transition registry policy unless there is a stronger reason.
 
 ## Commands and Effects
 
@@ -339,16 +399,16 @@ Terminology and naming guidance are tracked in [[afsm-v3-terminology-transition-
 
 ## API Comparison
 
-| Concern | v2 reducer API | v3 topology-first API |
+| Concern | v2 reducer API | v3 typed-handler API |
 |---|---|---|
-| Familiar Kotlin | Strong | Medium |
-| Graph generation | Weak | Strong |
-| Breakpoint debugging | Strong | Strong if runtime remains plain Kotlin |
-| Boilerplate | Medium/high for invalid branches | Medium plus topology declaration |
-| Exhaustiveness | Strong through `when` | Runtime can keep `when`; topology needs registry checks |
-| DSL learning cost | Low | Low/medium if topology is a companion, not executable behavior |
-| State diagram readability | Medium | Strong |
-| Runtime compatibility | Already implemented | Can compile down to v2 transition behavior |
+| Familiar Kotlin | Strong | Strong |
+| Graph generation | Weak | Medium/strong with conventions |
+| Breakpoint debugging | Strong | Strong |
+| Boilerplate | Medium/high for invalid branches | Medium; more concrete handlers |
+| Exhaustiveness | Strong through `when` | Strong through `when` |
+| DSL learning cost | Low | Low |
+| State diagram readability | Medium | Medium/strong |
+| Runtime compatibility | Already implemented | Same runtime behavior |
 
 ## Product Judgment
 
@@ -358,39 +418,34 @@ Recommended positioning:
 
 ```text
 v2 = low-level, plain Kotlin reducer-style engine
-v3 = optional from-state-scoped topology layer plus plain Kotlin transition behavior
+v3 = graph-friendly typed-handler convention over the same plain Kotlin reducer engine
 ```
 
-This avoids forcing a DSL onto all users while still giving Afsm a clearer path to automatic state diagrams.
+This avoids forcing a DSL onto users while still giving Afsm a clearer path to automatic state diagrams.
 
 ## Prototype Plan
 
-1. Refine this design-only topology page first.
-2. Implement a minimal experimental module, likely `afsm-machine`.
-3. Support:
-   - `topology { ... }`
-   - `from<FromState> { ... }`
-   - `on<Event>().to<ToState>(label)`
-   - optional `.action<Action>()` metadata
-   - optional `.effect<Effect>()` metadata
-   - default unhandled policy
-   - graph metadata registry
-   - Mermaid renderer
-4. Keep ProductEditor runtime transitions as plain Kotlin typed receiver functions.
-5. Verify:
+1. Refine this design-only page first.
+2. Rewrite ProductEditor reducer helpers into concrete state/event handlers.
+3. Keep `Afsm.transitionTo(state = ...)` as the primary runtime API.
+4. Optionally add `Afsm.transitionTo<ToState>(state = ...)` only if source extraction needs a stronger To marker.
+5. Build a small graph extraction proof against `ProductEditorStateMachine.kt`.
+6. Generate Mermaid from:
+   - handler state parameter,
+   - handler event parameter,
+   - transitionTo next-state argument or optional To generic,
+   - command/effect expression types where practical.
+7. Verify:
    - unit tests still express the same behavior,
    - Android CLI smoke journey still passes,
    - generated Mermaid graph matches expected topology.
-6. Decide whether v3 should become:
-   - official recommended API,
-   - optional graph-oriented layer,
-   - or abandoned if DSL cost is too high.
+8. Decide whether this convention is stable enough to document as the recommended Afsm authoring style.
 
 ## Open Questions
 
-- Should v3 require `KClass` arguments instead of reified generics for Java/binary friendliness?
-- Should topology be purely metadata beside the reducer, or should it be executable enough to replace some reducer boilerplate?
-- Should one `on<Event>()` edge allow multiple target states when guard branches can produce different states?
+- Should `transitionTo<ToState>(state = ...)` be recommended, optional, or avoided unless extraction fails?
+- How much Kotlin source analysis is acceptable before KSP becomes necessary?
+- Should handler functions use `(state, event)` parameters or typed state receivers plus concrete event parameters?
+- How should one handler represent guard branches that can produce multiple target states?
 - Should validation failures be rendered as self-edges, omitted, or shown in a separate error graph?
-- How should v3 prove topology and runtime reducer stay synchronized?
 - Should graph labels default to type names or require explicit human labels?
