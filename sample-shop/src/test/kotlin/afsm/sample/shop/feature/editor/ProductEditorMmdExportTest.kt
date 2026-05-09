@@ -14,6 +14,7 @@ class ProductEditorMmdExportTest {
                 ?: "build/generated/afsm/mmd",
         )
         val outputFile = outputDir.resolve("ProductEditorStateMachine.mmd")
+        val authOutputFile = outputDir.resolve("AuthStateMachine.mmd")
 
         AfsmMmdWriter.writeAll(
             registry = AfsmGeneratedGraphRegistry,
@@ -21,6 +22,8 @@ class ProductEditorMmdExportTest {
         )
 
         assertTrue(outputFile.isFile)
+        assertTrue(authOutputFile.isFile)
         assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in outputFile.readText())
+        assertTrue("Editing --> Submitting: SubmitClicked" in authOutputFile.readText())
     }
 }

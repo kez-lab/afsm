@@ -24,7 +24,7 @@ The current direction is:
 - A `:sample-shop` Android app module now exists to validate Afsm in a realistic Compose + Room shopping app.
 - The sample app uses Afsm for auth, product registration review/publish, and checkout retry flows, while keeping product list/detail/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
 - Public sample documentation now lives in `docs/sample-shop-afsm-guide.md`.
-- Auth now uses sealed phases (`Editing`, `Submitting`, `Authenticated`) so text edits read as self-transitions and submit reads as a real phase transition.
+- Auth now uses the executable DSL internally with `AuthPhase + AuthContext`, while preserving the Android-facing sealed `AuthState`.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable statechart DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect` in one machine definition.
@@ -32,7 +32,7 @@ The current direction is:
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
 - The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
-- `ProductEditorStateMachine` is the first annotated graph source and writes `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.

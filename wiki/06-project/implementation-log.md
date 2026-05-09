@@ -544,3 +544,23 @@ Verification:
 Conclusion:
 
 - The DSL can now migrate existing reducers that distinguish ignored events from invalid transitions without polluting the state diagram.
+
+## [2026-05-09] Auth executable DSL graph migration
+
+Change:
+
+- Migrated `AuthStateMachine` from a `when` reducer to the executable DSL.
+- Kept `AuthState` as the Android-facing sealed state while using internal `AuthPhase + AuthContext` for graphable DSL execution.
+- Annotated `AuthStateMachine` with `@AfsmGraph`.
+- Verified generated registry discovery for both `AuthStateMachine` and `ProductEditorStateMachine`.
+- `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.auth.AuthStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorMmdExportTest' :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The KSP graph pipeline now proves multiple real state-machine classes without hand-maintained topology duplicates.

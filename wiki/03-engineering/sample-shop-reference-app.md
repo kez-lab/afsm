@@ -59,6 +59,13 @@ Auth files:
 - `AuthViewModel.kt`
 - `AuthScreen.kt`
 
+Current implementation:
+
+- `AuthState` remains the Android-facing sealed state model.
+- `AuthStateMachine` internally uses the executable DSL with `AuthPhase + AuthContext`.
+- `AuthStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
+- `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
+
 State model:
 
 - `Editing`

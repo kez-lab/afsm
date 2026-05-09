@@ -358,12 +358,12 @@ Avoid cross-module KSP aggregation at first. KSP should stay module-local.
 
 Implementation status:
 
-- Done: `@AfsmGraph` on `ProductEditorStateMachine` compiles.
-- Done: `ProductEditorStateMachine` implements `AfsmGraphSource`.
+- Done: `@AfsmGraph` on `AuthStateMachine` and `ProductEditorStateMachine` compiles.
+- Done: both machines implement `AfsmGraphSource`.
 - Done: KSP generates `AfsmGeneratedGraphRegistry`.
 - Done: `generateAfsmMmd` no longer references ProductEditor directly.
-- Done: `generateAfsmMmd` writes `ProductEditorStateMachine.mmd`.
-- Open: adding a second real annotated `StateMachine` should write a second `.mmd`.
+- Done: `generateAfsmMmd` writes `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
+- Done: adding a second real annotated `StateMachine` writes a second `.mmd`.
 - Open: invalid annotated classes should fail compilation with useful messages in processor tests.
 - Done: no explanatory markdown is generated as graph output.
 

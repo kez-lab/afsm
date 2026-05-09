@@ -429,7 +429,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, A : Any, F : Any>(
             state.eventDefinitions.flatMap { eventDefinition ->
                 eventDefinition.transitions
             }
-        },
+        }.distinct(),
     )
 
     override fun transition(

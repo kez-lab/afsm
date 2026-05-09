@@ -156,6 +156,47 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
+    fun `topology deduplicates identical declared edges`() {
+        val machine = afsmMachine<
+            DslProductEditorPhase,
+            DslProductEditorContext,
+            DslProductEditorEvent,
+            DslProductEditorAction,
+            DslProductEditorEffect,
+            > {
+            initial(
+                phase = DslProductEditorPhase.EditingDraft,
+                context = DslProductEditorContext(),
+            )
+
+            state(DslProductEditorPhase.EditingDraft) {
+                on<DslProductEditorEvent.SubmitClicked> {
+                    transitionTo(
+                        phase = DslProductEditorPhase.ImageUploadInProgress,
+                        guard = { context.draft.title.isNotBlank() },
+                    )
+
+                    transitionTo(
+                        phase = DslProductEditorPhase.ImageUploadInProgress,
+                        guard = { context.draft.description.isNotBlank() },
+                    )
+                }
+            }
+        }
+
+        assertEquals(
+            listOf(
+                AfsmTopologyTransition(
+                    from = "EditingDraft",
+                    event = "SubmitClicked",
+                    to = "ImageUploadInProgress",
+                ),
+            ),
+            machine.topology.transitions,
+        )
+    }
+
+    @Test
     fun `topology can be exported without sample events`() {
         val machine = productEditorMachine()
 

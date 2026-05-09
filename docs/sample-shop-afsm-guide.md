@@ -68,7 +68,9 @@ TextField/Button interaction
 
 Contract:
 
-- `AuthState` is a sealed phase model: `Editing`, `Submitting`, and `Authenticated`.
+- `AuthState` remains the Android-facing sealed state model: `Editing`, `Submitting`, and `Authenticated`.
+- `AuthStateMachine` now uses the executable DSL internally with `AuthPhase + AuthContext`.
+- `AuthStateMachine` is annotated with `@AfsmGraph`, so KSP writes `AuthStateMachine.mmd` through the generated registry.
 - `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
 - `AuthCommand` models async work the ViewModel must execute.
