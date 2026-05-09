@@ -258,6 +258,23 @@ Consequences:
 - Transition actions should be chained from returned states, for example `ImageUploadInProgress(draft).withAction(StartImageUpload(draft))`, instead of passing `state`, `commands`, and `effects` together.
 - A future prototype must verify that topology metadata and runtime reducers stay synchronized.
 
+## [2026-05-09] Keep ProductEditor flow states as phases in the phased profile
+
+Decision: In `State = Phase + Context`, keep meaningful flow states as `Phase` values and move only actual data into `Context`.
+
+Rationale:
+
+- The CEO asked for actual data such as `ProductDraft` to be separated from state constructors, not for business phases to be hidden as context fields.
+- Demoting `SavingDraft` and `DraftSaved` into a `saveStatus` context field made ProductEditor less state-machine-like and harder to read.
+- The intended authoring shape is reducer-visible `transitionTo(ProductEditorPhase.X)`, with entry policy hiding context update and command assembly.
+
+Consequences:
+
+- ProductEditor phases include `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
+- `ProductDraft` and validation errors live in `ProductEditorContext`.
+- `ProductEditorPhaseEntryPolicy` updates context and emits commands when phases are entered.
+- Future phased samples should avoid context flags for durable flow states unless the value is purely data and not part of the state diagram.
+
 ## [2026-05-09] Prefer typed handlers over a topology DSL for v3
 
 Decision: Supersede the `from/on/to` topology companion idea as the preferred v3 direction. Keep state machine authoring as plain Kotlin `when` code, and make graph extraction possible through concrete State/Event handler signatures plus `transitionTo` next-state extraction.

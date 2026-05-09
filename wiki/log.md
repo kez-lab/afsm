@@ -185,3 +185,9 @@
 - Source: user request to hide direct `Afsm.phased(...)` setup and let reducers call `transitionTo(Phase)` directly
 - Action: Added `AfsmPhasedStateMachine`, refactored the phased compile check to use the helper, and documented the API ergonomics finding.
 - Updated: `afsm-core/`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | ProductEditor phased-state helper spike
+
+- Source: user request and correction that only real data should be separated from state
+- Action: Refactored ProductEditor to `State = Phase + Context`, kept flow states such as `SavingDraft` and `DraftSaved` as phases, moved `ProductDraft` into context, and made reducers call `transitionTo(ProductEditorPhase.X)` while phase entry policy updates context and emits commands.
+- Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

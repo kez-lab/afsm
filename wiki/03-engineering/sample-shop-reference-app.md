@@ -105,6 +105,8 @@ Flow:
 
 ```text
 EditingDraft
+-> SavingDraft
+-> DraftSaved
 -> ImageUploadInProgress
 -> ReviewSubmissionInProgress
 -> Rejected
@@ -115,7 +117,17 @@ EditingDraft
 -> Published
 ```
 
-This flow is now the stronger sample for explaining why Afsm exists. Text edits are self-transitions inside editable phases, while submit/review/publish actions move between explicit phases.
+This flow is now the stronger sample for explaining why Afsm exists.
+
+The ProductEditor sample now uses the v3 phased-state profile:
+
+- `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
+- `ProductDraft` and validation errors live in `ProductEditorContext`.
+- Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
+- Reducers call `transitionTo(ProductEditorPhase.X)` instead of assembling full state objects.
+- `ProductEditorPhaseEntryPolicy` owns context updates and command emission when a phase is entered.
+
+Text edits are phase re-entries inside editable phases, while submit/review/publish actions move between explicit phases.
 
 Transition action naming:
 

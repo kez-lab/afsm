@@ -333,3 +333,32 @@ Conclusion:
 - The desired shape is feasible: reducer code can call `transitionTo(Phase)` directly inside the helper-managed scope.
 - Raw type verbosity still exists at the class declaration, so feature-local typealiases or future type reduction remain important.
 - The helper introduces inheritance; this should be tested against a real ProductEditor refactor before deciding it is the public recommendation.
+
+## [2026-05-09] ProductEditor phased-state helper spike
+
+Change:
+
+- Refactored real `sample-shop` ProductEditor from sealed state classes carrying `ProductDraft` into `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
+- Kept meaningful flow states as phases, including `SavingDraft` and `DraftSaved`.
+- Moved `ProductDraft` and validation error data into `ProductEditorContext`.
+- Updated reducers to call `transitionTo(ProductEditorPhase.X)` instead of assembling full state objects.
+- Added `ProductEditorPhaseEntryPolicy` to update context and emit save/upload/review/publish commands on phase entry.
+- Updated ProductEditor UI and tests to consume `state.phase` plus `state.context`.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest'
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- The helper can make ProductEditor reducer code read more like a state diagram.
+- The failed intermediate `saveStatus` context flag shape was rejected because it hid flow states and degraded state-machine readability.
+- The remaining API issue is how much `phase/context` boilerplate should be exposed to Android UI code and public documentation.

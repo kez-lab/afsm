@@ -66,11 +66,12 @@ fun ProductEditorScreen(
 ) {
     val draft = state.draftOrNull()
     val form = draft?.form ?: ProductDraftForm()
-    val fieldsEnabled = state is ProductEditorState.EditingDraft ||
-        state is ProductEditorState.Rejected
-    val errorMessage = when (state) {
-        is ProductEditorState.EditingDraft -> state.errorMessage
-        is ProductEditorState.Rejected -> state.errorMessage
+    val fieldsEnabled = state.phase == ProductEditorPhase.EditingDraft ||
+        state.phase is ProductEditorPhase.Rejected
+    val errorMessage = when (state.phase) {
+        ProductEditorPhase.EditingDraft,
+        is ProductEditorPhase.Rejected -> state.context.errorMessage
+
         else -> null
     }
 
@@ -101,18 +102,19 @@ fun ProductEditorScreen(
                 onPriceChange = { onEvent(ProductEditorEvent.PriceChanged(it)) },
             )
 
-            if (state is ProductEditorState.Rejected) {
+            val phase = state.phase
+            if (phase is ProductEditorPhase.Rejected) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Review note: ${state.reason}",
+                    text = "Review note: ${phase.reason}",
                     color = MaterialTheme.colorScheme.error,
                 )
             }
 
-            if (state is ProductEditorState.Published) {
+            if (phase is ProductEditorPhase.Published) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Published product: ${state.title}",
+                    text = "Published product: ${phase.title}",
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -176,8 +178,8 @@ private fun ProductEditorActions(
     state: ProductEditorState,
     onEvent: (ProductEditorEvent) -> Unit,
 ) {
-    when (state) {
-        is ProductEditorState.EditingDraft -> {
+    when (state.phase) {
+        ProductEditorPhase.EditingDraft -> {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -197,7 +199,7 @@ private fun ProductEditorActions(
             }
         }
 
-        is ProductEditorState.DraftSaved -> {
+        ProductEditorPhase.DraftSaved -> {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -217,7 +219,7 @@ private fun ProductEditorActions(
             }
         }
 
-        is ProductEditorState.Rejected -> {
+        is ProductEditorPhase.Rejected -> {
             Button(
                 onClick = { onEvent(ProductEditorEvent.ResubmitClicked) },
                 modifier = Modifier.fillMaxWidth(),
@@ -226,7 +228,7 @@ private fun ProductEditorActions(
             }
         }
 
-        is ProductEditorState.Approved -> {
+        ProductEditorPhase.Approved -> {
             Button(
                 onClick = { onEvent(ProductEditorEvent.PublishClicked) },
                 modifier = Modifier.fillMaxWidth(),
@@ -235,7 +237,7 @@ private fun ProductEditorActions(
             }
         }
 
-        is ProductEditorState.Published -> {
+        is ProductEditorPhase.Published -> {
             Button(
                 onClick = { onEvent(ProductEditorEvent.DoneClicked) },
                 modifier = Modifier.fillMaxWidth(),
@@ -244,10 +246,10 @@ private fun ProductEditorActions(
             }
         }
 
-        is ProductEditorState.SavingDraft,
-        is ProductEditorState.ImageUploadInProgress,
-        is ProductEditorState.ReviewSubmissionInProgress,
-        is ProductEditorState.PublishInProgress -> {
+        ProductEditorPhase.SavingDraft,
+        ProductEditorPhase.ImageUploadInProgress,
+        is ProductEditorPhase.ReviewSubmissionInProgress,
+        ProductEditorPhase.PublishInProgress -> {
             Button(
                 enabled = false,
                 onClick = {},
@@ -260,15 +262,15 @@ private fun ProductEditorActions(
 }
 
 private fun ProductEditorState.statusText(): String {
-    return when (this) {
-        is ProductEditorState.EditingDraft -> "Editing draft"
-        is ProductEditorState.SavingDraft -> "Saving draft"
-        is ProductEditorState.DraftSaved -> "Draft saved"
-        is ProductEditorState.ImageUploadInProgress -> "Uploading mock images"
-        is ProductEditorState.ReviewSubmissionInProgress -> "Submitting for review"
-        is ProductEditorState.Rejected -> "Review rejected"
-        is ProductEditorState.Approved -> "Review approved"
-        is ProductEditorState.PublishInProgress -> "Publishing product"
-        is ProductEditorState.Published -> "Product published"
+    return when (phase) {
+        ProductEditorPhase.EditingDraft -> "Editing draft"
+        ProductEditorPhase.SavingDraft -> "Saving draft"
+        ProductEditorPhase.DraftSaved -> "Draft saved"
+        ProductEditorPhase.ImageUploadInProgress -> "Uploading mock images"
+        is ProductEditorPhase.ReviewSubmissionInProgress -> "Submitting for review"
+        is ProductEditorPhase.Rejected -> "Review rejected"
+        ProductEditorPhase.Approved -> "Review approved"
+        ProductEditorPhase.PublishInProgress -> "Publishing product"
+        is ProductEditorPhase.Published -> "Product published"
     }
 }

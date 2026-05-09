@@ -96,6 +96,37 @@ It validates:
 - Commands are emitted from the next context, not stale pre-entry context.
 - `AfsmPhasedStateMachine` hides scope creation so feature reducers can call `transitionTo(Phase)` directly.
 
+## ProductEditor Sample Spike
+
+The real `sample-shop` ProductEditor has now been refactored onto the phased-state helper.
+
+Current sample shape:
+
+```kotlin
+data class ProductEditorState(
+    override val phase: ProductEditorPhase,
+    override val context: ProductEditorContext,
+) : AfsmPhasedState<ProductEditorState, ProductEditorPhase, ProductEditorContext>
+```
+
+Reducer code is intentionally phase-first:
+
+```kotlin
+ProductEditorEvent.SaveDraftClicked -> transitionTo(ProductEditorPhase.SavingDraft)
+ProductEditorEvent.SubmitClicked -> transitionTo(ProductEditorPhase.ImageUploadInProgress)
+ProductEditorEvent.PublishClicked -> transitionTo(ProductEditorPhase.PublishInProgress)
+```
+
+The important correction from the first failed spike is that durable flow states remain phases. `SavingDraft` and `DraftSaved` are phases, not context flags. Context is reserved for actual screen data such as `ProductDraft` and validation errors.
+
+`ProductEditorPhaseEntryPolicy` hides:
+
+- draft form updates for editable phase re-entry,
+- validation error placement,
+- draft normalization before upload,
+- review attempt increment,
+- command creation for save/upload/review/publish phases.
+
 ## Verification
 
 Commands run:
@@ -104,6 +135,7 @@ Commands run:
 ./gradlew :afsm-core:compileTestKotlin
 ./gradlew :afsm-core:test
 ./gradlew :afsm-core:check :afsm-runtime:test
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest'
 ```
 
 Result: all passed.
@@ -116,6 +148,8 @@ Result: all passed.
 - `PhaseEntryPolicy` successfully hides context assembly while keeping transition actions in `AfsmTransition`.
 - `updateContext { ... }` needs a single-lambda overload because Kotlin trailing lambda syntax otherwise binds poorly when multiple defaulted parameters exist.
 - Feature-local typealiases are still important; the raw `AfsmPhasedTransitionScope<S, P, X, E, C, F>` type is too verbose for repeated use.
+- For user-facing samples, prefer `transitionTo(Phase)` plus entry policy over direct `updateContext(..., commands = ...)`.
+- Do not demote meaningful flow states into context fields merely to reduce the number of phase values.
 
 ## Remaining Concerns
 
@@ -123,9 +157,10 @@ Result: all passed.
 - `PhaseEntryPolicy` can emit effects in the spike; this should be revisited before API freeze.
 - The base/helper reduces setup noise, but it introduces inheritance into the authoring model. This should be validated against Android developer expectations before API freeze.
 - Graph extraction has not been implemented yet.
+- The sample still exposes `ProductEditorState.phase` and `ProductEditorState.context` to UI code; a future helper may make state consumption less mechanical.
 
 ## Current Verdict
 
-The phased-state profile is viable enough to continue.
+The phased-state profile is viable enough to continue, but only if the authoring style preserves explicit flow phases.
 
-Next proof should apply it to the real ProductEditor sample and compare readability against the current sealed-state implementation.
+The next proof should focus on API naming and documentation so Android developers understand that phases describe the state diagram, while context stores data carried across phases.

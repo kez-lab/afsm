@@ -52,7 +52,6 @@ Resolved:
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
 - Can automatic graph generation be supported through `transitionTo(Phase)` source analysis before introducing KSP?
 - Should `PhaseEntryPolicy` be allowed to emit effects, or should it only update context and emit commands?
-- Should context-only operations such as draft save use `updateContext(..., commands = ...)`, or should those remain explicit transition results in reducers?
 
 Resolved:
 
@@ -74,3 +73,5 @@ Resolved:
 - ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.
 - The current v3 direction is `State = Phase + Context` with reducers calling `transitionTo(Phase)` and feature-local entry policy hiding context update, command, and effect assembly.
 - The phased-state API compiles as an `afsm-core` spike, including `AfsmPhasedStateMachine` hiding direct `Afsm.phased(...)` setup; final public module placement remains open.
+- In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
+- Context-only updates should be reserved for actual data updates, while ProductEditor's public reducer style should prefer `transitionTo(Phase)` and let entry policy update context or emit commands.

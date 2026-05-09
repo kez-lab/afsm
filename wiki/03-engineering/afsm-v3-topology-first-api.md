@@ -59,7 +59,7 @@ Afsm v3 should separate the Android screen state into two axes:
 |---|---|---|
 | `State` | The full value exposed through `StateFlow` | `ProductEditorState(phase, context)` |
 | `Phase` | The finite node used for state diagrams | `ImageUploadInProgress` |
-| `Context` | Durable data carried across phases | `draft`, `saveStatus`, `errorMessage` |
+| `Context` | Durable data carried across phases | `draft`, `errorMessage` |
 | `EntryPolicy` | Rules applied when entering a phase | normalize draft, clear errors, emit command |
 
 This matches extended-state-machine terminology:
@@ -183,6 +183,8 @@ The phases become the diagram nodes:
 ```kotlin
 sealed interface ProductEditorPhase {
     data object EditingDraft : ProductEditorPhase
+    data object SavingDraft : ProductEditorPhase
+    data object DraftSaved : ProductEditorPhase
     data object ImageUploadInProgress : ProductEditorPhase
 
     data class ReviewSubmissionInProgress(
@@ -208,7 +210,6 @@ Durable data is kept in context:
 ```kotlin
 data class ProductEditorContext(
     val draft: ProductDraft = ProductDraft(),
-    val saveStatus: DraftSaveStatus = DraftSaveStatus.Idle,
     val errorMessage: String? = null,
 )
 ```
@@ -232,13 +233,27 @@ class ProductEditorPhaseEntryPolicy :
         context: ProductEditorContext,
     ): AfsmPhaseEntry<ProductEditorContext, ProductEditorCommand, ProductEditorEffect> {
         return when (target) {
+            ProductEditorPhase.SavingDraft -> {
+                AfsmPhaseEntry(
+                    context = context.copy(errorMessage = null),
+                    commands = listOf(
+                        ProductEditorCommand.SaveDraft(context.draft),
+                    ),
+                )
+            }
+
+            ProductEditorPhase.DraftSaved -> {
+                AfsmPhaseEntry(
+                    context = context.copy(errorMessage = null),
+                )
+            }
+
             ProductEditorPhase.ImageUploadInProgress -> {
                 val draft = context.draft.normalized()
 
                 AfsmPhaseEntry(
                     context = context.copy(
                         draft = draft,
-                        saveStatus = DraftSaveStatus.Idle,
                         errorMessage = null,
                     ),
                     commands = listOf(
@@ -305,30 +320,14 @@ private fun reduceEditingDraft(
     event: ProductEditorEvent,
 ): ProductEditorTransition {
     return when (event) {
-        is ProductEditorEvent.TitleChanged -> updateContext { context ->
-            context.copy(
-                draft = context.draft.updateForm { form ->
-                    form.copy(title = event.value)
-                },
-                errorMessage = null,
-            )
-        }
+        is ProductEditorEvent.TitleChanged -> transitionTo(ProductEditorPhase.EditingDraft)
 
-        ProductEditorEvent.SaveDraftClicked -> updateContext(
-            update = { context ->
-                context.copy(saveStatus = DraftSaveStatus.Saving)
-            },
-            commands = { context ->
-                listOf(ProductEditorCommand.SaveDraft(context.draft))
-            },
-        )
+        ProductEditorEvent.SaveDraftClicked -> transitionTo(ProductEditorPhase.SavingDraft)
 
         ProductEditorEvent.SubmitClicked -> {
             val validationError = state.context.draft.validationError()
             if (validationError != null) {
-                updateContext { context ->
-                    context.copy(errorMessage = validationError)
-                }
+                transitionTo(ProductEditorPhase.EditingDraft)
             } else {
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
@@ -339,7 +338,7 @@ private fun reduceEditingDraft(
 }
 ```
 
-The `SaveDraftClicked` example is intentionally kept as a context update, not a phase transition. Draft saving is a secondary operation inside the editing phase unless it changes the business flow.
+The correction from the ProductEditor spike is important: `SaveDraftClicked` should transition to `SavingDraft` when draft saving is user-visible flow. Actual data is separated into context, but flow states should not be hidden as context flags.
 
 ## State Diagram Policy
 
@@ -347,6 +346,10 @@ Generated diagrams should use phase transitions.
 
 ```mermaid
 stateDiagram-v2
+  EditingDraft --> SavingDraft: SaveDraftClicked / SaveDraft
+  SavingDraft --> DraftSaved: DraftSaved
+  DraftSaved --> EditingDraft: ContinueEditingClicked
+  DraftSaved --> ImageUploadInProgress: SubmitClicked / StartImageUpload
   EditingDraft --> ImageUploadInProgress: SubmitClicked / StartImageUpload
   ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded / StartReviewSubmission
   ImageUploadInProgress --> EditingDraft: ImageUploadFailed
@@ -362,7 +365,8 @@ Context-only changes are not primary graph edges:
 
 ```text
 EditingDraft + TitleChanged
--> updateContext(...)
+-> transitionTo(EditingDraft)
+-> PhaseEntryPolicy updates context.draft
 -> still EditingDraft
 ```
 
@@ -470,7 +474,7 @@ Problem:
 
 - every phase has to carry common context manually,
 - `transitionTo(state = ...)` still exposes context assembly in the reducer,
-- secondary operation states such as `SavingDraft` can pollute the main state diagram.
+- it tempts developers to duplicate durable data like `ProductDraft` in every state subtype.
 
 ### `transition<From, Event, To>`
 

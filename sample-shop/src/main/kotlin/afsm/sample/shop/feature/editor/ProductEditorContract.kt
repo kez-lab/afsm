@@ -1,5 +1,7 @@
 package afsm.sample.shop.feature.editor
 
+import afsm.core.AfsmPhasedState
+import afsm.core.AfsmPhasedTransitionScope
 import afsm.core.AfsmTransition
 
 data class ProductDraftForm(
@@ -13,47 +15,51 @@ data class ProductDraft(
     val reviewAttempt: Int = 0,
 )
 
-sealed interface ProductEditorState {
-    data class EditingDraft(
-        val draft: ProductDraft = ProductDraft(),
-        val errorMessage: String? = null,
-    ) : ProductEditorState
+data class ProductEditorContext(
+    val draft: ProductDraft = ProductDraft(),
+    val errorMessage: String? = null,
+)
 
-    data class SavingDraft(
-        val draft: ProductDraft,
-    ) : ProductEditorState
+data class ProductEditorState(
+    override val phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
+    override val context: ProductEditorContext = ProductEditorContext(),
+) : AfsmPhasedState<ProductEditorState, ProductEditorPhase, ProductEditorContext> {
+    override fun with(
+        phase: ProductEditorPhase,
+        context: ProductEditorContext,
+    ): ProductEditorState {
+        return copy(
+            phase = phase,
+            context = context,
+        )
+    }
+}
 
-    data class DraftSaved(
-        val draft: ProductDraft,
-    ) : ProductEditorState
+sealed interface ProductEditorPhase {
+    data object EditingDraft : ProductEditorPhase
 
-    data class ImageUploadInProgress(
-        val draft: ProductDraft,
-    ) : ProductEditorState
+    data object SavingDraft : ProductEditorPhase
+
+    data object DraftSaved : ProductEditorPhase
+
+    data object ImageUploadInProgress : ProductEditorPhase
 
     data class ReviewSubmissionInProgress(
-        val draft: ProductDraft,
         val uploadToken: String,
-    ) : ProductEditorState
+    ) : ProductEditorPhase
 
     data class Rejected(
-        val draft: ProductDraft,
         val reason: String,
-        val errorMessage: String? = null,
-    ) : ProductEditorState
+    ) : ProductEditorPhase
 
-    data class Approved(
-        val draft: ProductDraft,
-    ) : ProductEditorState
+    data object Approved : ProductEditorPhase
 
-    data class PublishInProgress(
-        val draft: ProductDraft,
-    ) : ProductEditorState
+    data object PublishInProgress : ProductEditorPhase
 
     data class Published(
         val productId: Long,
         val title: String,
-    ) : ProductEditorState
+    ) : ProductEditorPhase
 }
 
 sealed interface ProductEditorEvent {
@@ -110,17 +116,20 @@ sealed interface ProductEditorEffect {
 typealias ProductEditorTransition =
     AfsmTransition<ProductEditorState, ProductEditorCommand, ProductEditorEffect>
 
+typealias ProductEditorTransitionScope =
+    AfsmPhasedTransitionScope<
+        ProductEditorState,
+        ProductEditorPhase,
+        ProductEditorContext,
+        ProductEditorEvent,
+        ProductEditorCommand,
+        ProductEditorEffect,
+        >
+
 fun ProductEditorState.draftOrNull(): ProductDraft? {
-    return when (this) {
-        is ProductEditorState.EditingDraft -> draft
-        is ProductEditorState.SavingDraft -> draft
-        is ProductEditorState.DraftSaved -> draft
-        is ProductEditorState.ImageUploadInProgress -> draft
-        is ProductEditorState.ReviewSubmissionInProgress -> draft
-        is ProductEditorState.Rejected -> draft
-        is ProductEditorState.Approved -> draft
-        is ProductEditorState.PublishInProgress -> draft
-        is ProductEditorState.Published -> null
+    return when (phase) {
+        is ProductEditorPhase.Published -> null
+        else -> context.draft
     }
 }
 
