@@ -130,7 +130,7 @@ Weaknesses:
 
 ## v3 Topology-First Idea
 
-v3 should make the state edge explicit first:
+The previous pseudo API in this document was still too close to v2:
 
 ```kotlin
 transition<FromState, Event, ToState>("label") {
@@ -142,186 +142,130 @@ transition<FromState, Event, ToState>("label") {
 }
 ```
 
-The generic type parameters are graph metadata:
+That shape has two problems:
 
-```text
-FromState -- Event --> ToState
-```
+- `FromState` is repeated on every edge even though the current typed state should already define the scope.
+- `goTo(state, commands, effects)` still reads like assembling an `AfsmTransition` result object, not like authoring a state machine.
 
-The lambda is runtime behavior:
+The revised v3 direction should split graph topology from runtime transition behavior.
 
-```text
-create exact next state instance
-emit commands
-emit effects
-apply validation
-```
-
-This separates:
-
-- topology: what the graph says,
-- execution: what data is carried and what work is requested.
-
-## v3 Pseudo Implementation
-
-Possible ProductEditor shape:
+Topology should be declared from a state scope:
 
 ```kotlin
-class ProductEditorMachine :
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>() {
+topology {
+    from<EditingDraft> {
+        on<TitleChanged>().self("edit title")
+        on<DescriptionChanged>().self("edit description")
+        on<PriceChanged>().self("edit price")
+        on<SaveDraftClicked>().to<SavingDraft>("save draft").action<SaveDraft>()
+        on<SubmitClicked>().to<ImageUploadInProgress>("submit for review").action<StartImageUpload>()
+    }
 
-    override fun define() = transitions {
-        transition<EditingDraft, TitleChanged, EditingDraft>("edit title") { state, event ->
-            goTo(
-                state = state.copy(
-                    draft = state.draft.updateForm { it.copy(title = event.value) },
-                    errorMessage = null,
-                ),
-            )
-        }
+    from<ImageUploadInProgress> {
+        on<ImageUploadSucceeded>()
+            .to<ReviewSubmissionInProgress>("image upload succeeded")
+            .action<StartReviewSubmission>()
 
-        transition<EditingDraft, DescriptionChanged, EditingDraft>("edit description") { state, event ->
-            goTo(
-                state = state.copy(
-                    draft = state.draft.updateForm { it.copy(description = event.value) },
-                    errorMessage = null,
-                ),
-            )
-        }
+        on<ImageUploadFailed>().to<EditingDraft>("image upload failed")
+    }
 
-        transition<EditingDraft, PriceChanged, EditingDraft>("edit price") { state, event ->
-            goTo(
-                state = state.copy(
-                    draft = state.draft.updateForm { it.copy(priceText = event.value) },
-                    errorMessage = null,
-                ),
-            )
-        }
+    from<ReviewSubmissionInProgress> {
+        on<ReviewRejected>().to<Rejected>("review rejected")
+        on<ReviewApproved>().to<Approved>("review approved")
+    }
 
-        transition<EditingDraft, SaveDraftClicked, SavingDraft>("save draft") { state, _ ->
-            goTo(
-                state = SavingDraft(state.draft),
-                commands = listOf(SaveDraft(state.draft)),
-            )
-        }
+    from<Rejected> {
+        on<ResubmitClicked>().to<ImageUploadInProgress>("resubmit").action<StartImageUpload>()
+        on<ContinueEditingClicked>().to<EditingDraft>("continue editing")
+    }
 
-        transition<EditingDraft, SubmitClicked, ImageUploadInProgress>("submit for review") { state, _ ->
-            val validationError = state.draft.form.validationError()
-            if (validationError != null) {
-                stay(
-                    state = state.copy(errorMessage = validationError),
-                    reason = validationError,
-                )
-            } else {
-                val draft = state.draft.normalized()
-                goTo(
-                    state = ImageUploadInProgress(draft),
-                    commands = listOf(StartImageUpload(draft)),
-                )
-            }
-        }
+    from<Approved> {
+        on<PublishClicked>().to<PublishInProgress>("publish").action<StartProductPublish>()
+        on<ContinueEditingClicked>().to<EditingDraft>("continue editing")
+    }
 
-        transition<SavingDraft, DraftSaved, DraftSaved>("draft saved") { state, _ ->
-            goTo(DraftSaved(state.draft))
-        }
+    from<PublishInProgress> {
+        on<PublishSucceeded>().to<Published>("publish succeeded")
+        on<PublishFailed>().to<Approved>("publish failed")
+    }
 
-        transition<DraftSaved, ContinueEditingClicked, EditingDraft>("continue editing") { state, _ ->
-            goTo(EditingDraft(state.draft))
-        }
-
-        transition<DraftSaved, SubmitClicked, ImageUploadInProgress>("submit saved draft") { state, _ ->
-            val draft = state.draft.normalized()
-            goTo(
-                state = ImageUploadInProgress(draft),
-                commands = listOf(StartImageUpload(draft)),
-            )
-        }
-
-        transition<ImageUploadInProgress, ImageUploadSucceeded, ReviewSubmissionInProgress>("image upload succeeded") { state, event ->
-            val reviewedDraft = state.draft.copy(
-                reviewAttempt = state.draft.reviewAttempt + 1,
-            )
-            goTo(
-                state = ReviewSubmissionInProgress(
-                    draft = reviewedDraft,
-                    uploadToken = event.uploadToken,
-                ),
-                commands = listOf(
-                    StartReviewSubmission(
-                        draft = reviewedDraft,
-                        uploadToken = event.uploadToken,
-                    ),
-                ),
-            )
-        }
-
-        transition<ImageUploadInProgress, ImageUploadFailed, EditingDraft>("image upload failed") { state, event ->
-            goTo(
-                EditingDraft(
-                    draft = state.draft,
-                    errorMessage = event.message,
-                ),
-            )
-        }
-
-        transition<ReviewSubmissionInProgress, ReviewRejected, Rejected>("review rejected") { state, event ->
-            goTo(
-                Rejected(
-                    draft = state.draft,
-                    reason = event.reason,
-                ),
-            )
-        }
-
-        transition<Rejected, ResubmitClicked, ImageUploadInProgress>("resubmit") { state, _ ->
-            val validationError = state.draft.form.validationError()
-            if (validationError != null) {
-                stay(
-                    state = state.copy(errorMessage = validationError),
-                    reason = validationError,
-                )
-            } else {
-                val draft = state.draft.normalized()
-                goTo(
-                    state = ImageUploadInProgress(draft),
-                    commands = listOf(StartImageUpload(draft)),
-                )
-            }
-        }
-
-        transition<ReviewSubmissionInProgress, ReviewApproved, Approved>("review approved") { state, _ ->
-            goTo(Approved(state.draft))
-        }
-
-        transition<Approved, PublishClicked, PublishInProgress>("publish") { state, _ ->
-            goTo(
-                state = PublishInProgress(state.draft),
-                commands = listOf(StartProductPublish(state.draft)),
-            )
-        }
-
-        transition<PublishInProgress, PublishSucceeded, Published>("publish succeeded") { state, event ->
-            goTo(
-                Published(
-                    productId = event.productId,
-                    title = state.draft.form.title.trim(),
-                ),
-            )
-        }
-
-        transition<PublishInProgress, PublishFailed, Approved>("publish failed") { state, _ ->
-            goTo(Approved(state.draft))
-        }
-
-        transition<Published, DoneClicked, Published>("done") { state, _ ->
-            stay(
-                state = state,
-                effects = listOf(CloseEditor),
-            )
-        }
+    from<Published> {
+        on<DoneClicked>().self("done").effect<CloseEditor>()
     }
 }
 ```
+
+Runtime behavior should stay plain Kotlin:
+
+```kotlin
+override fun transition(
+    state: ProductEditorState,
+    event: ProductEditorEvent,
+): ProductEditorTransition {
+    return when (state) {
+        is EditingDraft -> state.transition(event)
+        is SavingDraft -> state.transition(event)
+        is DraftSaved -> state.transition(event)
+        is ImageUploadInProgress -> state.transition(event)
+        is ReviewSubmissionInProgress -> state.transition(event)
+        is Rejected -> state.transition(event)
+        is Approved -> state.transition(event)
+        is PublishInProgress -> state.transition(event)
+        is Published -> state.transition(event)
+    }
+}
+```
+
+The `FromState` is now the typed receiver:
+
+```kotlin
+private fun EditingDraft.transition(
+    event: ProductEditorEvent,
+): ProductEditorTransition {
+    return when (event) {
+        is TitleChanged -> copy(
+            draft = draft.updateForm { it.copy(title = event.value) },
+            errorMessage = null,
+        ).asTransition()
+
+        SaveDraftClicked -> SavingDraft(draft)
+            .withAction(SaveDraft(draft))
+
+        SubmitClicked -> submitForReview()
+
+        else -> invalid("Event is not valid while editing a draft.")
+    }
+}
+```
+
+And the transition body should read from the current state to the next state:
+
+```kotlin
+private fun EditingDraft.submitForReview(): ProductEditorTransition {
+    val validationError = draft.form.validationError()
+    if (validationError != null) {
+        return copy(errorMessage = validationError)
+            .stay(reason = validationError)
+    }
+
+    val nextDraft = draft.normalized()
+
+    return ImageUploadInProgress(nextDraft)
+        .withAction(StartImageUpload(nextDraft))
+}
+```
+
+This is the important API direction:
+
+```text
+FromState = typed receiver/current state
+Event = when branch or typed topology edge
+ToState = returned next state
+Transition action = chained output, not a constructor parameter list
+Effect = chained UI output, not mixed into every transition call
+```
+
+The topology declaration gives graph metadata. The plain Kotlin transition functions keep local readability and breakpoint-friendly debugging.
 
 ## Graph Generation
 
@@ -330,7 +274,9 @@ With v3, graph generation does not need sample state/event values.
 Each call registers an edge:
 
 ```kotlin
-transition<EditingDraft, SubmitClicked, ImageUploadInProgress>("submit for review")
+from<EditingDraft> {
+    on<SubmitClicked>().to<ImageUploadInProgress>("submit for review")
+}
 ```
 
 The graph renderer can output:
@@ -340,13 +286,13 @@ stateDiagram-v2
   EditingDraft --> ImageUploadInProgress: SubmitClicked
 ```
 
-KSP is not required for an MVP if graph metadata is registered by executing `define()`.
+KSP is not required for an MVP if graph metadata is registered by executing `topology()`.
 
 Possible MVP flow:
 
 ```text
-ProductEditorMachine.define()
--> transition definitions registered in memory
+ProductEditorMachine.topology()
+-> from/on/to definitions registered in memory
 -> AfsmGraphRenderer.toMermaid(machine.graph)
 -> docs/graphs/product-editor-state-machine.mmd
 ```
@@ -357,20 +303,22 @@ KSP can be considered later for automatic discovery of annotated machines, but i
 
 v2 forces each reducer to list invalid/ignored events to keep `when` exhaustive.
 
-v3 can choose a default policy:
+The topology companion can choose a default policy for missing edges:
 
 ```kotlin
 defaultUnhandled = AfsmUnhandledPolicy.Invalid
 ```
 
-Then the ProductEditor definition can list only meaningful edges.
+Then the ProductEditor topology can list only meaningful edges.
 
 This reduces noise but changes the mental model:
 
 - v2: Kotlin exhaustiveness makes unhandled events explicit.
-- v3: the transition registry handles missing edges through a policy.
+- v3 topology: the graph registry handles missing edges through a policy.
 
 The v3 prototype must test this carefully because hidden unhandled behavior could make bugs less visible.
+
+Runtime behavior can still keep explicit invalid/ignored branches in the plain Kotlin reducers. The graph topology and runtime reducer do not have to use the same exhaustiveness mechanism.
 
 ## Commands and Effects
 
@@ -395,10 +343,10 @@ Terminology and naming guidance are tracked in [[afsm-v3-terminology-transition-
 |---|---|---|
 | Familiar Kotlin | Strong | Medium |
 | Graph generation | Weak | Strong |
-| Breakpoint debugging | Strong | Medium |
-| Boilerplate | Medium/high for invalid branches | Medium |
-| Exhaustiveness | Strong through `when` | Needs registry checks |
-| DSL learning cost | Low | Medium |
+| Breakpoint debugging | Strong | Strong if runtime remains plain Kotlin |
+| Boilerplate | Medium/high for invalid branches | Medium plus topology declaration |
+| Exhaustiveness | Strong through `when` | Runtime can keep `when`; topology needs registry checks |
+| DSL learning cost | Low | Low/medium if topology is a companion, not executable behavior |
 | State diagram readability | Medium | Strong |
 | Runtime compatibility | Already implemented | Can compile down to v2 transition behavior |
 
@@ -410,23 +358,25 @@ Recommended positioning:
 
 ```text
 v2 = low-level, plain Kotlin reducer-style engine
-v3 = optional topology-first authoring layer for graph-friendly flows
+v3 = optional from-state-scoped topology layer plus plain Kotlin transition behavior
 ```
 
 This avoids forcing a DSL onto all users while still giving Afsm a clearer path to automatic state diagrams.
 
 ## Prototype Plan
 
-1. Add a design-only `AfsmMachine` pseudo API page first. This document is the first step.
+1. Refine this design-only topology page first.
 2. Implement a minimal experimental module, likely `afsm-machine`.
 3. Support:
-   - `transition<From, Event, To>(label)`
-   - `goTo(...)`
-   - `stay(...)`
+   - `topology { ... }`
+   - `from<FromState> { ... }`
+   - `on<Event>().to<ToState>(label)`
+   - optional `.action<Action>()` metadata
+   - optional `.effect<Effect>()` metadata
    - default unhandled policy
    - graph metadata registry
    - Mermaid renderer
-4. Port only ProductEditor to the experimental API.
+4. Keep ProductEditor runtime transitions as plain Kotlin typed receiver functions.
 5. Verify:
    - unit tests still express the same behavior,
    - Android CLI smoke journey still passes,
@@ -439,7 +389,8 @@ This avoids forcing a DSL onto all users while still giving Afsm a clearer path 
 ## Open Questions
 
 - Should v3 require `KClass` arguments instead of reified generics for Java/binary friendliness?
-- Should `transition<From, Event, To>` allow multiple `goTo(...)` target classes from one edge when guard branches can produce different states?
+- Should topology be purely metadata beside the reducer, or should it be executable enough to replace some reducer boilerplate?
+- Should one `on<Event>()` edge allow multiple target states when guard branches can produce different states?
 - Should validation failures be rendered as self-edges, omitted, or shown in a separate error graph?
-- How should v3 preserve Kotlin exhaustiveness that v2 gets from `when`?
+- How should v3 prove topology and runtime reducer stay synchronized?
 - Should graph labels default to type names or require explicit human labels?

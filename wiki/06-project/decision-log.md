@@ -203,7 +203,7 @@ Rationale:
 Consequences:
 
 - Auth uses `Editing`, `Submitting`, and `Authenticated`.
-- Product registration uses `EditingDraft`, `SavingDraft`, `DraftSaved`, `UploadingImages`, `SubmittingForReview`, `Rejected`, `Approved`, `Publishing`, and `Published`.
+- Product registration uses `EditingDraft`, `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Text edits are treated as self-transitions inside editable phases.
 - Product registration is now an Afsm-backed reference flow instead of an ordinary ViewModel screen.
 
@@ -240,3 +240,20 @@ Consequences:
 - ProductEditor has been renamed toward phase states such as `ImageUploadInProgress` and transition actions such as `StartImageUpload`.
 - Before public API freeze, evaluate whether the public API should rename `Command`/`commands` to `Action`/`actions` or `TransitionAction`/`actions`.
 - v3 should not force a DSL until terminology and naming are clearer in the existing plain Kotlin implementation.
+
+## [2026-05-09] Refine v3 topology API toward from-state scopes
+
+Decision: Refine the v3 topology-first design away from `transition<From, Event, To> { goTo(state, commands, effects) }` and toward a from-state-scoped topology companion plus plain Kotlin runtime reducers.
+
+Rationale:
+
+- Repeating `FromState` on every edge is noisy when the current typed state already defines the scope.
+- `goTo(state, commands, effects)` kept the v2 transition-result-builder shape and did not address the CEO's concern that the API still felt unlike a state machine.
+- A topology companion can provide explicit graph metadata while runtime behavior remains ordinary Kotlin `when` code with a typed state receiver.
+
+Consequences:
+
+- The preferred v3 shape is now `from<FromState> { on<Event>().to<ToState>() }`.
+- Runtime transition examples should use typed receiver functions such as `EditingDraft.transition(event)`.
+- Transition actions should be chained from returned states, for example `ImageUploadInProgress(draft).withAction(StartImageUpload(draft))`, instead of passing `state`, `commands`, and `effects` together.
+- A future prototype must verify that topology metadata and runtime reducers stay synchronized.

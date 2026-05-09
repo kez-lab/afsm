@@ -226,3 +226,22 @@ Conclusion:
 
 - The naming policy improves code readability without changing ProductEditor behavior.
 - The plain Kotlin `when (state)` implementation remains understandable after the terminology cleanup.
+
+## [2026-05-09] v3 topology-first API correction
+
+Change:
+
+- Revised `wiki/03-engineering/afsm-v3-topology-first-api.md` after CEO feedback that the pseudo API still looked like v2 result assembly.
+- Replaced the recommended v3 shape from `transition<From, Event, To> { goTo(state, commands, effects) }` to a `from<FromState> { on<Event>().to<ToState>() }` topology companion.
+- Kept runtime behavior in plain Kotlin typed receiver functions.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The v3 document now matches the intended from-state-scoped direction.
+- Graph generation remains a topology metadata concern, while transition execution can remain readable Kotlin code.
