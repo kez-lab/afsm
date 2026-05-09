@@ -102,7 +102,7 @@ It validates:
 
 ## ProductEditor Sample Spike
 
-The real `sample-shop` ProductEditor has now been refactored onto the phased-state helper.
+The real `sample-shop` ProductEditor was refactored onto the phased-state helper as an intermediate spike, then later migrated to the executable DSL.
 
 Current sample shape:
 
@@ -167,4 +167,4 @@ Result: all passed.
 
 The phased-state profile is viable as a lower-level implementation idea, but it should not be the primary public v3 authoring model.
 
-The next proof should be an executable DSL compile spike where the machine definition itself owns `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and graph metadata.
+The follow-up executable DSL proof now owns `state`, `on`, graphable branch targets, `assign`, `onEnter`, `action`, `effect`, and graph metadata.

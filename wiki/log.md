@@ -209,3 +209,9 @@
 - Source: `afsm-core/src/main/kotlin/afsm/core/AfsmTopology.kt`
 - Action: Added static topology metadata and Mermaid export, then refined the DSL branch shape so graph edges are declared at build time rather than inferred from runtime-only `transitionTo` calls.
 - Updated: `afsm-core/`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | ProductEditor executable DSL migration
+
+- Source: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`
+- Action: Migrated ProductEditor from the phased helper to the executable DSL, preserved `State = Phase + Context`, added topology assertions, and updated sample documentation.
+- Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

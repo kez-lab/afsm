@@ -1,7 +1,5 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmPhasedState
-import afsm.core.AfsmPhasedTransitionScope
 import afsm.core.AfsmTransition
 
 data class ProductDraftForm(
@@ -21,19 +19,9 @@ data class ProductEditorContext(
 )
 
 data class ProductEditorState(
-    override val phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    override val context: ProductEditorContext = ProductEditorContext(),
-) : AfsmPhasedState<ProductEditorState, ProductEditorPhase, ProductEditorContext> {
-    override fun with(
-        phase: ProductEditorPhase,
-        context: ProductEditorContext,
-    ): ProductEditorState {
-        return copy(
-            phase = phase,
-            context = context,
-        )
-    }
-}
+    val phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
+    val context: ProductEditorContext = ProductEditorContext(),
+)
 
 sealed interface ProductEditorPhase {
     data object EditingDraft : ProductEditorPhase
@@ -115,16 +103,6 @@ sealed interface ProductEditorEffect {
 
 typealias ProductEditorTransition =
     AfsmTransition<ProductEditorState, ProductEditorCommand, ProductEditorEffect>
-
-typealias ProductEditorTransitionScope =
-    AfsmPhasedTransitionScope<
-        ProductEditorState,
-        ProductEditorPhase,
-        ProductEditorContext,
-        ProductEditorEvent,
-        ProductEditorCommand,
-        ProductEditorEffect,
-        >
 
 fun ProductEditorState.draftOrNull(): ProductDraft? {
     return when (phase) {

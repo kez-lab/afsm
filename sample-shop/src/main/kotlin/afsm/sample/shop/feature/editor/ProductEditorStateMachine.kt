@@ -1,420 +1,318 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmPhaseEntry
-import afsm.core.AfsmPhaseEntryPolicy
-import afsm.core.AfsmPhasedStateMachine
+import afsm.core.AfsmEventBuilder
+import afsm.core.AfsmMachine
+import afsm.core.AfsmSnapshot
+import afsm.core.AfsmStateMachine
+import afsm.core.AfsmTopology
+import afsm.core.afsmMachine
 
-class ProductEditorStateMachine : AfsmPhasedStateMachine<
-    ProductEditorState,
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-    >(
-    entryPolicy = ProductEditorPhaseEntryPolicy(),
-) {
-    override fun ProductEditorTransitionScope.reduce(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (val phase = state.phase) {
-            ProductEditorPhase.EditingDraft -> reduceEditingDraft(event)
-            ProductEditorPhase.SavingDraft -> reduceSavingDraft(event)
-            ProductEditorPhase.DraftSaved -> reduceDraftSaved(event)
-            ProductEditorPhase.ImageUploadInProgress -> reduceImageUploadInProgress(event)
-            is ProductEditorPhase.ReviewSubmissionInProgress -> reduceReviewSubmissionInProgress(event)
-            is ProductEditorPhase.Rejected -> reduceRejected(phase, event)
-            ProductEditorPhase.Approved -> reduceApproved(event)
-            ProductEditorPhase.PublishInProgress -> reducePublishInProgress(event)
-            is ProductEditorPhase.Published -> reducePublished(event)
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceEditingDraft(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            ProductEditorEvent.SaveDraftClicked -> transitionTo(ProductEditorPhase.SavingDraft)
-
-            ProductEditorEvent.SubmitClicked -> submitDraft(
-                invalidTarget = ProductEditorPhase.EditingDraft,
-            )
-
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> invalid(
-                reason = "Event is not valid while editing a draft.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceSavingDraft(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            ProductEditorEvent.DraftSaved -> transitionTo(ProductEditorPhase.DraftSaved)
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> ignore(
-                reason = "Draft save command is running.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceDraftSaved(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            ProductEditorEvent.ContinueEditingClicked -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            ProductEditorEvent.SubmitClicked -> submitDraft(
-                invalidTarget = ProductEditorPhase.EditingDraft,
-            )
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> invalid(
-                reason = "Event is not valid after draft save.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceImageUploadInProgress(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            is ProductEditorEvent.ImageUploadSucceeded -> transitionTo(
-                ProductEditorPhase.ReviewSubmissionInProgress(
-                    uploadToken = event.uploadToken,
-                ),
-            )
-
-            is ProductEditorEvent.ImageUploadFailed -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> ignore(
-                reason = "Image upload command is running.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceReviewSubmissionInProgress(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            ProductEditorEvent.ReviewApproved -> transitionTo(ProductEditorPhase.Approved)
-
-            is ProductEditorEvent.ReviewRejected -> transitionTo(
-                ProductEditorPhase.Rejected(reason = event.reason),
-            )
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> ignore(
-                reason = "Review submission command is running.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceRejected(
-        phase: ProductEditorPhase.Rejected,
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged -> transitionTo(phase)
-
-            ProductEditorEvent.ResubmitClicked -> submitDraft(
-                invalidTarget = phase,
-            )
-
-            ProductEditorEvent.ContinueEditingClicked -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> invalid(
-                reason = "Event is not valid while review is rejected.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reduceApproved(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            ProductEditorEvent.PublishClicked -> transitionTo(ProductEditorPhase.PublishInProgress)
-
-            ProductEditorEvent.ContinueEditingClicked -> transitionTo(ProductEditorPhase.EditingDraft)
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> invalid(
-                reason = "Event is not valid after approval.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reducePublishInProgress(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            is ProductEditorEvent.PublishSucceeded -> transitionTo(
-                ProductEditorPhase.Published(
-                    productId = event.productId,
-                    title = state.context.draft.form.title.trim(),
-                ),
-            )
-
-            is ProductEditorEvent.PublishFailed -> transitionTo(ProductEditorPhase.Approved)
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DoneClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected -> ignore(
-                reason = "Publish command is running.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.reducePublished(
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        return when (event) {
-            ProductEditorEvent.DoneClicked -> stay(
-                effects = listOf(ProductEditorEffect.CloseEditor),
-            )
-
-            is ProductEditorEvent.TitleChanged,
-            is ProductEditorEvent.DescriptionChanged,
-            is ProductEditorEvent.PriceChanged,
-            ProductEditorEvent.SaveDraftClicked,
-            ProductEditorEvent.ContinueEditingClicked,
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked,
-            ProductEditorEvent.PublishClicked,
-            ProductEditorEvent.DraftSaved,
-            is ProductEditorEvent.ImageUploadSucceeded,
-            is ProductEditorEvent.ImageUploadFailed,
-            ProductEditorEvent.ReviewApproved,
-            is ProductEditorEvent.ReviewRejected,
-            is ProductEditorEvent.PublishSucceeded,
-            is ProductEditorEvent.PublishFailed -> ignore(
-                reason = "Product is already published.",
-            )
-        }
-    }
-
-    private fun ProductEditorTransitionScope.submitDraft(
-        invalidTarget: ProductEditorPhase,
-    ): ProductEditorTransition {
-        return if (state.context.draft.form.validationError() == null) {
-            transitionTo(ProductEditorPhase.ImageUploadInProgress)
-        } else {
-            transitionTo(invalidTarget)
-        }
-    }
-}
-
-private class ProductEditorPhaseEntryPolicy :
-    AfsmPhaseEntryPolicy<
+class ProductEditorStateMachine(
+    private val machine: AfsmMachine<
         ProductEditorPhase,
         ProductEditorContext,
         ProductEditorEvent,
         ProductEditorCommand,
         ProductEditorEffect,
-        > {
-    override fun enter(
-        from: ProductEditorPhase,
-        target: ProductEditorPhase,
+        > = productEditorMachine(),
+) : AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
+    val topology: AfsmTopology
+        get() = machine.topology
+
+    override fun transition(
+        state: ProductEditorState,
         event: ProductEditorEvent,
-        context: ProductEditorContext,
-    ): AfsmPhaseEntry<ProductEditorContext, ProductEditorCommand, ProductEditorEffect> {
-        return when (target) {
-            ProductEditorPhase.EditingDraft -> enterEditingDraft(event, context)
+    ): ProductEditorTransition {
+        val transition = machine.transition(
+            snapshot = AfsmSnapshot(
+                phase = state.phase,
+                context = state.context,
+            ),
+            event = event,
+        )
 
-            ProductEditorPhase.SavingDraft -> AfsmPhaseEntry(
-                context = context.copy(errorMessage = null),
-                commands = listOf(ProductEditorCommand.SaveDraft(context.draft)),
-            )
+        return ProductEditorTransition(
+            state = ProductEditorState(
+                phase = transition.state.phase,
+                context = transition.state.context,
+            ),
+            commands = transition.commands,
+            effects = transition.effects,
+            decision = transition.decision,
+        )
+    }
+}
 
-            ProductEditorPhase.DraftSaved -> AfsmPhaseEntry(
-                context = context.copy(errorMessage = null),
-            )
+private fun productEditorMachine(): AfsmMachine<
+    ProductEditorPhase,
+    ProductEditorContext,
+    ProductEditorEvent,
+    ProductEditorCommand,
+    ProductEditorEffect,
+    > {
+    return afsmMachine {
+        initial(
+            phase = ProductEditorPhase.EditingDraft,
+            context = ProductEditorContext(),
+        )
 
-            ProductEditorPhase.ImageUploadInProgress -> {
-                val draft = context.draft.normalized()
+        state(ProductEditorPhase.EditingDraft) {
+            on<ProductEditorEvent.TitleChanged> {
+                stay { assign { updateDraft(event) } }
+            }
 
-                AfsmPhaseEntry(
-                    context = context.copy(
-                        draft = draft,
-                        errorMessage = null,
-                    ),
-                    commands = listOf(ProductEditorCommand.StartImageUpload(draft)),
+            on<ProductEditorEvent.DescriptionChanged> {
+                stay { assign { updateDraft(event) } }
+            }
+
+            on<ProductEditorEvent.PriceChanged> {
+                stay { assign { updateDraft(event) } }
+            }
+
+            on<ProductEditorEvent.SaveDraftClicked> {
+                transitionTo(ProductEditorPhase.SavingDraft)
+            }
+
+            on<ProductEditorEvent.SubmitClicked> {
+                submitDraft(
+                    validTarget = ProductEditorPhase.ImageUploadInProgress,
+                )
+
+                otherwise {
+                    assign { withValidationError() }
+                }
+            }
+        }
+
+        state(ProductEditorPhase.SavingDraft) {
+            onEnter {
+                assign { copy(errorMessage = null) }
+                action(ProductEditorCommand.SaveDraft(context.draft))
+            }
+
+            on<ProductEditorEvent.DraftSaved> {
+                transitionTo(ProductEditorPhase.DraftSaved)
+            }
+        }
+
+        state(ProductEditorPhase.DraftSaved) {
+            onEnter {
+                assign { copy(errorMessage = null) }
+            }
+
+            on<ProductEditorEvent.ContinueEditingClicked> {
+                transitionTo(ProductEditorPhase.EditingDraft)
+            }
+
+            on<ProductEditorEvent.SubmitClicked> {
+                submitDraft(
+                    validTarget = ProductEditorPhase.ImageUploadInProgress,
+                    invalidTarget = ProductEditorPhase.EditingDraft,
                 )
             }
 
-            is ProductEditorPhase.ReviewSubmissionInProgress -> {
-                val draft = context.draft.copy(
-                    reviewAttempt = context.draft.reviewAttempt + 1,
-                )
+            on<ProductEditorEvent.TitleChanged> {
+                transitionTo(ProductEditorPhase.EditingDraft) {
+                    assign { updateDraft(event) }
+                }
+            }
 
-                AfsmPhaseEntry(
-                    context = context.copy(
-                        draft = draft,
-                        errorMessage = null,
-                    ),
-                    commands = listOf(
-                        ProductEditorCommand.StartReviewSubmission(
-                            draft = draft,
-                            uploadToken = target.uploadToken,
-                        ),
+            on<ProductEditorEvent.DescriptionChanged> {
+                transitionTo(ProductEditorPhase.EditingDraft) {
+                    assign { updateDraft(event) }
+                }
+            }
+
+            on<ProductEditorEvent.PriceChanged> {
+                transitionTo(ProductEditorPhase.EditingDraft) {
+                    assign { updateDraft(event) }
+                }
+            }
+        }
+
+        state(ProductEditorPhase.ImageUploadInProgress) {
+            onEnter {
+                action(ProductEditorCommand.StartImageUpload(context.draft))
+            }
+
+            on<ProductEditorEvent.ImageUploadSucceeded> {
+                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
+                    phase = {
+                        ProductEditorPhase.ReviewSubmissionInProgress(
+                            uploadToken = event.uploadToken,
+                        )
+                    },
+                ) {
+                    assign {
+                        copy(
+                            draft = draft.copy(
+                                reviewAttempt = draft.reviewAttempt + 1,
+                            ),
+                            errorMessage = null,
+                        )
+                    }
+                }
+            }
+
+            on<ProductEditorEvent.ImageUploadFailed> {
+                transitionTo(ProductEditorPhase.EditingDraft) {
+                    assign {
+                        copy(errorMessage = event.message)
+                    }
+                }
+            }
+        }
+
+        state<ProductEditorPhase.ReviewSubmissionInProgress> {
+            onEnter {
+                action(
+                    ProductEditorCommand.StartReviewSubmission(
+                        draft = context.draft,
+                        uploadToken = phase.uploadToken,
                     ),
                 )
             }
 
-            is ProductEditorPhase.Rejected -> enterRejected(event, context)
+            on<ProductEditorEvent.ReviewApproved> {
+                transitionTo(ProductEditorPhase.Approved) {
+                    assign { copy(errorMessage = null) }
+                }
+            }
 
-            ProductEditorPhase.Approved -> AfsmPhaseEntry(
-                context = context.copy(errorMessage = null),
-            )
+            on<ProductEditorEvent.ReviewRejected> {
+                transitionTo<ProductEditorPhase.Rejected>(
+                    phase = {
+                        ProductEditorPhase.Rejected(
+                            reason = event.reason,
+                        )
+                    },
+                ) {
+                    assign { copy(errorMessage = null) }
+                }
+            }
+        }
 
-            ProductEditorPhase.PublishInProgress -> AfsmPhaseEntry(
-                context = context.copy(errorMessage = null),
-                commands = listOf(ProductEditorCommand.StartProductPublish(context.draft)),
-            )
+        state<ProductEditorPhase.Rejected> {
+            on<ProductEditorEvent.TitleChanged> {
+                stay { assign { updateDraft(event) } }
+            }
 
-            is ProductEditorPhase.Published -> AfsmPhaseEntry(
-                context = context.copy(errorMessage = null),
+            on<ProductEditorEvent.DescriptionChanged> {
+                stay { assign { updateDraft(event) } }
+            }
+
+            on<ProductEditorEvent.PriceChanged> {
+                stay { assign { updateDraft(event) } }
+            }
+
+            on<ProductEditorEvent.ResubmitClicked> {
+                submitDraft(
+                    validTarget = ProductEditorPhase.ImageUploadInProgress,
+                )
+
+                otherwise {
+                    assign { withValidationError() }
+                }
+            }
+
+            on<ProductEditorEvent.ContinueEditingClicked> {
+                transitionTo(ProductEditorPhase.EditingDraft)
+            }
+        }
+
+        state(ProductEditorPhase.Approved) {
+            on<ProductEditorEvent.PublishClicked> {
+                transitionTo(ProductEditorPhase.PublishInProgress)
+            }
+
+            on<ProductEditorEvent.ContinueEditingClicked> {
+                transitionTo(ProductEditorPhase.EditingDraft)
+            }
+        }
+
+        state(ProductEditorPhase.PublishInProgress) {
+            onEnter {
+                assign { copy(errorMessage = null) }
+                action(ProductEditorCommand.StartProductPublish(context.draft))
+            }
+
+            on<ProductEditorEvent.PublishSucceeded> {
+                transitionTo<ProductEditorPhase.Published>(
+                    phase = {
+                        ProductEditorPhase.Published(
+                            productId = event.productId,
+                            title = context.draft.form.title.trim(),
+                        )
+                    },
+                ) {
+                    assign { copy(errorMessage = null) }
+                }
+            }
+
+            on<ProductEditorEvent.PublishFailed> {
+                transitionTo(ProductEditorPhase.Approved) {
+                    assign {
+                        copy(errorMessage = event.message)
+                    }
+                }
+            }
+        }
+
+        state<ProductEditorPhase.Published> {
+            on<ProductEditorEvent.DoneClicked> {
+                stay {
+                    effect(ProductEditorEffect.CloseEditor)
+                }
+            }
+        }
+    }
+}
+
+private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBuilder<
+    ProductEditorPhase,
+    ProductEditorContext,
+    ProductEditorEvent,
+    ProductEditorCommand,
+    ProductEditorEffect,
+    PS,
+    EV,
+    >.submitDraft(
+    validTarget: ProductEditorPhase,
+    invalidTarget: ProductEditorPhase? = null,
+) {
+    transitionTo(
+        phase = validTarget,
+        guard = { context.draft.form.validationError() == null },
+    ) {
+        assign {
+            copy(
+                draft = draft.normalized(),
+                errorMessage = null,
             )
         }
     }
 
-    private fun enterEditingDraft(
-        event: ProductEditorEvent,
-        context: ProductEditorContext,
-    ): AfsmPhaseEntry<ProductEditorContext, ProductEditorCommand, ProductEditorEffect> {
-        return AfsmPhaseEntry(
-            context = context.copy(
-                draft = context.draft.updateForm(event),
-                errorMessage = errorMessageFor(event, context),
-            ),
-        )
-    }
-
-    private fun enterRejected(
-        event: ProductEditorEvent,
-        context: ProductEditorContext,
-    ): AfsmPhaseEntry<ProductEditorContext, ProductEditorCommand, ProductEditorEffect> {
-        return AfsmPhaseEntry(
-            context = context.copy(
-                draft = context.draft.updateForm(event),
-                errorMessage = errorMessageFor(event, context),
-            ),
-        )
-    }
-
-    private fun errorMessageFor(
-        event: ProductEditorEvent,
-        context: ProductEditorContext,
-    ): String? {
-        return when (event) {
-            is ProductEditorEvent.ImageUploadFailed -> event.message
-            ProductEditorEvent.SubmitClicked,
-            ProductEditorEvent.ResubmitClicked -> context.draft.form.validationError()
-
-            else -> null
+    invalidTarget?.let { target ->
+        transitionTo(
+            phase = target,
+            guard = { context.draft.form.validationError() != null },
+        ) {
+            assign { withValidationError() }
         }
     }
+}
+
+private fun ProductEditorContext.updateDraft(
+    event: ProductEditorEvent,
+): ProductEditorContext {
+    return copy(
+        draft = draft.updateForm(event),
+        errorMessage = null,
+    )
+}
+
+private fun ProductEditorContext.withValidationError(): ProductEditorContext {
+    return copy(errorMessage = draft.form.validationError())
 }
 
 private fun ProductDraft.updateForm(

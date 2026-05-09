@@ -119,12 +119,13 @@ EditingDraft
 
 Policy:
 
-- ProductEditor now uses the v3 phased-state profile: `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
+- ProductEditor now uses the v3 executable DSL while still exposing `ProductEditorState = ProductEditorPhase + ProductEditorContext` to Android UI code.
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
-- Reducers call `transitionTo(ProductEditorPhase.X)` for both real phase moves and editable self-transitions.
-- The phase entry policy updates context and emits commands such as `SaveDraft`, `StartImageUpload`, and `StartProductPublish`.
-- Text changes inside `EditingDraft` and `Rejected` are phase re-entries that update form data through the entry policy.
+- Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
+- `ProductEditorStateMachine.topology` can render the phase graph without sample state/event fixtures.
+- Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `assign`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.
@@ -185,8 +186,9 @@ The current sample suggests:
 - `ViewModel.afsmHost(...)` reads naturally in real Android ViewModels.
 - `Command` is easier to explain than making transition functions suspend.
 - `Effect` should stay rare and focused on UI-side one-shot work.
-- For the phased-state profile, flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the reducer less state-machine-like.
+- Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
+- The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology`.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:

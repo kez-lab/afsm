@@ -119,15 +119,16 @@ EditingDraft
 
 This flow is now the stronger sample for explaining why Afsm exists.
 
-The ProductEditor sample now uses the v3 phased-state profile:
+The ProductEditor sample now uses the v3 executable DSL:
 
 - `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
 - `ProductDraft` and validation errors live in `ProductEditorContext`.
 - Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
-- Reducers call `transitionTo(ProductEditorPhase.X)` instead of assembling full state objects.
-- `ProductEditorPhaseEntryPolicy` owns context updates and command emission when a phase is entered.
+- Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- `onEnter` owns phase-entry command emission.
+- `ProductEditorStateMachine.topology` exposes graph metadata without sample fixtures.
 
-Text edits are phase re-entries inside editable phases, while submit/review/publish actions move between explicit phases.
+Text edits are stayed branches inside editable phases, while submit/review/publish actions move between explicit phases.
 
 Transition action naming:
 

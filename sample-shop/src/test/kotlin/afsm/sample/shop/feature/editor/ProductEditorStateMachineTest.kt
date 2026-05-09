@@ -1,9 +1,12 @@
 package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmDecision
+import afsm.core.AfsmTopologyTransition
+import afsm.core.toMermaidStateDiagram
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class ProductEditorStateMachineTest {
     private val machine = ProductEditorStateMachine()
@@ -215,5 +218,44 @@ class ProductEditorStateMachineTest {
 
         assertIs<AfsmDecision.Stayed>(result.decision)
         assertEquals(listOf(ProductEditorEffect.CloseEditor), result.effects)
+    }
+
+    @Test
+    fun `topology exposes ProductEditor graph without sample events`() {
+        val transitions = machine.topology.transitions
+
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "EditingDraft",
+                event = "SubmitClicked",
+                to = "ImageUploadInProgress",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "ImageUploadInProgress",
+                event = "ImageUploadSucceeded",
+                to = "ReviewSubmissionInProgress",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "ReviewSubmissionInProgress",
+                event = "ReviewRejected",
+                to = "Rejected",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "Approved",
+                event = "PublishClicked",
+                to = "PublishInProgress",
+            ) in transitions,
+        )
+
+        val mermaid = machine.topology.toMermaidStateDiagram()
+
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mermaid)
+        assertTrue("Approved --> PublishInProgress: PublishClicked" in mermaid)
     }
 }

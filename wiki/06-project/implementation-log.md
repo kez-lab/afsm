@@ -424,3 +424,24 @@ Conclusion:
 
 - The executable DSL can now be both runtime behavior and graph source without source scanning or sample-state fixtures.
 - Topology currently records state/event edges only; action labels, guard labels, entry rendering, and duplicate declaration diagnostics remain future work.
+
+## [2026-05-09] ProductEditor executable DSL migration
+
+Change:
+
+- Migrated `sample-shop` ProductEditor from `AfsmPhasedStateMachine` and `ProductEditorPhaseEntryPolicy` to the executable DSL.
+- Kept the Android-facing state shape as `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
+- Wrapped the DSL `AfsmMachine<ProductEditorPhase, ProductEditorContext, ...>` inside `ProductEditorStateMachine` so the existing `AfsmHost` integration still receives `AfsmStateMachine<ProductEditorState, ...>`.
+- Added ProductEditor topology assertions and updated sample/wiki documentation.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --no-daemon
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --no-daemon
+```
+
+Conclusion:
+
+- The executable DSL is now validated in a real Android sample flow, not only an isolated core test.
+- The next verification gap is Android CLI smoke testing the product registration journey after the migration.

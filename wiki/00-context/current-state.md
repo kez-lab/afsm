@@ -36,8 +36,9 @@ The current direction is:
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
 - Android CLI regression smoke verification passed after the ProductEditor naming cleanup, with evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
-- ProductEditor has been refactored to the phased-state helper as a spike: `ProductEditorState = ProductEditorPhase + ProductEditorContext`, `ProductDraft` lives in context, and reducers call `transitionTo(ProductEditorPhase.X)`.
+- ProductEditor was refactored to the phased-state helper as an intermediate spike: `ProductEditorState = ProductEditorPhase + ProductEditorContext`, `ProductDraft` lives in context, and reducers call `transitionTo(ProductEditorPhase.X)`.
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
+- ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes graph metadata from the real sample implementation.
 
 ## Core Architecture Position
 
