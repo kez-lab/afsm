@@ -1,6 +1,6 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Afsm KSP MMD Generation
@@ -33,23 +33,8 @@ Use a class annotation plus a small topology contract.
     fileName = "ProductEditorStateMachine.mmd",
 )
 class ProductEditorStateMachine(
-    chart: AfsmStateChart<
-        ProductEditorPhase,
-        ProductEditorContext,
-        ProductEditorEvent,
-        ProductEditorCommand,
-        ProductEditorEffect,
-    > = productEditorChart(),
-) : AfsmStateChartMachine<
-    ProductEditorState,
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
->(chart = chart) {
-    // map ProductEditorState <-> AfsmChartState<ProductEditorPhase, ProductEditorContext>
-}
+    chart: ProductEditorChart = productEditorChart(),
+) : ProductEditorChart by chart
 ```
 
 Core types:
@@ -80,9 +65,9 @@ The desired sample-shop usage should become:
 
 ```kotlin
 @AfsmGraph
-class ProductEditorStateMachine : AfsmStateChartMachine<...>(chart = productEditorChart()) {
-    // mapping overrides
-}
+class ProductEditorStateMachine(
+    chart: ProductEditorChart = productEditorChart(),
+) : ProductEditorChart by chart
 ```
 
 Then this should generate:

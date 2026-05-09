@@ -17,7 +17,7 @@ public fun <P : Any, X : Any, E : Any, A : Any, F : Any> afsmStateChart(
 }
 
 public class AfsmStateChartBuilder<P : Any, X : Any, E : Any, A : Any, F : Any> {
-    private var initialState: AfsmChartState<P, X>? = null
+    private var initialState: AfsmState<P, X>? = null
     private val states = mutableListOf<AfsmStateDefinition<P, X, E, A, F>>()
 
     /**
@@ -27,7 +27,7 @@ public class AfsmStateChartBuilder<P : Any, X : Any, E : Any, A : Any, F : Any> 
         phase: P,
         context: X,
     ) {
-        initialState = AfsmChartState(
+        initialState = AfsmState(
             phase = phase,
             context = context,
         )
@@ -418,7 +418,7 @@ internal typealias AfsmEntryHandler<P, X, A, F> =
     (phase: P, execution: AfsmDslExecution<P, X, A, F>) -> Unit
 
 private class AfsmDslStateChart<P : Any, X : Any, E : Any, A : Any, F : Any>(
-    override val initialState: AfsmChartState<P, X>,
+    override val initialState: AfsmState<P, X>,
     private val states: List<AfsmStateDefinition<P, X, E, A, F>>,
 ) : AfsmStateChart<P, X, E, A, F> {
     override val topology: AfsmTopology = AfsmTopology(
@@ -433,9 +433,9 @@ private class AfsmDslStateChart<P : Any, X : Any, E : Any, A : Any, F : Any>(
     )
 
     override fun transition(
-        state: AfsmChartState<P, X>,
+        state: AfsmState<P, X>,
         event: E,
-    ): AfsmTransition<AfsmChartState<P, X>, A, F> {
+    ): AfsmTransition<AfsmState<P, X>, A, F> {
         val stateDefinition = states.firstOrNull { definition ->
             definition.matcher(state.phase) != null
         } ?: return Afsm.invalid(
@@ -472,7 +472,7 @@ private class AfsmDslStateChart<P : Any, X : Any, E : Any, A : Any, F : Any>(
             )
         }
 
-        val nextState = AfsmChartState(
+        val nextState = AfsmState(
             phase = targetPhase ?: state.phase,
             context = execution.context,
         )

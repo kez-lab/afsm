@@ -3,20 +3,22 @@ package afsm.core
 /**
  * Executable plain Kotlin statechart.
  *
- * The chart receives the current [AfsmChartState] and an event, then returns an
+ * The chart receives the current [AfsmState] and an event, then returns an
  * [AfsmTransition] containing the next chart state plus host-executed commands and
  * optional UI effects.
  */
-public interface AfsmStateChart<P : Any, X : Any, E : Any, A : Any, F : Any> {
-    public val initialState: AfsmChartState<P, X>
+public interface AfsmStateChart<P : Any, X : Any, E : Any, A : Any, F : Any> :
+    AfsmStateMachine<AfsmState<P, X>, E, A, F>,
+    AfsmGraphSource {
+    public val initialState: AfsmState<P, X>
 
     /**
      * Static state and transition metadata declared by this chart.
      */
-    public val topology: AfsmTopology
+    public override val topology: AfsmTopology
 
-    public fun transition(
-        state: AfsmChartState<P, X>,
+    public override fun transition(
+        state: AfsmState<P, X>,
         event: E,
-    ): AfsmTransition<AfsmChartState<P, X>, A, F>
+    ): AfsmTransition<AfsmState<P, X>, A, F>
 }

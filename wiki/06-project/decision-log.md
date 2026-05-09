@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Decision Log
@@ -398,13 +398,33 @@ Rationale:
 
 - `AfsmStateMachine` and `AfsmMachine` were too close in meaning and made it unclear which type an Android developer should implement.
 - The DSL object is more accurately a statechart because it has finite phases, extended context, entry actions, guards, and topology metadata.
-- Android-facing code should still receive one state object, so `AfsmChartState<Phase, Context>` combines the DSL runtime state and `AfsmStateChartMachine` adapts it to a feature screen state.
+- Android-facing code should still receive one state object. At this point `AfsmChartState<Phase, Context>` combined the DSL runtime state and `AfsmStateChartMachine` adapted it to a feature screen state; this was superseded on 2026-05-10 by `AfsmState<Phase, Context>`.
 - `topology = chart.topology` forwarding should be structural, not hand-written in every state-machine class.
 - `ignore(...)` should remain an explicit handled no-op for observability and tests; omitted handlers should represent invalid/unhandled transitions.
 
 Consequences:
 
-- New code should use `AfsmStateChart`, `AfsmChartState`, and `afsmStateChart`.
+- New code should use `AfsmStateChart`, `AfsmState`, and `afsmStateChart`; `AfsmChartState` is only a compatibility alias.
 - `AfsmMachine`, `AfsmSnapshot`, and `afsmMachine` are removed from the current spike API rather than kept as aliases, so IDE completion does not keep surfacing the confusing names.
 - Feature-local typealiases such as `ProductEditorChart` are the standard way to keep long generic lists out of user-facing code.
 - Graphable feature machines should prefer `AfsmStateChartMachine` when they need to expose `AfsmStateMachine<S, E, C, F>` and `AfsmGraphSource` at the same time.
+
+## [2026-05-10] Use AfsmState as the standard phase/context state
+
+Decision: Promote `AfsmState<P, X>` to the standard Afsm state value for executable charts, where `P` is the finite phase and `X` is the extended context.
+
+Rationale:
+
+- The user expectation is that Afsm state should visibly be `phase + context`, not a hidden chart-only value.
+- XState-style state plus context maps well to the ProductEditor problem: the graph is the phase, while form/draft/retry data lives in context.
+- A concrete data class avoids the factory/copy problem that appears when `AfsmState` is only an interface implemented by feature data classes.
+- If `AfsmStateChart` itself implements `AfsmStateMachine<AfsmState<P, X>, ...>` and `AfsmGraphSource`, a feature with the standard state shape can delegate directly to the chart and avoid adapter boilerplate.
+
+Consequences:
+
+- `AfsmChartState` is deprecated as a compatibility alias to `AfsmState`.
+- ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
+- ProductEditor no longer needs `toChartState` / `toScreenState` mapping; `ProductEditorStateMachine` delegates to its chart.
+- Features that need custom Android-facing sealed states can still use `AfsmStateChartMachine` as an adapter.
+- Kotlin does not allow a same-named factory next to a typealias constructor, so default initial states should use a feature-local lowercase factory such as `productEditorState()`.
+- The public name `AfsmStateChart` remains an open product/API naming question before release.

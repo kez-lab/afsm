@@ -1,6 +1,6 @@
 ---
 title: Implementation Log
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Implementation Log
@@ -585,3 +585,28 @@ Verification:
 Conclusion:
 
 - The current API now separates host-facing `AfsmStateMachine` from DSL-built `AfsmStateChart`, while keeping Android usage centered on one screen state.
+
+## [2026-05-10] AfsmState phase/context model validation
+
+Change:
+
+- Added `AfsmState<P, X>` as the standard public phase/context state data class in `afsm-core`.
+- Deprecated `AfsmChartState<P, X>` as a compatibility alias to `AfsmState<P, X>`.
+- Changed `AfsmStateChart` to implement both `AfsmStateMachine<AfsmState<P, X>, E, A, F>` and `AfsmGraphSource`.
+- Updated the executable DSL interpreter to use `AfsmState` directly.
+- Migrated ProductEditor to `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
+- Replaced the ProductEditor chart adapter mapping with direct chart delegation in `ProductEditorStateMachine`.
+- Updated Auth and core DSL tests away from deprecated `AfsmChartState` references.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:compileDebugKotlin --no-daemon
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The standard `AfsmState<Phase, Context>` model compiles and reduces ProductEditor boilerplate without breaking runtime behavior or `.mmd` graph generation.
+- Kotlin typealiases cannot have same-named default factories, so feature samples should use lower-case factories such as `productEditorState()` for default state construction.
+- Custom sealed Android-facing states remain possible through `AfsmStateChartMachine`; ProductEditor now demonstrates the simpler direct state path.

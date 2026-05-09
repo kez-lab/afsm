@@ -1,5 +1,6 @@
 package afsm.sample.shop.feature.editor
 
+import afsm.core.AfsmState
 import afsm.core.AfsmTransition
 
 data class ProductDraftForm(
@@ -18,10 +19,17 @@ data class ProductEditorContext(
     val errorMessage: String? = null,
 )
 
-data class ProductEditorState(
-    val phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    val context: ProductEditorContext = ProductEditorContext(),
-)
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+
+fun productEditorState(
+    phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
+    context: ProductEditorContext = ProductEditorContext(),
+): ProductEditorState {
+    return AfsmState(
+        phase = phase,
+        context = context,
+    )
+}
 
 sealed interface ProductEditorPhase {
     data object EditingDraft : ProductEditorPhase

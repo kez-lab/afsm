@@ -38,7 +38,7 @@ public abstract class AfsmStateChartMachine<
         )
     }
 
-    protected abstract fun toChartState(state: S): AfsmChartState<P, X>
+    protected abstract fun toChartState(state: S): AfsmState<P, X>
 
-    protected abstract fun toScreenState(state: AfsmChartState<P, X>): S
+    protected abstract fun toScreenState(state: AfsmState<P, X>): S
 }

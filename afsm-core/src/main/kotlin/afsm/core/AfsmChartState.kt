@@ -1,12 +1,10 @@
 package afsm.core
 
 /**
- * Runtime state carried by an executable Afsm statechart.
- *
- * [phase] is the finite statechart node. [context] is the extended state that
- * stores data shared across phases, such as form input, ids, and retry counts.
+ * Backwards-compatible name for the original executable statechart state.
  */
-public data class AfsmChartState<out P : Any, out X : Any>(
-    public val phase: P,
-    public val context: X,
+@Deprecated(
+    message = "Use AfsmState. Afsm state is always phase + context.",
+    replaceWith = ReplaceWith("AfsmState<P, X>"),
 )
+public typealias AfsmChartState<P, X> = AfsmState<P, X>

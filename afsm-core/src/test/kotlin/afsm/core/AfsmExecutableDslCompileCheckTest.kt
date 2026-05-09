@@ -11,7 +11,7 @@ class AfsmExecutableDslCompileCheckTest {
         val machine = productEditorMachine()
 
         val result = machine.transition(
-            state = AfsmChartState(
+            state = AfsmState(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(
                     draft = DslProductDraft(
@@ -46,7 +46,7 @@ class AfsmExecutableDslCompileCheckTest {
         )
 
         val result = machine.transition(
-            state = AfsmChartState(
+            state = AfsmState(
                 phase = DslProductEditorPhase.ImageUploadInProgress,
                 context = DslProductEditorContext(draft = draft),
             ),
@@ -76,7 +76,7 @@ class AfsmExecutableDslCompileCheckTest {
         val machine = productEditorMachine()
 
         val result = machine.transition(
-            state = AfsmChartState(
+            state = AfsmState(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(
                     draft = DslProductDraft(
@@ -104,7 +104,7 @@ class AfsmExecutableDslCompileCheckTest {
         )
 
         val result = machine.transition(
-            state = AfsmChartState(
+            state = AfsmState(
                 phase = phase,
                 context = DslProductEditorContext(),
             ),

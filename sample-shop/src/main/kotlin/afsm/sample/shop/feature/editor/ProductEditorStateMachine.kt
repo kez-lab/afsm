@@ -1,10 +1,8 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmChartState
 import afsm.core.AfsmEventBranchScope
 import afsm.core.AfsmGraph
 import afsm.core.AfsmStateChart
-import afsm.core.AfsmStateChartMachine
 import afsm.core.afsmStateChart
 
 private typealias ProductEditorChart = AfsmStateChart<
@@ -21,32 +19,7 @@ private typealias ProductEditorChart = AfsmStateChart<
 )
 internal class ProductEditorStateMachine(
     chart: ProductEditorChart = productEditorChart(),
-) : AfsmStateChartMachine<
-    ProductEditorState,
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-    >(
-    chart = chart,
-) {
-    override fun toChartState(state: ProductEditorState): AfsmChartState<ProductEditorPhase, ProductEditorContext> {
-        return AfsmChartState(
-            phase = state.phase,
-            context = state.context,
-        )
-    }
-
-    override fun toScreenState(
-        state: AfsmChartState<ProductEditorPhase, ProductEditorContext>,
-    ): ProductEditorState {
-        return ProductEditorState(
-            phase = state.phase,
-            context = state.context,
-        )
-    }
-}
+) : ProductEditorChart by chart
 
 private fun productEditorChart(): ProductEditorChart {
     return afsmStateChart {

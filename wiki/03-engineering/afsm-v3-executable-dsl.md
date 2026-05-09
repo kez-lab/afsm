@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Afsm v3 Executable DSL
@@ -109,22 +109,28 @@ Current naming:
 | Type | Role |
 |---|---|
 | `AfsmStateMachine<S, E, C, F>` | Host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration. It receives the full screen state `S`. |
-| `AfsmStateChart<P, X, E, C, F>` | Internal executable chart definition built by the DSL. It receives `AfsmChartState<Phase, Context>`. |
-| `AfsmChartState<P, X>` | Single runtime state value for the DSL, combining finite `phase` and extended `context`. |
-| `AfsmStateChartMachine<S, P, X, E, C, F>` | Adapter base that maps Android-facing state `S` to `AfsmChartState<P, X>`, delegates transition execution, and exposes topology automatically. |
+| `AfsmState<P, X>` | Standard Afsm state value: finite `phase` plus extended `context`. |
+| `AfsmStateChart<P, X, E, C, F>` | Executable chart definition built by the DSL. It is also an `AfsmStateMachine<AfsmState<P, X>, E, C, F>` and an `AfsmGraphSource`. |
+| `AfsmStateChartMachine<S, P, X, E, C, F>` | Compatibility adapter that maps a custom Android-facing state `S` to `AfsmState<P, X>`, delegates transition execution, and exposes topology automatically. |
 
-This means Android developers can keep a single screen state:
+This means Android developers can either use the standard Afsm state directly:
 
 ```kotlin
-data class ProductEditorState(
-    val phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    val context: ProductEditorContext = ProductEditorContext(),
-)
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+
+fun productEditorState(
+    phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
+    context: ProductEditorContext = ProductEditorContext(),
+): ProductEditorState = AfsmState(phase = phase, context = context)
 ```
 
-The chart can still work with `phase + context` internally, while `AfsmHost` sees only `ProductEditorState`.
+or keep a custom Android-facing state and adapt it through `AfsmStateChartMachine`.
 
-`AfsmMachine`, `afsmMachine`, and `AfsmSnapshot` are no longer part of the current spike API. New examples should use `AfsmStateChart`, `afsmStateChart`, and `AfsmChartState`.
+The same-named factory pattern does not work with Kotlin `typealias` because it conflicts with the aliased constructor. Use a feature-local lowercase factory such as `productEditorState()` for defaults.
+
+`AfsmMachine`, `afsmMachine`, `AfsmSnapshot`, and public `AfsmChartState` examples are no longer part of the current recommendation. `AfsmChartState` remains only as a deprecated compatibility alias to `AfsmState`.
+
+The `AfsmStateChart` name still needs final product review because it may sound too framework-specific to some Android developers.
 
 ## Ignore Semantics
 
@@ -375,6 +381,7 @@ Output:
 
 ```text
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
+sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
 ```
 
 The generation task writes only the `.mmd` file. It does not create an explanatory document beside the graph.
@@ -389,45 +396,37 @@ Execution contract:
 
 ```kotlin
 interface AfsmStateChart<P : Any, X : Any, E : Any, A : Any, F : Any> {
-    val initialState: AfsmChartState<P, X>
+    val initialState: AfsmState<P, X>
     val topology: AfsmTopology
 
     fun transition(
-        state: AfsmChartState<P, X>,
+        state: AfsmState<P, X>,
         event: E,
-    ): AfsmTransition<AfsmChartState<P, X>, A, F>
+    ): AfsmTransition<AfsmState<P, X>, A, F>
 }
 
-data class AfsmChartState<P : Any, X : Any>(
+data class AfsmState<P : Any, X : Any>(
     val phase: P,
     val context: X,
 )
 ```
 
-Feature state machines should usually wrap the chart with `AfsmStateChartMachine` so callers do not manually forward `topology` or expose `Phase, Context` generic lists at every usage site:
+For the normal phase/context screen shape, features can alias `AfsmState` and delegate the chart directly:
 
 ```kotlin
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+
+fun productEditorState(
+    phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
+    context: ProductEditorContext = ProductEditorContext(),
+): ProductEditorState = AfsmState(phase = phase, context = context)
+
 class ProductEditorStateMachine(
     chart: ProductEditorChart = productEditorChart(),
-) : AfsmStateChartMachine<
-    ProductEditorState,
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
->(chart = chart) {
-    override fun toChartState(state: ProductEditorState): AfsmChartState<ProductEditorPhase, ProductEditorContext> {
-        return AfsmChartState(state.phase, state.context)
-    }
-
-    override fun toScreenState(
-        state: AfsmChartState<ProductEditorPhase, ProductEditorContext>,
-    ): ProductEditorState {
-        return ProductEditorState(state.phase, state.context)
-    }
-}
+) : ProductEditorChart by chart
 ```
+
+If a feature needs a custom Android-facing sealed state, it can still wrap the chart with `AfsmStateChartMachine` and map that state to/from `AfsmState<Phase, Context>`.
 
 `AfsmHost` can stay conceptually the same:
 
@@ -526,6 +525,7 @@ Success criteria:
 Result on 2026-05-09:
 
 - Added the initial executable chart types to `afsm-core`; these were later renamed to `AfsmStateChart<P, X, E, A, F>` and `AfsmChartState<P, X>` after API feedback that `AfsmMachine` and `AfsmStateMachine` were too easy to confuse.
+- Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. `AfsmChartState` remains only as a deprecated compatibility alias.
 - Added a minimal executable DSL in `afsm-core`: `afsmStateChart`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `action`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, guard fallback, entry action emission, and effect-only stayed transitions work in compiled Kotlin tests.
@@ -541,7 +541,7 @@ Implement enough interpreter behavior to execute one event:
 - apply `updateContext` operations in order,
 - apply one transition target,
 - run exit/transition/entry outputs in deterministic order,
-- return `AfsmTransition<AfsmChartState<P, X>, A, F>`.
+- return `AfsmTransition<AfsmState<P, X>, A, F>`.
 
 Current spike status:
 
@@ -581,11 +581,19 @@ Success criteria:
 Result on 2026-05-09:
 
 - Migrated real `sample-shop` ProductEditor away from `AfsmPhasedStateMachine` and `ProductEditorPhaseEntryPolicy`.
-- Kept `ProductEditorState = ProductEditorPhase + ProductEditorContext` as the Android-facing state shape.
+- Kept `ProductEditorState` conceptually as `ProductEditorPhase + ProductEditorContext`; this was later made explicit with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
 - Wrapped the DSL `AfsmStateChart<ProductEditorPhase, ProductEditorContext, ...>` in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmStateMachine<ProductEditorState, ...>`.
 - Added `AfsmStateChartMachine` to hide repetitive topology forwarding and chart-state adaptation from feature state machines.
 - Added a ProductEditor unit test that verifies topology export without sample events.
 - Android CLI smoke verification passed after the migration.
+
+Update on 2026-05-10:
+
+- Added `AfsmState<P, X>` as the standard state value in `afsm-core`.
+- `AfsmStateChart` now implements `AfsmStateMachine<AfsmState<P, X>, E, A, F>` and `AfsmGraphSource` directly.
+- ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
+- ProductEditor no longer needs phase/context adapter mapping; `ProductEditorStateMachine` delegates to the chart.
+- Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.
 
 ### Step 5: Public API Decision
 
@@ -593,7 +601,7 @@ Decide naming before public release:
 
 - `Command` vs `Action` vs `TransitionAction`.
 - `effect` delivery policy.
-- whether `AfsmChartState` remains public in `afsm-core` or moves behind a more opinionated feature adapter API.
+- whether `AfsmStateChart` is the final public name for executable charts.
 - whether DSL lives in `afsm-core` or an `afsm-dsl` module.
 
 ## Superseded Direction

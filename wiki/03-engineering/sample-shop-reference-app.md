@@ -1,6 +1,6 @@
 ---
 title: Sample Shop Reference App
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Sample Shop Reference App
@@ -128,12 +128,12 @@ This flow is now the stronger sample for explaining why Afsm exists.
 
 The ProductEditor sample now uses the v3 executable DSL:
 
-- `ProductEditorState = ProductEditorPhase + ProductEditorContext`.
+- `ProductEditorState` is a typealias to `AfsmState<ProductEditorPhase, ProductEditorContext>`.
 - `ProductDraft` and validation errors live in `ProductEditorContext`.
 - Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `onEnter` owns phase-entry command emission.
-- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and implements `AfsmGraphSource`.
+- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 
@@ -178,6 +178,8 @@ Current feedback from the sample:
 - `Command` keeps transition functions pure and avoids suspend state machines.
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
+- The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
+- A custom sealed Android-facing state is still possible through `AfsmStateChartMachine`, as shown by Auth.
 - A Compose/lifecycle effect collection helper or official snippet is now worth considering.
 
 ## Verification

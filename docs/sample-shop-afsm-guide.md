@@ -121,12 +121,12 @@ EditingDraft
 
 Policy:
 
-- ProductEditor now uses the v3 executable DSL while still exposing `ProductEditorState = ProductEditorPhase + ProductEditorContext` to Android UI code.
+- ProductEditor now uses the v3 executable DSL while exposing `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` to Android UI code.
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
-- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and implements `AfsmGraphSource`.
+- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements both `AfsmStateMachine` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `updateContext`.
@@ -193,7 +193,9 @@ The current sample suggests:
 - Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmStateChart.topology` / `AfsmTopology.toMmd()`.
-- `AfsmStateMachine` is the host-facing contract. The executable DSL builds an `AfsmStateChart`, and `AfsmStateChartMachine` hides the repetitive adapter code that maps one Android screen state to `phase + context`.
+- `AfsmStateMachine` is the host-facing contract. The executable DSL builds an `AfsmStateChart`, and charts now operate directly on the standard `AfsmState<Phase, Context>` data class.
+- `AfsmStateChartMachine` remains useful when a feature wants a custom Android-facing sealed state, as Auth does.
+- Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:

@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-09
+updated: 2026-05-10
 ---
 
 # Open Questions
@@ -47,6 +47,7 @@ Resolved:
 - Should the executable DSL live in `afsm-core`, `afsm-dsl`, or another module before public release?
 - How should graph extraction represent invalid/ignored branches declared in the executable DSL?
 - Should graph labels default to type names, require explicit human labels, or support both?
+- Should `AfsmStateChart` remain the public name for executable charts, or should it be renamed before release to reduce user confusion?
 - Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
@@ -79,10 +80,12 @@ Resolved:
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmStateChart.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.
 - `AfsmMachine` has been retired as the current name because it confused the host-facing `AfsmStateMachine` contract. New code uses `AfsmStateChart`; the old aliases were removed from the current spike API.
-- `AfsmChartState<Phase, Context>` is the current single state value for executable charts. Feature-facing machines should adapt it to one Android screen state through `AfsmStateChartMachine`.
+- `AfsmState<Phase, Context>` is the current standard state value for executable charts. Features with this exact shape can use a typealias and delegate directly to the chart; custom sealed UI states can still adapt through `AfsmStateChartMachine`.
 - `ignore(...)` is intentional handled no-op behavior. Ordinary unhandled event/phase combinations should be omitted and become invalid decisions.
 - Real `sample-shop` ProductEditor has been migrated from the phased helper to the executable DSL and has focused unit coverage plus topology assertions.
 - The phased-state API was removed from `afsm-core` after the executable DSL migration; it remains only as historical learning.
 - In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
 - Context-only updates should be reserved for actual data updates; ProductEditor's current public style is executable DSL branches plus `updateContext`, not entry-policy-driven reducers.
 - The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.
+- `AfsmChartState` has been superseded by `AfsmState`; the old name remains only as a deprecated compatibility alias.
+- Same-named factory functions conflict with Kotlin typealias constructors, so features should use lowercase factories such as `productEditorState()` when they need default initial state values.

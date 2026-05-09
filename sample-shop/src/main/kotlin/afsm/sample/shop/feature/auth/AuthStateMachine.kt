@@ -1,7 +1,7 @@
 package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmChartState
+import afsm.core.AfsmState
 import afsm.core.AfsmStateChart
 import afsm.core.AfsmStateChartMachine
 import afsm.core.afsmStateChart
@@ -23,11 +23,11 @@ internal class AuthStateMachine : AfsmStateChartMachine<
     >(
     chart = authChart(),
 ) {
-    override fun toChartState(state: AuthState): AfsmChartState<AuthPhase, AuthContext> {
+    override fun toChartState(state: AuthState): AfsmState<AuthPhase, AuthContext> {
         return state.toChartState()
     }
 
-    override fun toScreenState(state: AfsmChartState<AuthPhase, AuthContext>): AuthState {
+    override fun toScreenState(state: AfsmState<AuthPhase, AuthContext>): AuthState {
         return state.toAuthState()
     }
 }
@@ -228,9 +228,9 @@ internal data class AuthContext(
     val session: UserSession? = null,
 )
 
-private fun AuthState.toChartState(): AfsmChartState<AuthPhase, AuthContext> {
+private fun AuthState.toChartState(): AfsmState<AuthPhase, AuthContext> {
     return when (this) {
-        is AuthState.Editing -> AfsmChartState(
+        is AuthState.Editing -> AfsmState(
             phase = AuthPhase.Editing,
             context = AuthContext(
                 mode = mode,
@@ -239,7 +239,7 @@ private fun AuthState.toChartState(): AfsmChartState<AuthPhase, AuthContext> {
             ),
         )
 
-        is AuthState.Submitting -> AfsmChartState(
+        is AuthState.Submitting -> AfsmState(
             phase = AuthPhase.Submitting,
             context = AuthContext(
                 mode = mode,
@@ -247,14 +247,14 @@ private fun AuthState.toChartState(): AfsmChartState<AuthPhase, AuthContext> {
             ),
         )
 
-        is AuthState.Authenticated -> AfsmChartState(
+        is AuthState.Authenticated -> AfsmState(
             phase = AuthPhase.Authenticated,
             context = AuthContext(session = session),
         )
     }
 }
 
-private fun AfsmChartState<AuthPhase, AuthContext>.toAuthState(): AuthState {
+private fun AfsmState<AuthPhase, AuthContext>.toAuthState(): AuthState {
     return when (phase) {
         AuthPhase.Editing -> AuthState.Editing(
             mode = context.mode,

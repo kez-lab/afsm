@@ -20,7 +20,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `title change re-enters editing phase and updates draft in context`() {
-        val state = ProductEditorState()
+        val state = productEditorState()
 
         val result = machine.transition(
             state = state,
@@ -33,7 +33,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `save draft transitions to saving phase and phase entry emits save command`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             context = ProductEditorContext(draft = validDraft),
         )
 
@@ -46,7 +46,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `draft saved result transitions to draft saved phase without carrying draft in phase`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.SavingDraft,
             context = ProductEditorContext(draft = validDraft),
         )
@@ -59,7 +59,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `editing after draft saved returns to editing phase and updates context draft`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.DraftSaved,
             context = ProductEditorContext(draft = validDraft),
         )
@@ -75,7 +75,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `submit from editing transitions only by phase and starts image upload from context draft`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             context = ProductEditorContext(draft = validDraft),
         )
 
@@ -88,7 +88,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `invalid draft re-enters editing phase with validation error in context`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             context = ProductEditorContext(
                 draft = validDraft.copy(
                     form = validDraft.form.copy(description = "short"),
@@ -108,7 +108,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `image upload failure returns to editing phase with error in context`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.ImageUploadInProgress,
             context = ProductEditorContext(draft = validDraft),
         )
@@ -125,7 +125,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `image upload success increments review attempt in context and submits review command`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.ImageUploadInProgress,
             context = ProductEditorContext(draft = validDraft),
         )
@@ -154,7 +154,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `rejected draft edit stays rejected and updates context draft`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.Rejected(
                 reason = "Mock reviewer asks for one resubmission.",
             ),
@@ -173,7 +173,7 @@ class ProductEditorStateMachineTest {
     @Test
     fun `rejected draft can be resubmitted through upload again without passing draft through phase`() {
         val reviewedDraft = validDraft.copy(reviewAttempt = 1)
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.Rejected(
                 reason = "Mock reviewer asks for one resubmission.",
             ),
@@ -190,7 +190,7 @@ class ProductEditorStateMachineTest {
     @Test
     fun `approved draft publishes product through phase entry command`() {
         val reviewedDraft = validDraft.copy(reviewAttempt = 2)
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.Approved,
             context = ProductEditorContext(draft = reviewedDraft),
         )
@@ -207,7 +207,7 @@ class ProductEditorStateMachineTest {
 
     @Test
     fun `done after published emits close editor effect`() {
-        val state = ProductEditorState(
+        val state = productEditorState(
             phase = ProductEditorPhase.Published(
                 productId = 100,
                 title = "Travel Mug",
