@@ -231,5 +231,5 @@
 ## [2026-05-09] planning | KSP mmd generation design
 
 - Source: user request to design KSP-based automatic `.mmd` discovery for multiple state machines.
-- Action: Added the KSP graph generation design: annotate machine providers, generate a registry, execute real compiled topology, and write one `.mmd` per registered machine.
+- Action: Corrected the KSP graph generation design to annotate `StateMachine` classes, generate a registry, execute real compiled topology through `AfsmGraphSource`, and write one `.mmd` per registered machine.
 - Updated: `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

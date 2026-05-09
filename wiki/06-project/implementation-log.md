@@ -493,10 +493,11 @@ Conclusion:
 
 Change:
 
-- Added a design for KSP-based automatic `.mmd` generation across multiple Afsm machines.
-- Chose annotation-based discovery with `@AfsmGraph` as the MVP registration model.
+- Added a design for KSP-based automatic `.mmd` generation across multiple Afsm state machines.
+- Chose `@AfsmGraph` on `StateMachine` classes as the MVP registration model.
+- Added `AfsmGraphSource` as the topology contract for graphable state-machine classes.
 - Chose generated registry plus compiled topology execution instead of KSP static DSL parsing.
-- Documented MVP generated-unit-test generation and future Gradle plugin path.
+- Documented MVP registry generation and future Gradle plugin path.
 
 Verification:
 
@@ -504,4 +505,4 @@ Verification:
 
 Conclusion:
 
-- The next implementation spike should add `afsm-graph-ksp`, generate a registry from annotated providers, and replace ProductEditor-only sample generation with registry-driven generation.
+- The next implementation spike should add `AfsmGraph`/`AfsmGraphSource`, add `afsm-graph-ksp`, generate a registry from annotated state-machine classes, and replace ProductEditor-only sample generation with registry-driven generation.
