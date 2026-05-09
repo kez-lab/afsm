@@ -154,3 +154,21 @@ Consequences:
 - Detailed process guidance lives in `wiki/07-llm/ai-engineering-guardrails.md`.
 - Intentional behavior changes must update wiki/spec/decision material before tests are rewritten.
 - Bug fixes should add or preserve regression tests before production code changes.
+
+## [2026-05-09] Add afsm-viewmodel as thin AndroidX integration
+
+Decision: Implement `afsm-viewmodel` as an Android library module with a single `ViewModel.afsmHost(...)` helper over `AfsmHost`.
+
+Rationale:
+
+- Android developers should not manually pass `viewModelScope` every time they adopt Afsm.
+- Composition over inheritance keeps Hilt, Koin, manual DI, and feature-specific ViewModel constructors free.
+- `lifecycle-viewmodel-ktx` is an Android artifact, so `afsm-viewmodel` should be an Android library module rather than a JVM module.
+- Runtime behavior remains in `afsm-runtime`; `afsm-viewmodel` only owns lifecycle scope wiring.
+
+Consequences:
+
+- The project now uses Android Gradle Plugin for the ViewModel integration module.
+- `ViewModel.afsmHost(...)` supplies `viewModelScope`.
+- `SavedStateHandle`, navigation, and Compose helpers remain outside this module for now.
+- AndroidX is enabled with `android.useAndroidX=true`.

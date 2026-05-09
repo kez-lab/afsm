@@ -55,4 +55,6 @@ Resolved:
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile cleanly in `afsm-core` when used with feature-local typealiases and both no-effect and effectful flows.
 - Provide a small reusable `afsm-runtime` module after `afsm-core`; keep Android ViewModel integration in a later module.
 - MVP command execution policy is sequential and verified by `afsm-runtime` tests.
-- MVP includes `afsm-runtime`; `afsm-viewmodel`, Compose helpers, and test helpers remain future modules.
+- MVP includes `afsm-runtime`.
+- `afsm-viewmodel` exists as a thin AndroidX integration module with `ViewModel.afsmHost(...)`.
+- Compose helpers and test helpers remain future modules.

@@ -18,3 +18,4 @@ rootProject.name = "afsm"
 
 include(":afsm-core")
 include(":afsm-runtime")
+include(":afsm-viewmodel")

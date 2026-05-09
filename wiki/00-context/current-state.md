@@ -20,6 +20,7 @@ The current direction is:
 - A minimal coroutine-based `afsm-runtime` module now exists.
 - `AfsmHost` serializes non-suspending `dispatch(event)` calls through a FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially.
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
+- A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`.
 
 ## Core Architecture Position
 
@@ -49,6 +50,8 @@ Core compile validation: [[../03-engineering/afsm-core-compile-validation|Afsm C
 Runtime dispatch validation: [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]].
 
 AI engineering guardrails: [[../07-llm/ai-engineering-guardrails|AI Engineering Guardrails]].
+
+ViewModel integration validation: [[../03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]].
 
 ## Current Source Material
 

@@ -101,3 +101,9 @@
 - Source: user request
 - Action: Added project-scoped AI engineering and TDD guardrails that protect tests as executable specification and define failure triage before test edits.
 - Updated: `AGENTS.md`, `wiki/07-llm/ai-engineering-guardrails.md`, `wiki/03-engineering/testing-strategy.md`, `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | afsm-viewmodel helper
+
+- Source: user request
+- Action: Added `afsm-viewmodel` as an Android library module with `ViewModel.afsmHost(...)`, AndroidX Lifecycle dependency, ViewModel usage tests, and Gradle Android configuration.
+- Updated: `settings.gradle.kts`, `build.gradle.kts`, `gradle/wrapper/gradle-wrapper.properties`, `gradle.properties`, `afsm-viewmodel/`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/06-project/implementation-log.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.

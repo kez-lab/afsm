@@ -20,6 +20,7 @@ updated: 2026-05-09
 - [[03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]] - Implementation-candidate API draft covering Stayed, AfsmNoEffect, effect delivery, and dispatch serialization.
 - [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.
 - [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Minimal coroutine runtime implementation and verification for serialized dispatch, decisions, commands, and effects.
+- [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
 - [[03-engineering/android-official-guidance|Android Official Guidance]] - Official Android documentation distilled into constraints for this FSM architecture.
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.
 - [[03-engineering/fsm-runtime-roadmap|FSM Runtime Roadmap]] - Suggested build order for the Android FSM foundation.

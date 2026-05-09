@@ -33,6 +33,12 @@ Runtime validation note:
 - Verification command: `./gradlew test --no-daemon`.
 - Details: [[afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]].
 
+ViewModel validation note:
+
+- `ViewModel.afsmHost(...)` has been implemented in `afsm-viewmodel` as a thin AndroidX Lifecycle integration over `AfsmHost`.
+- The helper supplies `viewModelScope`, does not require a base ViewModel, and leaves DI/SavedStateHandle decisions to feature code.
+- Details: [[afsm-viewmodel-integration|Afsm ViewModel Integration]].
+
 ## Naming Decision
 
 Use `Afsm` as the public API prefix.

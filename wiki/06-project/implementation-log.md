@@ -59,3 +59,33 @@ Conclusion:
 
 - `afsm-runtime` is viable as a low-coupling coroutine module.
 - Android ViewModel integration should be a thin wrapper over `AfsmHost`, not part of runtime.
+
+## [2026-05-09] afsm-viewmodel thin helper
+
+Change:
+
+- Added `afsm-viewmodel` Android library module.
+- Added `ViewModel.afsmHost(...)`.
+- Wired `AfsmHost` to AndroidX `viewModelScope`.
+- Added ViewModel usage tests that model the developer-facing adapter code.
+- Updated Gradle wrapper to `8.11.1` and added Android Gradle Plugin `8.10.1` for the Android library module.
+- Enabled AndroidX through `gradle.properties`.
+
+Verification:
+
+```bash
+./gradlew :afsm-viewmodel:testDebugUnitTest --no-daemon
+./gradlew test --no-daemon
+./gradlew test --warning-mode all --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- The ViewModel integration can stay as a thin extension function.
+- The natural ViewModel usage shape is `private val host = afsmHost(...)`, `val state = host.state`, `val effects = host.effects`, and `fun onEvent(event) = host.dispatch(event)`.
