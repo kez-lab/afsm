@@ -44,13 +44,15 @@ Resolved:
 
 - Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
 - Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
-- Should Afsm document a v3 typed-handler convention with concrete State/Event handler signatures and `transitionTo` next-state extraction for state diagram generation?
+- Should Afsm implement the v3 phased-state profile as `afsm-core` helpers, a separate `afsm-phased` module, or only documentation at first?
 - If v3 exists, should it become the recommended API or remain an optional graph-oriented layer over v2?
 - How should graph extraction handle invalid/ignored branches while preserving Kotlin `when` exhaustiveness?
 - Should graph labels default to type names, require explicit human labels, or support both?
 - Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
 - If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
-- Can automatic graph generation be supported through typed-handler source analysis before introducing KSP?
+- Can automatic graph generation be supported through `transitionTo(Phase)` source analysis before introducing KSP?
+- Should `PhaseEntryPolicy` be allowed to emit effects, or should it only update context and emit commands?
+- Should context-only operations such as draft save use `updateContext(..., commands = ...)`, or should those remain explicit transition results in reducers?
 
 Resolved:
 
@@ -70,3 +72,4 @@ Resolved:
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation still needs explicit edge metadata, declarative registration, or static analysis.
+- The current v3 direction is `State = Phase + Context` with reducers calling `transitionTo(Phase)` and feature-local entry policy hiding context update, command, and effect assembly.

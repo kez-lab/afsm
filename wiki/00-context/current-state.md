@@ -27,7 +27,7 @@ The current direction is:
 - Auth now uses sealed phases (`Editing`, `Submitting`, `Authenticated`) so text edits read as self-transitions and submit reads as a real phase transition.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
-- A v3 topology-friendly Kotlin style is now documented using `ProductEditorStateMachine`: keep plain Kotlin `when`, use concrete State/Event handler signatures, and let `transitionTo` expose the next state for graph extraction.
+- The canonical v3 API direction is now a phased-state authoring profile: `State = Phase + Context`, reducers call `transitionTo(Phase)`, and feature-local `PhaseEntryPolicy` hides context normalization plus command/effect entry rules.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
 - Android CLI regression smoke verification passed after the ProductEditor naming cleanup, with evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
@@ -55,7 +55,7 @@ Public API draft: [[../03-engineering/afsm-public-api-draft|Afsm Public API Draf
 
 Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]].
 
-v3 typed-handler direction: [[../03-engineering/afsm-v3-topology-first-api|Afsm v3 Typed Handler API]].
+v3 phased-state direction: [[../03-engineering/afsm-v3-topology-first-api|Afsm v3 Phased State API]].
 
 Transition action terminology: [[../03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]].
 

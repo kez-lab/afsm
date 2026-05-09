@@ -167,3 +167,9 @@
 - Source: user feedback about poor conversation/wiki sync and fragmented v3 documentation
 - Action: Rewrote the v3 page as the canonical `Afsm v3 Typed Handler API` synthesis and added rules requiring future design corrections to update canonical pages, not only append logs.
 - Updated: `AGENTS.md`, `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] decision | v3 phased state with hidden entry policy
+
+- Source: user discussion on abstract state diagrams, phase-only transitions, and hidden context update rules
+- Action: Reworked the canonical v3 direction from typed sealed-state handlers to a phased-state profile where reducers call `transitionTo(Phase)` and feature-local `PhaseEntryPolicy` owns context normalization plus command/effect entry rules.
+- Updated: `wiki/03-engineering/afsm-v3-topology-first-api.md`, `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

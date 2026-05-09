@@ -243,7 +243,7 @@ git diff --check
 
 Conclusion:
 
-- This intermediate from-state-scoped direction was later superseded by the typed-handler convention.
+- This intermediate from-state-scoped direction was later superseded by the typed-handler convention, and then by the phased-state profile.
 - Graph generation remains a topology metadata concern, while transition execution can remain readable Kotlin code.
 
 ## [2026-05-09] v3 typed-handler API correction
@@ -263,7 +263,7 @@ git diff --check
 Conclusion:
 
 - v3 should not require a DSL as the main authoring style.
-- The next proof should test whether ProductEditor can be refactored into concrete handlers and whether a simple graph extractor can infer state edges from that code.
+- This typed-handler direction was later superseded by the phased-state profile, where reducers call `transitionTo(Phase)` and entry policy hides context assembly.
 
 ## [2026-05-09] v3 canonical synthesis cleanup
 
@@ -285,3 +285,4 @@ Conclusion:
 
 - Future agents should read the v3 page as the current answer, not reconstruct the answer from previous corrections.
 - Design corrections should update canonical synthesis pages directly before appending supporting history.
+- The `Afsm v3 Typed Handler API` content was later superseded by `Afsm v3 Phased State API`.

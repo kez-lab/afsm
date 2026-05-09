@@ -286,11 +286,31 @@ Rationale:
 
 - Repeated corrections created a fragmented document that read like chat history instead of a current design.
 - Future agents should not reconstruct the accepted v3 direction from logs, decision history, or superseded API sketches.
-- The current accepted direction is typed-handler Kotlin, not DSL-first topology registration.
+- At that time, the accepted direction was typed-handler Kotlin, not DSL-first topology registration. This was later superseded by the phased-state decision below.
 
 Consequences:
 
-- The v3 page title is now `Afsm v3 Typed Handler API`.
+- The v3 page title was then `Afsm v3 Typed Handler API`; it is now superseded by `Afsm v3 Phased State API`.
 - Superseded ideas stay in one short section at the end of the page.
 - Future design corrections must rewrite the canonical page directly and then append logs/decisions as supporting history.
 - `AGENTS.md` and the wiki maintenance guide now include this canonical synthesis rule.
+
+## [2026-05-09] Pivot v3 toward phased state with hidden entry policy
+
+Decision: Make the current v3 API candidate a phased-state authoring profile: full Android screen state is modeled as `State = Phase + Context`, reducers transition by calling `transitionTo(Phase)`, and feature-local `PhaseEntryPolicy` performs phase-specific context updates plus command/effect emission.
+
+Rationale:
+
+- The CEO wants state diagrams to remain abstract and phase-oriented, not polluted by every `context.copy(...)` detail.
+- Sealed state subtypes make graph nodes clear, but force every transition to manually preserve shared values such as draft, errors, save status, and retry counters.
+- A plain `data class State(phase, context)` preserves the Android `UiState.copy(...)` ergonomics while `Phase` remains the finite node for diagrams.
+- Hidden entry policy lets transitions read as "go to this phase" while still keeping context normalization and transition actions deterministic and testable.
+- This avoids using durable state as a one-shot effect trigger because commands still leave through `AfsmTransition`.
+
+Consequences:
+
+- The canonical v3 page is now `Afsm v3 Phased State API`.
+- `transitionTo(Phase)` is the preferred target experience for complex Android screen FSMs that need diagrams.
+- `PhaseEntryPolicy` must remain feature-local and unit-tested so hidden context updates do not become invisible magic.
+- Context-only updates such as form text changes or draft-save status should use `updateContext(...)`/`stay(...)` and should usually be omitted from the primary state diagram.
+- The existing v2 runtime remains valid; phased state is an authoring profile layered over `AfsmTransition<S, C, F>` and `AfsmHost`.

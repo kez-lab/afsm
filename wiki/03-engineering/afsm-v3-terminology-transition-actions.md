@@ -56,6 +56,43 @@ TransitionAction = please do
 Effect = please show/navigate/launch
 ```
 
+## Phase, Context, And Entry Policy
+
+The current v3 direction adds another distinction for Android screen state:
+
+```text
+State = Phase + Context
+```
+
+Where:
+
+- `Phase` is the finite state-machine node used for diagrams.
+- `Context` is the durable data carried across phases.
+- `PhaseEntryPolicy` owns context normalization and transition actions when a phase is entered.
+
+Example edge:
+
+```text
+EditingDraft -- SubmitClicked / StartImageUpload --> ImageUploadInProgress
+```
+
+In code, the reducer should be able to say only:
+
+```kotlin
+transitionTo(ProductEditorPhase.ImageUploadInProgress)
+```
+
+The feature-local entry policy then applies the hidden phase entry rules:
+
+- normalize the product draft,
+- clear stale error messages,
+- set secondary operation flags if needed,
+- emit `StartImageUpload`.
+
+This keeps the graph-oriented flow visible while preventing every transition from manually passing common context through each phase constructor.
+
+Canonical v3 page: [[afsm-v3-topology-first-api|Afsm v3 Phased State API]].
+
 ## Naming Policy
 
 Afsm should make the three axes visually distinct.
@@ -235,20 +272,21 @@ The CEO feedback is that a DSL-like API can feel suspicious if it is not needed.
 Current recommendation:
 
 - Do not force a DSL yet.
-- Keep the v2 plain Kotlin `when (state)` reducer API as the implemented engine.
-- Use concrete State/Event handler signatures when a state machine needs graph extraction.
-- Let `transitionTo` expose the next state instead of repeating `From` and `Event` generics.
+- Keep the v2 `AfsmTransition<S, C, F>` runtime model as the implemented engine.
+- For complex Android screens that need diagrams, prefer the v3 phased-state profile.
+- Let reducers call `transitionTo(Phase)` while `PhaseEntryPolicy` owns context update and transition action assembly.
+- Keep graph extraction focused on phase transitions, not every context-only `copy` update.
 
-Canonical v3 direction: [[afsm-v3-topology-first-api|Afsm v3 Typed Handler API]].
+Canonical v3 direction: [[afsm-v3-topology-first-api|Afsm v3 Phased State API]].
 
 ## Graph Generation Implication
 
 A graph renderer needs to know:
 
 ```text
-FromState
+FromPhase
 Event
-ToState
+ToPhase
 optional transition actions
 optional effects
 ```
@@ -257,9 +295,9 @@ In unconstrained v2 reducer code, this topology is still hidden in executable Ko
 
 Better names make graphs understandable, but they do not make graphs automatically extractable. Current v3 direction is to make extraction possible through:
 
-- concrete State/Event handler signatures,
-- `transitionTo(state = NextState(...))`,
-- command/effect expression types where practical,
+- reducer branches by current phase and event,
+- `transitionTo(ProductEditorPhase.X(...))`,
+- feature-local `PhaseEntryPolicy` for commands/effects where practical,
 - optional source scanning first, KSP later only if needed.
 
-The naming cleanup should happen first because any generated graph will only be useful if state, event, and action names are already understandable.
+The naming cleanup should remain because any generated graph will only be useful if phase, event, and transition action names are already understandable.
