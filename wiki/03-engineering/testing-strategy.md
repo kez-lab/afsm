@@ -1,9 +1,26 @@
 ---
 title: Testing Strategy
-updated: 2026-05-01
+updated: 2026-05-09
 ---
 
 # Testing Strategy
+
+## Test Integrity
+
+Tests in this project are executable specification.
+
+Do not change a failing test merely because production code does not pass. First classify the failure:
+
+- implementation bug,
+- test harness issue,
+- stale spec,
+- ambiguous requirement.
+
+When behavior intentionally changes, update the relevant wiki/spec/decision first, then update tests, then update implementation.
+
+For bug fixes, add or preserve a failing regression test before changing production code.
+
+Detailed AI workflow: [[../07-llm/ai-engineering-guardrails|AI Engineering Guardrails]].
 
 ## FSM Unit Tests
 

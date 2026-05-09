@@ -37,6 +37,7 @@ updated: 2026-05-09
 
 ## LLM Operations
 
+- [[07-llm/ai-engineering-guardrails|AI Engineering Guardrails]] - Project-scoped software engineering, TDD, and verification integrity rules for AI agents.
 - [[07-llm/wiki-maintenance-guide|Wiki Maintenance Guide]] - How this project uses the LLM Wiki pattern.
 
 ## Meetings

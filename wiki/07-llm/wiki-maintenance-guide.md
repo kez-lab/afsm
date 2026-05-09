@@ -1,6 +1,6 @@
 ---
 title: Wiki Maintenance Guide
-updated: 2026-05-01
+updated: 2026-05-09
 ---
 
 # Wiki Maintenance Guide
@@ -12,6 +12,7 @@ This project uses an LLM Wiki pattern.
 - `raw/`: immutable source material, including conversations and source notes.
 - `wiki/`: maintained synthesis pages.
 - `AGENTS.md`: instructions for Codex and other coding agents.
+- `wiki/07-llm/ai-engineering-guardrails.md`: project-scoped software engineering, TDD, and verification integrity rules for AI agents.
 
 ## Ingest Workflow
 
@@ -46,6 +47,16 @@ The recommendation should be:
 - omitted only when the user explicitly asks not to recommend follow-up work.
 
 For this project, prefer recommendations that move from wiki/context work toward an Android FSM implementation, tests, or verification.
+
+## Engineering Guardrail Workflow
+
+When implementation and tests disagree:
+
+1. Treat the test as executable spec until proven otherwise.
+2. Classify the failure before editing tests.
+3. If the accepted behavior changed, update wiki/spec/decision pages before changing tests.
+4. Preserve regression coverage when fixing bugs.
+5. Record durable process or behavior changes in `wiki/log.md`.
 
 ## Lint Workflow
 

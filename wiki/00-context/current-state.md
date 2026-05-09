@@ -19,6 +19,7 @@ The current direction is:
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
 - A minimal coroutine-based `afsm-runtime` module now exists.
 - `AfsmHost` serializes non-suspending `dispatch(event)` calls through a FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially.
+- Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
 
 ## Core Architecture Position
 
@@ -46,6 +47,8 @@ Implementation-candidate API draft: [[../03-engineering/afsm-public-api-draft-v2
 Core compile validation: [[../03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]].
 
 Runtime dispatch validation: [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]].
+
+AI engineering guardrails: [[../07-llm/ai-engineering-guardrails|AI Engineering Guardrails]].
 
 ## Current Source Material
 

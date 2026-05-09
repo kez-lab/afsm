@@ -137,3 +137,20 @@ Consequences:
 - Effects are best-effort `Flow<F>` outputs with no replay by default.
 - `Ignored` and `Invalid` decisions keep the current runtime state and drop outputs.
 - ViewModel integration remains a separate next module.
+
+## [2026-05-09] Enforce spec-first TDD guardrails for AI agents
+
+Decision: Project-scoped AI agents must treat tests as executable specification and must not weaken tests merely to make failing implementation pass.
+
+Rationale:
+
+- The library is intended to encode flow correctness, so verification integrity is part of the product quality bar.
+- AI agents commonly misclassify implementation failures as test failures and silently rewrite the target.
+- TDD-style behavior specification gives future implementation work a stable regression surface.
+
+Consequences:
+
+- `AGENTS.md` now includes mandatory failure triage and test change rules.
+- Detailed process guidance lives in `wiki/07-llm/ai-engineering-guardrails.md`.
+- Intentional behavior changes must update wiki/spec/decision material before tests are rewritten.
+- Bug fixes should add or preserve regression tests before production code changes.
