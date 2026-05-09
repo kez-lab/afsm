@@ -369,3 +369,21 @@ Consequences:
 - `sample-shop` generates `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd` through `:sample-shop:generateAfsmMmd`.
 - `AfsmPhasedStateMachine` and related phased helper classes are removed from `afsm-core`.
 - The current event receiver type is `AfsmEventBranchScope`, meaning the scope behind `on<Event> { ... }` that declares ordered graphable branches.
+
+## [2026-05-09] Use KSP for graph discovery, not graph interpretation
+
+Decision: KSP-based graph generation should discover explicitly annotated Afsm machine providers and generate registry code. The compiled registry should instantiate the real machines and write `.mmd` files from `AfsmMachine.topology.toMmd()`.
+
+Rationale:
+
+- KSP is well-suited for symbol discovery and code generation, not for executing app code during symbol processing.
+- Static parsing of DSL function bodies would duplicate the executable DSL and risk graph/runtime drift.
+- Annotation-based registration gives stable graph ids and file names while avoiding accidental export of internal machines.
+- Android modules already have a JVM unit-test runtime that can instantiate app code, making the first implementation spike practical without a custom Gradle classpath runner.
+
+Consequences:
+
+- Add `@AfsmGraph` as the first registration API candidate.
+- Add an `afsm-graph-ksp` module candidate for `AfsmGraphProcessorProvider`.
+- Generate a module-local `AfsmGeneratedGraphRegistry`.
+- Prefer a generated unit-test writer for the MVP; evaluate a dedicated Gradle plugin after the registry proof works.

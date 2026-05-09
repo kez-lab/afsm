@@ -488,3 +488,20 @@ Verification:
 Conclusion:
 
 - The current public-ish v3 surface is smaller and closer to the user's requested model: executable DSL first, automatic `.mmd` artifact generation, and no phased helper inheritance API.
+
+## [2026-05-09] KSP `.mmd` generation design
+
+Change:
+
+- Added a design for KSP-based automatic `.mmd` generation across multiple Afsm machines.
+- Chose annotation-based discovery with `@AfsmGraph` as the MVP registration model.
+- Chose generated registry plus compiled topology execution instead of KSP static DSL parsing.
+- Documented MVP generated-unit-test generation and future Gradle plugin path.
+
+Verification:
+
+- Design-only change; no code verification required.
+
+Conclusion:
+
+- The next implementation spike should add `afsm-graph-ksp`, generate a registry from annotated providers, and replace ProductEditor-only sample generation with registry-driven generation.

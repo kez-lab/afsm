@@ -227,3 +227,9 @@
 - Source: user feedback on `.mmd`-only graph output, `assign`, `AfsmPhasedStateMachine`, and `AfsmEventBuilder`.
 - Action: Removed the phased helper API from current core code, renamed unclear DSL terms, switched topology rendering to `toMmd()`, and added a sample Gradle task that writes the ProductEditor state graph as a `.mmd` file.
 - Updated: `afsm-core/`, `sample-shop/build.gradle.kts`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorMmdExportTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] planning | KSP mmd generation design
+
+- Source: user request to design KSP-based automatic `.mmd` discovery for multiple state machines.
+- Action: Added the KSP graph generation design: annotate machine providers, generate a registry, execute real compiled topology, and write one `.mmd` per registered machine.
+- Updated: `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

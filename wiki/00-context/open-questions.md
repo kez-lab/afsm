@@ -52,6 +52,8 @@ Resolved:
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
 - Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
+- Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
+- Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 
 Resolved:
 
@@ -71,6 +73,7 @@ Resolved:
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
 - `Command` should be explained as a transition action/output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation now works through executable DSL topology and `.mmd` export.
+- KSP graph generation should discover annotated machine providers, generate a registry, then execute compiled `AfsmMachine.topology.toMmd()`; it should not parse DSL bodies or create graph-only models.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.

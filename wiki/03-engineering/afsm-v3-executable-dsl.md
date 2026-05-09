@@ -342,6 +342,8 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 
 The generation task writes only the `.mmd` file. It does not create an explanatory document beside the graph.
 
+The follow-up KSP design is [[afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
+
 ## Runtime Semantics
 
 The v3 DSL should compile into an `AfsmMachine` definition.
