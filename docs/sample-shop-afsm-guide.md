@@ -192,7 +192,8 @@ The current sample suggests:
 - `Effect` should stay rare and focused on UI-side one-shot work.
 - Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
-- The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
+- The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmStateChart.topology` / `AfsmTopology.toMmd()`.
+- `AfsmStateMachine` is the host-facing contract. The executable DSL builds an `AfsmStateChart`, and `AfsmStateChartMachine` hides the repetitive adapter code that maps one Android screen state to `phase + context`.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:

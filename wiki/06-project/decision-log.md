@@ -349,7 +349,7 @@ Consequences:
 - The new canonical v3 page is `wiki/03-engineering/afsm-v3-executable-dsl.md`.
 - The previous phased-state page is preserved only as superseded history.
 - The v3 DSL must be executable; there must not be a separate graph-only DSL.
-- The first implementation proof should be a Kotlin compile spike for `afsmMachine`, `state`, `on`, `guard`, `otherwise`, `updateContext`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- The first implementation proof should be a Kotlin compile spike for `afsmStateChart`, `state`, `on`, `guard`, `otherwise`, `updateContext`, `onEnter`, `action`, `effect`, and `transitionTo`.
 - ProductEditor remains the reference flow for validating whether the DSL is readable and graphable.
 
 ## [2026-05-09] Keep graph output as generated `.mmd` files
@@ -359,7 +359,7 @@ Decision: Afsm graph output should be generated as `.mmd` files from executable 
 Rationale:
 
 - The user expectation is that defining a state machine should produce a state graph artifact, not a separate explanatory document.
-- `AfsmMachine.topology` already makes graph output a property of the machine definition, so the exporter should stay close to that runtime definition.
+- `AfsmStateChart.topology` already makes graph output a property of the chart definition, so the exporter should stay close to that runtime definition.
 - The phased-state helper API added too much user-facing surface after the executable DSL direction became canonical.
 - Names like `assign` and `AfsmEventBuilder` were unclear for Android developers; the API should prefer explicit context and branch terminology.
 
@@ -389,3 +389,22 @@ Consequences:
 - Add an `afsm-graph-ksp` module candidate for `AfsmGraphProcessorProvider`.
 - Generate a module-local `AfsmGeneratedGraphRegistry`.
 - Prefer a generated registry plus existing/generic writer for the MVP; evaluate a dedicated Gradle plugin after the registry proof works.
+
+## [2026-05-09] Rename executable machine concepts to statechart concepts
+
+Decision: Use `AfsmStateChart` for the DSL-built executable `Phase + Context` definition, and keep `AfsmStateMachine` as the host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration.
+
+Rationale:
+
+- `AfsmStateMachine` and `AfsmMachine` were too close in meaning and made it unclear which type an Android developer should implement.
+- The DSL object is more accurately a statechart because it has finite phases, extended context, entry actions, guards, and topology metadata.
+- Android-facing code should still receive one state object, so `AfsmChartState<Phase, Context>` combines the DSL runtime state and `AfsmStateChartMachine` adapts it to a feature screen state.
+- `topology = chart.topology` forwarding should be structural, not hand-written in every state-machine class.
+- `ignore(...)` should remain an explicit handled no-op for observability and tests; omitted handlers should represent invalid/unhandled transitions.
+
+Consequences:
+
+- New code should use `AfsmStateChart`, `AfsmChartState`, and `afsmStateChart`.
+- `AfsmMachine`, `AfsmSnapshot`, and `afsmMachine` are removed from the current spike API rather than kept as aliases, so IDE completion does not keep surfacing the confusing names.
+- Feature-local typealiases such as `ProductEditorChart` are the standard way to keep long generic lists out of user-facing code.
+- Graphable feature machines should prefer `AfsmStateChartMachine` when they need to expose `AfsmStateMachine<S, E, C, F>` and `AfsmGraphSource` at the same time.

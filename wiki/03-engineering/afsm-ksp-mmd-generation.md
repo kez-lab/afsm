@@ -33,25 +33,22 @@ Use a class annotation plus a small topology contract.
     fileName = "ProductEditorStateMachine.mmd",
 )
 class ProductEditorStateMachine(
-    private val machine: AfsmMachine<
+    chart: AfsmStateChart<
         ProductEditorPhase,
         ProductEditorContext,
         ProductEditorEvent,
         ProductEditorCommand,
         ProductEditorEffect,
-    > = productEditorMachine(),
-) : AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>,
-    AfsmGraphSource {
-
-    override val topology: AfsmTopology
-        get() = machine.topology
-
-    override fun transition(
-        state: ProductEditorState,
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        // bridge ProductEditorState <-> AfsmSnapshot
-    }
+    > = productEditorChart(),
+) : AfsmStateChartMachine<
+    ProductEditorState,
+    ProductEditorPhase,
+    ProductEditorContext,
+    ProductEditorEvent,
+    ProductEditorCommand,
+    ProductEditorEffect,
+>(chart = chart) {
+    // map ProductEditorState <-> AfsmChartState<ProductEditorPhase, ProductEditorContext>
 }
 ```
 
@@ -83,9 +80,8 @@ The desired sample-shop usage should become:
 
 ```kotlin
 @AfsmGraph
-class ProductEditorStateMachine : AfsmStateMachine<...>, AfsmGraphSource {
-    override val topology: AfsmTopology
-        get() = machine.topology
+class ProductEditorStateMachine : AfsmStateChartMachine<...>(chart = productEditorChart()) {
+    // mapping overrides
 }
 ```
 
@@ -99,8 +95,8 @@ With a second class:
 
 ```kotlin
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
-class CheckoutStateMachine : AfsmStateMachine<...>, AfsmGraphSource {
-    override val topology: AfsmTopology = checkoutMachine.topology
+class CheckoutStateMachine : AfsmStateChartMachine<...>(chart = checkoutChart()) {
+    // mapping overrides
 }
 ```
 
@@ -126,7 +122,7 @@ KSP discovers @AfsmGraph classes
 -> write .mmd files
 ```
 
-Do not make KSP parse `afsmMachine { ... }` bodies.
+Do not make KSP parse `afsmStateChart { ... }` bodies.
 
 Reasons:
 
@@ -184,14 +180,12 @@ package afsm.generated
 
 import afsm.core.AfsmGraphEntry
 import afsm.core.AfsmGraphRegistry
-import afsm.sample.shop.feature.editor.ProductEditorStateMachine
-
-public object AfsmGeneratedGraphRegistry : AfsmGraphRegistry {
+internal object AfsmGeneratedGraphRegistry : AfsmGraphRegistry {
     override val entries: List<AfsmGraphEntry> = listOf(
         AfsmGraphEntry(
             id = "ProductEditor",
             fileName = "ProductEditorStateMachine.mmd",
-            createTopology = { ProductEditorStateMachine().topology },
+            createTopology = { afsm.sample.shop.feature.editor.ProductEditorStateMachine().topology },
         ),
     )
 }

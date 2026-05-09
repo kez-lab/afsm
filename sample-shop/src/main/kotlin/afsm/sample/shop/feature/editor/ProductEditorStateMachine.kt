@@ -1,63 +1,55 @@
 package afsm.sample.shop.feature.editor
 
+import afsm.core.AfsmChartState
 import afsm.core.AfsmEventBranchScope
 import afsm.core.AfsmGraph
-import afsm.core.AfsmGraphSource
-import afsm.core.AfsmMachine
-import afsm.core.AfsmSnapshot
-import afsm.core.AfsmStateMachine
-import afsm.core.AfsmTopology
-import afsm.core.afsmMachine
+import afsm.core.AfsmStateChart
+import afsm.core.AfsmStateChartMachine
+import afsm.core.afsmStateChart
 
-@AfsmGraph(
-    id = "ProductEditor",
-    fileName = "ProductEditorStateMachine.mmd",
-)
-class ProductEditorStateMachine(
-    private val machine: AfsmMachine<
-        ProductEditorPhase,
-        ProductEditorContext,
-        ProductEditorEvent,
-        ProductEditorCommand,
-        ProductEditorEffect,
-        > = productEditorMachine(),
-) : AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>,
-    AfsmGraphSource {
-    override val topology: AfsmTopology
-        get() = machine.topology
-
-    override fun transition(
-        state: ProductEditorState,
-        event: ProductEditorEvent,
-    ): ProductEditorTransition {
-        val transition = machine.transition(
-            snapshot = AfsmSnapshot(
-                phase = state.phase,
-                context = state.context,
-            ),
-            event = event,
-        )
-
-        return ProductEditorTransition(
-            state = ProductEditorState(
-                phase = transition.state.phase,
-                context = transition.state.context,
-            ),
-            commands = transition.commands,
-            effects = transition.effects,
-            decision = transition.decision,
-        )
-    }
-}
-
-private fun productEditorMachine(): AfsmMachine<
+private typealias ProductEditorChart = AfsmStateChart<
     ProductEditorPhase,
     ProductEditorContext,
     ProductEditorEvent,
     ProductEditorCommand,
     ProductEditorEffect,
-    > {
-    return afsmMachine {
+    >
+
+@AfsmGraph(
+    id = "ProductEditor",
+    fileName = "ProductEditorStateMachine.mmd",
+)
+internal class ProductEditorStateMachine(
+    chart: ProductEditorChart = productEditorChart(),
+) : AfsmStateChartMachine<
+    ProductEditorState,
+    ProductEditorPhase,
+    ProductEditorContext,
+    ProductEditorEvent,
+    ProductEditorCommand,
+    ProductEditorEffect,
+    >(
+    chart = chart,
+) {
+    override fun toChartState(state: ProductEditorState): AfsmChartState<ProductEditorPhase, ProductEditorContext> {
+        return AfsmChartState(
+            phase = state.phase,
+            context = state.context,
+        )
+    }
+
+    override fun toScreenState(
+        state: AfsmChartState<ProductEditorPhase, ProductEditorContext>,
+    ): ProductEditorState {
+        return ProductEditorState(
+            phase = state.phase,
+            context = state.context,
+        )
+    }
+}
+
+private fun productEditorChart(): ProductEditorChart {
+    return afsmStateChart {
         initial(
             phase = ProductEditorPhase.EditingDraft,
             context = ProductEditorContext(),

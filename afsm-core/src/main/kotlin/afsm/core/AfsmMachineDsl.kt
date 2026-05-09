@@ -3,31 +3,31 @@ package afsm.core
 import kotlin.reflect.KClass
 
 /**
- * Builds an executable statechart-style Afsm machine.
+ * Builds an executable statechart-style Afsm definition.
  *
  * This DSL is intentionally plain Kotlin and Android-free. Android ViewModels
- * should host the returned [AfsmMachine] and execute emitted commands.
+ * should host the returned [AfsmStateChart] through an [AfsmStateMachine].
  */
-public fun <P : Any, X : Any, E : Any, A : Any, F : Any> afsmMachine(
-    build: AfsmMachineBuilder<P, X, E, A, F>.() -> Unit,
-): AfsmMachine<P, X, E, A, F> {
-    val builder = AfsmMachineBuilder<P, X, E, A, F>()
+public fun <P : Any, X : Any, E : Any, A : Any, F : Any> afsmStateChart(
+    build: AfsmStateChartBuilder<P, X, E, A, F>.() -> Unit,
+): AfsmStateChart<P, X, E, A, F> {
+    val builder = AfsmStateChartBuilder<P, X, E, A, F>()
     builder.build()
-    return builder.buildMachine()
+    return builder.buildChart()
 }
 
-public class AfsmMachineBuilder<P : Any, X : Any, E : Any, A : Any, F : Any> {
-    private var initialSnapshot: AfsmSnapshot<P, X>? = null
+public class AfsmStateChartBuilder<P : Any, X : Any, E : Any, A : Any, F : Any> {
+    private var initialState: AfsmChartState<P, X>? = null
     private val states = mutableListOf<AfsmStateDefinition<P, X, E, A, F>>()
 
     /**
-     * Sets the initial finite phase and extended context for the machine.
+     * Sets the initial finite phase and extended context for the chart.
      */
     public fun initial(
         phase: P,
         context: X,
     ) {
-        initialSnapshot = AfsmSnapshot(
+        initialState = AfsmChartState(
             phase = phase,
             context = context,
         )
@@ -76,13 +76,13 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, A : Any, F : Any> {
         states += builder.buildDefinition()
     }
 
-    internal fun buildMachine(): AfsmMachine<P, X, E, A, F> {
-        val initial = requireNotNull(initialSnapshot) {
-            "Afsm machine requires an initial phase and context."
+    internal fun buildChart(): AfsmStateChart<P, X, E, A, F> {
+        val initial = requireNotNull(initialState) {
+            "Afsm statechart requires an initial phase and context."
         }
 
-        return AfsmDslMachine(
-            initialSnapshot = initial,
+        return AfsmDslStateChart(
+            initialState = initial,
             states = states.toList(),
         )
     }
@@ -417,10 +417,10 @@ internal sealed interface AfsmBranchResult<out P : Any> {
 internal typealias AfsmEntryHandler<P, X, A, F> =
     (phase: P, execution: AfsmDslExecution<P, X, A, F>) -> Unit
 
-private class AfsmDslMachine<P : Any, X : Any, E : Any, A : Any, F : Any>(
-    override val initialSnapshot: AfsmSnapshot<P, X>,
+private class AfsmDslStateChart<P : Any, X : Any, E : Any, A : Any, F : Any>(
+    override val initialState: AfsmChartState<P, X>,
     private val states: List<AfsmStateDefinition<P, X, E, A, F>>,
-) : AfsmMachine<P, X, E, A, F> {
+) : AfsmStateChart<P, X, E, A, F> {
     override val topology: AfsmTopology = AfsmTopology(
         states = states.map { state ->
             AfsmTopologyState(id = state.label)
@@ -433,34 +433,34 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, A : Any, F : Any>(
     )
 
     override fun transition(
-        snapshot: AfsmSnapshot<P, X>,
+        state: AfsmChartState<P, X>,
         event: E,
-    ): AfsmTransition<AfsmSnapshot<P, X>, A, F> {
-        val state = states.firstOrNull { definition ->
-            definition.matcher(snapshot.phase) != null
+    ): AfsmTransition<AfsmChartState<P, X>, A, F> {
+        val stateDefinition = states.firstOrNull { definition ->
+            definition.matcher(state.phase) != null
         } ?: return Afsm.invalid(
-            state = snapshot,
+            state = state,
             reason = "No state definition matched the current phase.",
         )
 
-        val eventDefinition = state.eventDefinitions.firstOrNull { definition ->
+        val eventDefinition = stateDefinition.eventDefinitions.firstOrNull { definition ->
             definition.eventMatcher(event)
         } ?: return Afsm.invalid(
-            state = snapshot,
+            state = state,
             reason = "No event handler matched the current phase and event.",
         )
 
         val execution = AfsmDslExecution<P, X, A, F>(
-            context = snapshot.context,
+            context = state.context,
         )
 
         val branchResult = eventDefinition.branches.firstNotNullOfOrNull { branch ->
-            when (val result = branch.tryHandle(snapshot.phase, event, execution)) {
+            when (val result = branch.tryHandle(state.phase, event, execution)) {
                 AfsmBranchResult.Unmatched -> null
                 is AfsmBranchResult.Matched -> result
             }
         } ?: return Afsm.invalid(
-            state = snapshot,
+            state = state,
             reason = "No branch matched the current phase and event.",
         )
 
@@ -472,13 +472,13 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, A : Any, F : Any>(
             )
         }
 
-        val nextSnapshot = AfsmSnapshot(
-            phase = targetPhase ?: snapshot.phase,
+        val nextState = AfsmChartState(
+            phase = targetPhase ?: state.phase,
             context = execution.context,
         )
 
         return AfsmTransition(
-            state = nextSnapshot,
+            state = nextState,
             commands = execution.actions.toList(),
             effects = execution.effects.toList(),
             decision = branchResult.decision ?: if (targetPhase != null) {

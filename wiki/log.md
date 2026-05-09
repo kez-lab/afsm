@@ -251,3 +251,9 @@
 - Source: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt`
 - Action: Migrated Auth to the executable DSL, annotated it with `@AfsmGraph`, and verified `generateAfsmMmd` emits both Auth and ProductEditor `.mmd` files from the generated registry.
 - Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorMmdExportTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | Afsm statechart naming cleanup
+
+- Source: user feedback on `AfsmStateMachine`/`AfsmMachine`, single-state Android usage, topology forwarding, `ignore(...)`, and repeated generic lists.
+- Action: Renamed the executable DSL concept to `AfsmStateChart`, introduced `AfsmChartState`, added `AfsmStateChartMachine`, migrated Auth/ProductEditor adapters, and synchronized the canonical v3 wiki guidance.
+- Updated: `afsm-core/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

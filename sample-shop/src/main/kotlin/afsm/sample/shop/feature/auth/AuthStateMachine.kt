@@ -1,51 +1,39 @@
 package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmGraphSource
-import afsm.core.AfsmMachine
-import afsm.core.AfsmSnapshot
-import afsm.core.AfsmStateMachine
-import afsm.core.AfsmTopology
-import afsm.core.afsmMachine
+import afsm.core.AfsmChartState
+import afsm.core.AfsmStateChart
+import afsm.core.AfsmStateChartMachine
+import afsm.core.afsmStateChart
 import afsm.sample.shop.core.model.UserSession
+
+private typealias AuthChart = AfsmStateChart<AuthPhase, AuthContext, AuthEvent, AuthCommand, AuthEffect>
 
 @AfsmGraph(
     id = "Auth",
     fileName = "AuthStateMachine.mmd",
 )
-class AuthStateMachine : AfsmStateMachine<AuthState, AuthEvent, AuthCommand, AuthEffect>,
-    AfsmGraphSource {
-    private val machine: AfsmMachine<
-        AuthPhase,
-        AuthContext,
-        AuthEvent,
-        AuthCommand,
-        AuthEffect,
-        > = authMachine()
+internal class AuthStateMachine : AfsmStateChartMachine<
+    AuthState,
+    AuthPhase,
+    AuthContext,
+    AuthEvent,
+    AuthCommand,
+    AuthEffect,
+    >(
+    chart = authChart(),
+) {
+    override fun toChartState(state: AuthState): AfsmChartState<AuthPhase, AuthContext> {
+        return state.toChartState()
+    }
 
-    override val topology: AfsmTopology
-        get() = machine.topology
-
-    override fun transition(
-        state: AuthState,
-        event: AuthEvent,
-    ): AuthTransition {
-        val transition = machine.transition(
-            snapshot = state.toSnapshot(),
-            event = event,
-        )
-
-        return AuthTransition(
-            state = transition.state.toAuthState(),
-            commands = transition.commands,
-            effects = transition.effects,
-            decision = transition.decision,
-        )
+    override fun toScreenState(state: AfsmChartState<AuthPhase, AuthContext>): AuthState {
+        return state.toAuthState()
     }
 }
 
-private fun authMachine(): AfsmMachine<AuthPhase, AuthContext, AuthEvent, AuthCommand, AuthEffect> {
-    return afsmMachine {
+private fun authChart(): AuthChart {
+    return afsmStateChart {
         initial(
             phase = AuthPhase.Editing,
             context = AuthContext(),
@@ -227,22 +215,22 @@ private fun authMachine(): AfsmMachine<AuthPhase, AuthContext, AuthEvent, AuthCo
     }
 }
 
-private sealed interface AuthPhase {
+internal sealed interface AuthPhase {
     data object Editing : AuthPhase
     data object Submitting : AuthPhase
     data object Authenticated : AuthPhase
 }
 
-private data class AuthContext(
+internal data class AuthContext(
     val mode: AuthMode = AuthMode.Login,
     val form: AuthForm = AuthForm(),
     val errorMessage: String? = null,
     val session: UserSession? = null,
 )
 
-private fun AuthState.toSnapshot(): AfsmSnapshot<AuthPhase, AuthContext> {
+private fun AuthState.toChartState(): AfsmChartState<AuthPhase, AuthContext> {
     return when (this) {
-        is AuthState.Editing -> AfsmSnapshot(
+        is AuthState.Editing -> AfsmChartState(
             phase = AuthPhase.Editing,
             context = AuthContext(
                 mode = mode,
@@ -251,7 +239,7 @@ private fun AuthState.toSnapshot(): AfsmSnapshot<AuthPhase, AuthContext> {
             ),
         )
 
-        is AuthState.Submitting -> AfsmSnapshot(
+        is AuthState.Submitting -> AfsmChartState(
             phase = AuthPhase.Submitting,
             context = AuthContext(
                 mode = mode,
@@ -259,14 +247,14 @@ private fun AuthState.toSnapshot(): AfsmSnapshot<AuthPhase, AuthContext> {
             ),
         )
 
-        is AuthState.Authenticated -> AfsmSnapshot(
+        is AuthState.Authenticated -> AfsmChartState(
             phase = AuthPhase.Authenticated,
             context = AuthContext(session = session),
         )
     }
 }
 
-private fun AfsmSnapshot<AuthPhase, AuthContext>.toAuthState(): AuthState {
+private fun AfsmChartState<AuthPhase, AuthContext>.toAuthState(): AuthState {
     return when (phase) {
         AuthPhase.Editing -> AuthState.Editing(
             mode = context.mode,

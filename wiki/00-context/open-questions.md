@@ -77,7 +77,10 @@ Resolved:
 - The first `afsm-graph-ksp` slice now works for two real graphable state machines: `AuthStateMachine` and `ProductEditorStateMachine`.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
-- `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.
+- `AfsmStateChart.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.
+- `AfsmMachine` has been retired as the current name because it confused the host-facing `AfsmStateMachine` contract. New code uses `AfsmStateChart`; the old aliases were removed from the current spike API.
+- `AfsmChartState<Phase, Context>` is the current single state value for executable charts. Feature-facing machines should adapt it to one Android screen state through `AfsmStateChartMachine`.
+- `ignore(...)` is intentional handled no-op behavior. Ordinary unhandled event/phase combinations should be omitted and become invalid decisions.
 - Real `sample-shop` ProductEditor has been migrated from the phased helper to the executable DSL and has focused unit coverage plus topology assertions.
 - The phased-state API was removed from `afsm-core` after the executable DSL migration; it remains only as historical learning.
 - In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.

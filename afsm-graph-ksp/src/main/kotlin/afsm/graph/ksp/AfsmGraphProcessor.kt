@@ -144,8 +144,8 @@ internal class AfsmGraphProcessor(
         file.bufferedWriter().use { writer ->
             writer.appendLine("package $GENERATED_PACKAGE")
             writer.appendLine()
-            writer.appendLine("public object $GENERATED_REGISTRY_NAME : afsm.core.AfsmGraphRegistry {")
-            writer.appendLine("    public override val entries: kotlin.collections.List<afsm.core.AfsmGraphEntry> =")
+            writer.appendLine("internal object $GENERATED_REGISTRY_NAME : afsm.core.AfsmGraphRegistry {")
+            writer.appendLine("    override val entries: kotlin.collections.List<afsm.core.AfsmGraphEntry> =")
             writer.appendLine("        kotlin.collections.listOf(")
             entries.forEach { entry ->
                 writer.appendLine("            afsm.core.AfsmGraphEntry(")
@@ -174,4 +174,3 @@ internal class AfsmGraphProcessor(
         const val GENERATED_REGISTRY_NAME = "AfsmGeneratedGraphRegistry"
     }
 }
-

@@ -11,7 +11,7 @@ class AfsmExecutableDslCompileCheckTest {
         val machine = productEditorMachine()
 
         val result = machine.transition(
-            snapshot = AfsmSnapshot(
+            state = AfsmChartState(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(
                     draft = DslProductDraft(
@@ -46,7 +46,7 @@ class AfsmExecutableDslCompileCheckTest {
         )
 
         val result = machine.transition(
-            snapshot = AfsmSnapshot(
+            state = AfsmChartState(
                 phase = DslProductEditorPhase.ImageUploadInProgress,
                 context = DslProductEditorContext(draft = draft),
             ),
@@ -76,7 +76,7 @@ class AfsmExecutableDslCompileCheckTest {
         val machine = productEditorMachine()
 
         val result = machine.transition(
-            snapshot = AfsmSnapshot(
+            state = AfsmChartState(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(
                     draft = DslProductDraft(
@@ -104,7 +104,7 @@ class AfsmExecutableDslCompileCheckTest {
         )
 
         val result = machine.transition(
-            snapshot = AfsmSnapshot(
+            state = AfsmChartState(
                 phase = phase,
                 context = DslProductEditorContext(),
             ),
@@ -118,7 +118,7 @@ class AfsmExecutableDslCompileCheckTest {
 
     @Test
     fun `ignore and invalid branches preserve decisions without topology edges`() {
-        val machine = afsmMachine<
+        val machine = afsmStateChart<
             DslProductEditorPhase,
             DslProductEditorContext,
             DslProductEditorEvent,
@@ -142,11 +142,11 @@ class AfsmExecutableDslCompileCheckTest {
         }
 
         val ignored = machine.transition(
-            snapshot = machine.initialSnapshot,
+            state = machine.initialState,
             event = DslProductEditorEvent.SaveDraftClicked,
         )
         val invalid = machine.transition(
-            snapshot = machine.initialSnapshot,
+            state = machine.initialState,
             event = DslProductEditorEvent.DoneClicked,
         )
 
@@ -157,7 +157,7 @@ class AfsmExecutableDslCompileCheckTest {
 
     @Test
     fun `topology deduplicates identical declared edges`() {
-        val machine = afsmMachine<
+        val machine = afsmStateChart<
             DslProductEditorPhase,
             DslProductEditorContext,
             DslProductEditorEvent,
@@ -247,14 +247,14 @@ class AfsmExecutableDslCompileCheckTest {
         assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mmd)
     }
 
-    private fun productEditorMachine(): AfsmMachine<
+    private fun productEditorMachine(): AfsmStateChart<
         DslProductEditorPhase,
         DslProductEditorContext,
         DslProductEditorEvent,
         DslProductEditorAction,
         DslProductEditorEffect,
         > {
-        return afsmMachine {
+        return afsmStateChart {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(),

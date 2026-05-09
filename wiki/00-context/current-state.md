@@ -28,9 +28,10 @@ The current direction is:
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable statechart DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect` in one machine definition.
-- A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect`.
+- A minimal executable DSL spike now exists in `afsm-core` with `AfsmStateChart`, `AfsmChartState`, `afsmStateChart`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
-- The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- The executable DSL now exposes `AfsmStateChart.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- `AfsmStateMachine` is the host-facing reducer contract; `AfsmStateChart` is the DSL-built phase/context chart. `AfsmStateChartMachine` adapts between a single Android-facing screen state and the chart's `AfsmChartState<Phase, Context>` while forwarding topology automatically.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
 - `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.

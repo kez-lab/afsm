@@ -564,3 +564,24 @@ Verification:
 Conclusion:
 
 - The KSP graph pipeline now proves multiple real state-machine classes without hand-maintained topology duplicates.
+
+## [2026-05-09] Afsm statechart naming and adapter cleanup
+
+Change:
+
+- Renamed the current executable DSL concept from `AfsmMachine` to `AfsmStateChart`.
+- Renamed `AfsmSnapshot` to `AfsmChartState` so the phase/context pair reads as state, not as a persistence snapshot.
+- Removed the old `AfsmMachine`, `afsmMachine`, and `AfsmSnapshot` names from the current spike API so IDE completion only exposes the statechart terminology.
+- Added `AfsmStateChartMachine`, an adapter base that maps one Android-facing state to `AfsmChartState<Phase, Context>` and forwards topology automatically.
+- Updated Auth and ProductEditor to use `AfsmStateChartMachine`, removing repeated `topology` forwarding and reducing exposed generic lists through feature-local chart typealiases.
+- Clarified `ignore(...)` as an intentional handled no-op, not a replacement for omitted invalid transitions.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-graph-ksp:test :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.auth.AuthStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorMmdExportTest' :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The current API now separates host-facing `AfsmStateMachine` from DSL-built `AfsmStateChart`, while keeping Android usage centered on one screen state.
