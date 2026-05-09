@@ -1,6 +1,6 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmEventBuilder
+import afsm.core.AfsmEventBranchScope
 import afsm.core.AfsmMachine
 import afsm.core.AfsmSnapshot
 import afsm.core.AfsmStateMachine
@@ -58,15 +58,15 @@ private fun productEditorMachine(): AfsmMachine<
 
         state(ProductEditorPhase.EditingDraft) {
             on<ProductEditorEvent.TitleChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.SaveDraftClicked> {
@@ -79,14 +79,14 @@ private fun productEditorMachine(): AfsmMachine<
                 )
 
                 otherwise {
-                    assign { withValidationError() }
+                    updateContext { withValidationError() }
                 }
             }
         }
 
         state(ProductEditorPhase.SavingDraft) {
             onEnter {
-                assign { copy(errorMessage = null) }
+                updateContext { copy(errorMessage = null) }
                 action(ProductEditorCommand.SaveDraft(context.draft))
             }
 
@@ -97,7 +97,7 @@ private fun productEditorMachine(): AfsmMachine<
 
         state(ProductEditorPhase.DraftSaved) {
             onEnter {
-                assign { copy(errorMessage = null) }
+                updateContext { copy(errorMessage = null) }
             }
 
             on<ProductEditorEvent.ContinueEditingClicked> {
@@ -113,19 +113,19 @@ private fun productEditorMachine(): AfsmMachine<
 
             on<ProductEditorEvent.TitleChanged> {
                 transitionTo(ProductEditorPhase.EditingDraft) {
-                    assign { updateDraft(event) }
+                    updateContext { updateDraft(event) }
                 }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
                 transitionTo(ProductEditorPhase.EditingDraft) {
-                    assign { updateDraft(event) }
+                    updateContext { updateDraft(event) }
                 }
             }
 
             on<ProductEditorEvent.PriceChanged> {
                 transitionTo(ProductEditorPhase.EditingDraft) {
-                    assign { updateDraft(event) }
+                    updateContext { updateDraft(event) }
                 }
             }
         }
@@ -143,7 +143,7 @@ private fun productEditorMachine(): AfsmMachine<
                         )
                     },
                 ) {
-                    assign {
+                    updateContext {
                         copy(
                             draft = draft.copy(
                                 reviewAttempt = draft.reviewAttempt + 1,
@@ -156,7 +156,7 @@ private fun productEditorMachine(): AfsmMachine<
 
             on<ProductEditorEvent.ImageUploadFailed> {
                 transitionTo(ProductEditorPhase.EditingDraft) {
-                    assign {
+                    updateContext {
                         copy(errorMessage = event.message)
                     }
                 }
@@ -175,7 +175,7 @@ private fun productEditorMachine(): AfsmMachine<
 
             on<ProductEditorEvent.ReviewApproved> {
                 transitionTo(ProductEditorPhase.Approved) {
-                    assign { copy(errorMessage = null) }
+                    updateContext { copy(errorMessage = null) }
                 }
             }
 
@@ -187,22 +187,22 @@ private fun productEditorMachine(): AfsmMachine<
                         )
                     },
                 ) {
-                    assign { copy(errorMessage = null) }
+                    updateContext { copy(errorMessage = null) }
                 }
             }
         }
 
         state<ProductEditorPhase.Rejected> {
             on<ProductEditorEvent.TitleChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                stay { assign { updateDraft(event) } }
+                stay { updateContext { updateDraft(event) } }
             }
 
             on<ProductEditorEvent.ResubmitClicked> {
@@ -211,7 +211,7 @@ private fun productEditorMachine(): AfsmMachine<
                 )
 
                 otherwise {
-                    assign { withValidationError() }
+                    updateContext { withValidationError() }
                 }
             }
 
@@ -232,7 +232,7 @@ private fun productEditorMachine(): AfsmMachine<
 
         state(ProductEditorPhase.PublishInProgress) {
             onEnter {
-                assign { copy(errorMessage = null) }
+                updateContext { copy(errorMessage = null) }
                 action(ProductEditorCommand.StartProductPublish(context.draft))
             }
 
@@ -245,13 +245,13 @@ private fun productEditorMachine(): AfsmMachine<
                         )
                     },
                 ) {
-                    assign { copy(errorMessage = null) }
+                    updateContext { copy(errorMessage = null) }
                 }
             }
 
             on<ProductEditorEvent.PublishFailed> {
                 transitionTo(ProductEditorPhase.Approved) {
-                    assign {
+                    updateContext {
                         copy(errorMessage = event.message)
                     }
                 }
@@ -268,7 +268,7 @@ private fun productEditorMachine(): AfsmMachine<
     }
 }
 
-private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBuilder<
+private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBranchScope<
     ProductEditorPhase,
     ProductEditorContext,
     ProductEditorEvent,
@@ -284,7 +284,7 @@ private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBuilder<
         phase = validTarget,
         guard = { context.draft.form.validationError() == null },
     ) {
-        assign {
+        updateContext {
             copy(
                 draft = draft.normalized(),
                 errorMessage = null,
@@ -297,7 +297,7 @@ private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBuilder<
             phase = target,
             guard = { context.draft.form.validationError() != null },
         ) {
-            assign { withValidationError() }
+            updateContext { withValidationError() }
         }
     }
 }

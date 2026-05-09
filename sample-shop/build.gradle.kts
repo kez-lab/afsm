@@ -58,4 +58,16 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    systemProperty(
+        "afsm.mmd.outputDir",
+        layout.buildDirectory.dir("generated/afsm/mmd").get().asFile.absolutePath,
+    )
+    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
+}
+
+tasks.register("generateAfsmMmd") {
+    group = "documentation"
+    description = "Generates Afsm state machine .mmd graph files."
+    dependsOn("testDebugUnitTest")
+    outputs.file(layout.buildDirectory.file("generated/afsm/mmd/ProductEditorStateMachine.mmd"))
 }

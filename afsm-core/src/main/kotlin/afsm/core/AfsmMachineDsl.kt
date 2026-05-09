@@ -116,7 +116,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
      * Declares graphable branches for events whose runtime type is [EV].
      */
     public inline fun <reified EV : E> on(
-        noinline build: AfsmEventBuilder<P, X, E, A, F, PS, EV>.() -> Unit,
+        noinline build: AfsmEventBranchScope<P, X, E, A, F, PS, EV>.() -> Unit,
     ) {
         addEventDefinition(
             eventLabel = afsmLabelForClass(EV::class),
@@ -129,9 +129,9 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
     internal fun <EV : E> addEventDefinition(
         eventLabel: String,
         eventMatcher: (E) -> EV?,
-        build: AfsmEventBuilder<P, X, E, A, F, PS, EV>.() -> Unit,
+        build: AfsmEventBranchScope<P, X, E, A, F, PS, EV>.() -> Unit,
     ) {
-        val builder = AfsmEventBuilder<P, X, E, A, F, PS, EV>(
+        val builder = AfsmEventBranchScope<P, X, E, A, F, PS, EV>(
             stateLabel = stateLabel,
             eventLabel = eventLabel,
             phaseMatcher = matcher,
@@ -151,7 +151,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
     }
 }
 
-public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : P, EV : E> internal constructor(
+public class AfsmEventBranchScope<P : Any, X : Any, E : Any, A : Any, F : Any, PS : P, EV : E> internal constructor(
     private val stateLabel: String,
     private val eventLabel: String,
     private val phaseMatcher: (P) -> PS?,
@@ -165,8 +165,8 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
      */
     public fun transitionTo(
         phase: P,
-        guard: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
-        block: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
+        block: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
     ) {
         addBranch(
             targetLabel = afsmLabelForValue(phase),
@@ -180,9 +180,9 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
      * Declares a branch that transitions to a payload phase created from runtime data.
      */
     public inline fun <reified TP : P> transitionTo(
-        noinline guard: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
-        noinline phase: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> TP,
-        noinline block: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
+        noinline guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
+        noinline phase: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> TP,
+        noinline block: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
     ) {
         addBranch(
             targetLabel = afsmLabelForClass(TP::class),
@@ -196,8 +196,8 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
      * Declares a branch that handles the event without changing the finite phase.
      */
     public fun stay(
-        guard: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
-        block: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean = { true },
+        block: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
     ) {
         addBranch(
             targetLabel = stateLabel,
@@ -211,7 +211,7 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
      * Declares a final stayed branch for unmatched guards in this event handler.
      */
     public fun otherwise(
-        block: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
+        block: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Unit = {},
     ) {
         addBranch(
             targetLabel = stateLabel,
@@ -226,9 +226,9 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
     internal fun addBranch(
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
-        targetFactory: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> P?,
-        guard: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Boolean,
-        block: AfsmEventScope<P, X, E, A, F, PS, EV>.() -> Unit,
+        targetFactory: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> P?,
+        guard: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Boolean,
+        block: AfsmTransitionScope<P, X, E, A, F, PS, EV>.() -> Unit,
     ) {
         transitions += AfsmTopologyTransition(
             from = stateLabel,
@@ -238,7 +238,7 @@ public class AfsmEventBuilder<P : Any, X : Any, E : Any, A : Any, F : Any, PS : 
         branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
             val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
             val typedEvent = eventMatcher(currentEvent) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
-            val scope = AfsmEventScope<P, X, E, A, F, PS, EV>(
+            val scope = AfsmTransitionScope<P, X, E, A, F, PS, EV>(
                 phase = typedPhase,
                 event = typedEvent,
                 execution = execution,
@@ -271,7 +271,7 @@ public class AfsmEntryScope<P : Any, X : Any, A : Any, F : Any, PS : P> internal
     private val execution: AfsmDslExecution<P, X, A, F>,
 ) {
     /**
-     * Current extended context after previous transition assignments.
+     * Current extended context after previous transition context updates.
      */
     public val context: X
         get() = execution.context
@@ -279,7 +279,7 @@ public class AfsmEntryScope<P : Any, X : Any, A : Any, F : Any, PS : P> internal
     /**
      * Replaces the current context with an immutable copy.
      */
-    public fun assign(update: X.() -> X) {
+    public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
     }
 
@@ -298,13 +298,13 @@ public class AfsmEntryScope<P : Any, X : Any, A : Any, F : Any, PS : P> internal
     }
 }
 
-public class AfsmEventScope<P : Any, X : Any, E : Any, A : Any, F : Any, PS : P, EV : E> internal constructor(
+public class AfsmTransitionScope<P : Any, X : Any, E : Any, A : Any, F : Any, PS : P, EV : E> internal constructor(
     public val phase: PS,
     public val event: EV,
     private val execution: AfsmDslExecution<P, X, A, F>,
 ) {
     /**
-     * Current extended context after previous assignments in this transition.
+     * Current extended context after previous context updates in this transition.
      */
     public val context: X
         get() = execution.context
@@ -312,7 +312,7 @@ public class AfsmEventScope<P : Any, X : Any, E : Any, A : Any, F : Any, PS : P,
     /**
      * Replaces the current context with an immutable copy.
      */
-    public fun assign(update: X.() -> X) {
+    public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
     }
 

@@ -19,9 +19,9 @@ public data class AfsmTopologyTransition(
 )
 
 /**
- * Renders the declared topology as a Mermaid `stateDiagram-v2`.
+ * Renders the declared topology as Mermaid `.mmd` source.
  */
-public fun AfsmTopology.toMermaidStateDiagram(): String {
+public fun AfsmTopology.toMmd(): String {
     return buildString {
         appendLine("stateDiagram-v2")
 

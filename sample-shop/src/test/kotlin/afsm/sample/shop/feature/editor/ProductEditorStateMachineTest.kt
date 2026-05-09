@@ -2,7 +2,7 @@ package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmDecision
 import afsm.core.AfsmTopologyTransition
-import afsm.core.toMermaidStateDiagram
+import afsm.core.toMmd
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -253,9 +253,9 @@ class ProductEditorStateMachineTest {
             ) in transitions,
         )
 
-        val mermaid = machine.topology.toMermaidStateDiagram()
+        val mmd = machine.topology.toMmd()
 
-        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mermaid)
-        assertTrue("Approved --> PublishInProgress: PublishClicked" in mermaid)
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mmd)
+        assertTrue("Approved --> PublishInProgress: PublishClicked" in mmd)
     }
 }

@@ -51,11 +51,11 @@ afsmMachine<ProductEditorPhase, ProductEditorContext, ProductEditorEvent, Produc
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.SubmitClicked> {
             guard({ context.draft.isValidForSubmission() }) {
-                assign { copy(draft = draft.normalized(), errorMessage = null) }
+                updateContext { copy(draft = draft.normalized(), errorMessage = null) }
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
             otherwise {
-                assign { copy(errorMessage = draft.validationMessage()) }
+                updateContext { copy(errorMessage = draft.validationMessage()) }
             }
         }
     }

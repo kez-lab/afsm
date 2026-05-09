@@ -48,22 +48,4 @@ public object Afsm {
         )
     }
 
-    public fun <S, P, X, E, C, F> phased(
-        state: S,
-        event: E,
-        entryPolicy: AfsmPhaseEntryPolicy<P, X, E, C, F>,
-    ): AfsmPhasedTransitionScope<S, P, X, E, C, F>
-        where S : Any,
-              S : AfsmPhasedState<S, P, X>,
-              P : Any,
-              X : Any,
-              E : Any,
-              C : Any,
-              F : Any {
-        return AfsmPhasedTransitionScope(
-            state = state,
-            event = event,
-            entryPolicy = entryPolicy,
-        )
-    }
 }

@@ -161,10 +161,10 @@ class AfsmExecutableDslCompileCheckTest {
             machine.topology.transitions,
         )
 
-        val mermaid = machine.topology.toMermaidStateDiagram()
+        val mmd = machine.topology.toMmd()
 
-        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mermaid)
-        assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mermaid)
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mmd)
+        assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mmd)
     }
 
     private fun productEditorMachine(): AfsmMachine<
@@ -183,7 +183,7 @@ class AfsmExecutableDslCompileCheckTest {
             state(DslProductEditorPhase.EditingDraft) {
                 on<DslProductEditorEvent.TitleChanged> {
                     stay {
-                        assign {
+                        updateContext {
                             copy(
                                 draft = draft.withTitle(event.value),
                                 errorMessage = null,
@@ -201,7 +201,7 @@ class AfsmExecutableDslCompileCheckTest {
                         phase = DslProductEditorPhase.ImageUploadInProgress,
                         guard = { context.draft.validationMessage() == null },
                     ) {
-                        assign {
+                        updateContext {
                             copy(
                                 draft = draft.normalized(),
                                 errorMessage = null,
@@ -210,7 +210,7 @@ class AfsmExecutableDslCompileCheckTest {
                     }
 
                     otherwise {
-                        assign {
+                        updateContext {
                             copy(errorMessage = draft.validationMessage())
                         }
                     }
@@ -240,7 +240,7 @@ class AfsmExecutableDslCompileCheckTest {
                             )
                         },
                     ) {
-                        assign {
+                        updateContext {
                             copy(
                                 draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
                                 errorMessage = null,

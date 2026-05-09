@@ -349,5 +349,23 @@ Consequences:
 - The new canonical v3 page is `wiki/03-engineering/afsm-v3-executable-dsl.md`.
 - The previous phased-state page is preserved only as superseded history.
 - The v3 DSL must be executable; there must not be a separate graph-only DSL.
-- The first implementation proof should be a Kotlin compile spike for `afsmMachine`, `state`, `on`, `guard`, `otherwise`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- The first implementation proof should be a Kotlin compile spike for `afsmMachine`, `state`, `on`, `guard`, `otherwise`, `updateContext`, `onEnter`, `action`, `effect`, and `transitionTo`.
 - ProductEditor remains the reference flow for validating whether the DSL is readable and graphable.
+
+## [2026-05-09] Keep graph output as generated `.mmd` files
+
+Decision: Afsm graph output should be generated as `.mmd` files from executable machine topology, not as prose documentation beside the graph.
+
+Rationale:
+
+- The user expectation is that defining a state machine should produce a state graph artifact, not a separate explanatory document.
+- `AfsmMachine.topology` already makes graph output a property of the machine definition, so the exporter should stay close to that runtime definition.
+- The phased-state helper API added too much user-facing surface after the executable DSL direction became canonical.
+- Names like `assign` and `AfsmEventBuilder` were unclear for Android developers; the API should prefer explicit context and branch terminology.
+
+Consequences:
+
+- `AfsmTopology.toMmd()` is the canonical graph renderer.
+- `sample-shop` generates `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd` through `:sample-shop:generateAfsmMmd`.
+- `AfsmPhasedStateMachine` and related phased helper classes are removed from `afsm-core`.
+- The current event receiver type is `AfsmEventBranchScope`, meaning the scope behind `on<Event> { ... }` that declares ordered graphable branches.

@@ -68,7 +68,7 @@ Where:
 
 - `Phase` is the finite state-machine node used for diagrams.
 - `Context` is the durable data carried across phases.
-- scoped DSL blocks such as `state`, `on`, `guard`, `assign`, `onEnter`, and `action` own transition behavior.
+- scoped DSL blocks such as `state`, `on`, `guard`, `updateContext`, `onEnter`, and `action` own transition behavior.
 
 Example edge:
 
@@ -82,7 +82,7 @@ In the current v3 DSL direction, the machine definition should say:
 state(ProductEditorPhase.EditingDraft) {
     on<ProductEditorEvent.SubmitClicked> {
         guard({ context.draft.isValidForSubmission() }) {
-            assign { copy(draft = draft.normalized(), errorMessage = null) }
+            updateContext { copy(draft = draft.normalized(), errorMessage = null) }
             transitionTo(ProductEditorPhase.ImageUploadInProgress)
         }
     }
@@ -285,7 +285,7 @@ Current recommendation has changed:
 
 - Use the v2 `AfsmTransition<S, C, F>` runtime model as the lower-level engine.
 - Make the public v3 authoring model a scoped executable DSL.
-- Keep `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo` in one machine definition.
+- Keep `state`, `on`, `guard`, `updateContext`, `onEnter`, `action`, `effect`, and `transitionTo` in one machine definition.
 - Generate graphs from that machine definition, not from source-code inference over `when` branches.
 
 Canonical v3 direction: [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].

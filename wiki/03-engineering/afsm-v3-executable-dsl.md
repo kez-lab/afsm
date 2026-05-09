@@ -76,7 +76,7 @@ A scoped executable DSL makes the structure explicit:
 state scope
 -> event handler
 -> guard
--> assign context
+-> update context
 -> emit transition action
 -> transition target
 ```
@@ -92,7 +92,7 @@ This matches standard statechart vocabulary while keeping Android execution in `
 | `Context` | Extended state carried across phases | Form data, ids, retry count, validation error |
 | `Event` | Something that happened | User input or command result |
 | `Guard` | Boolean decision before transition | Validation, retry allowance, auth requirement |
-| `Assign` | Context update | Immutable state data update |
+| `updateContext` | Explicit context update | Immutable state data update |
 | `Action` | Host-executed work emitted by transition or entry | Repository/use case call, timer, local DB write |
 | `Effect` | UI-side one-shot output | Close screen, launch permission, optional navigation signal |
 | `Entry` | Work when entering a phase | Start async command, clear error |
@@ -120,7 +120,7 @@ val ProductEditorMachine = afsmMachine<
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
             stay {
-                assign {
+                updateContext {
                     copy(
                         draft = draft.withTitle(event.value),
                         errorMessage = null,
@@ -138,11 +138,11 @@ val ProductEditorMachine = afsmMachine<
                 phase = ProductEditorPhase.ImageUploadInProgress,
                 guard = { context.draft.isValidForSubmission() },
             ) {
-                assign { copy(draft = draft.normalized(), errorMessage = null) }
+                updateContext { copy(draft = draft.normalized(), errorMessage = null) }
             }
 
             otherwise {
-                assign {
+                updateContext {
                     copy(errorMessage = draft.validationMessage())
                 }
             }
@@ -165,9 +165,10 @@ Important properties:
 
 - `state(Phase)` creates a structural state scope.
 - `on<Event>` creates a structural event scope.
+- `AfsmEventBranchScope` is the receiver behind `on<Event> { ... }`; its job is only to declare ordered graphable branches for that event.
 - `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)` create graphable branches inside the event scope.
 - `onEnter` and `onExit` are state-local and visible.
-- `assign` mutates context immutably.
+- `updateContext` updates context immutably.
 - `action` emits host-executed work.
 - `effect` emits UI-side one-shot output.
 - `transitionTo` changes phase; `stay` handles context/effect updates without changing phase.
@@ -224,7 +225,7 @@ val ProductEditorMachine = afsmMachine<
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
             stay {
-                assign { copy(draft = draft.withTitle(event.value), errorMessage = null) }
+                updateContext { copy(draft = draft.withTitle(event.value), errorMessage = null) }
             }
         }
 
@@ -237,11 +238,11 @@ val ProductEditorMachine = afsmMachine<
                 phase = ProductEditorPhase.ImageUploadInProgress,
                 guard = { context.draft.isValidForSubmission() },
             ) {
-                assign { copy(draft = draft.normalized(), errorMessage = null) }
+                updateContext { copy(draft = draft.normalized(), errorMessage = null) }
             }
 
             otherwise {
-                assign { copy(errorMessage = draft.validationMessage()) }
+                updateContext { copy(errorMessage = draft.validationMessage()) }
             }
         }
     }
@@ -269,7 +270,7 @@ val ProductEditorMachine = afsmMachine<
                     )
                 },
             ) {
-                assign {
+                updateContext {
                     copy(
                         draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
                         errorMessage = null,
@@ -300,11 +301,11 @@ val ProductEditorMachine = afsmMachine<
 }
 ```
 
-This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `transitionTo`, `transitionTo<PayloadPhase>`, `stay`, `otherwise`, `assign`, `onEnter`, `action`, and `effect`.
+This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `transitionTo`, `transitionTo<PayloadPhase>`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect`.
 
-## Graph Output
+## MMD Output
 
-The machine definition can produce Mermaid without KSP:
+The machine definition can produce `.mmd` source without source scanning or sample-state fixtures:
 
 ```mermaid
 stateDiagram-v2
@@ -325,7 +326,21 @@ stateDiagram-v2
   PublishInProgress --> Approved: PublishFailed
 ```
 
-Context-only `assign` operations can be omitted from the main graph or rendered as self-update annotations.
+Context-only `updateContext` operations are not separate graph files; they are runtime behavior attached to graphable `stay(...)`, `transitionTo(...)`, or `otherwise(...)` branches.
+
+Current sample generation:
+
+```bash
+./gradlew :sample-shop:generateAfsmMmd
+```
+
+Output:
+
+```text
+sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
+```
+
+The generation task writes only the `.mmd` file. It does not create an explanatory document beside the graph.
 
 ## Runtime Semantics
 
@@ -406,7 +421,7 @@ The UI should still receive immutable state and callbacks. Do not pass the `View
 4. The machine definition must expose enough topology metadata for graph generation.
 5. Guards must be visible where branch decisions happen.
 6. Entry actions must be state-local and testable.
-7. Context updates must use explicit `assign`.
+7. Context updates must use explicit `updateContext`.
 8. Async work must be emitted as actions, not launched from the DSL itself.
 9. Effects should be rare and reserved for UI-side one-shot behavior.
 10. Simple screens should keep ordinary ViewModel state instead of adopting Afsm ceremony.
@@ -430,7 +445,7 @@ transitionTo(phase, guard = { ... }) { ... }
 transitionTo<PayloadPhase>(phase = { ... }) { ... }
 stay { ... }
 otherwise { ... }
-assign { ... }
+updateContext { ... }
 action(action)
 effect(effect)
 ```
@@ -445,7 +460,7 @@ Success criteria:
 Result on 2026-05-09:
 
 - Added `AfsmMachine<P, X, E, A, F>` and `AfsmSnapshot<P, X>` to `afsm-core`.
-- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `assign`, `action`, and `effect`.
+- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `action`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, guard fallback, entry action emission, and effect-only stayed transitions work in compiled Kotlin tests.
 - Superseded by the follow-up graphability spike: branch targets now need to be declared in `transitionTo(...)`/`stay(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
@@ -457,32 +472,33 @@ Implement enough interpreter behavior to execute one event:
 - find current state definition,
 - find matching event handler,
 - evaluate guards in declaration order,
-- apply `assign` operations in order,
+- apply `updateContext` operations in order,
 - apply one transition target,
 - run exit/transition/entry outputs in deterministic order,
 - return `AfsmTransition<AfsmSnapshot<P, X>, A, F>`.
 
 Current spike status:
 
-- Implemented current state lookup, event handler lookup, ordered branch matching, ordered `assign`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
+- Implemented current state lookup, event handler lookup, ordered branch matching, ordered `updateContext`, target `onEnter`, command/action collection, effect collection, and `Stayed` versus `Transitioned` decisions.
 - `onExit`, duplicate handler validation, and action labels in topology remain unimplemented.
 
 ### Step 3: Graph Exporter
 
-Add a plain Kotlin Mermaid exporter over the machine definition.
+Add a plain Kotlin `.mmd` exporter over the machine definition.
 
 Success criteria:
 
-- ProductEditor graph is generated from the machine object.
+- ProductEditor `.mmd` graph is generated from the machine object.
 - No source scanning is required.
 - `action(...)` labels can appear on edges or entry nodes.
 
 Result on 2026-05-09:
 
-- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMermaidStateDiagram()`.
+- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMmd()`.
 - Added `AfsmMachine.topology`.
 - Changed event declarations so branch targets are known at build time: `on<Event> { transitionTo(...) { ... } }`, `on<Event> { transitionTo<PayloadPhase>(phase = { ... }) { ... } }`, `stay { ... }`, and `otherwise { ... }`.
 - Verified topology export without executing sample events.
+- Added `:sample-shop:generateAfsmMmd` to generate `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Current limitation: topology currently records phase/event edges only; action labels, guard labels, entry nodes, and duplicate declaration diagnostics remain future work.
 
 ### Step 4: ProductEditor Migration
@@ -493,7 +509,7 @@ Success criteria:
 
 - Existing ProductEditor state machine tests remain behaviorally equivalent.
 - Android sample still builds.
-- The DSL file reads more like the Mermaid state diagram than the current reducer file.
+- The DSL file reads more like the state diagram than the current reducer file.
 
 Result on 2026-05-09:
 

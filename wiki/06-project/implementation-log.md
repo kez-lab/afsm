@@ -370,7 +370,7 @@ Change:
 - Added `wiki/03-engineering/afsm-v3-executable-dsl.md` as the new canonical v3 direction.
 - Marked the previous phased-state v3 page as superseded history.
 - Updated terminology, current state, open questions, and decision log to reflect the shift from `when + PhaseEntryPolicy` to a scoped executable DSL.
-- Added ProductEditor pseudo implementation showing `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo`.
+- Added ProductEditor pseudo implementation showing `state`, `on`, `guard`, `updateContext`, `onEnter`, `action`, `effect`, and `transitionTo`.
 - Added an implementation plan for a Kotlin compile spike, interpreter spike, graph exporter, ProductEditor migration, and public API naming decision.
 
 Verification:
@@ -389,7 +389,7 @@ Conclusion:
 Change:
 
 - Added `AfsmMachine<P, X, E, A, F>` and `AfsmSnapshot<P, X>` to `afsm-core`.
-- Added a minimal executable DSL builder/interpreter with `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `guard`, `otherwise`, `assign`, `transitionTo`, `action`, and `effect`.
+- Added a minimal executable DSL builder/interpreter with `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `guard`, `otherwise`, `updateContext`, `transitionTo`, `action`, and `effect`.
 - Added a ProductEditor-like DSL test proving phase transitions, context assignment, entry actions, typed payload phase access, guard fallback, and effect-only stayed transitions.
 
 Verification:
@@ -408,7 +408,7 @@ Conclusion:
 
 Change:
 
-- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMermaidStateDiagram()`.
+- Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMmd()`.
 - Added `AfsmMachine.topology`.
 - Refined the executable DSL so event branches are graphable at build time through `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - Updated the ProductEditor-like DSL test to verify Mermaid/topology export without executing sample events.
@@ -466,3 +466,25 @@ android screen capture --annotate --output=...
 Conclusion:
 
 - The migrated ProductEditor flow works on device through register, draft entry, first rejection, resubmission, approval, publish, and return to catalog.
+
+## [2026-05-09] Afsm DSL API cleanup and `.mmd` generation
+
+Change:
+
+- Removed the superseded phased helper surface from `afsm-core`, including `AfsmPhasedStateMachine` and `Afsm.phased(...)`.
+- Renamed the context mutation DSL from `assign` to `updateContext`.
+- Renamed the event branch receiver from `AfsmEventBuilder` to `AfsmEventBranchScope` and the transition receiver from `AfsmEventScope` to `AfsmTransitionScope`.
+- Replaced `AfsmTopology.toMermaidStateDiagram()` with `AfsmTopology.toMmd()`.
+- Added `:sample-shop:generateAfsmMmd`, which generates `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd` from the real ProductEditor machine topology.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test --no-daemon
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorMmdExportTest' --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The current public-ish v3 surface is smaller and closer to the user's requested model: executable DSL first, automatic `.mmd` artifact generation, and no phased helper inheritance API.

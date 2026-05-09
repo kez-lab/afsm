@@ -5,17 +5,17 @@ updated: 2026-05-09
 
 # Afsm Phased Core Spike
 
-This spike validates the current v3 phased-state idea in real Kotlin code inside `afsm-core`.
+This page records a historical spike that validated a phased-state idea in real Kotlin code.
 
-It is not a public API freeze.
-
-Status: superseded as the recommended public authoring model by [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
+Status: removed from the current `afsm-core` public surface and superseded as the recommended public authoring model by [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]].
 
 The phased helper remains useful background because it proved `Phase + Context` is viable, but the real ProductEditor spike showed that `when + PhaseEntryPolicy` is still too convention-heavy for Afsm's public v3 goal.
 
-## Implemented Surface
+Do not reintroduce `AfsmPhasedStateMachine`, `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, or `Afsm.phased(...)` unless a future decision explicitly revives the phased profile.
 
-Files:
+## Historical Implemented Surface
+
+These files existed during the spike and have now been deleted from `afsm-core`:
 
 - `afsm-core/src/main/kotlin/afsm/core/AfsmPhasedState.kt`
 - `afsm-core/src/main/kotlin/afsm/core/AfsmPhaseEntry.kt`
@@ -40,7 +40,7 @@ abstract class AfsmPhasedStateMachine<S, P, X, E, C, F>
 Afsm.phased(state, event, entryPolicy)
 ```
 
-The preferred reducer shape is now the `AfsmPhasedStateMachine` helper:
+The preferred reducer shape during the spike was the `AfsmPhasedStateMachine` helper:
 
 ```kotlin
 class ProductEditorStateMachine : AfsmPhasedStateMachine<
@@ -65,7 +65,7 @@ class ProductEditorStateMachine : AfsmPhasedStateMachine<
 }
 ```
 
-`Afsm.phased(state, event, entryPolicy)` remains available as a low-level helper, but feature reducers should not need to call it directly in the normal path.
+`Afsm.phased(state, event, entryPolicy)` is no longer available in the current core API.
 
 Before the base/helper, the reducer had to expose setup code:
 
@@ -104,7 +104,7 @@ It validates:
 
 The real `sample-shop` ProductEditor was refactored onto the phased-state helper as an intermediate spike, then later migrated to the executable DSL.
 
-Current sample shape:
+Historical sample shape:
 
 ```kotlin
 data class ProductEditorState(
@@ -167,4 +167,4 @@ Result: all passed.
 
 The phased-state profile is viable as a lower-level implementation idea, but it should not be the primary public v3 authoring model.
 
-The follow-up executable DSL proof now owns `state`, `on`, graphable branch targets, `assign`, `onEnter`, `action`, `effect`, and graph metadata.
+The follow-up executable DSL proof now owns `state`, `on`, graphable branch targets, `updateContext`, `onEnter`, `action`, `effect`, and graph metadata.

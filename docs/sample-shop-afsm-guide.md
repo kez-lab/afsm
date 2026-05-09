@@ -124,8 +124,9 @@ Policy:
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
-- `ProductEditorStateMachine.topology` can render the phase graph without sample state/event fixtures.
-- Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `assign`.
+- `ProductEditorStateMachine.topology` can render the phase graph as `.mmd` without sample state/event fixtures.
+- `./gradlew :sample-shop:generateAfsmMmd` writes `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `updateContext`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.
@@ -188,7 +189,7 @@ The current sample suggests:
 - `Effect` should stay rare and focused on UI-side one-shot work.
 - Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
-- The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology`.
+- The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:

@@ -27,18 +27,18 @@ The current direction is:
 - Auth now uses sealed phases (`Editing`, `Submitting`, `Authenticated`) so text edits read as self-transitions and submit reads as a real phase transition.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
-- The canonical v3 API direction is now a scoped executable statechart DSL: `state`, `on`, `guard`, `assign`, `onEnter`, `action`, `effect`, and `transitionTo` in one machine definition.
-- A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `assign`, `onEnter`, `action`, and `effect`.
-- The executable DSL spike passes ProductEditor-like core tests for phase transitions, context assignment, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
-- The executable DSL now exposes `AfsmMachine.topology` plus a Mermaid renderer; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
-- A minimal `afsm-core` phased-state spike now compiles and passes tests with `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `AfsmPhasedStateMachine`, `transitionTo(Phase)`, and `updateContext`.
-- The phased-state helper is now treated as a superseded public authoring direction and useful lower-level learning, not the recommended v3 API.
+- The canonical v3 API direction is now a scoped executable statechart DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect` in one machine definition.
+- A minimal executable DSL spike now exists in `afsm-core` with `AfsmMachine`, `AfsmSnapshot`, `afsmMachine`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `action`, and `effect`.
+- The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, entry actions, typed payload phases, guard fallback, and UI-side effect emission.
+- The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- The `sample-shop` module now has `generateAfsmMmd`, which writes the ProductEditor graph as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
 - Android CLI regression smoke verification passed after the ProductEditor naming cleanup, with evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
 - ProductEditor was refactored to the phased-state helper as an intermediate spike: `ProductEditorState = ProductEditorPhase + ProductEditorContext`, `ProductDraft` lives in context, and reducers call `transitionTo(ProductEditorPhase.X)`.
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
-- ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes graph metadata from the real sample implementation.
+- ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes `.mmd` graph metadata from the real sample implementation.
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 
 ## Core Architecture Position
