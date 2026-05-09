@@ -8,6 +8,27 @@ import kotlin.test.assertTrue
 
 class AfsmPhasedCompileCheckTest {
     @Test
+    fun `phased state machine helper hides scope creation from feature reducers`() {
+        val machine: AfsmStateMachine<
+            ProductEditorState,
+            ProductEditorEvent,
+            ProductEditorCommand,
+            ProductEditorEffect,
+            > = ProductEditorStateMachine()
+
+        val transition = machine.transition(
+            state = ProductEditorState(),
+            event = ProductEditorEvent.SubmitClicked,
+        )
+
+        assertEquals(ProductEditorPhase.ImageUploadInProgress, transition.state.phase)
+        assertEquals(
+            listOf(ProductEditorCommand.StartImageUpload(ProductDraft())),
+            transition.commands,
+        )
+    }
+
+    @Test
     fun `updateContext with trailing lambda keeps phase and emits no outputs`() {
         val machine = ProductEditorStateMachine()
         val transition = machine.transition(
@@ -198,24 +219,23 @@ private typealias ProductEditorTransitionScope =
         ProductEditorEffect,
         >
 
-private class ProductEditorStateMachine :
-    AfsmStateMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
-    private val entryPolicy = ProductEditorPhaseEntryPolicy()
-
-    override fun transition(
-        state: ProductEditorState,
+private class ProductEditorStateMachine : AfsmPhasedStateMachine<
+    ProductEditorState,
+    ProductEditorPhase,
+    ProductEditorContext,
+    ProductEditorEvent,
+    ProductEditorCommand,
+    ProductEditorEffect,
+    >(
+    entryPolicy = ProductEditorPhaseEntryPolicy(),
+) {
+    override fun ProductEditorTransitionScope.reduce(
         event: ProductEditorEvent,
     ): ProductEditorTransition {
-        return Afsm.phased(
-            state = state,
-            event = event,
-            entryPolicy = entryPolicy,
-        ).run {
-            when (state.phase) {
-                ProductEditorPhase.EditingDraft -> reduceEditingDraft(event)
-                ProductEditorPhase.ImageUploadInProgress -> reduceImageUploadInProgress(event)
-                is ProductEditorPhase.ReviewSubmissionInProgress -> ignore("Review submission is running.")
-            }
+        return when (state.phase) {
+            ProductEditorPhase.EditingDraft -> reduceEditingDraft(event)
+            ProductEditorPhase.ImageUploadInProgress -> reduceImageUploadInProgress(event)
+            is ProductEditorPhase.ReviewSubmissionInProgress -> ignore("Review submission is running.")
         }
     }
 

@@ -311,3 +311,25 @@ Conclusion:
 - `PhaseEntryPolicy` can hide context assembly and emit commands from the next context.
 - `updateContext { ... }` requires a dedicated single-lambda overload for Kotlin trailing-lambda ergonomics.
 - The next proof should apply the phased profile to the real ProductEditor sample before treating the API as stable.
+
+## [2026-05-09] AfsmPhasedStateMachine helper spike
+
+Change:
+
+- Added `AfsmPhasedStateMachine<S, P, X, E, C, F>` to `afsm-core`.
+- The helper implements `AfsmStateMachine` and creates `AfsmPhasedTransitionScope` internally.
+- Refactored the ProductEditor-like compile check so feature code no longer calls `Afsm.phased(state, event, entryPolicy)` directly.
+- Added a focused test that verifies the helper still exposes normal `AfsmStateMachine` behavior while hiding scope creation.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileTestKotlin
+./gradlew :afsm-core:check :afsm-runtime:test
+```
+
+Conclusion:
+
+- The desired shape is feasible: reducer code can call `transitionTo(Phase)` directly inside the helper-managed scope.
+- Raw type verbosity still exists at the class declaration, so feature-local typealiases or future type reduction remain important.
+- The helper introduces inheritance; this should be tested against a real ProductEditor refactor before deciding it is the public recommendation.

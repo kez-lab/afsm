@@ -179,3 +179,9 @@
 - Source: user request to validate `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `transitionTo(Phase)`, and `updateContext` as real Kotlin code
 - Action: Added a minimal phased-state API spike to `afsm-core`, executable ProductEditor-like tests, and verification notes.
 - Updated: `afsm-core/`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-09] implementation | AfsmPhasedStateMachine helper
+
+- Source: user request to hide direct `Afsm.phased(...)` setup and let reducers call `transitionTo(Phase)` directly
+- Action: Added `AfsmPhasedStateMachine`, refactored the phased compile check to use the helper, and documented the API ergonomics finding.
+- Updated: `afsm-core/`, `wiki/03-engineering/afsm-phased-core-spike.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

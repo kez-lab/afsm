@@ -28,7 +28,7 @@ The current direction is:
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a phased-state authoring profile: `State = Phase + Context`, reducers call `transitionTo(Phase)`, and feature-local `PhaseEntryPolicy` hides context normalization plus command/effect entry rules.
-- A minimal `afsm-core` phased-state spike now compiles and passes tests with `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `Afsm.phased(...)`, `transitionTo(Phase)`, and `updateContext`.
+- A minimal `afsm-core` phased-state spike now compiles and passes tests with `AfsmPhasedState`, `AfsmPhaseEntryPolicy`, `AfsmPhasedStateMachine`, `transitionTo(Phase)`, and `updateContext`.
 - Afsm terminology now treats `Command` as a transition action emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from actions like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
 - Android CLI regression smoke verification passed after the ProductEditor naming cleanup, with evidence under `raw/verification/2026-05-09-product-editor-transition-action-rename-smoke/`.
