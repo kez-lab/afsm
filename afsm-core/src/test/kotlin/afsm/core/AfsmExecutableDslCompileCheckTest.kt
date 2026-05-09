@@ -2,6 +2,7 @@ package afsm.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -32,7 +33,7 @@ class AfsmExecutableDslCompileCheckTest {
 
         assertEquals(DslProductEditorPhase.ImageUploadInProgress, result.state.phase)
         assertEquals(normalizedDraft, result.state.context.draft)
-        assertEquals(listOf(DslProductEditorAction.StartImageUpload(normalizedDraft)), result.commands)
+        assertEquals(listOf(DslProductEditorCommand.StartImageUpload(normalizedDraft)), result.commands)
         assertIs<AfsmDecision.Transitioned>(result.decision)
     }
 
@@ -62,7 +63,7 @@ class AfsmExecutableDslCompileCheckTest {
         assertEquals(reviewedDraft, result.state.context.draft)
         assertEquals(
             listOf(
-                DslProductEditorAction.StartReviewSubmission(
+                DslProductEditorCommand.StartReviewSubmission(
                     draft = reviewedDraft,
                     uploadToken = "upload-1",
                 ),
@@ -117,12 +118,98 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
+    fun `onExit runs before transition block and onEnter`() {
+        val machine = afsmMachine<
+            DslProductEditorPhase,
+            String,
+            DslProductEditorEvent,
+            DslProductEditorCommand,
+            DslProductEditorEffect,
+            > {
+            initial(
+                phase = DslProductEditorPhase.EditingDraft,
+                context = "",
+            )
+
+            state(DslProductEditorPhase.EditingDraft) {
+                onExit {
+                    updateContext { this + "exit;" }
+                }
+
+                on<DslProductEditorEvent.SubmitClicked> {
+                    transitionTo(DslProductEditorPhase.SavingDraft) {
+                        updateContext { this + "transition;" }
+                    }
+                }
+            }
+
+            state(DslProductEditorPhase.SavingDraft) {
+                onEnter {
+                    updateContext { this + "enter;" }
+                }
+            }
+        }
+
+        val result = machine.transition(
+            state = machine.initialState,
+            event = DslProductEditorEvent.SubmitClicked,
+        )
+
+        assertEquals("exit;transition;enter;", result.state.context)
+    }
+
+    @Test
+    fun `machine build validates initial state and transition targets`() {
+        val missingInitial = assertFailsWith<AfsmDefinitionException> {
+            afsmMachine<
+                DslProductEditorPhase,
+                DslProductEditorContext,
+                DslProductEditorEvent,
+                DslProductEditorCommand,
+                DslProductEditorEffect,
+                > {
+                initial(
+                    phase = DslProductEditorPhase.EditingDraft,
+                    context = DslProductEditorContext(),
+                )
+
+                state(DslProductEditorPhase.SavingDraft) {
+                }
+            }
+        }
+
+        val unknownTarget = assertFailsWith<AfsmDefinitionException> {
+            afsmMachine<
+                DslProductEditorPhase,
+                DslProductEditorContext,
+                DslProductEditorEvent,
+                DslProductEditorCommand,
+                DslProductEditorEffect,
+                > {
+                initial(
+                    phase = DslProductEditorPhase.EditingDraft,
+                    context = DslProductEditorContext(),
+                )
+
+                state(DslProductEditorPhase.EditingDraft) {
+                    on<DslProductEditorEvent.SubmitClicked> {
+                        transitionTo(DslProductEditorPhase.ImageUploadInProgress)
+                    }
+                }
+            }
+        }
+
+        assertTrue("Initial phase EditingDraft" in missingInitial.message.orEmpty())
+        assertTrue("targets an undeclared state" in unknownTarget.message.orEmpty())
+    }
+
+    @Test
     fun `ignore and invalid branches preserve decisions without topology edges`() {
-        val machine = afsmStateChart<
+        val machine = afsmMachine<
             DslProductEditorPhase,
             DslProductEditorContext,
             DslProductEditorEvent,
-            DslProductEditorAction,
+            DslProductEditorCommand,
             DslProductEditorEffect,
             > {
             initial(
@@ -157,11 +244,11 @@ class AfsmExecutableDslCompileCheckTest {
 
     @Test
     fun `topology deduplicates identical declared edges`() {
-        val machine = afsmStateChart<
+        val machine = afsmMachine<
             DslProductEditorPhase,
             DslProductEditorContext,
             DslProductEditorEvent,
-            DslProductEditorAction,
+            DslProductEditorCommand,
             DslProductEditorEffect,
             > {
             initial(
@@ -181,6 +268,9 @@ class AfsmExecutableDslCompileCheckTest {
                         guard = { context.draft.description.isNotBlank() },
                     )
                 }
+            }
+
+            state(DslProductEditorPhase.ImageUploadInProgress) {
             }
         }
 
@@ -206,6 +296,7 @@ class AfsmExecutableDslCompileCheckTest {
                     from = "EditingDraft",
                     event = "TitleChanged",
                     to = "EditingDraft",
+                    kind = AfsmTopologyTransitionKind.Internal,
                 ),
                 AfsmTopologyTransition(
                     from = "EditingDraft",
@@ -221,6 +312,8 @@ class AfsmExecutableDslCompileCheckTest {
                     from = "EditingDraft",
                     event = "SubmitClicked [otherwise]",
                     to = "EditingDraft",
+                    kind = AfsmTopologyTransitionKind.Internal,
+                    isFallback = true,
                 ),
                 AfsmTopologyTransition(
                     from = "SavingDraft",
@@ -236,6 +329,7 @@ class AfsmExecutableDslCompileCheckTest {
                     from = "Published",
                     event = "DoneClicked",
                     to = "Published",
+                    kind = AfsmTopologyTransitionKind.Internal,
                 ),
             ),
             machine.topology.transitions,
@@ -247,14 +341,14 @@ class AfsmExecutableDslCompileCheckTest {
         assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mmd)
     }
 
-    private fun productEditorMachine(): AfsmStateChart<
+    private fun productEditorMachine(): AfsmMachine<
         DslProductEditorPhase,
         DslProductEditorContext,
         DslProductEditorEvent,
-        DslProductEditorAction,
+        DslProductEditorCommand,
         DslProductEditorEffect,
         > {
-        return afsmStateChart {
+        return afsmMachine {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
                 context = DslProductEditorContext(),
@@ -299,7 +393,7 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.SavingDraft) {
                 onEnter {
-                    action(DslProductEditorAction.SaveDraft(context.draft))
+                    command(DslProductEditorCommand.SaveDraft(context.draft))
                 }
 
                 on<DslProductEditorEvent.DraftSaved> {
@@ -307,9 +401,12 @@ class AfsmExecutableDslCompileCheckTest {
                 }
             }
 
+            state(DslProductEditorPhase.DraftSaved) {
+            }
+
             state(DslProductEditorPhase.ImageUploadInProgress) {
                 onEnter {
-                    action(DslProductEditorAction.StartImageUpload(context.draft))
+                    command(DslProductEditorCommand.StartImageUpload(context.draft))
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
@@ -332,8 +429,8 @@ class AfsmExecutableDslCompileCheckTest {
 
             state<DslProductEditorPhase.ReviewSubmissionInProgress> {
                 onEnter {
-                    action(
-                        DslProductEditorAction.StartReviewSubmission(
+                    command(
+                        DslProductEditorCommand.StartReviewSubmission(
                             draft = context.draft,
                             uploadToken = phase.uploadToken,
                         ),
@@ -410,14 +507,14 @@ private sealed interface DslProductEditorEvent {
     data object DoneClicked : DslProductEditorEvent
 }
 
-private sealed interface DslProductEditorAction {
-    data class SaveDraft(val draft: DslProductDraft) : DslProductEditorAction
-    data class StartImageUpload(val draft: DslProductDraft) : DslProductEditorAction
+private sealed interface DslProductEditorCommand {
+    data class SaveDraft(val draft: DslProductDraft) : DslProductEditorCommand
+    data class StartImageUpload(val draft: DslProductDraft) : DslProductEditorCommand
 
     data class StartReviewSubmission(
         val draft: DslProductDraft,
         val uploadToken: String,
-    ) : DslProductEditorAction
+    ) : DslProductEditorCommand
 }
 
 private sealed interface DslProductEditorEffect {

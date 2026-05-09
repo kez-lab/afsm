@@ -2,18 +2,18 @@ package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
 import afsm.core.AfsmState
-import afsm.core.AfsmStateChart
-import afsm.core.AfsmStateChartMachine
-import afsm.core.afsmStateChart
+import afsm.core.AfsmMachine
+import afsm.core.AfsmMachineAdapter
+import afsm.core.afsmMachine
 import afsm.sample.shop.core.model.UserSession
 
-private typealias AuthChart = AfsmStateChart<AuthPhase, AuthContext, AuthEvent, AuthCommand, AuthEffect>
+private typealias AuthMachine = AfsmMachine<AuthPhase, AuthContext, AuthEvent, AuthCommand, AuthEffect>
 
 @AfsmGraph(
     id = "Auth",
     fileName = "AuthStateMachine.mmd",
 )
-internal class AuthStateMachine : AfsmStateChartMachine<
+internal class AuthStateMachine : AfsmMachineAdapter<
     AuthState,
     AuthPhase,
     AuthContext,
@@ -21,10 +21,10 @@ internal class AuthStateMachine : AfsmStateChartMachine<
     AuthCommand,
     AuthEffect,
     >(
-    chart = authChart(),
+    machine = authMachine(),
 ) {
-    override fun toChartState(state: AuthState): AfsmState<AuthPhase, AuthContext> {
-        return state.toChartState()
+    override fun toAfsmState(state: AuthState): AfsmState<AuthPhase, AuthContext> {
+        return state.toAfsmState()
     }
 
     override fun toScreenState(state: AfsmState<AuthPhase, AuthContext>): AuthState {
@@ -32,8 +32,8 @@ internal class AuthStateMachine : AfsmStateChartMachine<
     }
 }
 
-private fun authChart(): AuthChart {
-    return afsmStateChart {
+private fun authMachine(): AuthMachine {
+    return afsmMachine {
         initial(
             phase = AuthPhase.Editing,
             context = AuthContext(),
@@ -96,7 +96,7 @@ private fun authChart(): AuthChart {
                             session = null,
                         )
                     }
-                    action(
+                    command(
                         AuthCommand.Login(
                             email = normalized.form.email,
                             password = normalized.form.password,
@@ -115,7 +115,7 @@ private fun authChart(): AuthChart {
                             session = null,
                         )
                     }
-                    action(
+                    command(
                         AuthCommand.Register(
                             name = normalized.form.name,
                             email = normalized.form.email,
@@ -228,7 +228,7 @@ internal data class AuthContext(
     val session: UserSession? = null,
 )
 
-private fun AuthState.toChartState(): AfsmState<AuthPhase, AuthContext> {
+private fun AuthState.toAfsmState(): AfsmState<AuthPhase, AuthContext> {
     return when (this) {
         is AuthState.Editing -> AfsmState(
             phase = AuthPhase.Editing,

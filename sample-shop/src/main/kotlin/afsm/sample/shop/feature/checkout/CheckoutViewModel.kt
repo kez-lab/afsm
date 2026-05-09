@@ -15,7 +15,7 @@ class CheckoutViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         initialState = CheckoutState(productId = productId),
-        stateMachine = CheckoutStateMachine(),
+        reducer = CheckoutStateMachine(),
         commandHandler = AfsmCommandHandler { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {

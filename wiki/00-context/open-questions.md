@@ -15,7 +15,6 @@ updated: 2026-05-10
 
 - How should process restoration be handled: reconstruct from `SavedStateHandle`, persist only selected state, or require domain reload?
 - Which FSM states are safe to restore directly, and which should be reconstructed from a minimal key plus repository data?
-- Should commands be cancellable by default when a new event arrives, or should cancellation be explicit per command?
 
 ## Scope
 
@@ -47,16 +46,10 @@ Resolved:
 - Should the executable DSL live in `afsm-core`, `afsm-dsl`, or another module before public release?
 - How should graph extraction represent invalid/ignored branches declared in the executable DSL?
 - Should graph labels default to type names, require explicit human labels, or support both?
-- Should `AfsmStateChart` remain the public name for executable charts, or should it be renamed before release to reduce user confusion?
-- Should the low-level `AfsmStateMachine<S, E, C, F>` contract be renamed to `AfsmReducer` if the executable chart becomes the primary public machine type?
-- Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
-- If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
+- Should deprecated compatibility aliases for `AfsmStateMachine`, `AfsmStateChart`, and `AfsmStateChartMachine` stay until release, or be removed before public API stabilization?
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
 - Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
-- Should initial state entry run `onEnter`, or should Android features keep using explicit `ScreenEntered` events?
-- Should the DSL add `onExit` before public release, even if nested states are deferred?
-- Should command-handler exceptions fail the host, be logged, or be routed through a configurable policy?
 - Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 
@@ -76,15 +69,20 @@ Resolved:
 - Compose helpers and test helpers remain future modules.
 - A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
-- `Command` should be explained as a transition action/output, not as a user interaction event.
+- `Command` should be explained as host-executed transition output, not as a user interaction event.
 - ProductEditor naming cleanup has been applied and verified; graph generation now works through executable DSL topology and `.mmd` export.
 - KSP graph generation should discover annotated `StateMachine` classes, generate a registry, then execute compiled `AfsmGraphSource.topology.toMmd()`; it should not parse DSL bodies or create graph-only models.
 - The first `afsm-graph-ksp` slice now works for two real graphable state machines: `AuthStateMachine` and `ProductEditorStateMachine`.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
-- `AfsmStateChart.topology` and `.mmd` export now work without sample events for declared branches; action labels, guard labels, entry node rendering, and duplicate declaration diagnostics remain unresolved.
-- `AfsmMachine` has been retired as the current name because it confused the host-facing `AfsmStateMachine` contract. New code uses `AfsmStateChart`; the old aliases were removed from the current spike API.
-- `AfsmState<Phase, Context>` is the current standard state value for executable charts. Features with this exact shape can use a typealias and delegate directly to the chart; custom sealed UI states can still adapt through `AfsmStateChartMachine`.
+- `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; guard labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
+- Use `AfsmReducer<S, E, C, F>` for the low-level host contract and `AfsmMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
+- Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
+- `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features with this exact shape can use a typealias and delegate directly to the machine; custom sealed UI states can still adapt through `AfsmMachineAdapter`.
+- The DSL includes flat `onExit`; transition execution order is `onExit -> transition block -> onEnter` for phase-changing transitions.
+- Initial state construction does not run `onEnter`; startup work should be triggered by an explicit event such as `ScreenEntered` or by a future dedicated `initialTransition` API if needed.
+- `AfsmHost` command-handler exceptions use `AfsmCommandFailurePolicy`: `Throw` by default for programmer errors, `Record` when a resilient host should log and continue. `CancellationException` is always rethrown.
+- MVP commands are not automatically cancelled by later events. Cancellation is explicit through feature commands/events, while future invoked-service support can add structured cancellation semantics.
 - `ignore(...)` is intentional handled no-op behavior. Ordinary unhandled event/phase combinations should be omitted and become invalid decisions.
 - Real `sample-shop` ProductEditor has been migrated from the phased helper to the executable DSL and has focused unit coverage plus topology assertions.
 - The phased-state API was removed from `afsm-core` after the executable DSL migration; it remains only as historical learning.

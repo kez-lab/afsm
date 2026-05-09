@@ -1,7 +1,7 @@
 package afsm.runtime
 
 import afsm.core.AfsmDecision
-import afsm.core.AfsmStateMachine
+import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -16,10 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     initialState: S,
-    private val stateMachine: AfsmStateMachine<S, E, C, F>,
+    private val reducer: AfsmReducer<S, E, C, F>,
     private val commandHandler: AfsmCommandHandler<C, E>,
     scope: CoroutineScope,
     private val config: AfsmConfig = AfsmConfig(),
@@ -82,11 +83,14 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
 
     private suspend fun processEvent(event: E) {
         val currentState = _state.value
-        val transition = stateMachine.transition(currentState, event)
+        val transition = reducer.transition(currentState, event)
 
         when (transition.decision) {
             AfsmDecision.Transitioned,
-            is AfsmDecision.Stayed -> applyAcceptedTransition(transition)
+            is AfsmDecision.Stayed -> applyAcceptedTransition(
+                event = event,
+                transition = transition,
+            )
 
             is AfsmDecision.Ignored -> recordDroppedIgnoredOutputsIfNeeded(
                 state = currentState,
@@ -103,6 +107,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     }
 
     private suspend fun applyAcceptedTransition(
+        event: E,
         transition: AfsmTransition<S, C, F>,
     ) {
         _state.value = transition.state
@@ -114,10 +119,43 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         when (config.commandExecutionPolicy) {
             AfsmCommandExecutionPolicy.Sequential -> {
                 for (command in transition.commands) {
-                    commandHandler.handle(command) { nextEvent ->
-                        eventQueue.send(nextEvent)
-                    }
+                    executeCommand(
+                        state = transition.state,
+                        event = event,
+                        command = command,
+                        transition = transition,
+                    )
                 }
+            }
+        }
+    }
+
+    private suspend fun executeCommand(
+        state: S,
+        event: E,
+        command: C,
+        transition: AfsmTransition<S, C, F>,
+    ) {
+        try {
+            commandHandler.handle(command) { nextEvent ->
+                eventQueue.send(nextEvent)
+            }
+        } catch (throwable: CancellationException) {
+            throw throwable
+        } catch (throwable: Throwable) {
+            val diagnostic = AfsmDiagnostic(
+                state = state,
+                event = event,
+                decision = transition.decision,
+                reason = throwable.message,
+                message = "Afsm command failed.",
+                command = command,
+                throwable = throwable,
+            )
+
+            when (config.commandFailurePolicy) {
+                AfsmCommandFailurePolicy.Record -> config.logger.log(diagnostic)
+                AfsmCommandFailurePolicy.Throw -> throw throwable
             }
         }
     }

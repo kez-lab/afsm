@@ -71,8 +71,8 @@ internal class AfsmGraphProcessor(
             return null
         }
 
-        if (!declaration.hasSuperType(AFSM_STATE_MACHINE)) {
-            logger.error("@AfsmGraph class must implement AfsmStateMachine.", declaration)
+        if (!declaration.hasSuperType(AFSM_REDUCER)) {
+            logger.error("@AfsmGraph class must implement AfsmReducer.", declaration)
             return null
         }
 
@@ -169,7 +169,7 @@ internal class AfsmGraphProcessor(
     private companion object {
         const val AFSM_GRAPH_ANNOTATION = "afsm.core.AfsmGraph"
         const val AFSM_GRAPH_SOURCE = "afsm.core.AfsmGraphSource"
-        const val AFSM_STATE_MACHINE = "afsm.core.AfsmStateMachine"
+        const val AFSM_REDUCER = "afsm.core.AfsmReducer"
         const val GENERATED_PACKAGE = "afsm.generated"
         const val GENERATED_REGISTRY_NAME = "AfsmGeneratedGraphRegistry"
     }

@@ -1,9 +1,9 @@
 package afsm.sample.shop.feature.checkout
 
 import afsm.core.Afsm
-import afsm.core.AfsmStateMachine
+import afsm.core.AfsmReducer
 
-class CheckoutStateMachine : AfsmStateMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> {
+class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> {
     override fun transition(
         state: CheckoutState,
         event: CheckoutEvent,

@@ -2,10 +2,10 @@ package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmEventBranchScope
 import afsm.core.AfsmGraph
-import afsm.core.AfsmStateChart
-import afsm.core.afsmStateChart
+import afsm.core.AfsmMachine
+import afsm.core.afsmMachine
 
-private typealias ProductEditorChart = AfsmStateChart<
+private typealias ProductEditorMachine = AfsmMachine<
     ProductEditorPhase,
     ProductEditorContext,
     ProductEditorEvent,
@@ -18,11 +18,11 @@ private typealias ProductEditorChart = AfsmStateChart<
     fileName = "ProductEditorStateMachine.mmd",
 )
 internal class ProductEditorStateMachine(
-    chart: ProductEditorChart = productEditorChart(),
-) : ProductEditorChart by chart
+    machine: ProductEditorMachine = productEditorMachine(),
+) : ProductEditorMachine by machine
 
-private fun productEditorChart(): ProductEditorChart {
-    return afsmStateChart {
+private fun productEditorMachine(): ProductEditorMachine {
+    return afsmMachine {
         initial(
             phase = ProductEditorPhase.EditingDraft,
             context = ProductEditorContext(),
@@ -59,7 +59,7 @@ private fun productEditorChart(): ProductEditorChart {
         state(ProductEditorPhase.SavingDraft) {
             onEnter {
                 updateContext { copy(errorMessage = null) }
-                action(ProductEditorCommand.SaveDraft(context.draft))
+                command(ProductEditorCommand.SaveDraft(context.draft))
             }
 
             on<ProductEditorEvent.DraftSaved> {
@@ -104,7 +104,7 @@ private fun productEditorChart(): ProductEditorChart {
 
         state(ProductEditorPhase.ImageUploadInProgress) {
             onEnter {
-                action(ProductEditorCommand.StartImageUpload(context.draft))
+                command(ProductEditorCommand.StartImageUpload(context.draft))
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
@@ -137,7 +137,7 @@ private fun productEditorChart(): ProductEditorChart {
 
         state<ProductEditorPhase.ReviewSubmissionInProgress> {
             onEnter {
-                action(
+                command(
                     ProductEditorCommand.StartReviewSubmission(
                         draft = context.draft,
                         uploadToken = phase.uploadToken,
@@ -205,7 +205,7 @@ private fun productEditorChart(): ProductEditorChart {
         state(ProductEditorPhase.PublishInProgress) {
             onEnter {
                 updateContext { copy(errorMessage = null) }
-                action(ProductEditorCommand.StartProductPublish(context.draft))
+                command(ProductEditorCommand.StartProductPublish(context.draft))
             }
 
             on<ProductEditorEvent.PublishSucceeded> {

@@ -10,12 +10,24 @@ public data class AfsmTopology(
 
 public data class AfsmTopologyState(
     public val id: String,
+    public val label: String = id,
+    public val parentId: String? = null,
 )
+
+public enum class AfsmTopologyTransitionKind {
+    External,
+    Internal
+}
 
 public data class AfsmTopologyTransition(
     public val from: String,
     public val event: String,
     public val to: String,
+    public val guardLabel: String? = null,
+    public val commandLabels: List<String> = emptyList(),
+    public val effectLabels: List<String> = emptyList(),
+    public val kind: AfsmTopologyTransitionKind = AfsmTopologyTransitionKind.External,
+    public val isFallback: Boolean = false,
 )
 
 /**
@@ -26,7 +38,11 @@ public fun AfsmTopology.toMmd(): String {
         appendLine("stateDiagram-v2")
 
         states.forEach { state ->
-            appendLine("  state ${state.id}")
+            if (state.label == state.id) {
+                appendLine("  state ${state.id}")
+            } else {
+                appendLine("  state ${quoteMmdLabel(state.label)} as ${state.id}")
+            }
         }
 
         transitions.forEach { transition ->
@@ -35,7 +51,25 @@ public fun AfsmTopology.toMmd(): String {
             append(" --> ")
             append(transition.to)
             append(": ")
-            appendLine(transition.event)
+            appendLine(transition.mmdLabel())
         }
     }.trimEnd()
+}
+
+private fun AfsmTopologyTransition.mmdLabel(): String {
+    val parts = mutableListOf(event)
+    guardLabel?.let { label ->
+        parts += "[$label]"
+    }
+    if (commandLabels.isNotEmpty()) {
+        parts += "/ ${commandLabels.joinToString(", ")}"
+    }
+    if (effectLabels.isNotEmpty()) {
+        parts += "! ${effectLabels.joinToString(", ")}"
+    }
+    return parts.joinToString(" ")
+}
+
+private fun quoteMmdLabel(label: String): String {
+    return "\"${label.replace("\"", "\\\"")}\""
 }

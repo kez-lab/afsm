@@ -269,3 +269,9 @@
 - Source: user request to compare Afsm against external state-machine and reducer references.
 - Action: Added a reference review comparing current Afsm to XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance; identified API hardening priorities before public release.
 - Updated: `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/log.md`.
+
+## [2026-05-10] implementation | Afsm API hardening loop
+
+- Source: user request to unify command terminology, rename `AfsmStateMachine`/DSL concepts, add DSL validation, add `onExit`, expand topology metadata, and define command failure/cancellation policy.
+- Action: Implemented `AfsmReducer`, `AfsmMachine`, `command(...)`, `onExit`, `AfsmDefinitionException`, richer topology metadata, `AfsmCommandFailurePolicy`, sample migrations, and verification for core/runtime/ViewModel/sample-shop.
+- Updated: `afsm-core/`, `afsm-runtime/`, `afsm-viewmodel/`, `afsm-graph-ksp/`, `sample-shop/src/main/kotlin/`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

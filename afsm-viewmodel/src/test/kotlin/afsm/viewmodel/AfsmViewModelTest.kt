@@ -2,7 +2,7 @@ package afsm.viewmodel
 
 import afsm.core.Afsm
 import afsm.core.AfsmNoEffect
-import afsm.core.AfsmStateMachine
+import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import afsm.runtime.AfsmCommandHandler
 import androidx.lifecycle.ViewModel
@@ -75,7 +75,7 @@ class AfsmViewModelTest {
 
         private val host = afsmHost(
             initialState = CounterState(),
-            stateMachine = CounterStateMachine(),
+            reducer = CounterStateMachine(),
             commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
                 handledCommands += command
                 when (command) {
@@ -95,7 +95,7 @@ class AfsmViewModelTest {
     }
 
     private class CounterStateMachine :
-        AfsmStateMachine<CounterState, CounterEvent, CounterCommand, CounterEffect> {
+        AfsmReducer<CounterState, CounterEvent, CounterCommand, CounterEffect> {
         override fun transition(
             state: CounterState,
             event: CounterEvent,
@@ -143,7 +143,7 @@ class AfsmViewModelTest {
     private class NoCommandViewModel : ViewModel() {
         private val host = afsmHost<CounterState, CounterEvent, CounterCommand, AfsmNoEffect>(
             initialState = CounterState(),
-            stateMachine = AfsmStateMachine { state: CounterState, _: CounterEvent ->
+            reducer = AfsmReducer { state: CounterState, _: CounterEvent ->
                 Afsm.transitionTo(state = state)
             },
         )

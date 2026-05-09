@@ -8,4 +8,6 @@ public class AfsmDiagnostic(
     public val decision: AfsmDecision,
     public val reason: String?,
     public val message: String,
+    public val command: Any? = null,
+    public val throwable: Throwable? = null,
 )

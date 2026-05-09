@@ -12,7 +12,7 @@ class ProductEditorViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         initialState = productEditorState(),
-        stateMachine = ProductEditorStateMachine(),
+        reducer = ProductEditorStateMachine(),
         commandHandler = { command: ProductEditorCommand, dispatch ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {

@@ -45,7 +45,7 @@ private typealias SignupTransition =
     AfsmTransition<SignupState, SignupCommand, SignupEffect>
 
 private typealias SignupMachine =
-    AfsmStateMachine<SignupState, SignupEvent, SignupCommand, SignupEffect>
+    AfsmReducer<SignupState, SignupEvent, SignupCommand, SignupEffect>
 
 private class SignupStateMachine : SignupMachine {
     override fun transition(
@@ -191,7 +191,7 @@ private typealias LoginTransition =
     AfsmTransition<LoginState, LoginCommand, AfsmNoEffect>
 
 private typealias LoginMachine =
-    AfsmStateMachine<LoginState, LoginEvent, LoginCommand, AfsmNoEffect>
+    AfsmReducer<LoginState, LoginEvent, LoginCommand, AfsmNoEffect>
 
 private class LoginStateMachine : LoginMachine {
     override fun transition(

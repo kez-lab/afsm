@@ -210,3 +210,17 @@ The most urgent changes are not conceptual rewrites. They are API hardening:
 7. settle the public machine/reducer names.
 
 The current `AfsmState<Phase, Context>` direction should remain.
+
+## Follow-up Implementation
+
+2026-05-10 hardening pass:
+
+- `AfsmStateMachine` was renamed to `AfsmReducer` for new code.
+- The executable DSL public name is now `AfsmMachine` / `afsmMachine`.
+- DSL output terminology is now `command(...)`.
+- Flat `onExit` exists, with `onExit -> transition block -> onEnter` ordering tests.
+- Initial state construction does not run `onEnter`; startup work should be explicit through an event such as `ScreenEntered`.
+- `afsmMachine { ... }` now validates missing initial declarations, duplicate declarations, and undeclared transition targets.
+- `AfsmTopologyTransition` now carries guard, command, effect, kind, and fallback metadata.
+- `AfsmHost` now has `AfsmCommandFailurePolicy`; `CancellationException` is always rethrown.
+- MVP command cancellation remains explicit through feature commands/events; invoked-service cancellation is deferred.

@@ -3,7 +3,7 @@ package afsm.runtime
 import afsm.core.Afsm
 import afsm.core.AfsmDecision
 import afsm.core.AfsmNoEffect
-import afsm.core.AfsmStateMachine
+import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +28,7 @@ class AfsmHostTest {
         val hostScope = newHostScope()
         val host: AfsmHost<TraceState, TraceEvent, TraceCommand, AfsmNoEffect> = AfsmHost(
             initialState = TraceState(),
-            stateMachine = AfsmStateMachine { state: TraceState, event: TraceEvent ->
+            reducer = AfsmReducer { state: TraceState, event: TraceEvent ->
                 when (event) {
                     TraceEvent.A -> Afsm.transitionTo(
                         state = state.record("A"),
@@ -68,7 +68,7 @@ class AfsmHostTest {
         lateinit var host: AfsmHost<EffectState, EffectEvent, EffectCommand, EffectOutput>
         host = AfsmHost(
             initialState = EffectState.Idle,
-            stateMachine = AfsmStateMachine { state: EffectState, event: EffectEvent ->
+            reducer = AfsmReducer { state: EffectState, event: EffectEvent ->
                 when (event) {
                     EffectEvent.Start -> Afsm.transitionTo(
                         state = EffectState.Started,
@@ -118,7 +118,7 @@ class AfsmHostTest {
         val handledCommands = mutableListOf<NoEffectCommand>()
         val host: AfsmHost<NoEffectState, NoEffectEvent, NoEffectCommand, AfsmNoEffect> = AfsmHost(
             initialState = NoEffectState.Submitting,
-            stateMachine = AfsmStateMachine { state: NoEffectState, event: NoEffectEvent ->
+            reducer = AfsmReducer { state: NoEffectState, event: NoEffectEvent ->
                 when (event) {
                     NoEffectEvent.CancelRequested -> Afsm.stay(
                         state = state,
@@ -149,7 +149,7 @@ class AfsmHostTest {
         val emittedEffects = mutableListOf<DecisionEffect>()
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
-            stateMachine = AfsmStateMachine { _: DecisionState, _: DecisionEvent ->
+            reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 AfsmTransition(
                     state = DecisionState("wrong"),
                     commands = listOf(DecisionCommand.ShouldNotRun),
@@ -191,7 +191,7 @@ class AfsmHostTest {
         val handledCommands = mutableListOf<DecisionCommand>()
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
-            stateMachine = AfsmStateMachine { _: DecisionState, _: DecisionEvent ->
+            reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 AfsmTransition(
                     state = DecisionState("wrong"),
                     commands = listOf(DecisionCommand.ShouldNotRun),
@@ -230,7 +230,7 @@ class AfsmHostTest {
         )
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
-            stateMachine = AfsmStateMachine { _: DecisionState, _: DecisionEvent ->
+            reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 AfsmTransition(
                     state = DecisionState("current"),
                     decision = AfsmDecision.Invalid("programmer error"),
@@ -248,6 +248,79 @@ class AfsmHostTest {
 
         val thrown = assertIs<AfsmInvalidTransitionException>(exceptions.single())
         assertEquals("programmer error", thrown.diagnostic.reason)
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `Command failure with Record policy records diagnostic and keeps host alive`() = runTest {
+        val hostScope = newHostScope()
+        val diagnostics = mutableListOf<AfsmDiagnostic>()
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+            initialState = DecisionState("current"),
+            reducer = AfsmReducer { state: DecisionState, _: DecisionEvent ->
+                if (state.value == "current") {
+                    Afsm.transitionTo(
+                        state = DecisionState("afterFirst"),
+                        commands = listOf(DecisionCommand.ShouldNotRun),
+                    )
+                } else {
+                    Afsm.transitionTo(
+                        state = DecisionState("afterSecond"),
+                    )
+                }
+            },
+            commandHandler = AfsmCommandHandler { _: DecisionCommand, _ ->
+                error("command boom")
+            },
+            scope = hostScope,
+            config = AfsmConfig(
+                commandFailurePolicy = AfsmCommandFailurePolicy.Record,
+                logger = AfsmLogger { diagnostic ->
+                    diagnostics += diagnostic
+                },
+            ),
+        )
+
+        host.dispatch(DecisionEvent.Any)
+        host.dispatch(DecisionEvent.Any)
+        advanceUntilIdle()
+
+        assertEquals(DecisionState("afterSecond"), host.state.value)
+        assertEquals(DecisionCommand.ShouldNotRun, diagnostics.single().command)
+        assertEquals("command boom", diagnostics.single().reason)
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `Command failure with Throw policy fails runtime processing coroutine`() = runTest {
+        val exceptions = mutableListOf<Throwable>()
+        val hostScope = newHostScope(
+            handler = CoroutineExceptionHandler { _, throwable ->
+                exceptions += throwable
+            },
+        )
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+            initialState = DecisionState("current"),
+            reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
+                Afsm.transitionTo(
+                    state = DecisionState("afterFailure"),
+                    commands = listOf(DecisionCommand.ShouldNotRun),
+                )
+            },
+            commandHandler = AfsmCommandHandler { _: DecisionCommand, _ ->
+                error("command boom")
+            },
+            scope = hostScope,
+            config = AfsmConfig(
+                commandFailurePolicy = AfsmCommandFailurePolicy.Throw,
+            ),
+        )
+
+        host.dispatch(DecisionEvent.Any)
+        advanceUntilIdle()
+
+        assertIs<IllegalStateException>(exceptions.single())
+        assertEquals(DecisionState("afterFailure"), host.state.value)
         hostScope.cancel()
     }
 

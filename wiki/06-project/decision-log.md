@@ -428,3 +428,72 @@ Consequences:
 - Features that need custom Android-facing sealed states can still use `AfsmStateChartMachine` as an adapter.
 - Kotlin does not allow a same-named factory next to a typealias constructor, so default initial states should use a feature-local lowercase factory such as `productEditorState()`.
 - The public name `AfsmStateChart` remains an open product/API naming question before release.
+
+## [2026-05-10] Rename public reducer and machine concepts
+
+Decision: Use `AfsmReducer<S, E, C, F>` for the low-level `state + event -> transition` contract, and use `AfsmMachine<P, X, E, C, F>` for the DSL-built executable `phase + context` machine.
+
+Rationale:
+
+- The previous pair `AfsmStateMachine` and `AfsmMachine` made it unclear which type Android developers should implement or pass to `AfsmHost`.
+- `Reducer` communicates the pure transition role more accurately and aligns with reducer-style references where side effects are kept outside the reducer.
+- `Machine` is the better product-facing name for the statechart DSL because it owns executable topology, `initialState`, and `.mmd` graph metadata.
+- The user explicitly accepted the Afsm name and asked to keep command terminology consistent.
+
+Consequences:
+
+- New code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmMachineAdapter`.
+- `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, and `AfsmStateChartMachine` remain only as deprecated compatibility aliases during the spike.
+- `ViewModel.afsmHost(...)` now accepts a `reducer` parameter.
+- KSP graph validation now requires `@AfsmGraph` classes to implement `AfsmReducer` and `AfsmGraphSource`.
+
+## [2026-05-10] Use Command as the transition output term
+
+Decision: Keep `Command` as the public term for host-executed work emitted by an Afsm transition or entry/exit handler.
+
+Rationale:
+
+- Elm uses commands as values returned to the runtime for external work, while Redux keeps async side effects outside reducers; Afsm follows the same separation by returning commands from transitions and executing them in `AfsmHost`.
+- In Afsm, user and system inputs are `Event`; host-executed outputs are `Command`; UI-side one-shots are `Effect`.
+- Using `Action` would collide with Redux/action vocabulary and with XState's broader action concept.
+
+Consequences:
+
+- DSL scopes expose `command(...)`, not `action(...)`.
+- The DSL generic is consistently `C`, and samples use command types such as `StartImageUpload`.
+- Phase names describe durable flow state, for example `ImageUploadInProgress`; command names describe host work, for example `StartImageUpload`.
+
+## [2026-05-10] Define entry, exit, and initial semantics
+
+Decision: Add flat `onExit` support and execute phase-changing transitions in the order `onExit -> transition block -> onEnter`. Initial state construction does not automatically run `onEnter`.
+
+Rationale:
+
+- SCXML specifies leaving-state executable content, transition executable content, then entering-state executable content.
+- XState and KStateMachine both model entry/exit actions, and Android flows need a clean place to cancel timers, polling, uploads, and subscriptions when leaving a phase.
+- Running `onEnter` automatically for initial state would make Android recreation dangerous for non-idempotent commands. Startup work should be explicit through events such as `ScreenEntered`, or a future dedicated initial-transition API if product review requires it.
+
+Consequences:
+
+- `stay(...)` is an internal handled branch and does not run exit/entry handlers.
+- `transitionTo(...)` is a phase-changing branch and runs exit/entry handlers.
+- `onExit` can emit commands/effects and update context before the transition block runs.
+
+## [2026-05-10] Harden topology and command failure policy
+
+Decision: Validate DSL definitions at build time, enrich topology metadata, and add configurable command failure handling to `AfsmHost`. MVP command cancellation remains explicit; later events do not automatically cancel already-running commands.
+
+Rationale:
+
+- Graph generation must fail early when the executable topology is inconsistent, rather than producing stale or misleading `.mmd` files.
+- Topology needs more than `from/event/to` for useful tooling: transition kind, fallback branches, guard labels, command labels, and effect labels are now part of the model.
+- Kotlin and Android coroutine guidance says `CancellationException` must not be swallowed. Unexpected command exceptions should be visible by default, while resilient hosts still need an opt-in logging mode.
+
+Consequences:
+
+- `afsmMachine { ... }` throws `AfsmDefinitionException` for missing initial state declarations, duplicate state declarations, duplicate event handlers within a state, and transitions to undeclared states.
+- `AfsmTopologyTransition` now includes `guardLabel`, `commandLabels`, `effectLabels`, `kind`, and `isFallback`.
+- `AfsmHost` defaults to `AfsmCommandFailurePolicy.Throw`.
+- `AfsmCommandFailurePolicy.Record` logs an `AfsmDiagnostic` with the failed command and throwable, then keeps processing later events.
+- `CancellationException` is always rethrown regardless of command failure policy.
+- Features that need cancellation should model it explicitly with commands such as `CancelUpload` or domain events such as `UploadCancelled`; structured invoked-service cancellation is deferred.

@@ -11,7 +11,7 @@ class AuthViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         initialState = AuthState.Editing(),
-        stateMachine = AuthStateMachine(),
+        reducer = AuthStateMachine(),
         commandHandler = { command: AuthCommand, dispatch ->
             when (command) {
                 is AuthCommand.Login -> {

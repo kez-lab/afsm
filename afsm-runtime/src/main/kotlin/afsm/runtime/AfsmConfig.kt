@@ -14,6 +14,13 @@ public class AfsmConfig(
     public val commandExecutionPolicy: AfsmCommandExecutionPolicy =
         AfsmCommandExecutionPolicy.Sequential,
     /**
+     * Unexpected command failures are thrown by default so programming errors
+     * are visible during development. Domain failures should usually be
+     * converted to events by the command handler instead of thrown.
+     */
+    public val commandFailurePolicy: AfsmCommandFailurePolicy =
+        AfsmCommandFailurePolicy.Throw,
+    /**
      * Controls one-shot effect buffering. Effects are not durable state.
      */
     public val effectDelivery: AfsmEffectDelivery =

@@ -610,3 +610,31 @@ Conclusion:
 - The standard `AfsmState<Phase, Context>` model compiles and reduces ProductEditor boilerplate without breaking runtime behavior or `.mmd` graph generation.
 - Kotlin typealiases cannot have same-named default factories, so feature samples should use lower-case factories such as `productEditorState()` for default state construction.
 - Custom sealed Android-facing states remain possible through `AfsmStateChartMachine`; ProductEditor now demonstrates the simpler direct state path.
+
+## [2026-05-10] Afsm API hardening loop
+
+Change:
+
+- Added `AfsmReducer<S, E, C, F>` and changed `AfsmHost` / `ViewModel.afsmHost(...)` to use `reducer`.
+- Added `AfsmMachine<P, X, E, C, F>` as the DSL-built executable machine name.
+- Kept deprecated compatibility aliases for `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, and `AfsmStateChartMachine`.
+- Renamed DSL output calls from `action(...)` to `command(...)` in core tests and sample state machines.
+- Added flat `onExit` support with deterministic `onExit -> transition block -> onEnter` ordering.
+- Added `AfsmDefinitionException` and build-time DSL validation for missing initial state declarations, duplicate state/event declarations, and undeclared transition targets.
+- Expanded `AfsmTopologyTransition` with guard, command, effect, transition kind, and fallback metadata.
+- Added `AfsmCommandFailurePolicy` plus runtime diagnostics for command-handler failures; cancellation exceptions are rethrown.
+- Kept command cancellation explicit in feature commands/events; the runtime does not cancel commands automatically when later events arrive.
+- Updated KSP graph validation to require `AfsmReducer` plus `AfsmGraphSource`.
+- Migrated Auth, ProductEditor, Checkout, runtime tests, and ViewModel tests to the new names.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest --stacktrace
+./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --stacktrace
+```
+
+Conclusion:
+
+- The hardened API compiles through core/runtime/ViewModel modules and real sample-shop usage.
+- Generated graphs still come from the compiled machine topology and are written to `sample-shop/build/generated/afsm/mmd/`.
