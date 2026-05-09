@@ -48,6 +48,9 @@ Resolved:
 - If v3 exists, should it become the recommended API or remain an optional graph-oriented layer over v2?
 - How should v3 preserve Kotlin exhaustiveness for unhandled events when transitions are registered declaratively?
 - Should graph labels default to type names, require explicit human labels, or support both?
+- Before public API freeze, should `Command` be renamed to `Action` or `TransitionAction` to better communicate transition outputs?
+- If renamed, should `AfsmTransition<S, C, F>` become `AfsmTransition<S, A, F>`, and should `commands` become `actions`?
+- Can automatic graph generation be supported while preserving a plain Kotlin `when (state)` authoring style, or is explicit edge metadata unavoidable?
 
 Resolved:
 
@@ -65,3 +68,5 @@ Resolved:
 - Compose helpers and test helpers remain future modules.
 - A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
+- `Command` should be explained as a transition action/output, not as a user interaction event.
+- v3 should not force a DSL until a naming cleanup and ProductEditor refactor prove the simpler model is still insufficient for graph generation.

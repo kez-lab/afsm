@@ -1,6 +1,6 @@
 ---
 title: State, Event, Command, Effect
-updated: 2026-05-01
+updated: 2026-05-09
 ---
 
 # State, Event, Command, Effect
@@ -44,6 +44,8 @@ Internal events usually come from command results:
 
 `Command` is work the pure FSM cannot execute directly.
 
+In newer v3 terminology, this is best understood as a transition action: an output emitted by the state machine because a transition occurred. It is not another user interaction event.
+
 Examples:
 
 - call a use case,
@@ -54,6 +56,8 @@ Examples:
 - request a domain refresh.
 
 The `ViewModel` executes commands and feeds results back into the FSM as events.
+
+For deeper naming guidance, see [[afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]].
 
 ## Effect
 

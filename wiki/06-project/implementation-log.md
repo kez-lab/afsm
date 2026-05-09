@@ -175,3 +175,23 @@ Conclusion:
 
 - v2 should remain the low-level reducer-style engine.
 - v3 should be explored as an optional graph-friendly authoring layer before any implementation commitment.
+
+## [2026-05-09] v3 terminology and transition action design note
+
+Change:
+
+- Added `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`.
+- Clarified that `Command` is a transition action/output, not another event.
+- Defined naming policy for `State`, `Event`, transition action, and `Effect`.
+- Documented ProductEditor rename candidates such as `ImageUploadInProgress` plus `StartImageUpload`.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Afsm can keep normal state-machine semantics while emitting host-executed actions during transitions.
+- The next ProductEditor refactor should prove whether clearer names reduce the need for a DSL before graph generation work continues.

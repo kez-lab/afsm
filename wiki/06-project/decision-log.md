@@ -222,3 +222,21 @@ Consequences:
 - v2 remains the current implemented low-level engine.
 - v3 should first be prototyped as an optional topology-first authoring layer.
 - ProductEditor is the reference flow for evaluating whether the readability and graph-generation benefits justify the added API surface.
+
+## [2026-05-09] Treat Command as a transition action
+
+Decision: Explain Afsm `Command` as a transition action/output emitted by the state machine and executed by the host, rather than as another event entering the machine.
+
+Rationale:
+
+- User confusion came from state names and command names describing the same work, for example `UploadingImages` plus `UploadImages`.
+- A state should describe the current business phase, while a transition action should describe work to start because the transition happened.
+- The standard state-machine reading is still valid: `CurrentState -- Event / Action --> NextState`.
+- Merging actions into state flags would make durable state carry one-shot execution intent and create restoration/recollection hazards.
+
+Consequences:
+
+- Documentation should use "transition action" when teaching `Command`.
+- ProductEditor should be renamed toward phase states such as `ImageUploadInProgress` and transition actions such as `StartImageUpload`.
+- Before public API freeze, evaluate whether the public API should rename `Command`/`commands` to `Action`/`actions` or `TransitionAction`/`actions`.
+- v3 should not force a DSL until terminology and naming are clearer in the existing plain Kotlin implementation.

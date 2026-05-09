@@ -387,6 +387,8 @@ This is state-machine-compatible. UML state machines and Mealy-style machines ca
 
 The problem in v2 is not commands/effects themselves. The problem is that the target state is only a returned value, not declared edge metadata.
 
+Terminology and naming guidance are tracked in [[afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]].
+
 ## API Comparison
 
 | Concern | v2 reducer API | v3 topology-first API |
