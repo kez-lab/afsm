@@ -696,3 +696,22 @@ Verification:
 Conclusion:
 
 - Afsm's current Maven Local artifacts are consumable by an external Android library build, including the Android ViewModel AAR and KSP graph processor.
+
+## [2026-05-11] Release readiness warning triage
+
+Change:
+
+- Investigated `publishToMavenLocal --warning-mode all`.
+- Added `docs/release-readiness.md` with the current release gate, remaining product decisions, engineering gates, and known warning policy.
+
+Verification:
+
+```bash
+./gradlew publishToMavenLocal --warning-mode all
+./gradlew :afsm-runtime:generatePomFileForMavenPublication --warning-mode all --stacktrace
+```
+
+Conclusion:
+
+- The remaining Gradle deprecation warning is emitted from Kotlin Gradle plugin POM rewriting for a project dependency, not from direct Afsm build-script usage.
+- Current policy is to track it as a Kotlin/Gradle compatibility item and re-check during plugin upgrades rather than weakening publication metadata.

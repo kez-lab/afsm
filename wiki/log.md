@@ -293,3 +293,9 @@
 - Source: release-readiness autopilot loop after Maven Local publication setup.
 - Action: Added a separate Android consumer build that resolves Afsm from Maven Local, compiles ViewModel integration, and runs the KSP graph processor.
 - Updated: `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`, `README.md`, `docs/afsm-public-api.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Release readiness warning triage
+
+- Source: release-readiness autopilot loop after consumer smoke.
+- Action: Investigated Gradle deprecation warnings and documented the current local release gate, remaining product decisions, and warning policy.
+- Updated: `docs/release-readiness.md`, `README.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

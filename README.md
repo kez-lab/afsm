@@ -302,4 +302,4 @@ Current baseline:
 
 `consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp` from Maven Local without project-module shortcuts.
 
-See [docs/afsm-public-api.md](docs/afsm-public-api.md) for the API reference and [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md) for sample app notes.
+See [docs/afsm-public-api.md](docs/afsm-public-api.md) for the API reference, [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md) for sample app notes, and [docs/release-readiness.md](docs/release-readiness.md) for publication gates.
