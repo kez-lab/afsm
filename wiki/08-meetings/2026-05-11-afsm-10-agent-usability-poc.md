@@ -105,3 +105,19 @@ new abstraction layer:
 - MMD graph generation: optional and valuable, but must be documented after
   the minimal machine path.
 
+## Follow-Up Resolution
+
+Implemented after the review:
+
+- `AfsmGraphReducer` was removed from the public API and replaced by
+  `AfsmMachine<State, Event, Command, Effect>`.
+- The DSL-built phase/context machine is now named
+  `AfsmPhaseMachine<Phase, Context, Event, Command, Effect>`.
+- `afsm-compose` now provides `CollectAfsmEffects(...)`.
+- `afsmHost(machine = ..., initialState = ...)` now supports dynamic initial
+  state while preserving graph metadata.
+- `AfsmConfig.commandQueueCapacity` bounds command backpressure.
+- Checkout now documents and tests request-id-based stale command result
+  handling.
+- MMD generation now has initial nodes, richer labels, entry/exit metadata, and
+  `AfsmMmdOptions.Flow` / `Full`.

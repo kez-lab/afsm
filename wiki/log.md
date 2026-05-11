@@ -389,3 +389,9 @@
 - Source: user request to run 10 Android developer POC reviews before deciding the next public structure.
 - Action: Recorded cross-agent adoption verdict, common usability risks, release blockers, and next structure direction.
 - Updated: `wiki/08-meetings/2026-05-11-afsm-10-agent-usability-poc.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Afsm usability hardening v2
+
+- Source: user request to execute the full improvement plan after the 10-agent POC review.
+- Action: Added `afsm-compose`, renamed the graphable public boundary to `AfsmMachine`, introduced `AfsmPhaseMachine`, added dynamic initial-state hosting, bounded command queue capacity, documented request-id stale command handling through Checkout, improved MMD output, and refreshed public onboarding docs.
+- Updated: `afsm-core/`, `afsm-runtime/`, `afsm-viewmodel/`, `afsm-compose/`, `sample-shop/`, `consumer-smoke/`, `README.md`, `CHANGELOG.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/01-product/android-fsm-library-strategy.md`, `wiki/03-engineering/`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

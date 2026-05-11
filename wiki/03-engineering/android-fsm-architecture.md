@@ -39,7 +39,7 @@ fun interface AfsmReducer<S, E, C, F> {
 }
 ```
 
-For graphable phase/context flows, use `AfsmMachine<P, X, E, C, F>`:
+For graphable phase/context flows, use `AfsmPhaseMachine<P, X, E, C, F>`:
 
 ```kotlin
 data class AfsmState<P : Any, X : Any>(
@@ -47,12 +47,12 @@ data class AfsmState<P : Any, X : Any>(
     val context: X,
 )
 
-interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmGraphReducer<AfsmState<P, X>, E, C, F>
+interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<AfsmState<P, X>, E, C, F>
 ```
 
 At feature boundaries, collapse `Phase + Context` into a feature state type and
-refer to graphable machines through `AfsmGraphReducer<State, Event, Command, Effect>`.
+refer to graphable machines through `AfsmMachine<State, Event, Command, Effect>`.
 
 ## Screen File Layout
 

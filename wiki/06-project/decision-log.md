@@ -687,3 +687,40 @@ Consequences:
 - Product/sample guidance should explicitly say where not to use Afsm.
 - Before public release, resolve dynamic initial state hosting, stale command result/cancellation guidance, command queue/backpressure policy, Compose effect collection, and external MMD generation UX.
 - `AfsmGraphReducer` should be treated as a naming/API spike candidate before stable public API freeze.
+
+## [2026-05-11] Replace AfsmGraphReducer with AfsmMachine boundary
+
+Decision: Remove the pre-release `AfsmGraphReducer` name and use `AfsmMachine<S, E, C, F>` as the graphable feature-boundary API. Rename the DSL-built phase/context implementation type to `AfsmPhaseMachine<P, X, E, C, F>`.
+
+Rationale:
+
+- The 10-agent POC review found `AfsmGraphReducer` accurate but awkward for first-contact Android developers.
+- Users think in terms of "this screen has a state machine"; `AfsmMachine<State, Event, Command, Effect>` matches that language better than a graph/reducer compound name.
+- The lower-level reducer escape hatch still exists as `AfsmReducer<S, E, C, F>`, so the new `AfsmMachine` name can own graphability, initial state, and topology metadata.
+- Keeping the DSL-built object as `AfsmPhaseMachine` makes the phase/context specialization explicit without forcing every feature-boundary typealias to expose five generic parameters.
+
+Consequences:
+
+- Public docs now introduce `AfsmMachine<State, Event, Command, Effect>` for graphable machines and reserve `AfsmReducer` for custom non-graphable reducers.
+- `afsmMachine { ... }` returns `AfsmPhaseMachine<Phase, Context, Event, Command, Effect>`, which is normally hidden behind a feature-local `AfsmMachine<State, Event, Command, Effect>` alias.
+- `AfsmGraphReducer` is treated as removed pre-release history and should not be used in new docs or source.
+
+## [2026-05-11] Complete first usability hardening pass
+
+Decision: Close the P0 usability review items by adding small, focused helpers and documentation rather than a larger framework layer.
+
+Rationale:
+
+- The project needs lower first-contact complexity, not another abstraction tier.
+- Repeated sample code showed that Compose effect collection and dynamic initial state hosting are common enough to justify small public helpers.
+- Command backpressure and stale result handling should be explicit and testable before public release.
+- MMD output should default to a readable flow diagram, while retaining a full topology option for debugging.
+
+Consequences:
+
+- `afsm-compose` now provides `CollectAfsmEffects(...)`.
+- `afsm-viewmodel` now supports `afsmHost(machine = ..., initialState = ...)`.
+- `AfsmConfig.commandQueueCapacity` bounds command queue growth.
+- Checkout demonstrates request-id-based stale command result handling.
+- `AfsmMmdOptions.Flow` is the default graph writer mode; `Full` remains available.
+- README, API docs, sample guide, testing guide, release readiness, and consumer-smoke docs are aligned to the minimal-first onboarding path.

@@ -49,7 +49,7 @@ public interface AfsmGraphSource {
     public val topology: AfsmTopology
 }
 
-public interface AfsmGraphReducer<S : Any, E : Any, C : Any, F : Any> :
+public interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
     AfsmReducer<S, E, C, F>,
     AfsmGraphSource {
     public val initialState: S
@@ -62,7 +62,7 @@ Why keep graphability separate from plain reducers:
 - Only graphable state machines opt in.
 - KSP can validate a clear type contract.
 - The writer can work with `AfsmTopology`, not with the generic machine internals.
-- The processor validates the underlying `AfsmReducer + AfsmGraphSource` supertypes rather than only the nominal `AfsmGraphReducer` type so typealias-based declarations are supported.
+- The processor validates the underlying `AfsmReducer + AfsmGraphSource` supertypes rather than only the nominal `AfsmMachine` type so typealias-based declarations are supported.
 
 ## User Experience
 
@@ -134,7 +134,7 @@ Valid:
 @AfsmGraph
 class ProductEditorStateMachine(
     private val machine: ProductEditorMachine = productEditorMachine(),
-) : AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
+) : AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
     override val initialState = machine.initialState
     override val topology = machine.topology
     override fun transition(state: ProductEditorState, event: ProductEditorEvent) =
@@ -146,7 +146,7 @@ Valid:
 
 ```kotlin
 @AfsmGraph
-object CheckoutStateMachine : AfsmGraphReducer<...>
+object CheckoutStateMachine : AfsmMachine<...>
 ```
 
 Invalid:
@@ -207,15 +207,20 @@ public object AfsmMmdWriter {
     public fun writeAll(
         registry: AfsmGraphRegistry,
         outputDir: File,
+        options: AfsmMmdOptions = AfsmMmdOptions.Flow,
     ) {
         registry.entries.forEach { entry ->
             val file = outputDir.resolve(entry.fileName)
             file.parentFile.mkdirs()
-            file.writeText(entry.createTopology().toMmd() + "\n")
+            file.writeText(entry.createTopology().toMmd(options) + "\n")
         }
     }
 }
 ```
+
+`AfsmMmdOptions.Flow` is the default public output because it hides ordinary
+internal self-loops such as text changes. `AfsmMmdOptions.Full` keeps the
+complete topology for debugging.
 
 Output convention:
 

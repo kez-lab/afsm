@@ -1,6 +1,6 @@
 ---
 title: Sample Shop Reference App
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Sample Shop Reference App
@@ -65,6 +65,7 @@ Current implementation:
 - `AuthStateMachine` directly delegates to the executable DSL machine.
 - `AuthStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
 - `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
+- Route-level effects are collected with `CollectAfsmEffects(...)` from `afsm-compose`.
 
 State model:
 
@@ -138,6 +139,7 @@ The ProductEditor sample now uses the v3 executable DSL:
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
+- MMD output now includes the initial node, meaningful guard labels, command/effect labels, and entry-command notes.
 
 Text edits are stayed branches inside editable phases, while submit/review/publish actions move between explicit phases.
 
@@ -172,6 +174,11 @@ ScreenEntered
 
 The fake payment repository fails the first attempt for higher-priced products so retry behavior is visible without external services.
 
+Checkout now carries a payment `requestId` through `SubmitPayment`,
+`PaymentSucceeded`, and `PaymentFailed`. The state machine ignores stale command
+results whose request id no longer matches the active payment request. This is
+the first official sample pattern for long-running command result safety.
+
 ## Public API Feedback
 
 Current feedback from the sample:
@@ -180,16 +187,17 @@ Current feedback from the sample:
 - `Command` keeps transition functions pure and avoids suspend state machines.
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
+- `ViewModel.afsmHost(machine = ..., initialState = ...)` is the preferred API when navigation arguments affect the first state.
 - The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
 - Auth now confirms the same direct `AfsmState<Phase, Context>` approach works for simpler flows too.
-- A Compose/lifecycle effect collection helper or official snippet is now worth considering.
+- `CollectAfsmEffects(...)` removes repeated lifecycle-effect collection wiring from Compose routes.
 
 ## Verification
 
 Current verification:
 
 ```bash
-./gradlew test :sample-shop:assembleDebug --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all
 ```
 
 Result:
@@ -205,5 +213,5 @@ Android CLI journey verification:
 
 ## Next Gaps
 
-- Add a public README-level tutorial using the Auth flow.
-- Consider a small lifecycle-aware effect collection helper for Compose users.
+- Add Android CLI smoke evidence for the latest API-hardening pass if visual regression confidence is needed.
+- Consider a public codelab that walks through ProductEditor from contract to graph output.

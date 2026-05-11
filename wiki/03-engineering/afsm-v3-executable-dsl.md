@@ -109,9 +109,9 @@ Current naming:
 | Type | Role |
 |---|---|
 | `AfsmReducer<S, E, C, F>` | Host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration. It receives the full screen state `S`. |
-| `AfsmGraphReducer<S, E, C, F>` | Reducer with an initial state and graph metadata. Use this at feature boundaries for graphable machines once `State = AfsmState<Phase, Context>` has been named. |
 | `AfsmState<P, X>` | Standard Afsm state value: finite `phase` plus extended `context`. |
-| `AfsmMachine<P, X, E, C, F>` | Executable machine definition built by the DSL. It implements `AfsmGraphReducer<AfsmState<P, X>, E, C, F>`. |
+| `AfsmMachine<S, E, C, F>` | Graphable feature-boundary reducer with an initial state and topology metadata. Use this once `State = AfsmState<Phase, Context>` has been named. |
+| `AfsmPhaseMachine<P, X, E, C, F>` | Executable machine definition built by the DSL. It implements `AfsmMachine<AfsmState<P, X>, E, C, F>`. |
 
 This means Android developers use the standard Afsm state directly:
 
@@ -146,7 +146,7 @@ Target developer experience:
 
 ```kotlin
 private typealias ProductEditorMachine =
-    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 
 private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
     initial(
@@ -252,7 +252,7 @@ Graphable machine excerpt:
 
 ```kotlin
 private typealias ProductEditorMachine =
-    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 
 private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
     initial(ProductEditorPhase.EditingDraft, ProductEditorContext())
@@ -382,13 +382,13 @@ The follow-up KSP design is [[afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
 
 ## Runtime Semantics
 
-The v3 DSL compiles into an `AfsmMachine` definition.
+The v3 DSL compiles into an `AfsmPhaseMachine` definition.
 
 Execution contract:
 
 ```kotlin
-interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmGraphReducer<AfsmState<P, X>, E, C, F> {
+interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<AfsmState<P, X>, E, C, F> {
     val initialState: AfsmState<P, X>
     val topology: AfsmTopology
 
@@ -515,7 +515,7 @@ Success criteria:
 
 Result on 2026-05-09:
 
-- Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract and `AfsmMachine<P, X, E, C, F>` for the DSL-built phase/context machine.
+- Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines, and `AfsmPhaseMachine<P, X, E, C, F>` for the DSL-built phase/context machine.
 - Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. It was removed before public API stabilization.
 - Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
@@ -553,7 +553,7 @@ Success criteria:
 Result on 2026-05-09:
 
 - Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMmd()`.
-- Added `AfsmMachine.topology`.
+- Added machine `topology`.
 - Changed event declarations so branch targets are known at build time: `on<Event> { transitionTo(...) { ... } }`, `on<Event> { transitionTo<PayloadPhase>(phase = { ... }) { ... } }`, `stay { ... }`, and `otherwise { ... }`.
 - Verified topology export without executing sample events.
 - Added `:sample-shop:generateAfsmMmd` to generate `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
@@ -573,7 +573,7 @@ Result on 2026-05-09:
 
 - Migrated real `sample-shop` ProductEditor away from `AfsmPhasedStateMachine` and `ProductEditorPhaseEntryPolicy`.
 - Kept `ProductEditorState` conceptually as `ProductEditorPhase + ProductEditorContext`; this was later made explicit with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
-- Wrapped the DSL `AfsmMachine<ProductEditorPhase, ProductEditorContext, ...>` in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmReducer<ProductEditorState, ...>`.
+- Wrapped the DSL machine in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmReducer<ProductEditorState, ...>`.
 - Added `AfsmMachineAdapter` during the spike to hide topology forwarding and state adaptation, then removed it before public API stabilization because it encouraged two state models.
 - Added a ProductEditor unit test that verifies topology export without sample events.
 - Android CLI smoke verification passed after the migration.
@@ -581,7 +581,7 @@ Result on 2026-05-09:
 Update on 2026-05-10:
 
 - Added `AfsmState<P, X>` as the standard state value in `afsm-core`.
-- `AfsmMachine` now implements `AfsmReducer<AfsmState<P, X>, E, A, F>` and `AfsmGraphSource` directly.
+- `AfsmPhaseMachine` now implements `AfsmMachine<AfsmState<P, X>, E, C, F>` directly.
 - ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
 - ProductEditor no longer needs phase/context adapter mapping; `ProductEditorStateMachine` delegates to the machine.
 - Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.

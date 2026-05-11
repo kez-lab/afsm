@@ -18,7 +18,7 @@ updated: 2026-05-11
 ## Scope
 
 - What should the first public API look like before it becomes too framework-like?
-- Which modules should exist at MVP: core only, ViewModel integration, Compose helpers, test helpers?
+- Should a dedicated `afsm-test` module exist, or should testing stay as documentation and plain Kotlin assertions until repeated helper needs are proven?
 - What sample flows best prove the library's value to external Android teams?
 
 Resolved:
@@ -50,11 +50,6 @@ Resolved:
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
 - Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
-- Should `AfsmGraphReducer` remain user-facing, or should the graphable public boundary be renamed to a more intuitive `AfsmMachine<State, Event, Command, Effect>` shape?
-- Should `afsmHost(machine = ..., initialState = ...)` become the standard dynamic initial state API for navigation args and `SavedStateHandle`?
-- Should command queue capacity/backpressure be configurable before public release?
-- What official stale command result pattern should be documented first: request/correlation id, phase guard, explicit cancellation event, or a runtime helper?
-- Should generated MMD default to a flow view that hides internal self-loops, with a full topology option for debugging?
 - Should external MMD generation ship as a Gradle plugin, a documented task template, or a simple runtime writer API first?
 
 Resolved:
@@ -71,7 +66,7 @@ Resolved:
 - MVP command execution policy is sequential and verified by `afsm-runtime` tests.
 - MVP includes `afsm-runtime`.
 - `afsm-viewmodel` exists as a thin AndroidX integration module with `ViewModel.afsmHost(...)`.
-- Compose helpers and test helpers remain future modules.
+- `afsm-compose` exists as an optional thin Compose helper module; test helpers remain future work.
 - A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
 - Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
 - `Command` should be explained as host-executed transition output, not as a user interaction event.
@@ -81,7 +76,7 @@ Resolved:
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; guard labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
-- Use `AfsmReducer<S, E, C, F>` for the low-level host contract, `AfsmGraphReducer<S, E, C, F>` for graphable feature boundaries, and `AfsmMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
+- Use `AfsmReducer<S, E, C, F>` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature boundaries, and `AfsmPhaseMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
 - Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
 - `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
@@ -101,3 +96,9 @@ Resolved:
 - Invalid transitions should throw by default for public runtime use so flow bugs are visible during development. Resilient production hosts can opt into `AfsmInvalidTransitionPolicy.Record` with a logger.
 - Command execution remains sequential, but it no longer blocks later event reduction; commands run through a separate command processor and dispatch results back into the event queue.
 - Ten-agent POC review confirmed that Afsm should target complex transaction/flow screens, not simple data-display ViewModels.
+- `AfsmGraphReducer` was removed before public release docs; `AfsmMachine<State, Event, Command, Effect>` is now the graphable feature-boundary API.
+- `afsmHost(machine = ..., initialState = ...)` is the standard dynamic initial-state API for navigation arguments and `SavedStateHandle` reconstruction.
+- `AfsmConfig.commandQueueCapacity` is configurable and defaults to `64`.
+- The first documented stale command result pattern is request/correlation id; Checkout now models payment request ids and ignores stale results.
+- Generated MMD defaults to `AfsmMmdOptions.Flow`, which hides ordinary internal self-loops; `AfsmMmdOptions.Full` remains available for complete topology debugging.
+- `CollectAfsmEffects(...)` is the official optional Compose effect collection helper.

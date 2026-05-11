@@ -61,6 +61,7 @@ Important behavior:
 - Command-dispatched events are queued, not handled recursively.
 - Commands execute sequentially in the order emitted by one transition.
 - Command execution does not block later event reduction.
+- Event and command queues are bounded by `AfsmConfig.eventQueueCapacity` and `AfsmConfig.commandQueueCapacity`, both defaulting to `64`.
 - Long-running loops should not be modeled as never-ending commands.
 
 ## Decision Handling
@@ -116,7 +117,7 @@ The intended ViewModel-side shape is:
 ```kotlin
 private val host = AfsmHost(
     initialState = initialState,
-    stateMachine = signupStateMachine,
+    reducer = signupStateMachine,
     commandHandler = signupCommandHandler,
     scope = viewModelScope,
 )
@@ -143,6 +144,7 @@ Command:
 
 ```bash
 ./gradlew test --no-daemon
+./scripts/verify-release-local.sh --warning-mode all
 ```
 
 Result:
@@ -160,6 +162,8 @@ Verified cases:
 - `Ignored` keeps runtime state and drops accidental outputs
 - `Invalid` with `Record` logs diagnostics and drops outputs
 - `Invalid` with `Throw` fails the runtime processing coroutine
+- invalid event and command queue capacities are rejected at construction time
+- command handling remains sequential while later UI events can still be reduced
 
 ## Design Note
 
@@ -171,4 +175,6 @@ For JVM tests, use a dedicated test `CoroutineScope` and advance the shared test
 
 ## Follow-Up
 
-Next recommended task: build `afsm-viewmodel` as a thin AndroidX Lifecycle integration module that supplies `viewModelScope` and proves the runtime API feels natural inside a real ViewModel.
+Next runtime concern: decide whether Afsm needs higher-level invoked-service
+semantics for automatic command cancellation, or whether v1 should continue
+with explicit feature-owned cancellation events and request ids.

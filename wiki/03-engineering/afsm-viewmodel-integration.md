@@ -20,13 +20,24 @@ The standard graphable-machine helper is:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmGraphReducer<S, E, C, F>,
+    machine: AfsmMachine<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 ```
 
 Use the explicit initial-state overload when the state is dynamic:
+
+```kotlin
+public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
+    machine: AfsmMachine<S, E, C, F>,
+    initialState: S,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C, F>
+```
+
+Use the lower-level reducer overload for custom non-graphable reducers:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
@@ -108,6 +119,7 @@ Verified cases:
 
 - a real `ViewModel` subclass can create `private val host = afsmHost(...)`
 - a graphable machine can be hosted with `afsmHost(machine = StateMachine, ...)`
+- a graphable machine can override its initial state with `afsmHost(machine = StateMachine, initialState = ...)`
 - the ViewModel can expose `StateFlow<State>` and `Flow<Effect>` directly from the host
 - `onEvent(event)` can delegate to `host.dispatch(event)`
 - command handling can dispatch follow-up events through the runtime queue
@@ -133,6 +145,7 @@ Still verbose:
 
 Conclusion:
 
-Keep this module thin. The graphable-machine overload is enough for the
-standard path; dynamic state screens should continue using the explicit
-`initialState + reducer` overload.
+Keep this module thin. The graphable-machine overload is the standard path;
+dynamic state screens should use `machine + initialState` when they still want
+graph metadata and the lower-level `initialState + reducer` overload only when
+they intentionally opt out of graphability.

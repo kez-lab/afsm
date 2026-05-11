@@ -983,3 +983,30 @@ Conclusion:
 - The standard ViewModel setup is shorter and easier to read.
 - Runtime semantics are safer for Android UI responsiveness.
 - The full local release gate passes after the docs/API updates, including API validation, sample APK assembly, Maven Local publication, and external consumer smoke.
+
+## [2026-05-11] Public API usability hardening pass v2
+
+Change:
+
+- Added `afsm-compose` with `CollectAfsmEffects(...)` and migrated sample-shop routes away from repeated lifecycle effect collection code.
+- Removed the pre-release `AfsmGraphReducer` public name.
+- Introduced `AfsmMachine<S, E, C, F>` as the graphable feature-boundary API and `AfsmPhaseMachine<P, X, E, C, F>` as the DSL-built phase/context API.
+- Added `ViewModel.afsmHost(machine = ..., initialState = ...)` for dynamic initial state while keeping graph metadata.
+- Added `AfsmConfig.commandQueueCapacity` and validation for invalid queue capacities.
+- Updated Checkout to use payment request ids and ignore stale command results.
+- Enriched topology/MMD output with initial state, entry/exit command/effect labels, and `AfsmMmdOptions.Flow` / `Full`.
+- Rewrote public README onboarding and added `docs/testing-guide.md`.
+- Updated API dumps and release/consumer documentation.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest :afsm-compose:compileDebugKotlin :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+./gradlew apiDump --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Conclusion:
+
+- The public API now has a simpler first-contact vocabulary: `AfsmReducer`, `AfsmMachine`, `AfsmPhaseMachine`, `AfsmState`, `AfsmTransition`, `Command`, and optional `Effect`.
+- The full local release gate passes after the usability hardening pass, including Maven Local publication and the external consumer smoke compile/KSP check.
