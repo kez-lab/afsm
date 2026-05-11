@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmEventBranchScope
 import afsm.core.AfsmGraph
 import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
@@ -46,9 +45,12 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.SubmitClicked> {
-                submitDraft(
-                    validTarget = ProductEditorPhase.ImageUploadInProgress,
-                )
+                transitionTo(
+                    phase = ProductEditorPhase.ImageUploadInProgress,
+                    guard = { context.draft.form.validationError() == null },
+                ) {
+                    updateContext { normalizeDraftForSubmit() }
+                }
 
                 otherwise {
                     updateContext { withValidationError() }
@@ -77,10 +79,19 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.SubmitClicked> {
-                submitDraft(
-                    validTarget = ProductEditorPhase.ImageUploadInProgress,
-                    invalidTarget = ProductEditorPhase.EditingDraft,
-                )
+                transitionTo(
+                    phase = ProductEditorPhase.ImageUploadInProgress,
+                    guard = { context.draft.form.validationError() == null },
+                ) {
+                    updateContext { normalizeDraftForSubmit() }
+                }
+
+                transitionTo(
+                    phase = ProductEditorPhase.EditingDraft,
+                    guard = { context.draft.form.validationError() != null },
+                ) {
+                    updateContext { withValidationError() }
+                }
             }
 
             on<ProductEditorEvent.TitleChanged> {
@@ -178,9 +189,12 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.ResubmitClicked> {
-                submitDraft(
-                    validTarget = ProductEditorPhase.ImageUploadInProgress,
-                )
+                transitionTo(
+                    phase = ProductEditorPhase.ImageUploadInProgress,
+                    guard = { context.draft.form.validationError() == null },
+                ) {
+                    updateContext { normalizeDraftForSubmit() }
+                }
 
                 otherwise {
                     updateContext { withValidationError() }
@@ -240,45 +254,18 @@ private fun productEditorMachine(): ProductEditorMachine {
     }
 }
 
-private fun <PS : ProductEditorPhase, EV : ProductEditorEvent> AfsmEventBranchScope<
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-    PS,
-    EV,
-    >.submitDraft(
-    validTarget: ProductEditorPhase,
-    invalidTarget: ProductEditorPhase? = null,
-) {
-    transitionTo(
-        phase = validTarget,
-        guard = { context.draft.form.validationError() == null },
-    ) {
-        updateContext {
-            copy(
-                draft = draft.normalized(),
-                errorMessage = null,
-            )
-        }
-    }
-
-    invalidTarget?.let { target ->
-        transitionTo(
-            phase = target,
-            guard = { context.draft.form.validationError() != null },
-        ) {
-            updateContext { withValidationError() }
-        }
-    }
-}
-
 private fun ProductEditorContext.updateDraft(
     event: ProductEditorEvent,
 ): ProductEditorContext {
     return copy(
         draft = draft.updateForm(event),
+        errorMessage = null,
+    )
+}
+
+private fun ProductEditorContext.normalizeDraftForSubmit(): ProductEditorContext {
+    return copy(
+        draft = draft.normalized(),
         errorMessage = null,
     )
 }

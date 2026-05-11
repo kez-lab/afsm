@@ -335,3 +335,9 @@
 - Source: release-readiness autopilot loop after local verification script.
 - Action: Inspected generated Maven Local POMs and documented which remote-publication metadata remains blocked on product decisions.
 - Updated: `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | ProductEditor submit transition readability cleanup
+
+- Source: user feedback that `submitDraft` hurt readability in `ProductEditorStateMachine.kt`.
+- Action: Inlined submit/resubmit phase transitions and limited helpers to context transformations.
+- Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

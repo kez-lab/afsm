@@ -125,6 +125,7 @@ Policy:
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to context transformations so graph-relevant flow remains visible.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.

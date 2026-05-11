@@ -829,3 +829,22 @@ Conclusion:
 
 - POM packaging and internal dependency coordinates are correct for local consumption.
 - URL, license, SCM, and developer metadata are intentionally blocked on product ownership decisions.
+
+## [2026-05-11] ProductEditor submit transition readability cleanup
+
+Change:
+
+- Removed the `submitDraft(...)` event-branch helper from `ProductEditorStateMachine`.
+- Inlined submit/resubmit `transitionTo(...)` branches in `EditingDraft`, `DraftSaved`, and `Rejected`.
+- Kept only context transformation helperization through `normalizeDraftForSubmit()`.
+- Updated sample guide and sample wiki guidance to keep graph-relevant transitions visible in event branches.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --stacktrace
+```
+
+Conclusion:
+
+- ProductEditor remains behaviorally equivalent while making phase movement easier to read directly from the DSL machine body.

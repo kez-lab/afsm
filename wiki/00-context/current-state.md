@@ -52,6 +52,7 @@ The current direction is:
 - ProductEditor was refactored to the phased-state helper as an intermediate spike: state was split into `ProductEditorPhase + ProductEditorContext`, `ProductDraft` lives in context, and reducers call `transitionTo(ProductEditorPhase.X)`.
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
 - ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes `.mmd` graph metadata from the real sample implementation.
+- ProductEditor submit/resubmit transitions now stay inline inside each event branch; only context transformations are helperized so the FSM flow remains readable in the machine body.
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 - ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL machine, removing the previous phase/context adapter mapping.
 - Kotlin `typealias` cannot share a same-named factory with the aliased constructor, so ProductEditor uses a lowercase `productEditorState()` factory for default initial state construction.
