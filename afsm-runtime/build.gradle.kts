@@ -1,10 +1,16 @@
 plugins {
     kotlin("jvm")
     `java-library`
+    `maven-publish`
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 dependencies {
@@ -17,4 +23,18 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "afsm-runtime"
+
+            pom {
+                name.set("Afsm Runtime")
+                description.set("Coroutine Afsm host with serialized dispatch, command execution, effects, and diagnostics.")
+            }
+        }
+    }
 }

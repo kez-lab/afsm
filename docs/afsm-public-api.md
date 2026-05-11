@@ -2,6 +2,21 @@
 
 This page describes the current public API surface intended for pre-release stabilization.
 
+Current pre-release local Maven coordinates:
+
+```kotlin
+implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
+implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
+```
+
+Generate these artifacts with:
+
+```bash
+./gradlew publishToMavenLocal
+```
+
 Removed pre-release aliases:
 
 - `AfsmStateMachine` -> use `AfsmReducer`

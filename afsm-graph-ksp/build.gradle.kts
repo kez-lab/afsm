@@ -1,9 +1,16 @@
 plugins {
     kotlin("jvm")
+    `java-library`
+    `maven-publish`
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 dependencies {
@@ -16,3 +23,16 @@ tasks.test {
     useJUnitPlatform()
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "afsm-graph-ksp"
+
+            pom {
+                name.set("Afsm Graph KSP")
+                description.set("KSP processor that discovers Afsm graph sources and generates graph registries.")
+            }
+        }
+    }
+}

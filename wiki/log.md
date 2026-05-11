@@ -281,3 +281,9 @@
 - Source: user request to decide when to remove deprecated aliases and prepare public README/API docs.
 - Action: Removed pre-release aliases from source, added root README and public API reference, and synchronized canonical wiki pages with the current `AfsmReducer` / `AfsmMachine` API vocabulary.
 - Updated: `README.md`, `docs/afsm-public-api.md`, `afsm-core/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/01-product/android-fsm-library-strategy.md`, `wiki/03-engineering/android-fsm-architecture.md`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Maven local publication setup
+
+- Source: release-readiness autopilot loop after public README/API docs.
+- Action: Added Maven Local publication metadata for the four library modules and verified `publishToMavenLocal`.
+- Updated: `build.gradle.kts`, `afsm-core/build.gradle.kts`, `afsm-runtime/build.gradle.kts`, `afsm-viewmodel/build.gradle.kts`, `afsm-graph-ksp/build.gradle.kts`, `README.md`, `docs/afsm-public-api.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

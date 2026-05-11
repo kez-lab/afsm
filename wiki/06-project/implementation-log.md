@@ -657,3 +657,23 @@ Verification:
 Conclusion:
 
 - New public-facing docs now teach the final pre-release vocabulary and the codebase compiles without the removed aliases.
+
+## [2026-05-11] Maven local publication setup
+
+Change:
+
+- Added common pre-release `group = "io.github.afsm"` and `version = "0.1.0-SNAPSHOT"`.
+- Added `maven-publish` publications for `afsm-core`, `afsm-runtime`, `afsm-graph-ksp`, and `afsm-viewmodel`.
+- JVM modules publish jars, sources jars, javadoc jars, POMs, and Gradle module metadata.
+- `afsm-viewmodel` publishes the Android `release` AAR with sources.
+- Updated public docs with local Maven coordinates.
+
+Verification:
+
+```bash
+./gradlew publishToMavenLocal --stacktrace
+```
+
+Conclusion:
+
+- Local Maven publication succeeds for all library modules; remote publication still needs license, SCM, signing, and final coordinate decisions.

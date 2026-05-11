@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     kotlin("android")
+    `maven-publish`
 }
 
 android {
@@ -9,6 +10,12 @@ android {
 
     defaultConfig {
         minSdk = 23
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
     }
 
     compileOptions {
@@ -31,4 +38,20 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                artifactId = "afsm-viewmodel"
+
+                pom {
+                    name.set("Afsm ViewModel")
+                    description.set("Thin AndroidX ViewModel integration for AfsmHost and viewModelScope.")
+                }
+            }
+        }
+    }
 }

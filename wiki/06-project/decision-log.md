@@ -521,3 +521,20 @@ Consequences:
 - Public source no longer exports the old aliases.
 - `README.md` and `docs/afsm-public-api.md` document only current API names, with a short removed-alias mapping for migration context.
 - After the first published artifact, breaking renames should require a deliberate versioning decision.
+
+## [2026-05-11] Use Maven Local as the first publication gate
+
+Decision: Treat `publishToMavenLocal` as the first release-readiness gate before Maven Central or other remote repository work.
+
+Rationale:
+
+- Maven Local validates Gradle publications, generated POM/module metadata, sources jars, and the Android AAR without requiring credentials or repository ownership decisions.
+- Official Gradle publishing uses `maven-publish` and Maven publications; Android library variants expose publishable components through AGP's publishing DSL.
+- Maven Central still needs product decisions for final group id, license, SCM URL, signing, and release automation.
+
+Consequences:
+
+- Current pre-release local coordinates are `io.github.afsm:afsm-core:0.1.0-SNAPSHOT`, `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT`, `io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT`, and `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT`.
+- `afsm-viewmodel` publishes the `release` Android library variant as an AAR with sources.
+- JVM modules publish jars, sources jars, and javadoc jars.
+- Final Maven Central coordinates remain open until product approval.

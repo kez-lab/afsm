@@ -27,7 +27,7 @@ Afsm is useful when a screen has meaningful phases, retries, invalid transitions
 | `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |
 | `sample-shop` | Compose + Room sample app proving real usage | Yes |
 
-Afsm is currently used as a multi-module Gradle project:
+For repository-local development, depend on the project modules:
 
 ```kotlin
 dependencies {
@@ -37,7 +37,31 @@ dependencies {
 }
 ```
 
-Publishing coordinates are intentionally not documented yet because Maven publishing metadata is not finalized.
+For local artifact evaluation, publish to Maven Local:
+
+```bash
+./gradlew publishToMavenLocal
+```
+
+Then consume the pre-release snapshot artifacts:
+
+```kotlin
+repositories {
+    google()
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+
+    ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
+}
+```
+
+`io.github.afsm` is the current pre-release group id used for local publishing. Final Maven Central coordinates still need product approval.
 
 ## Core Concepts
 
@@ -271,6 +295,7 @@ Current baseline:
 ```bash
 ./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
 ./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
+./gradlew publishToMavenLocal
 ```
 
 See [docs/afsm-public-api.md](docs/afsm-public-api.md) for the API reference and [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md) for sample app notes.
