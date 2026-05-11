@@ -1,6 +1,6 @@
 package afsm.viewmodel
 
-import afsm.core.AfsmGraphReducer
+import afsm.core.AfsmMachine
 import afsm.core.AfsmReducer
 import afsm.runtime.AfsmCommandHandler
 import afsm.runtime.AfsmConfig
@@ -17,12 +17,36 @@ import androidx.lifecycle.viewModelScope
  * `initialState = machine.initialState, reducer = machine`.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmGraphReducer<S, E, C, F>,
+    machine: AfsmMachine<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F> {
     return afsmHost(
         initialState = machine.initialState,
+        reducer = machine,
+        commandHandler = commandHandler,
+        config = config,
+    )
+}
+
+/**
+ * Hosts an Afsm machine with an explicit initial state in this [ViewModel].
+ *
+ * Use this overload when a graphable machine owns transition behavior and
+ * topology, but the starting state comes from Android runtime inputs such as
+ * navigation arguments, a deep link, repository restoration, or a
+ * [androidx.lifecycle.SavedStateHandle].
+ *
+ * The supplied [initialState] wins over [machine]'s default initial state.
+ */
+public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
+    machine: AfsmReducer<S, E, C, F>,
+    initialState: S,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C, F> {
+    return afsmHost(
+        initialState = initialState,
         reducer = machine,
         commandHandler = commandHandler,
         config = config,

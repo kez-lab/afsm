@@ -1,7 +1,7 @@
 package afsm.consumer.smoke
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmGraphReducer
+import afsm.core.AfsmMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -32,7 +32,7 @@ internal sealed interface SmokeCommand {
 
 internal typealias SmokeState = AfsmState<SmokePhase, SmokeContext>
 
-private typealias SmokeMachine = AfsmGraphReducer<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect>
+private typealias SmokeMachine = AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect>
 
 @AfsmGraph(
     id = "ConsumerSmoke",

@@ -78,8 +78,8 @@ public final class afsm/core/AfsmEventBranchScope {
 	public static synthetic fun ignore$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun invalid (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun invalid$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun otherwise (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun otherwise$default (Lafsm/core/AfsmEventBranchScope;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun otherwise (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun otherwise$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun stay (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun stay$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun transitionTo (Ljava/lang/Object;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
@@ -114,10 +114,6 @@ public final class afsm/core/AfsmGraphEntry {
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class afsm/core/AfsmGraphReducer : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
-	public abstract fun getInitialState ()Ljava/lang/Object;
-}
-
 public abstract interface class afsm/core/AfsmGraphRegistry {
 	public abstract fun getEntries ()Ljava/util/List;
 }
@@ -126,10 +122,8 @@ public abstract interface class afsm/core/AfsmGraphSource {
 	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
 }
 
-public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphReducer {
-	public abstract fun getInitialState ()Lafsm/core/AfsmState;
-	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
-	public abstract fun transition (Lafsm/core/AfsmState;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
+public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
+	public abstract fun getInitialState ()Ljava/lang/Object;
 }
 
 public final class afsm/core/AfsmMachineBuilder {
@@ -141,15 +135,49 @@ public final class afsm/core/AfsmMachineBuilder {
 
 public final class afsm/core/AfsmMachineDslKt {
 	public static final fun afsmLabelForClass (Lkotlin/reflect/KClass;)Ljava/lang/String;
-	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmMachine;
+	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmPhaseMachine;
+}
+
+public final class afsm/core/AfsmMmdOptions {
+	public static final field Companion Lafsm/core/AfsmMmdOptions$Companion;
+	public fun <init> ()V
+	public fun <init> (ZZZZZ)V
+	public synthetic fun <init> (ZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun copy (ZZZZZ)Lafsm/core/AfsmMmdOptions;
+	public static synthetic fun copy$default (Lafsm/core/AfsmMmdOptions;ZZZZZILjava/lang/Object;)Lafsm/core/AfsmMmdOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIncludeCommandOnlyInternalTransitions ()Z
+	public final fun getIncludeEffectOnlyInternalTransitions ()Z
+	public final fun getIncludeFallbackTransitions ()Z
+	public final fun getIncludeInitialState ()Z
+	public final fun getIncludeInternalTransitions ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class afsm/core/AfsmMmdOptions$Companion {
+	public final fun getFlow ()Lafsm/core/AfsmMmdOptions;
+	public final fun getFull ()Lafsm/core/AfsmMmdOptions;
 }
 
 public final class afsm/core/AfsmMmdWriter {
 	public static final field INSTANCE Lafsm/core/AfsmMmdWriter;
-	public final fun writeAll (Lafsm/core/AfsmGraphRegistry;Ljava/io/File;)V
+	public final fun writeAll (Lafsm/core/AfsmGraphRegistry;Ljava/io/File;Lafsm/core/AfsmMmdOptions;)V
+	public static synthetic fun writeAll$default (Lafsm/core/AfsmMmdWriter;Lafsm/core/AfsmGraphRegistry;Ljava/io/File;Lafsm/core/AfsmMmdOptions;ILjava/lang/Object;)V
 }
 
 public abstract interface class afsm/core/AfsmNoEffect {
+}
+
+public abstract interface class afsm/core/AfsmPhaseMachine : afsm/core/AfsmMachine {
+	public abstract fun getInitialState ()Lafsm/core/AfsmState;
+	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
+	public abstract fun transition (Lafsm/core/AfsmState;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
 }
 
 public abstract interface class afsm/core/AfsmReducer {
@@ -171,17 +199,22 @@ public final class afsm/core/AfsmState {
 
 public final class afsm/core/AfsmStateBuilder {
 	public final fun addEventDefinition (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public final fun onEnter (Lkotlin/jvm/functions/Function1;)V
-	public final fun onExit (Lkotlin/jvm/functions/Function1;)V
+	public final fun onEnter (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun onEnter$default (Lafsm/core/AfsmStateBuilder;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun onExit (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun onExit$default (Lafsm/core/AfsmStateBuilder;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class afsm/core/AfsmTopology {
-	public fun <init> (Ljava/util/List;Ljava/util/List;)V
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/util/List;
 	public final fun component2 ()Ljava/util/List;
-	public final fun copy (Ljava/util/List;Ljava/util/List;)Lafsm/core/AfsmTopology;
-	public static synthetic fun copy$default (Lafsm/core/AfsmTopology;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lafsm/core/AfsmTopology;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/util/List;Ljava/util/List;Ljava/lang/String;)Lafsm/core/AfsmTopology;
+	public static synthetic fun copy$default (Lafsm/core/AfsmTopology;Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTopology;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInitialStateId ()Ljava/lang/String;
 	public final fun getStates ()Ljava/util/List;
 	public final fun getTransitions ()Ljava/util/List;
 	public fun hashCode ()I
@@ -189,18 +222,27 @@ public final class afsm/core/AfsmTopology {
 }
 
 public final class afsm/core/AfsmTopologyKt {
-	public static final fun toMmd (Lafsm/core/AfsmTopology;)Ljava/lang/String;
+	public static final fun toMmd (Lafsm/core/AfsmTopology;Lafsm/core/AfsmMmdOptions;)Ljava/lang/String;
+	public static synthetic fun toMmd$default (Lafsm/core/AfsmTopology;Lafsm/core/AfsmMmdOptions;ILjava/lang/Object;)Ljava/lang/String;
 }
 
 public final class afsm/core/AfsmTopologyState {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lafsm/core/AfsmTopologyState;
-	public static synthetic fun copy$default (Lafsm/core/AfsmTopologyState;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTopologyState;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lafsm/core/AfsmTopologyState;
+	public static synthetic fun copy$default (Lafsm/core/AfsmTopologyState;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lafsm/core/AfsmTopologyState;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEntryCommandLabels ()Ljava/util/List;
+	public final fun getEntryEffectLabels ()Ljava/util/List;
+	public final fun getExitCommandLabels ()Ljava/util/List;
+	public final fun getExitEffectLabels ()Ljava/util/List;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getParentId ()Ljava/lang/String;

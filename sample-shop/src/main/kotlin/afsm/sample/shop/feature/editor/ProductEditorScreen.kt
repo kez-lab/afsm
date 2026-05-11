@@ -1,5 +1,6 @@
 package afsm.sample.shop.feature.editor
 
+import afsm.compose.CollectAfsmEffects
 import afsm.sample.shop.app.ShopAppContainer
 import afsm.sample.shop.app.sampleViewModelFactory
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +21,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,11 +45,9 @@ fun ProductEditorRoute(
     val viewModel: ProductEditorViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                ProductEditorEffect.CloseEditor -> onDone()
-            }
+    CollectAfsmEffects(viewModel.effects) { effect ->
+        when (effect) {
+            ProductEditorEffect.CloseEditor -> onDone()
         }
     }
 

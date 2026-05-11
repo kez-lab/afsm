@@ -10,6 +10,8 @@ data class CheckoutState(
     val isLoadingProduct: Boolean = false,
     val isPaying: Boolean = false,
     val isComplete: Boolean = false,
+    val nextPaymentRequestId: Long = 0,
+    val activePaymentRequestId: Long? = null,
     val orderId: Long? = null,
     val errorMessage: String? = null,
 )
@@ -25,15 +27,24 @@ sealed interface CheckoutEvent {
 
     data object RetryClicked : CheckoutEvent
 
-    data class PaymentSucceeded(val receipt: OrderReceipt) : CheckoutEvent
+    data class PaymentSucceeded(
+        val requestId: Long,
+        val receipt: OrderReceipt,
+    ) : CheckoutEvent
 
-    data class PaymentFailed(val message: String) : CheckoutEvent
+    data class PaymentFailed(
+        val requestId: Long,
+        val message: String,
+    ) : CheckoutEvent
 }
 
 sealed interface CheckoutCommand {
     data class LoadProduct(val productId: Long) : CheckoutCommand
 
-    data class SubmitPayment(val product: Product) : CheckoutCommand
+    data class SubmitPayment(
+        val requestId: Long,
+        val product: Product,
+    ) : CheckoutCommand
 }
 
 sealed interface CheckoutEffect {

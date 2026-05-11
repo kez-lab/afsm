@@ -25,7 +25,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     private val config: AfsmConfig = AfsmConfig(),
 ) {
     private val eventQueue = Channel<E>(config.eventQueueCapacity)
-    private val commandQueue = Channel<PendingCommand<S, E, C, F>>(Channel.UNLIMITED)
+    private val commandQueue = Channel<PendingCommand<S, E, C, F>>(config.commandQueueCapacity)
     private val _state = MutableStateFlow(initialState)
     private val _effects = MutableSharedFlow<F>(
         replay = config.effectDelivery.replay,

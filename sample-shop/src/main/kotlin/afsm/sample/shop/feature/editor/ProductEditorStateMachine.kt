@@ -1,11 +1,11 @@
 package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmGraphReducer
+import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
 
 private typealias ProductEditorMachine =
-    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 
 @AfsmGraph(
     id = "ProductEditor",
@@ -40,19 +40,20 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 transitionTo(
                     phase = ProductEditorPhase.ImageUploadInProgress,
+                    guardLabel = "valid draft",
                     guard = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                 }
 
-                otherwise {
+                otherwise(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
         }
 
         state(ProductEditorPhase.SavingDraft) {
-            onEnter {
+            onEnter(commandLabels = listOf("SaveDraft")) {
                 updateContext { copy(errorMessage = null) }
                 command(ProductEditorCommand.SaveDraft(context.draft))
             }
@@ -74,12 +75,13 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 transitionTo(
                     phase = ProductEditorPhase.ImageUploadInProgress,
+                    guardLabel = "valid draft",
                     guard = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                 }
 
-                otherwise {
+                otherwise(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
@@ -104,7 +106,7 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state(ProductEditorPhase.ImageUploadInProgress) {
-            onEnter {
+            onEnter(commandLabels = listOf("StartImageUpload")) {
                 command(ProductEditorCommand.StartImageUpload(context.draft))
             }
 
@@ -137,7 +139,7 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state<ProductEditorPhase.ReviewSubmissionInProgress> {
-            onEnter {
+            onEnter(commandLabels = listOf("StartReviewSubmission")) {
                 command(
                     ProductEditorCommand.StartReviewSubmission(
                         draft = context.draft,
@@ -181,12 +183,13 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.ResubmitClicked> {
                 transitionTo(
                     phase = ProductEditorPhase.ImageUploadInProgress,
+                    guardLabel = "valid draft",
                     guard = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                 }
 
-                otherwise {
+                otherwise(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
@@ -207,7 +210,7 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state(ProductEditorPhase.PublishInProgress) {
-            onEnter {
+            onEnter(commandLabels = listOf("StartProductPublish")) {
                 updateContext { copy(errorMessage = null) }
                 command(ProductEditorCommand.StartProductPublish(context.draft))
             }
@@ -236,7 +239,7 @@ private fun productEditorMachine(): ProductEditorMachine {
 
         state<ProductEditorPhase.Published> {
             on<ProductEditorEvent.DoneClicked> {
-                stay {
+                stay(effectLabels = listOf("CloseEditor")) {
                     effect(ProductEditorEffect.CloseEditor)
                 }
             }

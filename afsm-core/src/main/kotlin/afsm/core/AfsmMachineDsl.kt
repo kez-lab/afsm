@@ -6,7 +6,8 @@ import kotlin.reflect.KClass
  * Builds an executable Afsm machine definition.
  *
  * This DSL is intentionally plain Kotlin and Android-free. Android ViewModels
- * should host the returned [AfsmMachine] through an [AfsmReducer].
+ * should host the returned [AfsmPhaseMachine] through an [AfsmMachine] or
+ * [AfsmReducer] reference.
  *
  * Type parameters:
  *
@@ -19,12 +20,12 @@ import kotlin.reflect.KClass
  * - [F]: effect type. Effects are optional UI-side one-shot outputs.
  *
  * The [build] block declares the initial state, phase scopes, event branches,
- * entry/exit handlers, and graph metadata. The returned [AfsmMachine] is both
- * executable transition logic and an [AfsmGraphSource].
+ * entry/exit handlers, and graph metadata. The returned [AfsmPhaseMachine] is
+ * both executable transition logic and an [AfsmGraphSource].
  */
 public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmMachine(
     build: AfsmMachineBuilder<P, X, E, C, F>.() -> Unit,
-): AfsmMachine<P, X, E, C, F> {
+): AfsmPhaseMachine<P, X, E, C, F> {
     val builder = AfsmMachineBuilder<P, X, E, C, F>()
     builder.build()
     return builder.buildMachine()
@@ -37,7 +38,7 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     /**
      * Sets the initial finite phase and extended context for the machine.
      *
-     * [phase] is the first graph state exposed through [AfsmMachine.initialState].
+     * [phase] is the first graph state exposed through [AfsmPhaseMachine.initialState].
      * [context] is the initial extended data associated with that phase.
      *
      * Calling [initial] does not run the target phase's `onEnter` handler.
@@ -111,7 +112,7 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
         states += builder.buildDefinition()
     }
 
-    internal fun buildMachine(): AfsmMachine<P, X, E, C, F> {
+    internal fun buildMachine(): AfsmPhaseMachine<P, X, E, C, F> {
         val initial = requireNotNull(initialState) {
             "Afsm machine requires an initial phase and context."
         }
@@ -184,6 +185,10 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
 ) {
     private val entryHandlers = mutableListOf<AfsmEntryHandler<P, X, C, F>>()
     private val exitHandlers = mutableListOf<AfsmExitHandler<P, X, C, F>>()
+    private val entryCommandLabels = mutableListOf<String>()
+    private val entryEffectLabels = mutableListOf<String>()
+    private val exitCommandLabels = mutableListOf<String>()
+    private val exitEffectLabels = mutableListOf<String>()
     private val eventDefinitions = mutableListOf<AfsmEventDefinition<P, X, E, C, F>>()
 
     /**
@@ -197,12 +202,19 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      *
      * Use `onEnter` for work that logically starts because a phase was entered:
      * emitting a command, clearing an error, or initializing phase-specific
-     * context. It is not run when the machine's [AfsmMachine.initialState] is
+     * context. It is not run when the machine's [AfsmPhaseMachine.initialState] is
      * created.
+     *
+     * [commandLabels] and [effectLabels] are topology metadata for generated
+     * diagrams. Runtime commands/effects must still be emitted from [handler].
      */
     public fun onEnter(
+        commandLabels: List<String> = emptyList(),
+        effectLabels: List<String> = emptyList(),
         handler: AfsmEntryScope<P, X, C, F, PS>.() -> Unit,
     ) {
+        entryCommandLabels += commandLabels
+        entryEffectLabels += effectLabels
         entryHandlers += { phase, execution ->
             val typedPhase = matcher(phase)
             if (typedPhase != null) {
@@ -226,10 +238,17 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      *
      * Use `onExit` for cleanup work that logically belongs to leaving a phase,
      * such as emitting a cancel command or clearing phase-local context.
+     *
+     * [commandLabels] and [effectLabels] are topology metadata for generated
+     * diagrams. Runtime commands/effects must still be emitted from [handler].
      */
     public fun onExit(
+        commandLabels: List<String> = emptyList(),
+        effectLabels: List<String> = emptyList(),
         handler: AfsmExitScope<P, X, C, F, PS>.() -> Unit,
     ) {
+        exitCommandLabels += commandLabels
+        exitEffectLabels += effectLabels
         exitHandlers += { phase, execution ->
             val typedPhase = matcher(phase)
             if (typedPhase != null) {
@@ -287,6 +306,10 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
             matcher = matcher,
             entryHandlers = entryHandlers.toList(),
             exitHandlers = exitHandlers.toList(),
+            entryCommandLabels = entryCommandLabels.toList(),
+            entryEffectLabels = entryEffectLabels.toList(),
+            exitCommandLabels = exitCommandLabels.toList(),
+            exitEffectLabels = exitEffectLabels.toList(),
             eventDefinitions = eventDefinitions.toList(),
         )
     }
@@ -435,18 +458,25 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * }
      * ```
      *
-     * [commandLabels] and [effectLabels] are metadata for generated diagrams.
-     * [block] is runtime logic. `otherwise` does not change phase and does not
-     * run `onExit` or `onEnter`.
+     * [label] replaces the default `otherwise` diagram label with a
+     * domain-specific reason such as `invalid form`. [commandLabels] and
+     * [effectLabels] are metadata for generated diagrams. [block] is runtime
+     * logic. `otherwise` does not change phase and does not run `onExit` or
+     * `onEnter`.
      */
     public fun otherwise(
+        label: String? = null,
         commandLabels: List<String> = emptyList(),
         effectLabels: List<String> = emptyList(),
         block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
     ) {
         addBranch(
             targetLabel = stateLabel,
-            eventLabelOverride = "$eventLabel [otherwise]",
+            eventLabelOverride = if (label == null) {
+                "$eventLabel [otherwise]"
+            } else {
+                "$eventLabel [$label]"
+            },
             targetFactory = { null },
             guardLabel = null,
             commandLabels = commandLabels,
@@ -746,6 +776,10 @@ internal data class AfsmStateDefinition<P : Any, X : Any, E : Any, C : Any, F : 
     val matcher: (P) -> Any?,
     val entryHandlers: List<AfsmEntryHandler<P, X, C, F>>,
     val exitHandlers: List<AfsmExitHandler<P, X, C, F>>,
+    val entryCommandLabels: List<String>,
+    val entryEffectLabels: List<String>,
+    val exitCommandLabels: List<String>,
+    val exitEffectLabels: List<String>,
     val eventDefinitions: List<AfsmEventDefinition<P, X, E, C, F>>,
 )
 
@@ -783,16 +817,25 @@ internal typealias AfsmExitHandler<P, X, C, F> =
 private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
     override val initialState: AfsmState<P, X>,
     private val states: List<AfsmStateDefinition<P, X, E, C, F>>,
-) : AfsmMachine<P, X, E, C, F> {
+) : AfsmPhaseMachine<P, X, E, C, F> {
     override val topology: AfsmTopology = AfsmTopology(
         states = states.map { state ->
-            AfsmTopologyState(id = state.label)
+            AfsmTopologyState(
+                id = state.label,
+                entryCommandLabels = state.entryCommandLabels,
+                entryEffectLabels = state.entryEffectLabels,
+                exitCommandLabels = state.exitCommandLabels,
+                exitEffectLabels = state.exitEffectLabels,
+            )
         },
         transitions = states.flatMap { state ->
             state.eventDefinitions.flatMap { eventDefinition ->
                 eventDefinition.transitions
             }
         }.distinct(),
+        initialStateId = states.firstOrNull { state ->
+            state.matcher(initialState.phase) != null
+        }?.label,
     )
 
     override fun transition(

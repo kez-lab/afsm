@@ -55,13 +55,14 @@ class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutC
             CheckoutEvent.RetryClicked -> startPayment(state)
 
             is CheckoutEvent.PaymentSucceeded -> {
-                if (!state.isPaying) {
-                    Afsm.invalid(state, reason = "Payment success arrived without a pending payment.")
+                if (state.activePaymentRequestId != event.requestId) {
+                    Afsm.ignore(state, reason = "Stale payment success result.")
                 } else {
                     Afsm.transitionTo(
                         state = state.copy(
                             isPaying = false,
                             isComplete = true,
+                            activePaymentRequestId = null,
                             orderId = event.receipt.orderId,
                             errorMessage = null,
                         ),
@@ -71,12 +72,13 @@ class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutC
             }
 
             is CheckoutEvent.PaymentFailed -> {
-                if (!state.isPaying) {
-                    Afsm.invalid(state, reason = "Payment failure arrived without a pending payment.")
+                if (state.activePaymentRequestId != event.requestId) {
+                    Afsm.ignore(state, reason = "Stale payment failure result.")
                 } else {
                     Afsm.transitionTo(
                         state = state.copy(
                             isPaying = false,
+                            activePaymentRequestId = null,
                             errorMessage = event.message,
                         ),
                     )
@@ -101,12 +103,20 @@ class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutC
             }
 
             else -> {
+                val requestId = state.nextPaymentRequestId + 1
                 Afsm.transitionTo(
                     state = state.copy(
                         isPaying = true,
+                        nextPaymentRequestId = requestId,
+                        activePaymentRequestId = requestId,
                         errorMessage = null,
                     ),
-                    commands = listOf(CheckoutCommand.SubmitPayment(product)),
+                    commands = listOf(
+                        CheckoutCommand.SubmitPayment(
+                            requestId = requestId,
+                            product = product,
+                        ),
+                    ),
                 )
             }
         }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -373,6 +374,16 @@ class AfsmHostTest {
         assertIs<IllegalStateException>(exceptions.single())
         assertEquals(DecisionState("afterFailure"), host.state.value)
         hostScope.cancel()
+    }
+
+    @Test
+    fun `config rejects non-positive queue capacities`() {
+        assertFailsWith<IllegalArgumentException> {
+            AfsmConfig(eventQueueCapacity = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            AfsmConfig(commandQueueCapacity = 0)
+        }
     }
 
     private fun TestScope.newHostScope(

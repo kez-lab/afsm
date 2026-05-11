@@ -67,4 +67,64 @@ class AfsmMmdWriterTest {
             outputDir.resolve("nested/Second.mmd").readText().trimEnd(),
         )
     }
+
+    @Test
+    fun `toMmd renders flow diagram with initial node entry notes and filtered internal transitions`() {
+        val topology = AfsmTopology(
+            states = listOf(
+                AfsmTopologyState("Editing"),
+                AfsmTopologyState(
+                    id = "Saving",
+                    entryCommandLabels = listOf("SaveDraft"),
+                ),
+                AfsmTopologyState("Saved"),
+            ),
+            transitions = listOf(
+                AfsmTopologyTransition(
+                    from = "Editing",
+                    event = "TitleChanged",
+                    to = "Editing",
+                    kind = AfsmTopologyTransitionKind.Internal,
+                ),
+                AfsmTopologyTransition(
+                    from = "Editing",
+                    event = "SaveClicked",
+                    to = "Saving",
+                    guardLabel = "valid title",
+                ),
+                AfsmTopologyTransition(
+                    from = "Editing",
+                    event = "SaveClicked [invalid title]",
+                    to = "Editing",
+                    kind = AfsmTopologyTransitionKind.Internal,
+                    isFallback = true,
+                ),
+                AfsmTopologyTransition(
+                    from = "Saving",
+                    event = "Saved",
+                    to = "Saved",
+                ),
+            ),
+            initialStateId = "Editing",
+        )
+
+        assertEquals(
+            """
+            stateDiagram-v2
+              [*] --> Editing
+              state Editing
+              state Saving
+              note right of Saving
+                entry / SaveDraft
+              end note
+              state Saved
+              Editing --> Saving: SaveClicked [valid title]
+              Editing --> Editing: SaveClicked [invalid title]
+              Saving --> Saved: Saved
+            """.trimIndent(),
+            topology.toMmd(),
+        )
+
+        assertTrue("TitleChanged" in topology.toMmd(AfsmMmdOptions.Full))
+    }
 }

@@ -14,8 +14,8 @@ class CheckoutViewModel(
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val host = afsmHost(
+        machine = CheckoutStateMachine(),
         initialState = CheckoutState(productId = productId),
-        reducer = CheckoutStateMachine(),
         commandHandler = AfsmCommandHandler { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
@@ -30,19 +30,30 @@ class CheckoutViewModel(
                 is CheckoutCommand.SubmitPayment -> {
                     val session = sessionRepository.currentSession()
                     if (session == null) {
-                        dispatch(CheckoutEvent.PaymentFailed("Login is required."))
+                        dispatch(
+                            CheckoutEvent.PaymentFailed(
+                                requestId = command.requestId,
+                                message = "Login is required.",
+                            ),
+                        )
                     } else {
                         paymentRepository.submitPayment(
                             session = session,
                             product = command.product,
                         ).fold(
                             onSuccess = { receipt ->
-                                dispatch(CheckoutEvent.PaymentSucceeded(receipt))
+                                dispatch(
+                                    CheckoutEvent.PaymentSucceeded(
+                                        requestId = command.requestId,
+                                        receipt = receipt,
+                                    ),
+                                )
                             },
                             onFailure = { error ->
                                 dispatch(
                                     CheckoutEvent.PaymentFailed(
-                                        error.message ?: "Payment failed.",
+                                        requestId = command.requestId,
+                                        message = error.message ?: "Payment failed.",
                                     ),
                                 )
                             },

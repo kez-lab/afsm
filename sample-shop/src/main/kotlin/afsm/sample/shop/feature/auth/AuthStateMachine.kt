@@ -1,10 +1,10 @@
 package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmGraphReducer
+import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
 
-private typealias AuthMachine = AfsmGraphReducer<AuthState, AuthEvent, AuthCommand, AuthEffect>
+private typealias AuthMachine = AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect>
 
 @AfsmGraph(
     id = "Auth",
@@ -67,6 +67,8 @@ private fun authMachine(): AuthMachine {
             on<AuthEvent.SubmitClicked> {
                 transitionTo(
                     phase = AuthPhase.Submitting,
+                    guardLabel = "login form",
+                    commandLabels = listOf("Login"),
                     guard = { context.canSubmitLogin() },
                 ) {
                     val normalized = context.normalized()
@@ -85,6 +87,8 @@ private fun authMachine(): AuthMachine {
 
                 transitionTo(
                     phase = AuthPhase.Submitting,
+                    guardLabel = "register form",
+                    commandLabels = listOf("Register"),
                     guard = { context.canSubmitRegister() },
                 ) {
                     val normalized = context.normalized()
@@ -102,7 +106,7 @@ private fun authMachine(): AuthMachine {
                     )
                 }
 
-                otherwise {
+                otherwise(label = "invalid form") {
                     updateContext {
                         val normalized = normalized()
                         normalized.copy(errorMessage = normalized.submitError())
@@ -127,6 +131,7 @@ private fun authMachine(): AuthMachine {
                             session = event.session,
                         )
                     },
+                    effectLabels = listOf("OpenCatalog"),
                 ) {
                     updateContext {
                         AuthContext()

@@ -1,7 +1,7 @@
 package afsm.viewmodel
 
 import afsm.core.Afsm
-import afsm.core.AfsmGraphReducer
+import afsm.core.AfsmMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
 import afsm.core.AfsmTopology
@@ -72,6 +72,20 @@ class AfsmViewModelTest {
         assertEquals(listOf<CounterEffect>(CounterEffect.NavigateDone), effects)
     }
 
+    @Test
+    fun `ViewModel helper can host a machine with dynamic initial state`() = runTest {
+        val viewModel = DynamicInitialCounterViewModel(initialCount = 41)
+
+        viewModel.onEvent(CounterEvent.IncrementClicked)
+        mainDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(CounterState(count = 42, persisted = true), viewModel.state.value)
+        assertEquals(
+            listOf<CounterCommand>(CounterCommand.PersistCount(42)),
+            viewModel.handledCommands,
+        )
+    }
+
     private class CounterViewModel : ViewModel() {
         val handledCommands = mutableListOf<CounterCommand>()
 
@@ -95,8 +109,33 @@ class AfsmViewModelTest {
         }
     }
 
+    private class DynamicInitialCounterViewModel(
+        initialCount: Int,
+    ) : ViewModel() {
+        val handledCommands = mutableListOf<CounterCommand>()
+
+        private val host = afsmHost(
+            machine = CounterStateMachine,
+            initialState = CounterState(count = initialCount),
+            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
+                handledCommands += command
+                when (command) {
+                    is CounterCommand.PersistCount -> {
+                        dispatch(CounterEvent.CountPersisted)
+                    }
+                }
+            },
+        )
+
+        val state: StateFlow<CounterState> = host.state
+
+        fun onEvent(event: CounterEvent) {
+            host.dispatch(event)
+        }
+    }
+
     private object CounterStateMachine :
-        AfsmGraphReducer<CounterState, CounterEvent, CounterCommand, CounterEffect> {
+        AfsmMachine<CounterState, CounterEvent, CounterCommand, CounterEffect> {
         override val initialState: CounterState = CounterState()
         override val topology: AfsmTopology = AfsmTopology(
             states = emptyList(),

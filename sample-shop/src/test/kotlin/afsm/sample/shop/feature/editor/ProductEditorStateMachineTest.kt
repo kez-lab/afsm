@@ -250,6 +250,7 @@ class ProductEditorStateMachineTest {
                 from = "EditingDraft",
                 event = "SubmitClicked",
                 to = "ImageUploadInProgress",
+                guardLabel = "valid draft",
             ) in transitions,
         )
         assertTrue(
@@ -276,7 +277,7 @@ class ProductEditorStateMachineTest {
 
         val mmd = machine.topology.toMmd()
 
-        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked" in mmd)
+        assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]" in mmd)
         assertTrue("Approved --> PublishInProgress: PublishClicked" in mmd)
     }
 }

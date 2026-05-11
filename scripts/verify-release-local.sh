@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" \
   :afsm-core:test \
+  :afsm-compose:compileDebugKotlin \
   :afsm-runtime:test \
   :afsm-viewmodel:testDebugUnitTest \
   :sample-shop:compileDebugKotlin \

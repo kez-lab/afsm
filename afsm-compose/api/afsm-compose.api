@@ -1,0 +1,4 @@
+public final class afsm/compose/AfsmEffectsKt {
+	public static final fun CollectAfsmEffects (Lkotlinx/coroutines/flow/Flow;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+

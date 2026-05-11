@@ -341,7 +341,7 @@ class AfsmExecutableDslCompileCheckTest {
         assertTrue("ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded" in mmd)
     }
 
-    private fun productEditorMachine(): AfsmMachine<
+    private fun productEditorMachine(): AfsmPhaseMachine<
         DslProductEditorPhase,
         DslProductEditorContext,
         DslProductEditorEvent,

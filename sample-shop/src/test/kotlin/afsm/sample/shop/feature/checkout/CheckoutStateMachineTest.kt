@@ -46,7 +46,16 @@ class CheckoutStateMachineTest {
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
         assertEquals(true, result.state.isPaying)
-        assertEquals(listOf(CheckoutCommand.SubmitPayment(product)), result.commands)
+        assertEquals(1, result.state.activePaymentRequestId)
+        assertEquals(
+            listOf(
+                CheckoutCommand.SubmitPayment(
+                    requestId = 1,
+                    product = product,
+                ),
+            ),
+            result.commands,
+        )
     }
 
     @Test
@@ -56,17 +65,32 @@ class CheckoutStateMachineTest {
                 productId = product.id,
                 product = product,
                 isPaying = true,
+                nextPaymentRequestId = 1,
+                activePaymentRequestId = 1,
             ),
-            event = CheckoutEvent.PaymentFailed("Mock payment declined."),
+            event = CheckoutEvent.PaymentFailed(
+                requestId = 1,
+                message = "Mock payment declined.",
+            ),
         )
 
         assertEquals(false, failed.state.isPaying)
+        assertEquals(null, failed.state.activePaymentRequestId)
         assertEquals("Mock payment declined.", failed.state.errorMessage)
 
         val retry = machine.transition(failed.state, CheckoutEvent.RetryClicked)
 
         assertEquals(true, retry.state.isPaying)
-        assertEquals(listOf(CheckoutCommand.SubmitPayment(product)), retry.commands)
+        assertEquals(2, retry.state.activePaymentRequestId)
+        assertEquals(
+            listOf(
+                CheckoutCommand.SubmitPayment(
+                    requestId = 2,
+                    product = product,
+                ),
+            ),
+            retry.commands,
+        )
     }
 
     @Test
@@ -82,27 +106,39 @@ class CheckoutStateMachineTest {
                 productId = product.id,
                 product = product,
                 isPaying = true,
+                nextPaymentRequestId = 1,
+                activePaymentRequestId = 1,
             ),
-            event = CheckoutEvent.PaymentSucceeded(receipt),
+            event = CheckoutEvent.PaymentSucceeded(
+                requestId = 1,
+                receipt = receipt,
+            ),
         )
 
         assertEquals(true, result.state.isComplete)
+        assertEquals(null, result.state.activePaymentRequestId)
         assertEquals(42, result.state.orderId)
         assertEquals(listOf(CheckoutEffect.PaymentCompleted(orderId = 42)), result.effects)
     }
 
     @Test
-    fun `payment result without pending payment is invalid`() {
+    fun `stale payment result is ignored`() {
         val result = machine.transition(
             state = CheckoutState(
                 productId = product.id,
                 product = product,
-                isPaying = false,
+                isPaying = true,
+                nextPaymentRequestId = 2,
+                activePaymentRequestId = 2,
             ),
-            event = CheckoutEvent.PaymentFailed("late failure"),
+            event = CheckoutEvent.PaymentFailed(
+                requestId = 1,
+                message = "late failure",
+            ),
         )
 
-        assertIs<AfsmDecision.Invalid>(result.decision)
-        assertEquals(false, result.state.isPaying)
+        assertIs<AfsmDecision.Ignored>(result.decision)
+        assertEquals(true, result.state.isPaying)
+        assertEquals(2, result.state.activePaymentRequestId)
     }
 }

@@ -31,6 +31,17 @@ public class AfsmConfig(
      */
     public val eventQueueCapacity: Int = 64,
     /**
+     * Maximum number of accepted commands that can wait for the sequential
+     * command processor.
+     *
+     * Afsm commands are emitted by accepted transitions and are processed
+     * separately from event reduction. Keeping this queue bounded prevents
+     * accidental unbounded memory growth when a machine emits commands faster
+     * than the host can execute them. If the queue fills, event reduction
+     * back-pressures until the command processor catches up.
+     */
+    public val commandQueueCapacity: Int = 64,
+    /**
      * Receives diagnostics for recorded invalid transitions and defensive drops.
      */
     public val logger: AfsmLogger =
@@ -38,5 +49,6 @@ public class AfsmConfig(
 ) {
     init {
         require(eventQueueCapacity > 0) { "eventQueueCapacity must be > 0." }
+        require(commandQueueCapacity > 0) { "commandQueueCapacity must be > 0." }
     }
 }
