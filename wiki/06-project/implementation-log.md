@@ -808,3 +808,24 @@ Verification:
 Conclusion:
 
 - Release-facing verification is now harder to run partially by accident.
+
+## [2026-05-11] Maven publication metadata audit
+
+Change:
+
+- Inspected generated Maven Local POMs for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
+- Documented current metadata status in `docs/release-readiness.md`.
+
+Verification:
+
+```bash
+sed -n '1,220p' ~/.m2/repository/io/github/afsm/afsm-core/0.1.0-SNAPSHOT/afsm-core-0.1.0-SNAPSHOT.pom
+sed -n '1,260p' ~/.m2/repository/io/github/afsm/afsm-runtime/0.1.0-SNAPSHOT/afsm-runtime-0.1.0-SNAPSHOT.pom
+sed -n '1,260p' ~/.m2/repository/io/github/afsm/afsm-viewmodel/0.1.0-SNAPSHOT/afsm-viewmodel-0.1.0-SNAPSHOT.pom
+sed -n '1,220p' ~/.m2/repository/io/github/afsm/afsm-graph-ksp/0.1.0-SNAPSHOT/afsm-graph-ksp-0.1.0-SNAPSHOT.pom
+```
+
+Conclusion:
+
+- POM packaging and internal dependency coordinates are correct for local consumption.
+- URL, license, SCM, and developer metadata are intentionally blocked on product ownership decisions.

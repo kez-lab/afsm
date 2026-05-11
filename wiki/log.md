@@ -329,3 +329,9 @@
 - Source: release-readiness autopilot loop after contribution guardrails.
 - Action: Added a canonical one-command local release verification script and updated public docs to use it.
 - Updated: `scripts/verify-release-local.sh`, `README.md`, `CONTRIBUTING.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Maven publication metadata audit
+
+- Source: release-readiness autopilot loop after local verification script.
+- Action: Inspected generated Maven Local POMs and documented which remote-publication metadata remains blocked on product decisions.
+- Updated: `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

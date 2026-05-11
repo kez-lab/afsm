@@ -32,6 +32,26 @@ ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
 
 `io.github.afsm` is a temporary pre-release group id for local evaluation.
 
+## Maven Local Metadata Audit
+
+Current generated POMs contain:
+
+| Module | Packaging | Internal dependencies resolve to coordinates | Name/description |
+|---|---:|---:|---:|
+| `afsm-core` | `jar` | None | Yes |
+| `afsm-runtime` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
+| `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
+| `afsm-graph-ksp` | `jar` | None | Yes |
+
+Current generated POMs do not yet contain:
+
+- Project URL.
+- License metadata.
+- SCM metadata.
+- Developer or organization metadata.
+
+Those fields should be added only after final product ownership decisions are made.
+
 ## Before Public Remote Publishing
 
 Required product decisions:
