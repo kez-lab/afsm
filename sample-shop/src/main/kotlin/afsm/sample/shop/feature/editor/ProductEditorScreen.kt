@@ -70,6 +70,7 @@ fun ProductEditorScreen(
         state.phase is ProductEditorPhase.Rejected
     val errorMessage = when (state.phase) {
         ProductEditorPhase.EditingDraft,
+        ProductEditorPhase.DraftSaved,
         is ProductEditorPhase.Rejected -> state.context.errorMessage
 
         else -> null

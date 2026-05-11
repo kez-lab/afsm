@@ -848,3 +848,23 @@ Verification:
 Conclusion:
 
 - ProductEditor remains behaviorally equivalent while making phase movement easier to read directly from the DSL machine body.
+
+## [2026-05-11] ProductEditor guarded transition cleanup
+
+Change:
+
+- Changed invalid `SubmitClicked` handling from `DraftSaved` to use `otherwise` instead of a second guarded `transitionTo`.
+- Kept valid submit as the single phase-changing branch to `ImageUploadInProgress`.
+- Display validation errors while in `DraftSaved` so the stayed invalid branch is visible to the user.
+- Added unit coverage for invalid submit from a saved draft.
+- Updated sample guide and wiki guidance to avoid competing `transitionTo` branches for validation failure.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --stacktrace
+```
+
+Conclusion:
+
+- The sample now better communicates the intended Afsm style: success transitions move phases; validation failure is a handled stayed branch.

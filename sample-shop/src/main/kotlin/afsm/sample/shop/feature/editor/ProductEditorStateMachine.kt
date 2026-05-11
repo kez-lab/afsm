@@ -86,10 +86,7 @@ private fun productEditorMachine(): ProductEditorMachine {
                     updateContext { normalizeDraftForSubmit() }
                 }
 
-                transitionTo(
-                    phase = ProductEditorPhase.EditingDraft,
-                    guard = { context.draft.form.validationError() != null },
-                ) {
+                otherwise {
                     updateContext { withValidationError() }
                 }
             }

@@ -107,6 +107,27 @@ class ProductEditorStateMachineTest {
     }
 
     @Test
+    fun `invalid submit from saved draft stays saved and records validation error`() {
+        val state = productEditorState(
+            phase = ProductEditorPhase.DraftSaved,
+            context = ProductEditorContext(
+                draft = validDraft.copy(
+                    form = validDraft.form.copy(description = "short"),
+                ),
+            ),
+        )
+
+        val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
+
+        assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
+        assertEquals(
+            "Description must be at least 10 characters.",
+            result.state.context.errorMessage,
+        )
+        assertEquals(emptyList(), result.commands)
+    }
+
+    @Test
     fun `image upload failure returns to editing phase with error in context`() {
         val state = productEditorState(
             phase = ProductEditorPhase.ImageUploadInProgress,
