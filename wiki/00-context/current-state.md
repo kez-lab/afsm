@@ -18,19 +18,19 @@ The current direction is:
 - A minimal Kotlin/JVM `afsm-core` project now exists and compiles with the v2 core API shape.
 - `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
 - A minimal coroutine-based `afsm-runtime` module now exists.
-- `AfsmHost` serializes non-suspending `dispatch(event)` calls through a FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially.
+- `AfsmHost` serializes non-suspending `dispatch(event)` calls through a bounded FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially on a separate command processor so suspended commands do not block later event reduction.
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
-- A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`.
+- A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`; graphable machines can now use the simpler `afsmHost(machine = StateMachine, ...)` overload.
 - A `:sample-shop` Android app module now exists to validate Afsm in a realistic Compose + Room shopping app.
 - The sample app uses Afsm for auth, product registration review/publish, and checkout retry flows, while keeping product list/detail/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
 - Public sample documentation now lives in `docs/sample-shop-afsm-guide.md`.
-- Auth now uses the executable DSL internally with `AuthPhase + AuthContext`, while preserving the Android-facing sealed `AuthState`.
+- Auth now uses the executable DSL directly with `typealias AuthState = AfsmState<AuthPhase, AuthContext>`.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
 - Afsm DSL public KDoc now explains phase/context/event/command/effect type parameters, runtime parameters, topology-only metadata parameters, guard behavior, branch ordering, and entry/exit execution order.
-- `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract from `AfsmMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
-- Deprecated pre-release aliases were removed from the public source surface. New code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmMachineAdapter`.
+- `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract, `AfsmGraphReducer<S, E, C, F>` as the graphable feature boundary, and `AfsmMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
+- Deprecated pre-release aliases and the temporary `AfsmMachineAdapter` base were removed from the public source surface. New graphable code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmState`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, guard fallback, DSL build validation, and UI-side effect emission.
 - The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `AfsmState<P, Context>` is now the standard phase/context state value. `AfsmMachine` directly implements `AfsmReducer<AfsmState<P, Context>, ...>` plus `AfsmGraphSource`.
@@ -58,6 +58,10 @@ The current direction is:
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 - ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL machine, removing the previous phase/context adapter mapping.
 - Kotlin `typealias` cannot share a same-named factory with the aliased constructor, so ProductEditor uses a lowercase `productEditorState()` factory for default initial state construction.
+- A shared `AfsmStateFactory` API was spiked and rejected for now; Kotlin singleton phase inference requires explicit `<Phase, Context>` arguments, so the small feature-local factory function remains clearer.
+- Auth, ProductEditor, and consumer smoke now expose graphable feature state machines as singleton `object`s through `AfsmGraphReducer<State, Event, Command, Effect>` aliases, avoiding repeated five-parameter `AfsmMachine<Phase, Context, Event, Command, Effect>` aliases at feature boundaries.
+- A five-perspective public API usability review concluded that Afsm should be presented as an Android executable extended statechart DSL for complex flows, with `afsmMachine { ... }` as the primary onboarding path and `AfsmReducer`/graph metadata as advanced reference concepts.
+- Runtime hardening now makes invalid transitions throw by default, adds `tryDispatch(event)`, bounds the default event queue to 64 events, and keeps command execution sequential without blocking event reduction.
 - A reference architecture review compared Afsm against XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance. The first hardening pass is now implemented: naming uses `AfsmReducer`/`AfsmMachine`, DSL output terminology is `command`, `onExit` exists, DSL build validation exists, topology metadata is richer, `AfsmHost` has a configurable command failure policy, and command cancellation remains explicit in feature commands/events.
 
 ## Core Architecture Position

@@ -32,9 +32,7 @@ Use a class annotation plus a small topology contract.
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
 Core types:
@@ -50,14 +48,21 @@ public annotation class AfsmGraph(
 public interface AfsmGraphSource {
     public val topology: AfsmTopology
 }
+
+public interface AfsmGraphReducer<S : Any, E : Any, C : Any, F : Any> :
+    AfsmReducer<S, E, C, F>,
+    AfsmGraphSource {
+    public val initialState: S
+}
 ```
 
-Why require `AfsmGraphSource`:
+Why keep graphability separate from plain reducers:
 
 - `AfsmReducer<S, E, C, F>` should stay small and should not force every simple reducer to expose graph metadata.
 - Only graphable state machines opt in.
 - KSP can validate a clear type contract.
 - The writer can work with `AfsmTopology`, not with the generic machine internals.
+- The processor validates the underlying `AfsmReducer + AfsmGraphSource` supertypes rather than only the nominal `AfsmGraphReducer` type so typealias-based declarations are supported.
 
 ## User Experience
 
@@ -65,9 +70,7 @@ The desired sample-shop usage should become:
 
 ```kotlin
 @AfsmGraph
-class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
 Then this should generate:
@@ -80,9 +83,7 @@ With a second class:
 
 ```kotlin
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
-class CheckoutStateMachine : AfsmMachineAdapter<...>(machine = checkoutMachine()) {
-    // mapping overrides
-}
+object CheckoutStateMachine : CheckoutMachine by checkoutMachine()
 ```
 
 The same task should also generate:
@@ -133,14 +134,19 @@ Valid:
 @AfsmGraph
 class ProductEditorStateMachine(
     private val machine: ProductEditorMachine = productEditorMachine(),
-) : AfsmGraphSource
+) : AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
+    override val initialState = machine.initialState
+    override val topology = machine.topology
+    override fun transition(state: ProductEditorState, event: ProductEditorEvent) =
+        machine.transition(state, event)
+}
 ```
 
 Valid:
 
 ```kotlin
 @AfsmGraph
-object CheckoutStateMachine : AfsmReducer<...>, AfsmGraphSource
+object CheckoutStateMachine : AfsmGraphReducer<...>
 ```
 
 Invalid:
@@ -170,7 +176,7 @@ internal object AfsmGeneratedGraphRegistry : AfsmGraphRegistry {
         AfsmGraphEntry(
             id = "ProductEditor",
             fileName = "ProductEditorStateMachine.mmd",
-            createTopology = { afsm.sample.shop.feature.editor.ProductEditorStateMachine().topology },
+            createTopology = { afsm.sample.shop.feature.editor.ProductEditorStateMachine.topology },
         ),
     )
 }
@@ -251,7 +257,7 @@ Current ProductEditor-only behavior:
 
 ```text
 generateAfsmMmd
--> ProductEditorStateMachine().topology.toMmd()
+-> ProductEditorStateMachine.topology.toMmd()
 ```
 
 Target registry behavior:

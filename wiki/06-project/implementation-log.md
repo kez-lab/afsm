@@ -888,3 +888,98 @@ Verification:
 Conclusion:
 
 - The DSL source now explains the public API directly at the call site without changing binary API.
+
+## [2026-05-11] AfsmMachineAdapter removal
+
+Change:
+
+- Removed `AfsmMachineAdapter` from `afsm-core`.
+- Migrated Auth from a custom sealed `AuthState` plus adapter mapping to `typealias AuthState = AfsmState<AuthPhase, AuthContext>`.
+- Updated Auth ViewModel initial state, Auth transition tests, public docs, changelog, and wiki guidance.
+- Moved the authenticated `UserSession` into the `Authenticated` phase payload and cleared Auth form context on success so password input is not retained.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+./gradlew :afsm-core:apiDump --no-daemon
+```
+
+Conclusion:
+
+- Auth and ProductEditor now both demonstrate the direct `AfsmState<Phase, Context>` path, removing the last sample need for an adapter base.
+
+## [2026-05-11] AfsmState factory spike
+
+Change:
+
+- Spiked a core `AfsmStateFactory` / `afsmStateFactory(...)` API locally against Auth and ProductEditor.
+- Verified that the callable factory shape can preserve `authState()` / `productEditorState()` call sites.
+- Rejected the API before keeping it because singleton phase type inference required explicit `<Phase, Context>` arguments and the public API cost outweighed the small local boilerplate reduction.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Continue using small feature-local factory functions for default `AfsmState<Phase, Context>` construction.
+
+## [2026-05-11] AfsmGraphReducer feature-boundary cleanup
+
+Change:
+
+- Added `AfsmGraphReducer<S, E, C, F>` to `afsm-core`.
+- Made `AfsmMachine<P, X, E, C, F>` extend `AfsmGraphReducer<AfsmState<P, X>, E, C, F>`.
+- Refactored Auth/ProductEditor state machines from no-arg classes to singleton objects.
+- Changed Auth/ProductEditor machine aliases from five-parameter `AfsmMachine<Phase, Context, Event, Command, Effect>` aliases to four-parameter `AfsmGraphReducer<State, Event, Command, Effect>` aliases.
+- Updated ViewModels to use `StateMachine.initialState` and the singleton reducer object.
+- Updated consumer smoke to use `AfsmGraphReducer`.
+- Kept KSP validation on the underlying `AfsmReducer + AfsmGraphSource` supertypes because KSP does not reliably expose `AfsmGraphReducer` through typealias declarations.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --warning-mode all --no-daemon
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd apiCheck --warning-mode all --no-daemon
+./gradlew :sample-shop:assembleDebug --warning-mode all --no-daemon
+./scripts/verify-release-local.sh
+git diff --check
+```
+
+Conclusion:
+
+- The feature-boundary code now reads in terms of screen state instead of repeating the internal phase/context split, while preserving graph generation and runtime behavior.
+- The full local release gate still passes after the API cleanup, including Maven Local publication and the external `consumer-smoke` compile/KSP check.
+
+## [2026-05-11] Public API usability hardening pass
+
+Change:
+
+- Recorded the five-perspective public API usability review in the meetings wiki.
+- Added `ViewModel.afsmHost(machine = ...)` for graphable machines.
+- Updated Auth, ProductEditor, and consumer smoke ViewModels to use the machine overload.
+- Changed `AfsmHost` command handling so commands remain sequential but no longer block event reduction.
+- Added `AfsmHost.tryDispatch(event)`.
+- Bounded the default event queue with `AfsmConfig.eventQueueCapacity = 64`.
+- Changed the default invalid transition policy to `Throw`.
+- Rewrote README onboarding around the `afsmMachine { ... }` happy path.
+
+Verification:
+
+```bash
+./gradlew --stop && ./gradlew :afsm-runtime:clean :afsm-runtime:test --no-daemon
+./gradlew :afsm-viewmodel:compileDebugKotlin :sample-shop:compileDebugKotlin --no-daemon
+./gradlew :afsm-runtime:apiDump :afsm-viewmodel:apiDump --no-daemon
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest :sample-shop:testDebugUnitTest :sample-shop:compileDebugKotlin --warning-mode all --no-daemon
+./gradlew :sample-shop:generateAfsmMmd apiCheck :sample-shop:assembleDebug --warning-mode all --no-daemon
+./scripts/verify-release-local.sh
+```
+
+Conclusion:
+
+- The standard ViewModel setup is shorter and easier to read.
+- Runtime semantics are safer for Android UI responsiveness.
+- The full local release gate passes after the docs/API updates, including API validation, sample APK assembly, Maven Local publication, and external consumer smoke.

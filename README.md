@@ -64,157 +64,107 @@ dependencies {
 
 `io.github.afsm` is the current pre-release group id used for local publishing. Final Maven Central coordinates still need product approval.
 
-## Core Concepts
+## Recommended Path
+
+For graphable Android flows, start with `afsmMachine { ... }`.
+
+The core model is intentionally small:
 
 | Concept | Meaning |
 |---|---|
-| `State` | Full UI/business state exposed to Android |
-| `Phase` | Finite graph state inside an executable machine |
-| `Context` | Extended data carried across phases |
+| `Phase` | Finite state diagram node, such as `Editing` or `Saving` |
+| `Context` | Extended state data carried across phases, not `android.content.Context` |
 | `Event` | User input or command result |
 | `Command` | Host-executed work, such as repository calls or timers |
-| `Effect` | Optional UI-side one-shot output |
-| `AfsmReducer` | Low-level pure `state + event -> transition` contract |
-| `AfsmMachine` | DSL-built phase/context machine with topology metadata |
 
-## Minimal Reducer
+`State` is the Android-facing snapshot:
 
 ```kotlin
-sealed interface LoginState {
-    data object Editing : LoginState
-    data object Submitting : LoginState
-    data object LoggedIn : LoginState
+typealias DraftState = AfsmState<DraftPhase, DraftContext>
+```
+
+`Effect` is optional. Use it only for UI one-shot outputs such as navigation or
+closing a screen.
+
+## Quickstart
+
+Define the feature contract:
+
+```kotlin
+sealed interface DraftPhase {
+    data object Editing : DraftPhase
+    data object Saving : DraftPhase
+    data object Saved : DraftPhase
 }
 
-sealed interface LoginEvent {
-    data object SubmitClicked : LoginEvent
-    data object LoginSucceeded : LoginEvent
-    data class LoginFailed(val message: String) : LoginEvent
+data class DraftContext(
+    val title: String = "",
+)
+
+typealias DraftState = AfsmState<DraftPhase, DraftContext>
+
+sealed interface DraftEvent {
+    data class TitleChanged(val value: String) : DraftEvent
+    data object SaveClicked : DraftEvent
+    data object Saved : DraftEvent
 }
 
-sealed interface LoginCommand {
-    data object SubmitLogin : LoginCommand
-}
-
-typealias LoginTransition =
-    AfsmTransition<LoginState, LoginCommand, AfsmNoEffect>
-
-class LoginReducer :
-    AfsmReducer<LoginState, LoginEvent, LoginCommand, AfsmNoEffect> {
-
-    override fun transition(
-        state: LoginState,
-        event: LoginEvent,
-    ): LoginTransition {
-        return when (state) {
-            LoginState.Editing -> when (event) {
-                LoginEvent.SubmitClicked -> Afsm.transitionTo(
-                    state = LoginState.Submitting,
-                    commands = listOf(LoginCommand.SubmitLogin),
-                )
-
-                LoginEvent.LoginSucceeded,
-                is LoginEvent.LoginFailed -> Afsm.invalid(
-                    state = state,
-                    reason = "Login result before submit.",
-                )
-            }
-
-            LoginState.Submitting -> when (event) {
-                LoginEvent.LoginSucceeded -> Afsm.transitionTo(LoginState.LoggedIn)
-                is LoginEvent.LoginFailed -> Afsm.transitionTo(LoginState.Editing)
-                LoginEvent.SubmitClicked -> Afsm.ignore(
-                    state = state,
-                    reason = "Duplicate submit.",
-                )
-            }
-
-            LoginState.LoggedIn -> Afsm.ignore(
-                state = state,
-                reason = "Login already completed.",
-            )
-        }
-    }
+sealed interface DraftCommand {
+    data class SaveDraft(val title: String) : DraftCommand
 }
 ```
 
-## Graphable Machine DSL
-
-Use `AfsmMachine` when the flow should produce a state diagram.
+Define the machine:
 
 ```kotlin
-typealias ProductEditorState =
-    AfsmState<ProductEditorPhase, ProductEditorContext>
+private typealias DraftMachine =
+    AfsmGraphReducer<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
 
-private typealias ProductEditorMachine =
-    AfsmMachine<
-        ProductEditorPhase,
-        ProductEditorContext,
-        ProductEditorEvent,
-        ProductEditorCommand,
-        ProductEditorEffect,
-        >
+@AfsmGraph(
+    id = "Draft",
+    fileName = "DraftStateMachine.mmd",
+)
+object DraftStateMachine : DraftMachine by draftMachine()
 
-private fun productEditorMachine(): ProductEditorMachine {
+private fun draftMachine(): DraftMachine {
     return afsmMachine {
         initial(
-            phase = ProductEditorPhase.EditingDraft,
-            context = ProductEditorContext(),
+            phase = DraftPhase.Editing,
+            context = DraftContext(),
         )
 
-        state(ProductEditorPhase.EditingDraft) {
-            on<ProductEditorEvent.TitleChanged> {
+        state(DraftPhase.Editing) {
+            on<DraftEvent.TitleChanged> {
                 stay {
                     updateContext {
-                        copy(draft = draft.withTitle(event.value))
+                        copy(title = event.value)
                     }
                 }
             }
 
-            on<ProductEditorEvent.SubmitClicked> {
-                transitionTo(
-                    phase = ProductEditorPhase.ImageUploadInProgress,
-                    guardLabel = "valid draft",
-                    commandLabels = listOf("StartImageUpload"),
-                    guard = { context.draft.isValid() },
-                ) {
-                    updateContext {
-                        copy(draft = draft.normalized(), errorMessage = null)
-                    }
-                }
-
-                otherwise {
-                    updateContext {
-                        copy(errorMessage = draft.validationMessage())
-                    }
-                }
+            on<DraftEvent.SaveClicked> {
+                transitionTo(DraftPhase.Saving)
             }
         }
 
-        state(ProductEditorPhase.ImageUploadInProgress) {
+        state(DraftPhase.Saving) {
             onEnter {
-                command(ProductEditorCommand.StartImageUpload(context.draft))
+                command(DraftCommand.SaveDraft(context.title))
             }
 
-            onExit {
-                command(ProductEditorCommand.CancelImageUpload)
+            on<DraftEvent.Saved> {
+                transitionTo(DraftPhase.Saved)
             }
+        }
 
-            on<ProductEditorEvent.ImageUploadSucceeded> {
-                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
-                    phase = {
-                        ProductEditorPhase.ReviewSubmissionInProgress(
-                            uploadToken = event.uploadToken,
-                        )
-                    },
-                )
-            }
+        state(DraftPhase.Saved) {
         }
     }
 }
 ```
 
-`transitionTo(...)` changes phase. `stay(...)` handles an event without changing phase. Phase-changing transitions run in this order:
+`transitionTo(...)` changes phase. `stay(...)` handles an event without changing
+phase. Phase-changing transitions run in this order:
 
 ```text
 onExit -> transition block -> onEnter
@@ -225,32 +175,41 @@ Initial state construction does not automatically run `onEnter`. Trigger startup
 ## ViewModel Integration
 
 ```kotlin
-class ProductEditorViewModel(
-    private val repository: ProductRepository,
+class DraftViewModel(
+    private val repository: DraftRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        initialState = productEditorState(),
-        reducer = ProductEditorStateMachine(),
-        commandHandler = { command: ProductEditorCommand, dispatch ->
+        machine = DraftStateMachine,
+        commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
-                is ProductEditorCommand.StartImageUpload -> {
-                    val token = repository.upload(command.draft)
-                    dispatch(ProductEditorEvent.ImageUploadSucceeded(token))
+                is DraftCommand.SaveDraft -> {
+                    repository.save(command.title)
+                    dispatch(DraftEvent.Saved)
                 }
             }
         },
     )
 
-    val state: StateFlow<ProductEditorState> = host.state
-    val effects: Flow<ProductEditorEffect> = host.effects
+    val state: StateFlow<DraftState> = host.state
 
-    fun onEvent(event: ProductEditorEvent) {
+    fun onEvent(event: DraftEvent) {
         host.dispatch(event)
     }
 }
 ```
 
 The UI renders `state` and sends events up. Navigation, snackbar display, focus, scroll, and animation state should stay in the UI unless they are part of the business flow.
+
+If the initial state comes from navigation arguments or `SavedStateHandle`, use
+the lower-level overload:
+
+```kotlin
+private val host = afsmHost(
+    initialState = CheckoutState(productId = productId),
+    reducer = CheckoutStateMachine(),
+    commandHandler = checkoutCommandHandler,
+)
+```
 
 ## Graph Generation
 
@@ -261,9 +220,7 @@ Annotate graphable machines:
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
 The sample app generates Mermaid state diagrams with:
@@ -282,12 +239,24 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ## Runtime Policies
 
 - Dispatch is non-suspending and serialized through FIFO event processing.
-- Commands execute sequentially in the MVP runtime.
+- Commands execute sequentially without blocking later event reduction.
 - Command results must dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
+- Invalid transitions throw by default so flow bugs are visible during development.
 - `CancellationException` is always rethrown.
 - Effects are best-effort one-shot outputs with no replay by default.
+
+## Advanced APIs
+
+Use `AfsmReducer` directly when a screen has a custom state shape or does not
+need generated state diagrams. Use `AfsmGraphReducer` as a feature-local alias
+for graphable machines so app code can refer to `FeatureState` instead of
+repeating `Phase + Context` generics.
+
+Graph generation currently derives phase/event topology automatically. Guard,
+command, and effect labels are explicit metadata and should be added only when
+the diagram needs that detail.
 
 ## Verification
 

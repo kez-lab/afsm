@@ -19,16 +19,19 @@ Initial pre-release candidate.
 - `AfsmTransition<S, C, F>` with state, commands, effects, and decision.
 - `AfsmDecision` with `Transitioned`, `Stayed`, `Ignored`, and `Invalid`.
 - `AfsmNoEffect` marker for machines that do not emit UI-side effects.
+- `AfsmGraphReducer<S, E, C, F>` graphable reducer boundary with an initial state.
 - `AfsmState<P, X>` phase/context state model.
 - `AfsmMachine<P, X, E, C, F>` executable DSL machine with topology metadata.
 - `afsmMachine { ... }` DSL with `initial`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `ignore`, `invalid`, `onEnter`, `onExit`, `updateContext`, `command`, and `effect`.
 - `AfsmTopology`, `AfsmTopologyTransition`, and Mermaid `.mmd` export support.
 - `@AfsmGraph`, `AfsmGraphSource`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
 - `afsm-runtime` coroutine host with serialized event dispatch.
-- Sequential command execution and command-result event dispatch.
+- Sequential command execution that does not block later event reduction.
+- `AfsmHost.tryDispatch(event)` for non-throwing event queue attempts.
+- Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
 - Configurable invalid transition and command failure policies.
 - Best-effort one-shot effect flow delivery.
-- `afsm-viewmodel` with `ViewModel.afsmHost(...)`.
+- `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including a graphable machine overload.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
@@ -44,6 +47,7 @@ Initial pre-release candidate.
   - `afsmStateChart`
   - `AfsmStateChartMachine`
   - `AfsmChartState`
+- Temporary `AfsmMachineAdapter` base before first publication; graphable machines now use `AfsmState<Phase, Context>` directly.
 
 ### Known Issues
 

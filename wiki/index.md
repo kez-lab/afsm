@@ -57,6 +57,7 @@ updated: 2026-05-10
 ## Meetings
 
 - [[08-meetings/2026-05-01-afsm-api-pseudo-implementation-review|Afsm API Pseudo Implementation Review]] - Review of signup pseudo-implementation and Afsm API ergonomics.
+- [[08-meetings/2026-05-11-afsm-public-api-usability-review|Afsm Public API Usability Review]] - Five-perspective review of public API complexity, runtime risks, graph semantics, and onboarding.
 
 ## Raw Sources
 

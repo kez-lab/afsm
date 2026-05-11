@@ -588,3 +588,85 @@ Consequences:
 - `sample-shop` is excluded because it is not a published library module.
 - Published modules now have committed API baselines under their module-local `api/` directories.
 - Some `@PublishedApi internal` DSL helpers appear in the ABI baseline because public inline/reified DSL functions can depend on them.
+
+## [2026-05-11] Remove AfsmMachineAdapter before public API stabilization
+
+Decision: Remove `AfsmMachineAdapter` from `afsm-core` and make `AfsmState<Phase, Context>` the single recommended state model for graphable `AfsmMachine` usage.
+
+Rationale:
+
+- The adapter encouraged two state models for one screen: a custom UI sealed state plus the executable machine's `AfsmState<Phase, Context>`.
+- That mapping layer added boilerplate and made it harder to explain the primary Afsm path.
+- `AfsmMachine` already implements `AfsmReducer<AfsmState<Phase, Context>, ...>` and `AfsmGraphSource`, so direct delegation is enough for graphable machines.
+
+Consequences:
+
+- Auth now follows the same state shape as ProductEditor through `typealias AuthState = AfsmState<AuthPhase, AuthContext>`.
+- Custom sealed UI states remain possible, but teams must own a custom `AfsmReducer` wrapper instead of relying on a core adapter base.
+- Public docs and API dumps no longer expose `AfsmMachineAdapter`.
+
+## [2026-05-11] Reject shared AfsmStateFactory for now
+
+Decision: Do not add a shared `AfsmStateFactory` API for `authState()` / `productEditorState()` style feature factories at this stage.
+
+Rationale:
+
+- The spike compiled only after declaring explicit type arguments such as `afsmStateFactory<AuthPhase, AuthContext>(...)`; otherwise Kotlin inferred singleton object phases too narrowly.
+- The API would add a new public class plus factory function to remove only a small feature-local helper.
+- A plain feature-local function is more obvious to Android/Kotlin users than a callable factory object stored in a `val`.
+
+Consequences:
+
+- Keep feature-local lowercase state factory functions such as `authState()` and `productEditorState()`.
+- Revisit only if many more samples prove that this factory pattern becomes a repeated, meaningful burden.
+
+## [2026-05-11] Add AfsmGraphReducer for feature-boundary graphable machines
+
+Decision: Add `AfsmGraphReducer<S, E, C, F>` as the state-based graphable reducer boundary and make `AfsmMachine<P, X, E, C, F>` extend it.
+
+Rationale:
+
+- Feature code already names `State = AfsmState<Phase, Context>`, so forcing every feature-boundary machine alias to repeat both `Phase` and `Context` is unnecessary noise.
+- `AfsmGraphReducer<State, Event, Command, Effect>` preserves the important runtime contract while hiding the lower-level phase/context split at the boundary.
+- The interface is a small composition of existing responsibilities: reducer behavior, graph metadata, and initial state.
+- Stateless sample machines can be singleton `object`s because dependencies live in command handlers, not in machines.
+
+Consequences:
+
+- Auth/ProductEditor now use `AfsmGraphReducer<FeatureState, FeatureEvent, FeatureCommand, FeatureEffect>` aliases.
+- `AuthStateMachine` and `ProductEditorStateMachine` are singleton objects delegated to their DSL-built machines.
+- ViewModels can use `StateMachine.initialState` instead of separate initial-state factory calls.
+- `AfsmMachine` remains the DSL-built phase/context implementation type; `AfsmGraphReducer` is the feature-boundary type.
+
+## [2026-05-11] Prioritize public API usability hardening
+
+Decision: Present `afsmMachine { ... }` as the primary public path for complex graphable Android flows, and keep low-level reducer and graph metadata APIs as advanced/reference concepts.
+
+Rationale:
+
+- A five-perspective review found that the current API direction is sound, but first-time users see too many concepts if README introduces reducer, machine, graph reducer, topology, KSP, phase, context, command, and effect at once.
+- The simplest useful story is `Phase + Context + Event + Command` hosted by `ViewModel.afsmHost(machine = ...)`.
+- `AfsmGraphReducer` remains useful as a feature-boundary alias, but it should not be the first concept in onboarding.
+
+Consequences:
+
+- README now starts with the graphable DSL happy path instead of a low-level reducer example.
+- `afsm-viewmodel` adds `ViewModel.afsmHost(machine = ...)` so standard machines can be hosted without repeating `initialState` and `reducer`.
+- Public docs now describe `AfsmReducer` as an advanced/custom-state escape hatch.
+
+## [2026-05-11] Harden runtime defaults for public use
+
+Decision: Make invalid transitions fail fast by default, bound the default event queue, add `tryDispatch(event)`, and run sequential command handling outside the event reduction loop.
+
+Rationale:
+
+- Silent invalid transitions with `Record` plus no logger can hide flow bugs during development.
+- A non-suspending public dispatch API should not be backed by an unbounded event queue by default.
+- Android command handlers often suspend on repository, database, or timer work; those commands should not prevent later UI events from being reduced.
+
+Consequences:
+
+- `AfsmConfig.invalidTransitionPolicy` now defaults to `Throw`.
+- `AfsmConfig.eventQueueCapacity` defaults to `64`.
+- `AfsmHost.tryDispatch(event)` returns whether an event was accepted.
+- `AfsmCommandExecutionPolicy.Sequential` now means commands execute one at a time in emission order, but through a separate command processor.

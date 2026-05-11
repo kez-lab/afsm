@@ -8,7 +8,6 @@ updated: 2026-05-11
 ## Architecture
 
 - Should UI one-shot actions be modeled as `Effect`, as terminal `State`, or through UI state flags depending on the case?
-- How strict should invalid transitions be: ignored result, explicit error, or debug-only assertion?
 - Should state machines support hierarchical/nested state machines from the start?
 
 ## Android Integration
@@ -76,10 +75,10 @@ Resolved:
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; guard labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
-- Use `AfsmReducer<S, E, C, F>` for the low-level host contract and `AfsmMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
+- Use `AfsmReducer<S, E, C, F>` for the low-level host contract, `AfsmGraphReducer<S, E, C, F>` for graphable feature boundaries, and `AfsmMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
 - Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
-- `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features with this exact shape can use a typealias and delegate directly to the machine; custom sealed UI states can still adapt through `AfsmMachineAdapter`.
+- `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
 - The DSL includes flat `onExit`; transition execution order is `onExit -> transition block -> onEnter` for phase-changing transitions.
 - Initial state construction does not run `onEnter`; startup work should be triggered by an explicit event such as `ScreenEntered` or by a future dedicated `initialTransition` API if needed.
 - `AfsmHost` command-handler exceptions use `AfsmCommandFailurePolicy`: `Throw` by default for programmer errors, `Record` when a resilient host should log and continue. `CancellationException` is always rethrown.
@@ -92,3 +91,6 @@ Resolved:
 - The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.
 - `AfsmChartState` has been removed before public API stabilization; use `AfsmState`.
 - Same-named factory functions conflict with Kotlin typealias constructors, so features should use lowercase factories such as `productEditorState()` when they need default initial state values.
+- Do not add a shared `AfsmStateFactory` API yet; the spike showed it needs explicit `<Phase, Context>` type arguments for singleton phase hierarchies and does not justify the extra public concept.
+- Invalid transitions should throw by default for public runtime use so flow bugs are visible during development. Resilient production hosts can opt into `AfsmInvalidTransitionPolicy.Record` with a logger.
+- Command execution remains sequential, but it no longer blocks later event reduction; commands run through a separate command processor and dispatch results back into the event queue.

@@ -109,11 +109,11 @@ Current naming:
 | Type | Role |
 |---|---|
 | `AfsmReducer<S, E, C, F>` | Host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration. It receives the full screen state `S`. |
+| `AfsmGraphReducer<S, E, C, F>` | Reducer with an initial state and graph metadata. Use this at feature boundaries for graphable machines once `State = AfsmState<Phase, Context>` has been named. |
 | `AfsmState<P, X>` | Standard Afsm state value: finite `phase` plus extended `context`. |
-| `AfsmMachine<P, X, E, C, F>` | Executable machine definition built by the DSL. It is also an `AfsmReducer<AfsmState<P, X>, E, C, F>` and an `AfsmGraphSource`. |
-| `AfsmMachineAdapter<S, P, X, E, C, F>` | Compatibility adapter that maps a custom Android-facing state `S` to `AfsmState<P, X>`, delegates transition execution, and exposes topology automatically. |
+| `AfsmMachine<P, X, E, C, F>` | Executable machine definition built by the DSL. It implements `AfsmGraphReducer<AfsmState<P, X>, E, C, F>`. |
 
-This means Android developers can either use the standard Afsm state directly:
+This means Android developers use the standard Afsm state directly:
 
 ```kotlin
 typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
@@ -124,11 +124,11 @@ fun productEditorState(
 ): ProductEditorState = AfsmState(phase = phase, context = context)
 ```
 
-or keep a custom Android-facing state and adapt it through `AfsmMachineAdapter`.
+Custom sealed UI states are still possible through a feature-owned `AfsmReducer`, but the core API no longer ships an adapter base because it creates a second state model and mapping boilerplate.
 
 The same-named factory pattern does not work with Kotlin `typealias` because it conflicts with the aliased constructor. Use a feature-local lowercase factory such as `productEditorState()` for defaults.
 
-Pre-release compatibility aliases were removed before public documentation. Public examples should use only `AfsmReducer`, `AfsmMachine`, `afsmMachine`, `AfsmState`, and `AfsmMachineAdapter`.
+Pre-release compatibility aliases were removed before public documentation. Public examples should use only `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmState`.
 
 ## Ignore Semantics
 
@@ -145,13 +145,10 @@ Omitting an event handler is not the same as `ignore(...)`.
 Target developer experience:
 
 ```kotlin
-val ProductEditorMachine = afsmMachine<
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-> {
+private typealias ProductEditorMachine =
+    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+
+private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
     initial(
         phase = ProductEditorPhase.EditingDraft,
         context = ProductEditorContext(),
@@ -254,13 +251,10 @@ data class ProductEditorContext(
 Graphable machine excerpt:
 
 ```kotlin
-val ProductEditorMachine = afsmMachine<
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-> {
+private typealias ProductEditorMachine =
+    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+
+private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
     initial(ProductEditorPhase.EditingDraft, ProductEditorContext())
 
     state(ProductEditorPhase.EditingDraft) {
@@ -393,7 +387,8 @@ The v3 DSL compiles into an `AfsmMachine` definition.
 Execution contract:
 
 ```kotlin
-interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> {
+interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
+    AfsmGraphReducer<AfsmState<P, X>, E, C, F> {
     val initialState: AfsmState<P, X>
     val topology: AfsmTopology
 
@@ -419,12 +414,10 @@ fun productEditorState(
     context: ProductEditorContext = ProductEditorContext(),
 ): ProductEditorState = AfsmState(phase = phase, context = context)
 
-class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
-If a feature needs a custom Android-facing sealed state, it can still wrap the machine with `AfsmMachineAdapter` and map that state to/from `AfsmState<Phase, Context>`.
+If a feature needs a custom Android-facing sealed state, it can implement a feature-owned `AfsmReducer`; public examples should prefer `AfsmState<Phase, Context>` so topology, runtime state, and ViewModel state remain one model.
 
 `AfsmHost` can stay conceptually the same:
 
@@ -447,8 +440,7 @@ class ProductEditorViewModel(
     private val productRepository: ProductRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        initialState = productEditorState(),
-        reducer = ProductEditorStateMachine(),
+        machine = ProductEditorStateMachine,
         commandHandler = { command, dispatch ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
@@ -582,7 +574,7 @@ Result on 2026-05-09:
 - Migrated real `sample-shop` ProductEditor away from `AfsmPhasedStateMachine` and `ProductEditorPhaseEntryPolicy`.
 - Kept `ProductEditorState` conceptually as `ProductEditorPhase + ProductEditorContext`; this was later made explicit with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
 - Wrapped the DSL `AfsmMachine<ProductEditorPhase, ProductEditorContext, ...>` in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmReducer<ProductEditorState, ...>`.
-- Added `AfsmMachineAdapter` to hide repetitive topology forwarding and machine-state adaptation from feature state machines.
+- Added `AfsmMachineAdapter` during the spike to hide topology forwarding and state adaptation, then removed it before public API stabilization because it encouraged two state models.
 - Added a ProductEditor unit test that verifies topology export without sample events.
 - Android CLI smoke verification passed after the migration.
 

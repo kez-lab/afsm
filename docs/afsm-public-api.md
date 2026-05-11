@@ -28,7 +28,7 @@ Removed pre-release aliases:
 - `AfsmStateMachine` -> use `AfsmReducer`
 - `AfsmStateChart` -> use `AfsmMachine`
 - `afsmStateChart` -> use `afsmMachine`
-- `AfsmStateChartMachine` -> use `AfsmMachineAdapter`
+- `AfsmStateChartMachine` -> use `AfsmMachine` with `AfsmState<Phase, Context>`
 - `AfsmChartState` -> use `AfsmState`
 
 Because Afsm has not been published yet, these aliases are removed before the first public release instead of kept as deprecated API.
@@ -72,6 +72,19 @@ fun interface AfsmReducer<S : Any, E : Any, C : Any, F : Any> {
 
 Use this for simple or custom state shapes.
 
+### AfsmGraphReducer
+
+```kotlin
+interface AfsmGraphReducer<S : Any, E : Any, C : Any, F : Any> :
+    AfsmReducer<S, E, C, F>,
+    AfsmGraphSource {
+    val initialState: S
+}
+```
+
+Use this at feature boundaries for graphable machines after the feature has
+named its state type.
+
 ### AfsmState
 
 ```kotlin
@@ -87,11 +100,21 @@ Use this for graphable machines where `phase` is the finite graph state and `con
 
 ```kotlin
 interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmReducer<AfsmState<P, X>, E, C, F>,
-    AfsmGraphSource {
+    AfsmGraphReducer<AfsmState<P, X>, E, C, F> {
     val initialState: AfsmState<P, X>
     override val topology: AfsmTopology
 }
+```
+
+At feature boundaries, prefer a state-based alias so `Phase + Context` stays
+collapsed behind the feature's state type:
+
+```kotlin
+typealias ProductEditorState =
+    AfsmState<ProductEditorPhase, ProductEditorContext>
+
+private typealias ProductEditorMachine =
+    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 ```
 
 Build it with:
@@ -206,6 +229,7 @@ Public outputs:
 val state: StateFlow<S>
 val effects: Flow<F>
 fun dispatch(event: E)
+fun tryDispatch(event: E): Boolean
 fun close()
 ```
 
@@ -213,9 +237,11 @@ Runtime guarantees:
 
 - `dispatch(event)` is non-suspending.
 - Events are processed serially in FIFO order.
-- Commands are executed sequentially.
+- Commands are executed sequentially without blocking later event reduction.
 - Commands may dispatch follow-up events.
 - Follow-up events are queued, not re-entered recursively.
+- `tryDispatch(event)` returns `false` when the host is closed or the event
+  queue is full.
 
 ### AfsmCommandHandler
 
@@ -232,13 +258,14 @@ Command handlers should convert domain results and failures into typed events.
 ```kotlin
 class AfsmConfig(
     val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
-        AfsmInvalidTransitionPolicy.Record,
+        AfsmInvalidTransitionPolicy.Throw,
     val commandExecutionPolicy: AfsmCommandExecutionPolicy =
         AfsmCommandExecutionPolicy.Sequential,
     val commandFailurePolicy: AfsmCommandFailurePolicy =
         AfsmCommandFailurePolicy.Throw,
     val effectDelivery: AfsmEffectDelivery =
         AfsmEffectDelivery.Default,
+    val eventQueueCapacity: Int = 64,
     val logger: AfsmLogger =
         AfsmLogger.None,
 )
@@ -254,12 +281,22 @@ Command failure policy:
 
 ```kotlin
 fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
+    machine: AfsmGraphReducer<S, E, C, F>,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C, F>
+
+fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
     initialState: S,
     reducer: AfsmReducer<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 ```
+
+Use the `machine` overload for the standard graphable DSL path. Use the
+`initialState + reducer` overload when the initial state is dynamic, such as
+when it is derived from navigation arguments or `SavedStateHandle`.
 
 The helper only supplies `viewModelScope`. It does not own navigation, DI, Compose policy, or `SavedStateHandle`.
 
@@ -270,15 +307,17 @@ The helper only supplies `viewModelScope`. It does not own navigation, DI, Compo
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
-KSP discovers annotated classes that implement both:
+KSP discovers annotated classes or objects that implement the graphable reducer
+contract. Author code should prefer:
 
-- `AfsmReducer<*, *, *, *>`
-- `AfsmGraphSource`
+- `AfsmGraphReducer<*, *, *, *>`
+
+`AfsmMachine` implements `AfsmGraphReducer` automatically. The processor
+validates the underlying `AfsmReducer + AfsmGraphSource` supertypes so
+typealias-based declarations remain supported.
 
 and generates a module-local graph registry.
 

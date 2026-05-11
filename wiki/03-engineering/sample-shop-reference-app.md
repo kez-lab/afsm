@@ -61,8 +61,8 @@ Auth files:
 
 Current implementation:
 
-- `AuthState` remains the Android-facing sealed state model.
-- `AuthStateMachine` internally uses the executable DSL with `AuthPhase + AuthContext`.
+- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthContext>`.
+- `AuthStateMachine` directly delegates to the executable DSL machine.
 - `AuthStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
 - `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
 
@@ -181,7 +181,7 @@ Current feedback from the sample:
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
 - The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
-- A custom sealed Android-facing state is still possible through `AfsmMachineAdapter`, as shown by Auth.
+- Auth now confirms the same direct `AfsmState<Phase, Context>` approach works for simpler flows too.
 - A Compose/lifecycle effect collection helper or official snippet is now worth considering.
 
 ## Verification

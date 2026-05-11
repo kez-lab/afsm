@@ -353,3 +353,33 @@
 - Source: user feedback that Afsm DSL KDoc did not explain function parameters.
 - Action: Added detailed KDoc for public DSL builders, branch APIs, scopes, runtime parameters, and topology metadata parameters.
 - Updated: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | AfsmMachineAdapter removal
+
+- Source: user request to remove `AfsmMachineAdapter` and report any remaining boilerplate.
+- Action: Removed the adapter from `afsm-core`, migrated Auth to direct `AfsmState<AuthPhase, AuthContext>` usage, refreshed API dump, and synchronized public/wiki docs.
+- Updated: `afsm-core/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt`, `CHANGELOG.md`, `docs/afsm-public-api.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] decision | AfsmState factory spike
+
+- Source: user request to validate whether `authState()` / `productEditorState()` boilerplate should be commonized.
+- Action: Spiked `AfsmStateFactory`, found the required explicit singleton phase type arguments too costly, rejected the public API, and documented the conclusion.
+- Updated: `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | AfsmGraphReducer feature-boundary cleanup
+
+- Source: user request to reduce `ProductEditorMachine` / `AuthMachine` five-generic typealias repetition and continue senior-level API hardening.
+- Action: Added `AfsmGraphReducer`, made `AfsmMachine` extend it, migrated Auth/ProductEditor/consumer-smoke graphable machines to state-based aliases and singleton objects, updated docs/wiki guidance, and re-ran the local release gate including Maven Local consumer smoke.
+- Updated: `afsm-core/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `consumer-smoke/`, `README.md`, `docs/afsm-public-api.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/01-product/android-fsm-library-strategy.md`, `wiki/03-engineering/android-fsm-architecture.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] meeting | Afsm Public API Usability Review
+
+- Source: user request to run five sub-agent reviews of public API complexity and usability.
+- Action: Recorded the review verdict, common findings, runtime risks, and usability hardening plan.
+- Updated: `wiki/08-meetings/2026-05-11-afsm-public-api-usability-review.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Public API usability hardening
+
+- Source: Afsm public API usability review and user request to prioritize simple, understandable usage.
+- Action: Added `ViewModel.afsmHost(machine = ...)`, changed standard sample usage to the simpler overload, hardened `AfsmHost` command/event/invalid defaults, refreshed README onboarding, and updated API docs/wiki.
+- Updated: `afsm-runtime/`, `afsm-viewmodel/`, `sample-shop/`, `consumer-smoke/`, `README.md`, `docs/afsm-public-api.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

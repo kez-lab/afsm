@@ -68,8 +68,10 @@ TextField/Button interaction
 
 Contract:
 
-- `AuthState` remains the Android-facing sealed state model: `Editing`, `Submitting`, and `Authenticated`.
-- `AuthStateMachine` now uses the executable DSL internally with `AuthPhase + AuthContext`.
+- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthContext>`.
+- `AuthPhase` contains the finite graph states: `Editing`, `Submitting`, and `Authenticated`.
+- `AuthContext` keeps mode, form, and error data outside the finite phase; the terminal `Authenticated` phase carries its `UserSession` payload.
+- `AuthStateMachine` uses the executable DSL directly with `AuthPhase + AuthContext`.
 - `AuthStateMachine` is annotated with `@AfsmGraph`, so KSP writes `AuthStateMachine.mmd` through the generated registry.
 - `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
@@ -80,8 +82,7 @@ Key usage shape:
 
 ```kotlin
 private val host = afsmHost(
-    initialState = AuthState.Editing(),
-    stateMachine = AuthStateMachine(),
+    machine = AuthStateMachine,
     commandHandler = { command, dispatch ->
         // Execute repository work, then dispatch result events.
     },
@@ -188,7 +189,7 @@ Current verification:
 
 The current sample suggests:
 
-- `AfsmTransition<S, C, F>` is verbose in raw signatures but acceptable with screen-local typealiases such as `AuthTransition`.
+- `AfsmTransition<S, C, F>` is verbose in raw signatures but acceptable with screen-local typealiases such as `CheckoutTransition` when a feature implements `AfsmReducer` directly.
 - `ViewModel.afsmHost(...)` reads naturally in real Android ViewModels.
 - `Command` is easier to explain than making transition functions suspend.
 - `Effect` should stay rare and focused on UI-side one-shot work.
@@ -196,8 +197,11 @@ The current sample suggests:
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
 - `AfsmReducer` is the host-facing contract. The executable DSL builds an `AfsmMachine`, and machines now operate directly on the standard `AfsmState<Phase, Context>` data class.
-- `AfsmMachineAdapter` remains useful when a feature wants a custom Android-facing sealed state, as Auth does.
+- `AfsmGraphReducer<State, Event, Command, Effect>` is the feature-boundary alias shape for graphable machines, so sample code avoids repeating all five `AfsmMachine<Phase, Context, Event, Command, Effect>` parameters.
+- The standard `AfsmState<Phase, Context>` model now removes Auth/ProductEditor adapter boilerplate while keeping state diagrams focused on phases.
+- Custom sealed UI states require an explicit feature-owned `AfsmReducer`; the core API no longer ships an adapter base.
 - Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.
+- A shared `AfsmStateFactory` was spiked but rejected for now because singleton phase inference requires explicit `<Phase, Context>` arguments and the extra public API is heavier than a small feature-local factory function.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 
 Open follow-up:

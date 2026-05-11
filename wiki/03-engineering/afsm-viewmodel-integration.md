@@ -16,7 +16,17 @@ It is intentionally thin:
 - does not add a base `AfsmViewModel`
 - does not own DI, `SavedStateHandle`, navigation, or Compose policy
 
-The only public helper for MVP is:
+The standard graphable-machine helper is:
+
+```kotlin
+public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
+    machine: AfsmGraphReducer<S, E, C, F>,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C, F>
+```
+
+Use the explicit initial-state overload when the state is dynamic:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
@@ -31,12 +41,11 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
 
 ```kotlin
 class SignupViewModel(
-    reducer: SignupReducer,
+    machine: SignupMachine,
     commandHandler: SignupCommandHandler,
 ) : ViewModel() {
     private val host = afsmHost(
-        initialState = SignupState.Editing(),
-        reducer = reducer,
+        machine = machine,
         commandHandler = commandHandler,
     )
 
@@ -98,6 +107,7 @@ BUILD SUCCESSFUL
 Verified cases:
 
 - a real `ViewModel` subclass can create `private val host = afsmHost(...)`
+- a graphable machine can be hosted with `afsmHost(machine = StateMachine, ...)`
 - the ViewModel can expose `StateFlow<State>` and `Flow<Effect>` directly from the host
 - `onEvent(event)` can delegate to `host.dispatch(event)`
 - command handling can dispatch follow-up events through the runtime queue
@@ -119,9 +129,10 @@ Good:
 Still verbose:
 
 - feature code still declares `State`, `Event`, `Command`, and `Effect`
-- state machine generic types still benefit from typealiases or explicit class signatures
 - no `SavedStateHandle` convenience exists yet
 
 Conclusion:
 
-Keep this module thin. Do not add more ViewModel framework until the signup reference flow proves a repeated need.
+Keep this module thin. The graphable-machine overload is enough for the
+standard path; dynamic state screens should continue using the explicit
+`initialState + reducer` overload.

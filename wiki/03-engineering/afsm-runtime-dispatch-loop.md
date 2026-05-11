@@ -1,6 +1,6 @@
 ---
 title: Afsm Runtime Dispatch Loop
-updated: 2026-05-09
+updated: 2026-05-11
 ---
 
 # Afsm Runtime Dispatch Loop
@@ -45,12 +45,13 @@ process A
 -> transition
 -> update state
 -> emit effects
--> execute commands
--> command dispatches C
-
-queue becomes B, C
+-> enqueue commands
 
 process B
+
+command processor executes command from A
+-> command dispatches C
+
 process C
 ```
 
@@ -59,7 +60,7 @@ Important behavior:
 - Only one transition runs at a time.
 - Command-dispatched events are queued, not handled recursively.
 - Commands execute sequentially in the order emitted by one transition.
-- The next queued event waits until the current transition's commands finish.
+- Command execution does not block later event reduction.
 - Long-running loops should not be modeled as never-ending commands.
 
 ## Decision Handling

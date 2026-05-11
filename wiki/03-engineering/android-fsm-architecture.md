@@ -48,9 +48,11 @@ data class AfsmState<P : Any, X : Any>(
 )
 
 interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmReducer<AfsmState<P, X>, E, C, F>,
-    AfsmGraphSource
+    AfsmGraphReducer<AfsmState<P, X>, E, C, F>
 ```
+
+At feature boundaries, collapse `Phase + Context` into a feature state type and
+refer to graphable machines through `AfsmGraphReducer<State, Event, Command, Effect>`.
 
 ## Screen File Layout
 

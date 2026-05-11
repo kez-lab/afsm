@@ -74,6 +74,7 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 The first usable library version should include:
 
 - `AfsmReducer<S, E, C, F>`
+- `AfsmGraphReducer<S, E, C, F>` for graphable feature-boundary machines
 - `AfsmMachine<P, X, E, C, F>` for graphable phase/context machines
 - `AfsmTransition<S, C, F>`
 - invalid transition policy
