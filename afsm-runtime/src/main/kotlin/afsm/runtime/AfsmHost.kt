@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +24,8 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     scope: CoroutineScope,
     private val config: AfsmConfig = AfsmConfig(),
 ) {
-    private val eventQueue = Channel<E>(Channel.UNLIMITED)
+    private val eventQueue = Channel<E>(config.eventQueueCapacity)
+    private val commandQueue = Channel<PendingCommand<S, E, C, F>>(Channel.UNLIMITED)
     private val _state = MutableStateFlow(initialState)
     private val _effects = MutableSharedFlow<F>(
         replay = config.effectDelivery.replay,
@@ -35,6 +35,9 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
 
     private val processor: Job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
         processEvents()
+    }
+    private val commandProcessor: Job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        processCommands()
     }
 
     public val state: StateFlow<S> = _state.asStateFlow()
@@ -50,6 +53,13 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     init {
         processor.invokeOnCompletion { cause ->
             eventQueue.close(cause)
+            commandQueue.close(cause)
+        }
+        commandProcessor.invokeOnCompletion { cause ->
+            if (cause != null) {
+                eventQueue.close(cause)
+            }
+            commandQueue.close(cause)
         }
     }
 
@@ -60,10 +70,18 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
      * call it directly from click/listener handlers.
      */
     public fun dispatch(event: E) {
-        val result = eventQueue.trySend(event)
-        if (result.isFailure) {
-            throw ClosedSendChannelException("AfsmHost is closed and cannot accept events.")
+        if (!tryDispatch(event)) {
+            throw IllegalStateException("AfsmHost event queue rejected the event.")
         }
+    }
+
+    /**
+     * Attempts to queue an event for serialized processing.
+     *
+     * Returns `false` when the host is closed or the event queue is full.
+     */
+    public fun tryDispatch(event: E): Boolean {
+        return eventQueue.trySend(event).isSuccess
     }
 
     /**
@@ -72,7 +90,9 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
      */
     public fun close() {
         eventQueue.close()
+        commandQueue.close()
         processor.cancel()
+        commandProcessor.cancel()
     }
 
     private suspend fun processEvents() {
@@ -119,14 +139,27 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         when (config.commandExecutionPolicy) {
             AfsmCommandExecutionPolicy.Sequential -> {
                 for (command in transition.commands) {
-                    executeCommand(
-                        state = transition.state,
-                        event = event,
-                        command = command,
-                        transition = transition,
+                    commandQueue.send(
+                        PendingCommand(
+                            state = transition.state,
+                            event = event,
+                            command = command,
+                            transition = transition,
+                        ),
                     )
                 }
             }
+        }
+    }
+
+    private suspend fun processCommands() {
+        for (pending in commandQueue) {
+            executeCommand(
+                state = pending.state,
+                event = pending.event,
+                command = pending.command,
+                transition = pending.transition,
+            )
         }
     }
 
@@ -204,3 +237,10 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         }
     }
 }
+
+private data class PendingCommand<S : Any, E : Any, C : Any, F : Any>(
+    val state: S,
+    val event: E,
+    val command: C,
+    val transition: AfsmTransition<S, C, F>,
+)

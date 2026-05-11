@@ -24,11 +24,12 @@ public final class afsm/runtime/AfsmCommandHandler$Companion {
 
 public final class afsm/runtime/AfsmConfig {
 	public fun <init> ()V
-	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;Lafsm/runtime/AfsmLogger;)V
-	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;ILafsm/runtime/AfsmLogger;)V
+	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;ILafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCommandExecutionPolicy ()Lafsm/runtime/AfsmCommandExecutionPolicy;
 	public final fun getCommandFailurePolicy ()Lafsm/runtime/AfsmCommandFailurePolicy;
 	public final fun getEffectDelivery ()Lafsm/runtime/AfsmEffectDelivery;
+	public final fun getEventQueueCapacity ()I
 	public final fun getInvalidTransitionPolicy ()Lafsm/runtime/AfsmInvalidTransitionPolicy;
 	public final fun getLogger ()Lafsm/runtime/AfsmLogger;
 }
@@ -65,6 +66,7 @@ public final class afsm/runtime/AfsmHost {
 	public final fun dispatch (Ljava/lang/Object;)V
 	public final fun getEffects ()Lkotlinx/coroutines/flow/Flow;
 	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun tryDispatch (Ljava/lang/Object;)Z
 }
 
 public final class afsm/runtime/AfsmInvalidTransitionException : java/lang/IllegalStateException {

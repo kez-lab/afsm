@@ -6,10 +6,11 @@ public class AfsmConfig(
      * as [afsm.core.AfsmDecision.Invalid].
      */
     public val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
-        AfsmInvalidTransitionPolicy.Record,
+        AfsmInvalidTransitionPolicy.Throw,
     /**
-     * MVP runtime executes commands sequentially for predictable Android UI
-     * behavior.
+     * Commands are executed one at a time, separately from event reduction.
+     * This preserves predictable command ordering without blocking later UI
+     * events from being reduced while a command is suspended.
      */
     public val commandExecutionPolicy: AfsmCommandExecutionPolicy =
         AfsmCommandExecutionPolicy.Sequential,
@@ -26,8 +27,16 @@ public class AfsmConfig(
     public val effectDelivery: AfsmEffectDelivery =
         AfsmEffectDelivery.Default,
     /**
+     * Maximum number of events that can be queued by non-suspending dispatch.
+     */
+    public val eventQueueCapacity: Int = 64,
+    /**
      * Receives diagnostics for recorded invalid transitions and defensive drops.
      */
     public val logger: AfsmLogger =
         AfsmLogger.None,
-)
+) {
+    init {
+        require(eventQueueCapacity > 0) { "eventQueueCapacity must be > 0." }
+    }
+}

@@ -7,6 +7,7 @@ import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
@@ -109,6 +110,56 @@ class AfsmHostTest {
             ),
             timeline,
         )
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `long running command does not block later external events`() = runTest {
+        val hostScope = newHostScope()
+        val commandGate = CompletableDeferred<Unit>()
+        val host: AfsmHost<ResponsiveState, ResponsiveEvent, ResponsiveCommand, AfsmNoEffect> = AfsmHost(
+            initialState = ResponsiveState.Idle,
+            reducer = AfsmReducer { _: ResponsiveState, event: ResponsiveEvent ->
+                when (event) {
+                    ResponsiveEvent.Start -> Afsm.transitionTo(
+                        state = ResponsiveState.Working,
+                        commands = listOf(ResponsiveCommand.LongRunning),
+                    )
+
+                    ResponsiveEvent.Edit -> Afsm.transitionTo(
+                        state = ResponsiveState.EditedWhileWorking,
+                    )
+
+                    ResponsiveEvent.Done -> Afsm.transitionTo(
+                        state = ResponsiveState.Done,
+                    )
+                }
+            },
+            commandHandler = AfsmCommandHandler { command: ResponsiveCommand, dispatch ->
+                when (command) {
+                    ResponsiveCommand.LongRunning -> {
+                        commandGate.await()
+                        dispatch(ResponsiveEvent.Done)
+                    }
+                }
+            },
+            scope = hostScope,
+        )
+
+        host.dispatch(ResponsiveEvent.Start)
+        advanceUntilIdle()
+
+        assertEquals(ResponsiveState.Working, host.state.value)
+
+        host.dispatch(ResponsiveEvent.Edit)
+        advanceUntilIdle()
+
+        assertEquals(ResponsiveState.EditedWhileWorking, host.state.value)
+
+        commandGate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(ResponsiveState.Done, host.state.value)
         hostScope.cancel()
     }
 
@@ -380,6 +431,23 @@ class AfsmHostTest {
 
     private enum class NoEffectCommand {
         CancelRequest,
+    }
+
+    private enum class ResponsiveState {
+        Idle,
+        Working,
+        EditedWhileWorking,
+        Done,
+    }
+
+    private enum class ResponsiveEvent {
+        Start,
+        Edit,
+        Done,
+    }
+
+    private enum class ResponsiveCommand {
+        LongRunning,
     }
 
     private data class DecisionState(
