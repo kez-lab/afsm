@@ -323,3 +323,9 @@
 - Source: user emphasis on TDD/spec-based project flow and release-readiness autopilot loop.
 - Action: Added public contribution rules covering engineering principles, test integrity, API changes, verification, and documentation.
 - Updated: `CONTRIBUTING.md`, `README.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | One-command local release verification
+
+- Source: release-readiness autopilot loop after contribution guardrails.
+- Action: Added a canonical one-command local release verification script and updated public docs to use it.
+- Updated: `scripts/verify-release-local.sh`, `README.md`, `CONTRIBUTING.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

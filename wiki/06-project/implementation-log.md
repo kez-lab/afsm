@@ -791,3 +791,20 @@ git diff --check
 Conclusion:
 
 - The project now has a public rule set that matches the user's TDD/spec-first expectations and release gate.
+
+## [2026-05-11] One-command local release verification
+
+Change:
+
+- Added `scripts/verify-release-local.sh` as the canonical local release gate.
+- Updated README, release readiness docs, and contribution docs to point to the one-command gate.
+
+Verification:
+
+```bash
+./scripts/verify-release-local.sh
+```
+
+Conclusion:
+
+- Release-facing verification is now harder to run partially by accident.

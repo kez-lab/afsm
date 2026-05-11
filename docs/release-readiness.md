@@ -7,10 +7,7 @@ This checklist defines the current gate for turning Afsm into a publishable Andr
 Run:
 
 ```bash
-./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
-./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
-./gradlew apiCheck
-./scripts/verify-consumer-smoke.sh
+./scripts/verify-release-local.sh
 ```
 
 What this proves:

@@ -57,10 +57,7 @@ For public API changes:
 Local release gate:
 
 ```bash
-./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
-./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
-./gradlew apiCheck
-./scripts/verify-consumer-smoke.sh
+./scripts/verify-release-local.sh
 ```
 
 Use narrower commands while developing, but run the full gate before release-facing commits.

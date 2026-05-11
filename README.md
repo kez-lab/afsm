@@ -294,11 +294,7 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 Current baseline:
 
 ```bash
-./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
-./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
-./gradlew apiCheck
-./gradlew publishToMavenLocal
-./scripts/verify-consumer-smoke.sh
+./scripts/verify-release-local.sh
 ```
 
 `consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp` from Maven Local without project-module shortcuts.
