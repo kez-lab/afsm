@@ -1,0 +1,91 @@
+public final class afsm/runtime/AfsmCommandExecutionPolicy : java/lang/Enum {
+	public static final field Sequential Lafsm/runtime/AfsmCommandExecutionPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmCommandExecutionPolicy;
+	public static fun values ()[Lafsm/runtime/AfsmCommandExecutionPolicy;
+}
+
+public final class afsm/runtime/AfsmCommandFailurePolicy : java/lang/Enum {
+	public static final field Record Lafsm/runtime/AfsmCommandFailurePolicy;
+	public static final field Throw Lafsm/runtime/AfsmCommandFailurePolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmCommandFailurePolicy;
+	public static fun values ()[Lafsm/runtime/AfsmCommandFailurePolicy;
+}
+
+public abstract interface class afsm/runtime/AfsmCommandHandler {
+	public static final field Companion Lafsm/runtime/AfsmCommandHandler$Companion;
+	public abstract fun handle (Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class afsm/runtime/AfsmCommandHandler$Companion {
+	public final fun none ()Lafsm/runtime/AfsmCommandHandler;
+}
+
+public final class afsm/runtime/AfsmConfig {
+	public fun <init> ()V
+	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;Lafsm/runtime/AfsmLogger;)V
+	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCommandExecutionPolicy ()Lafsm/runtime/AfsmCommandExecutionPolicy;
+	public final fun getCommandFailurePolicy ()Lafsm/runtime/AfsmCommandFailurePolicy;
+	public final fun getEffectDelivery ()Lafsm/runtime/AfsmEffectDelivery;
+	public final fun getInvalidTransitionPolicy ()Lafsm/runtime/AfsmInvalidTransitionPolicy;
+	public final fun getLogger ()Lafsm/runtime/AfsmLogger;
+}
+
+public final class afsm/runtime/AfsmDiagnostic {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Lafsm/core/AfsmDecision;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Object;Lafsm/core/AfsmDecision;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCommand ()Ljava/lang/Object;
+	public final fun getDecision ()Lafsm/core/AfsmDecision;
+	public final fun getEvent ()Ljava/lang/Object;
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getReason ()Ljava/lang/String;
+	public final fun getState ()Ljava/lang/Object;
+	public final fun getThrowable ()Ljava/lang/Throwable;
+}
+
+public final class afsm/runtime/AfsmEffectDelivery {
+	public static final field Companion Lafsm/runtime/AfsmEffectDelivery$Companion;
+	public synthetic fun <init> (IILkotlinx/coroutines/channels/BufferOverflow;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getExtraBufferCapacity ()I
+	public final fun getReplay ()I
+}
+
+public final class afsm/runtime/AfsmEffectDelivery$Companion {
+	public final fun buffered (I)Lafsm/runtime/AfsmEffectDelivery;
+	public final fun getDefault ()Lafsm/runtime/AfsmEffectDelivery;
+	public final fun getRendezvous ()Lafsm/runtime/AfsmEffectDelivery;
+}
+
+public final class afsm/runtime/AfsmHost {
+	public fun <init> (Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lkotlinx/coroutines/CoroutineScope;Lafsm/runtime/AfsmConfig;)V
+	public synthetic fun <init> (Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lkotlinx/coroutines/CoroutineScope;Lafsm/runtime/AfsmConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close ()V
+	public final fun dispatch (Ljava/lang/Object;)V
+	public final fun getEffects ()Lkotlinx/coroutines/flow/Flow;
+	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+}
+
+public final class afsm/runtime/AfsmInvalidTransitionException : java/lang/IllegalStateException {
+	public fun <init> (Lafsm/runtime/AfsmDiagnostic;)V
+	public final fun getDiagnostic ()Lafsm/runtime/AfsmDiagnostic;
+}
+
+public final class afsm/runtime/AfsmInvalidTransitionPolicy : java/lang/Enum {
+	public static final field Record Lafsm/runtime/AfsmInvalidTransitionPolicy;
+	public static final field Throw Lafsm/runtime/AfsmInvalidTransitionPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmInvalidTransitionPolicy;
+	public static fun values ()[Lafsm/runtime/AfsmInvalidTransitionPolicy;
+}
+
+public abstract interface class afsm/runtime/AfsmLogger {
+	public static final field Companion Lafsm/runtime/AfsmLogger$Companion;
+	public abstract fun log (Lafsm/runtime/AfsmDiagnostic;)V
+}
+
+public final class afsm/runtime/AfsmLogger$Companion {
+	public final fun getNone ()Lafsm/runtime/AfsmLogger;
+}
+

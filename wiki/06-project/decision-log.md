@@ -571,3 +571,20 @@ Consequences:
 - Future public API additions must declare visibility and signatures clearly.
 - Internal implementation helpers should remain `internal` or `private`.
 - Binary API validation is still needed before the first public remote release.
+
+## [2026-05-11] Add binary API validation before first public release
+
+Decision: Add JetBrains `org.jetbrains.kotlinx.binary-compatibility-validator` to the root build and commit API dumps for published Afsm modules.
+
+Rationale:
+
+- Explicit API mode prevents accidental source-level public declarations, but it does not preserve binary compatibility across releases.
+- API dumps provide a reviewable artifact when changing public ABI.
+- The current project uses Kotlin `2.0.21`; Kotlin Gradle plugin built-in ABI validation starts later than that, so the maintained external validator is the pragmatic current gate.
+
+Consequences:
+
+- `apiCheck` becomes part of the local release gate.
+- `sample-shop` is excluded because it is not a published library module.
+- Published modules now have committed API baselines under their module-local `api/` directories.
+- Some `@PublishedApi internal` DSL helpers appear in the ABI baseline because public inline/reified DSL functions can depend on them.

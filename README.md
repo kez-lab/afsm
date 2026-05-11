@@ -296,6 +296,7 @@ Current baseline:
 ```bash
 ./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
 ./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
+./gradlew apiCheck
 ./gradlew publishToMavenLocal
 ./scripts/verify-consumer-smoke.sh
 ```

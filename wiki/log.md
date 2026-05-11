@@ -305,3 +305,9 @@
 - Source: public API stability autopilot loop.
 - Action: Enabled Kotlin explicit API mode for all Afsm library modules and documented it as a release gate.
 - Updated: `afsm-core/build.gradle.kts`, `afsm-runtime/build.gradle.kts`, `afsm-viewmodel/build.gradle.kts`, `afsm-graph-ksp/build.gradle.kts`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Binary API validation gate
+
+- Source: public release-readiness autopilot loop and JetBrains binary compatibility validator documentation.
+- Action: Added binary API validation, generated module API dumps, trimmed avoidable `@PublishedApi` ABI exposure, and added `apiCheck` to release verification.
+- Updated: `build.gradle.kts`, `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`, `afsm-core/api/`, `afsm-runtime/api/`, `afsm-viewmodel/api/`, `afsm-graph-ksp/api/`, `README.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

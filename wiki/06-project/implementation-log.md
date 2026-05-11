@@ -733,3 +733,25 @@ Conclusion:
 
 - Existing Afsm public declarations already satisfy explicit API requirements.
 - Binary API validation remains the next stronger public API stability gate.
+
+## [2026-05-11] Binary API validation gate
+
+Change:
+
+- Added JetBrains binary compatibility validator `0.18.1` to the root build.
+- Excluded `sample-shop` from API validation.
+- Generated API dumps for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
+- Removed unnecessary ABI exposure for `AfsmEventBranchScope.addDecisionBranch` and `afsmLabelForValue`.
+- Updated release docs to include `apiCheck`.
+
+Verification:
+
+```bash
+./gradlew apiDump --stacktrace
+./gradlew apiCheck --stacktrace
+```
+
+Conclusion:
+
+- Public ABI is now tracked before the first public release.
+- Remaining `@PublishedApi internal` DSL helpers are intentional ABI support for inline/reified DSL entry points.

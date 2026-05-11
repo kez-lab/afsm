@@ -401,7 +401,6 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         }
     }
 
-    @PublishedApi
     internal fun addDecisionBranch(
         decision: AfsmDecision,
         guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
@@ -685,8 +684,7 @@ internal class AfsmDslExecution<P : Any, X : Any, C : Any, F : Any>(
     val effects: MutableList<F> = mutableListOf(),
 )
 
-@PublishedApi
-internal fun afsmLabelForValue(value: Any): String {
+private fun afsmLabelForValue(value: Any): String {
     return value::class.simpleName ?: value.toString()
 }
 
