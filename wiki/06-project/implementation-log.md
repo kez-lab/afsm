@@ -755,3 +755,21 @@ Conclusion:
 
 - Public ABI is now tracked before the first public release.
 - Remaining `@PublishedApi internal` DSL helpers are intentional ABI support for inline/reified DSL entry points.
+
+## [2026-05-11] Pre-release changelog
+
+Change:
+
+- Added `CHANGELOG.md` with an initial `0.1.0 - Unreleased` entry.
+- Linked the changelog from `README.md`.
+- Removed the changelog item from the remaining engineering gates in `docs/release-readiness.md`.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Public release notes now have a durable place before the first published artifact.

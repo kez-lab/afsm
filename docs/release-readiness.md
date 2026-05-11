@@ -48,7 +48,6 @@ Required product decisions:
 
 Required engineering gates:
 
-- Add a changelog with a clear `0.1.0` pre-release entry.
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
 - Keep `consumer-smoke` green after every publication metadata change.
 
