@@ -773,3 +773,21 @@ git diff --check
 Conclusion:
 
 - Public release notes now have a durable place before the first published artifact.
+
+## [2026-05-11] Contribution guardrails
+
+Change:
+
+- Added `CONTRIBUTING.md` with engineering principles, development flow, test integrity policy, public API change policy, verification commands, and documentation rules.
+- Linked contribution guidance from `README.md`.
+- Added contribution guide alignment to release readiness.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The project now has a public rule set that matches the user's TDD/spec-first expectations and release gate.

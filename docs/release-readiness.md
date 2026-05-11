@@ -50,6 +50,7 @@ Required engineering gates:
 
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
 - Keep `consumer-smoke` green after every publication metadata change.
+- Keep `CONTRIBUTING.md` aligned with the current release gate and test policy.
 
 ## Known Warning
 

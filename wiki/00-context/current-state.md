@@ -40,6 +40,7 @@ The current direction is:
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp` so public declarations must be intentional.
 - Binary API validation is enabled with API dumps for the four Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
 - `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes and documents pre-release alias removal.
+- `CONTRIBUTING.md` now captures the project development flow, test-integrity rules, public API change policy, and local release gate.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
 - `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.

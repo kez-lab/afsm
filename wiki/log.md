@@ -317,3 +317,9 @@
 - Source: release-readiness autopilot loop after binary API validation.
 - Action: Added the initial changelog and linked it from public docs.
 - Updated: `CHANGELOG.md`, `README.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Contribution guardrails
+
+- Source: user emphasis on TDD/spec-based project flow and release-readiness autopilot loop.
+- Action: Added public contribution rules covering engineering principles, test integrity, API changes, verification, and documentation.
+- Updated: `CONTRIBUTING.md`, `README.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
