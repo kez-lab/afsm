@@ -7,6 +7,20 @@ import kotlin.reflect.KClass
  *
  * This DSL is intentionally plain Kotlin and Android-free. Android ViewModels
  * should host the returned [AfsmMachine] through an [AfsmReducer].
+ *
+ * Type parameters:
+ *
+ * - [P]: finite phase type. This is the node type that appears in generated
+ *   state diagrams.
+ * - [X]: extended context type. This is immutable data carried across phases.
+ * - [E]: event type. Events are user intents or command results.
+ * - [C]: command type. Commands are host-executed work emitted by transitions
+ *   or entry/exit handlers.
+ * - [F]: effect type. Effects are optional UI-side one-shot outputs.
+ *
+ * The [build] block declares the initial state, phase scopes, event branches,
+ * entry/exit handlers, and graph metadata. The returned [AfsmMachine] is both
+ * executable transition logic and an [AfsmGraphSource].
  */
 public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmMachine(
     build: AfsmMachineBuilder<P, X, E, C, F>.() -> Unit,
@@ -21,7 +35,14 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     private val states = mutableListOf<AfsmStateDefinition<P, X, E, C, F>>()
 
     /**
-     * Sets the initial finite phase and extended context for the chart.
+     * Sets the initial finite phase and extended context for the machine.
+     *
+     * [phase] is the first graph state exposed through [AfsmMachine.initialState].
+     * [context] is the initial extended data associated with that phase.
+     *
+     * Calling [initial] does not run the target phase's `onEnter` handler.
+     * Startup work should be triggered by an explicit event such as
+     * `ScreenEntered` when a feature needs that behavior.
      */
     public fun initial(
         phase: P,
@@ -35,6 +56,13 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
 
     /**
      * Declares behavior for an exact phase value, typically a data object phase.
+     *
+     * Use this overload for singleton phases such as `Editing`, `Loading`, or
+     * `Approved`. The [phase] value is also used to derive the state label in
+     * topology and Mermaid output.
+     *
+     * The [build] block declares entry/exit handlers and event handlers that
+     * apply only when the machine's current phase equals [phase].
      */
     public fun state(
         phase: P,
@@ -51,6 +79,13 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
 
     /**
      * Declares behavior for any phase instance of [PS], typically a payload phase.
+     *
+     * Use this overload for phase classes that carry data, for example
+     * `ReviewSubmissionInProgress(uploadToken)`. The state scope exposes the
+     * current phase as type [PS], so entry/exit handlers and transition blocks
+     * can safely read the payload.
+     *
+     * The generated topology uses the [PS] class name as the state label.
      */
     public inline fun <reified PS : P> state(
         noinline build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
@@ -153,6 +188,17 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
 
     /**
      * Runs when this phase is entered through an event branch transition.
+     *
+     * [handler] runs after the matching transition block has executed and only
+     * for phase-changing branches such as [AfsmEventBranchScope.transitionTo].
+     * It does not run for [AfsmEventBranchScope.stay],
+     * [AfsmEventBranchScope.otherwise], [AfsmEventBranchScope.ignore], or
+     * [AfsmEventBranchScope.invalid].
+     *
+     * Use `onEnter` for work that logically starts because a phase was entered:
+     * emitting a command, clearing an error, or initializing phase-specific
+     * context. It is not run when the machine's [AfsmMachine.initialState] is
+     * created.
      */
     public fun onEnter(
         handler: AfsmEntryScope<P, X, C, F, PS>.() -> Unit,
@@ -170,6 +216,16 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
 
     /**
      * Runs when this phase is exited by a phase-changing transition.
+     *
+     * [handler] runs before the transition block and target phase `onEnter`
+     * handler. The execution order is:
+     *
+     * ```text
+     * source onExit -> transition block -> target onEnter
+     * ```
+     *
+     * Use `onExit` for cleanup work that logically belongs to leaving a phase,
+     * such as emitting a cancel command or clearing phase-local context.
      */
     public fun onExit(
         handler: AfsmExitScope<P, X, C, F, PS>.() -> Unit,
@@ -187,6 +243,17 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
 
     /**
      * Declares graphable branches for events whose runtime type is [EV].
+     *
+     * [build] is evaluated when the machine is built and declares the ordered
+     * branches for this event in the current phase. At runtime, when the current
+     * phase matches this state scope and the incoming event is [EV], Afsm checks
+     * the declared branches in declaration order and executes the first matching
+     * branch.
+     *
+     * Prefer a single success [AfsmEventBranchScope.transitionTo] plus
+     * [AfsmEventBranchScope.otherwise] for validation failure. Multiple guarded
+     * transition branches are allowed for real alternative destinations, but they
+     * should read as mutually exclusive state-machine branches.
      */
     public inline fun <reified EV : E> on(
         noinline build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
@@ -236,6 +303,24 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a branch that transitions to a concrete phase value.
+     *
+     * [phase] is the target finite phase. If this branch matches, the returned
+     * state uses [phase] with the current context after `onExit`, [block], and
+     * target `onEnter` have run.
+     *
+     * [guard] is a runtime predicate. Afsm evaluates it when the event is
+     * processed. If it returns `false`, this branch is skipped and later branches
+     * in the same `on<Event>` scope may match.
+     *
+     * [guardLabel], [commandLabels], and [effectLabels] are topology metadata for
+     * generated diagrams and documentation. They do not execute commands,
+     * effects, or guards. Runtime commands and effects must be emitted from
+     * [block], `onEnter`, or `onExit`.
+     *
+     * [block] is runtime transition logic. Use it to update context and emit
+     * commands/effects that are specific to this transition. For phase-changing
+     * branches, execution order is source `onExit`, then [block], then target
+     * `onEnter`.
      */
     public fun transitionTo(
         phase: P,
@@ -260,6 +345,24 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a branch that transitions to a payload phase created from runtime data.
+     *
+     * Use this overload when the target phase is a class that needs data from the
+     * current [AfsmTransitionScope], such as an event payload:
+     *
+     * ```kotlin
+     * transitionTo<Phase.Reviewing>(
+     *     phase = { Phase.Reviewing(uploadToken = event.uploadToken) },
+     * )
+     * ```
+     *
+     * [phase] creates the target phase instance at runtime. The reified [TP]
+     * type is used for static topology labels, while the returned value is used
+     * as the actual next phase.
+     *
+     * [guard] is a runtime predicate. If it returns `false`, the branch is
+     * skipped. [guardLabel], [commandLabels], and [effectLabels] are diagram
+     * metadata only. [block] performs runtime context updates and command/effect
+     * emission for the transition.
      */
     public inline fun <reified TP : P> transitionTo(
         noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
@@ -284,6 +387,16 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a branch that handles the event without changing the finite phase.
+     *
+     * Use `stay` for self-handled events where the phase is still the same
+     * business state, for example text input updates inside an editing phase.
+     *
+     * [guard] is a runtime predicate. If it returns `false`, the branch is
+     * skipped. [guardLabel], [commandLabels], and [effectLabels] are topology
+     * metadata only. [block] can update context and emit commands/effects.
+     *
+     * `stay` does not run `onExit` or `onEnter`; it returns an
+     * [AfsmDecision.Stayed] decision when accepted.
      */
     public fun stay(
         guardLabel: String? = null,
@@ -307,6 +420,24 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a final stayed branch for unmatched guards in this event handler.
+     *
+     * `otherwise` is a fallback branch. It always matches if earlier branches in
+     * the same `on<Event>` scope did not match. It is useful for validation
+     * failure or default handled behavior:
+     *
+     * ```kotlin
+     * on<Event.SubmitClicked> {
+     *     transitionTo(Phase.Submitting, guard = { context.form.isValid() })
+     *
+     *     otherwise {
+     *         updateContext { copy(errorMessage = "Invalid form") }
+     *     }
+     * }
+     * ```
+     *
+     * [commandLabels] and [effectLabels] are metadata for generated diagrams.
+     * [block] is runtime logic. `otherwise` does not change phase and does not
+     * run `onExit` or `onEnter`.
      */
     public fun otherwise(
         commandLabels: List<String> = emptyList(),
@@ -329,6 +460,15 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a handled event that should be ignored without changing state or graph topology.
+     *
+     * Use `ignore` when the event is expected in this phase but intentionally
+     * does nothing, such as a duplicate submit while already submitting.
+     *
+     * [reason] is diagnostic text surfaced through [AfsmDecision.Ignored].
+     * [guard] optionally limits when the ignored decision applies.
+     *
+     * Ignored branches produce no topology edge and any state/command/effect
+     * output is dropped by the runtime.
      */
     public fun ignore(
         reason: String? = null,
@@ -342,6 +482,16 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     /**
      * Declares a handled event that represents an invalid transition without changing graph topology.
+     *
+     * Use `invalid` when receiving this event in the current phase is a flow
+     * error that should be reported according to the host's invalid-transition
+     * policy.
+     *
+     * [reason] is diagnostic text surfaced through [AfsmDecision.Invalid].
+     * [guard] optionally limits when the invalid decision applies.
+     *
+     * Invalid branches produce no topology edge and do not run entry/exit
+     * handlers.
      */
     public fun invalid(
         reason: String? = null,
@@ -436,18 +586,29 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     }
 }
 
+/**
+ * Runtime scope for a phase `onEnter` handler.
+ *
+ * [phase] is the target phase instance being entered. For payload phases
+ * declared with `state<PayloadPhase>`, it is typed as that payload phase.
+ */
 public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
     public val phase: PS,
     private val execution: AfsmDslExecution<P, X, C, F>,
 ) {
     /**
-     * Current extended context after previous transition context updates.
+     * Current extended context after source `onExit` and the transition block
+     * have run.
      */
     public val context: X
         get() = execution.context
 
     /**
      * Replaces the current context with an immutable copy.
+     *
+     * The [update] receiver is the current context. Return the next context
+     * value. The final state will contain the latest context after all transition
+     * and entry handlers complete.
      */
     public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
@@ -455,6 +616,10 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
 
     /**
      * Emits host-executed work, such as a repository call or timer start.
+     *
+     * [command] is appended to the transition output. The runtime does not
+     * execute it inside the pure machine; `AfsmHost` passes it to the configured
+     * command handler after state/effects are published.
      */
     public fun command(command: C) {
         execution.commands += command
@@ -462,24 +627,38 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
 
     /**
      * Emits a UI-side one-shot effect.
+     *
+     * [effect] is appended to the transition output. Prefer durable state for
+     * behavior that must survive recreation; effects are best-effort one-shot
+     * outputs.
      */
     public fun effect(effect: F) {
         execution.effects += effect
     }
 }
 
+/**
+ * Runtime scope for a phase `onExit` handler.
+ *
+ * [phase] is the source phase instance being exited. For payload phases
+ * declared with `state<PayloadPhase>`, it is typed as that payload phase.
+ */
 public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
     public val phase: PS,
     private val execution: AfsmDslExecution<P, X, C, F>,
 ) {
     /**
-     * Current extended context before the transition block and target entry handlers run.
+     * Current extended context before the transition block and target entry
+     * handlers run.
      */
     public val context: X
         get() = execution.context
 
     /**
      * Replaces the current context with an immutable copy.
+     *
+     * The [update] receiver is the current context. Return the next context
+     * value that should be visible to the transition block.
      */
     public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
@@ -487,6 +666,9 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
 
     /**
      * Emits host-executed work, such as canceling a running request or timer.
+     *
+     * [command] is appended to the transition output and will be handled by the
+     * host after the transition is accepted.
      */
     public fun command(command: C) {
         execution.commands += command
@@ -494,25 +676,42 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
 
     /**
      * Emits a UI-side one-shot effect.
+     *
+     * [effect] is appended to the transition output. Use sparingly for UI
+     * behavior that should not be represented as durable state.
      */
     public fun effect(effect: F) {
         execution.effects += effect
     }
 }
 
+/**
+ * Runtime scope for a branch declared inside `on<Event>`.
+ *
+ * [phase] is the current source phase, typed as the enclosing state scope. [event]
+ * is the incoming event, typed as the enclosing event scope.
+ */
 public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
     public val phase: PS,
     public val event: EV,
     private val execution: AfsmDslExecution<P, X, C, F>,
 ) {
     /**
-     * Current extended context after previous context updates in this transition.
+     * Current extended context after earlier context updates in this transition
+     * pipeline.
+     *
+     * For a phase-changing transition this is after source `onExit` has run.
+     * For a stayed branch this starts as the current state's context.
      */
     public val context: X
         get() = execution.context
 
     /**
      * Replaces the current context with an immutable copy.
+     *
+     * The [update] receiver is the current context. Return the next context
+     * value. Subsequent commands, effects, or entry handlers observe the updated
+     * context through [context].
      */
     public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
@@ -520,6 +719,11 @@ public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS
 
     /**
      * Emits host-executed work, such as a repository call or timer start.
+     *
+     * [command] is appended to the accepted transition output. Prefer emitting
+     * long-running work from `onEnter` when the work is tied to entering a phase;
+     * emit from a transition block when the work belongs specifically to the
+     * edge.
      */
     public fun command(command: C) {
         execution.commands += command
@@ -527,6 +731,10 @@ public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS
 
     /**
      * Emits a UI-side one-shot effect.
+     *
+     * [effect] is appended to the accepted transition output. Effects are not
+     * durable state and should not be used for information that must be restored
+     * after process death.
      */
     public fun effect(effect: F) {
         execution.effects += effect

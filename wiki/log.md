@@ -347,3 +347,9 @@
 - Source: user feedback that two consecutive `transitionTo` calls looked unlike a state machine.
 - Action: Replaced invalid saved-draft submit transition with an `otherwise` stayed branch, surfaced the validation error in `DraftSaved`, and added unit coverage.
 - Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorScreen.kt`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Afsm DSL KDoc expansion
+
+- Source: user feedback that Afsm DSL KDoc did not explain function parameters.
+- Action: Added detailed KDoc for public DSL builders, branch APIs, scopes, runtime parameters, and topology metadata parameters.
+- Updated: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

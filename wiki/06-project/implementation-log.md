@@ -868,3 +868,23 @@ Verification:
 Conclusion:
 
 - The sample now better communicates the intended Afsm style: success transitions move phases; validation failure is a handled stayed branch.
+
+## [2026-05-11] Afsm DSL KDoc expansion
+
+Change:
+
+- Expanded KDoc for the public Afsm executable DSL in `AfsmMachineDsl.kt`.
+- Documented type parameter roles for phase, context, event, command, and effect.
+- Documented runtime parameters such as `phase`, `guard`, `block`, `updateContext`, `command`, and `effect`.
+- Documented topology-only metadata parameters such as `guardLabel`, `commandLabels`, and `effectLabels`.
+- Clarified branch ordering, `otherwise`, `ignore`, `invalid`, and `onExit -> transition block -> onEnter` execution order.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test apiCheck --stacktrace
+```
+
+Conclusion:
+
+- The DSL source now explains the public API directly at the call site without changing binary API.

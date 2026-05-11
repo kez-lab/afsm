@@ -28,6 +28,7 @@ The current direction is:
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
+- Afsm DSL public KDoc now explains phase/context/event/command/effect type parameters, runtime parameters, topology-only metadata parameters, guard behavior, branch ordering, and entry/exit execution order.
 - `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract from `AfsmMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
 - Deprecated pre-release aliases were removed from the public source surface. New code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmMachineAdapter`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, guard fallback, DSL build validation, and UI-side effect emission.
