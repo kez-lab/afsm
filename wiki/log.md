@@ -383,3 +383,9 @@
 - Source: Afsm public API usability review and user request to prioritize simple, understandable usage.
 - Action: Added `ViewModel.afsmHost(machine = ...)`, changed standard sample usage to the simpler overload, hardened `AfsmHost` command/event/invalid defaults, refreshed README onboarding, and updated API docs/wiki.
 - Updated: `afsm-runtime/`, `afsm-viewmodel/`, `sample-shop/`, `consumer-smoke/`, `README.md`, `docs/afsm-public-api.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] meeting | Afsm 10-agent usability POC
+
+- Source: user request to run 10 Android developer POC reviews before deciding the next public structure.
+- Action: Recorded cross-agent adoption verdict, common usability risks, release blockers, and next structure direction.
+- Updated: `wiki/08-meetings/2026-05-11-afsm-10-agent-usability-poc.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.

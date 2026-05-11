@@ -50,6 +50,12 @@ Resolved:
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
 - Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
+- Should `AfsmGraphReducer` remain user-facing, or should the graphable public boundary be renamed to a more intuitive `AfsmMachine<State, Event, Command, Effect>` shape?
+- Should `afsmHost(machine = ..., initialState = ...)` become the standard dynamic initial state API for navigation args and `SavedStateHandle`?
+- Should command queue capacity/backpressure be configurable before public release?
+- What official stale command result pattern should be documented first: request/correlation id, phase guard, explicit cancellation event, or a runtime helper?
+- Should generated MMD default to a flow view that hides internal self-loops, with a full topology option for debugging?
+- Should external MMD generation ship as a Gradle plugin, a documented task template, or a simple runtime writer API first?
 
 Resolved:
 
@@ -94,3 +100,4 @@ Resolved:
 - Do not add a shared `AfsmStateFactory` API yet; the spike showed it needs explicit `<Phase, Context>` type arguments for singleton phase hierarchies and does not justify the extra public concept.
 - Invalid transitions should throw by default for public runtime use so flow bugs are visible during development. Resilient production hosts can opt into `AfsmInvalidTransitionPolicy.Record` with a logger.
 - Command execution remains sequential, but it no longer blocks later event reduction; commands run through a separate command processor and dispatch results back into the event queue.
+- Ten-agent POC review confirmed that Afsm should target complex transaction/flow screens, not simple data-display ViewModels.

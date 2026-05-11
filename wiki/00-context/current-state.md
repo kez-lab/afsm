@@ -63,6 +63,8 @@ The current direction is:
 - A five-perspective public API usability review concluded that Afsm should be presented as an Android executable extended statechart DSL for complex flows, with `afsmMachine { ... }` as the primary onboarding path and `AfsmReducer`/graph metadata as advanced reference concepts.
 - Runtime hardening now makes invalid transitions throw by default, adds `tryDispatch(event)`, bounds the default event queue to 64 events, and keeps command execution sequential without blocking event reduction.
 - A reference architecture review compared Afsm against XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance. The first hardening pass is now implemented: naming uses `AfsmReducer`/`AfsmMachine`, DSL output terminology is `command`, `onExit` exists, DSL build validation exists, topology metadata is richer, `AfsmHost` has a configurable command failure policy, and command cancellation remains explicit in feature commands/events.
+- A ten-agent Android developer POC review concluded that the current executable DSL direction should continue, but Afsm must be positioned as a complex transaction/flow screen toolkit rather than a general ViewModel replacement.
+- The next usability hardening priorities are minimal-first README onboarding, dynamic initial state hosting, command stale-result/cancellation guidance, command queue/backpressure policy, Compose effect collection, and external-project MMD generation documentation or tooling.
 
 ## Core Architecture Position
 

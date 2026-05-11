@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Decision Log
@@ -670,3 +670,20 @@ Consequences:
 - `AfsmConfig.eventQueueCapacity` defaults to `64`.
 - `AfsmHost.tryDispatch(event)` returns whether an event was accepted.
 - `AfsmCommandExecutionPolicy.Sequential` now means commands execute one at a time in emission order, but through a separate command processor.
+
+## [2026-05-11] Position Afsm as a complex flow toolkit
+
+Decision: Continue with the executable DSL direction, but position Afsm as a toolkit for complex Android transaction/flow screens rather than a general replacement for ordinary ViewModel state management.
+
+Rationale:
+
+- Ten Android-developer POC reviews rated the direction as adoptable for complex flows, but too ceremonial for simple loading/content/error or data-observation screens.
+- Reviewers consistently found `afsmMachine { ... }` and `ViewModel.afsmHost(machine = ...)` useful for ProductEditor, signup/identity, checkout/payment, and retry flows.
+- Reviewers also consistently found first-contact complexity too high when graph/KSP, `AfsmGraphReducer`, `AfsmNoEffect`, and topology concepts appear before a minimal machine example.
+
+Consequences:
+
+- Public docs should use a minimal-first onboarding order: install, minimal machine, ViewModel hosting, testing, then optional MMD graph generation.
+- Product/sample guidance should explicitly say where not to use Afsm.
+- Before public release, resolve dynamic initial state hosting, stale command result/cancellation guidance, command queue/backpressure policy, Compose effect collection, and external MMD generation UX.
+- `AfsmGraphReducer` should be treated as a naming/API spike candidate before stable public API freeze.

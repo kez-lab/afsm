@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Wiki Index
@@ -58,6 +58,7 @@ updated: 2026-05-10
 
 - [[08-meetings/2026-05-01-afsm-api-pseudo-implementation-review|Afsm API Pseudo Implementation Review]] - Review of signup pseudo-implementation and Afsm API ergonomics.
 - [[08-meetings/2026-05-11-afsm-public-api-usability-review|Afsm Public API Usability Review]] - Five-perspective review of public API complexity, runtime risks, graph semantics, and onboarding.
+- [[08-meetings/2026-05-11-afsm-10-agent-usability-poc|Afsm 10-Agent Usability POC]] - Android developer POC review covering onboarding, TDD, runtime, graph generation, commerce sample, and OSS adoption.
 
 ## Raw Sources
 
