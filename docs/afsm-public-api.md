@@ -17,6 +17,12 @@ Generate these artifacts with:
 ./gradlew publishToMavenLocal
 ```
 
+Verify the published artifacts from a separate Android consumer build:
+
+```bash
+./scripts/verify-consumer-smoke.sh
+```
+
 Removed pre-release aliases:
 
 - `AfsmStateMachine` -> use `AfsmReducer`

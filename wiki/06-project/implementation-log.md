@@ -677,3 +677,22 @@ Verification:
 Conclusion:
 
 - Local Maven publication succeeds for all library modules; remote publication still needs license, SCM, signing, and final coordinate decisions.
+
+## [2026-05-11] Maven Local consumer smoke
+
+Change:
+
+- Added `consumer-smoke`, a separate Android Gradle build that resolves Afsm only from Maven Local.
+- Added a small consumer ViewModel using `ViewModel.afsmHost(...)`, an `AfsmMachine`, a command handler, and `@AfsmGraph` KSP generation.
+- Added `scripts/verify-consumer-smoke.sh` to publish local artifacts and compile the consumer build.
+- Updated public docs with the consumer smoke release gate.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh
+```
+
+Conclusion:
+
+- Afsm's current Maven Local artifacts are consumable by an external Android library build, including the Android ViewModel AAR and KSP graph processor.

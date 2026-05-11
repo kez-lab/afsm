@@ -35,6 +35,7 @@ The current direction is:
 - `AfsmState<P, Context>` is now the standard phase/context state value. `AfsmMachine` directly implements `AfsmReducer<AfsmState<P, Context>, ...>` plus `AfsmGraphSource`.
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - Maven local publishing now works for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp` using `io.github.afsm:*:0.1.0-SNAPSHOT` pre-release coordinates.
+- `consumer-smoke` now exists as a separate Android Gradle build that consumes those Maven Local coordinates, compiles a ViewModel-hosted Afsm machine, and runs the KSP graph processor without project-module dependencies.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
 - `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.

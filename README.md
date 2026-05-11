@@ -26,6 +26,7 @@ Afsm is useful when a screen has meaningful phases, retries, invalid transitions
 | `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
 | `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |
 | `sample-shop` | Compose + Room sample app proving real usage | Yes |
+| `consumer-smoke` | Separate Android consumer build that resolves Afsm from Maven Local | Yes |
 
 For repository-local development, depend on the project modules:
 
@@ -296,6 +297,9 @@ Current baseline:
 ./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest
 ./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
 ./gradlew publishToMavenLocal
+./scripts/verify-consumer-smoke.sh
 ```
+
+`consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp` from Maven Local without project-module shortcuts.
 
 See [docs/afsm-public-api.md](docs/afsm-public-api.md) for the API reference and [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md) for sample app notes.

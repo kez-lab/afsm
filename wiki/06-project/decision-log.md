@@ -538,3 +538,20 @@ Consequences:
 - `afsm-viewmodel` publishes the `release` Android library variant as an AAR with sources.
 - JVM modules publish jars, sources jars, and javadoc jars.
 - Final Maven Central coordinates remain open until product approval.
+
+## [2026-05-11] Add a separate Maven Local consumer smoke gate
+
+Decision: Verify pre-release artifacts from a separate Android Gradle build before treating Maven Local publication as release-ready.
+
+Rationale:
+
+- Multi-module builds can hide publication mistakes because samples may still compile through `project(...)` dependencies.
+- Afsm has both JVM jars and an Android AAR; a real Android consumer must resolve all of them through Gradle metadata and POMs.
+- `afsm-graph-ksp` must work as an external KSP processor, not only as an included project.
+
+Consequences:
+
+- `consumer-smoke` is intentionally not included in the root `settings.gradle.kts`.
+- `scripts/verify-consumer-smoke.sh` publishes Afsm to Maven Local and compiles the separate Android consumer.
+- The consumer smoke covers `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
+- Remote release work should keep this smoke green before publishing public artifacts.
