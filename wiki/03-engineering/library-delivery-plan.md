@@ -1,6 +1,6 @@
 ---
 title: Library Delivery Plan
-updated: 2026-05-01
+updated: 2026-05-11
 ---
 
 # Library Delivery Plan
@@ -26,7 +26,7 @@ Build one full feature without creating a broad framework.
 Deliverables:
 
 - sample feature contract: `State`, `Event`, `Command`, optional `Effect`
-- pure `AfsmStateMachine`
+- pure `AfsmReducer` or graphable `AfsmMachine`
 - ViewModel integration
 - Compose route/screen integration
 - transition tests

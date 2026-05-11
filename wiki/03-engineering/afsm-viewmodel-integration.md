@@ -1,6 +1,6 @@
 ---
 title: Afsm ViewModel Integration
-updated: 2026-05-09
+updated: 2026-05-11
 ---
 
 # Afsm ViewModel Integration
@@ -21,7 +21,7 @@ The only public helper for MVP is:
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
     initialState: S,
-    stateMachine: AfsmStateMachine<S, E, C, F>,
+    reducer: AfsmReducer<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
@@ -31,12 +31,12 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
 
 ```kotlin
 class SignupViewModel(
-    stateMachine: SignupStateMachine,
+    reducer: SignupReducer,
     commandHandler: SignupCommandHandler,
 ) : ViewModel() {
     private val host = afsmHost(
         initialState = SignupState.Editing(),
-        stateMachine = stateMachine,
+        reducer = reducer,
         commandHandler = commandHandler,
     )
 

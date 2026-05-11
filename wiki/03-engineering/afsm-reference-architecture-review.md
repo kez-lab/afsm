@@ -1,6 +1,6 @@
 ---
 title: Afsm Reference Architecture Review
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Afsm Reference Architecture Review
@@ -24,8 +24,8 @@ References:
 
 Afsm currently has two layers:
 
-- Reducer/runtime layer: `AfsmStateMachine<S, E, C, F>`, `AfsmTransition<S, C, F>`, `AfsmHost`, `ViewModel.afsmHost(...)`.
-- Executable statechart layer: `AfsmState<P, X>`, `AfsmStateChart<P, X, E, A, F>`, `afsmStateChart { ... }`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `onEnter`, `updateContext`, `action`, `effect`, and `topology.toMmd()`.
+- Reducer/runtime layer: `AfsmReducer<S, E, C, F>`, `AfsmTransition<S, C, F>`, `AfsmHost`, `ViewModel.afsmHost(...)`.
+- Executable machine layer: `AfsmState<P, X>`, `AfsmMachine<P, X, E, C, F>`, `afsmMachine { ... }`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `onEnter`, `onExit`, `updateContext`, `command`, `effect`, and `topology.toMmd()`.
 
 This is directionally sound. The reducer/runtime layer resembles Elm/Redux: pure state update plus deferred outputs. The statechart layer resembles XState/SCXML/KStateMachine/Tinder: state scopes, event branches, guards, entry actions, and graphable targets.
 
@@ -36,10 +36,10 @@ The main problem is not the architecture direction. The main problem is that nam
 | Reference | Relevant pattern | Afsm match | Gap |
 |---|---|---|---|
 | XState | Finite state plus extended `context`; transitions with guards and actions | `AfsmState<Phase, Context>`, `transitionTo`, `guard`, `updateContext` | Initial entry behavior, invoked actors/services, inspection semantics |
-| SCXML | `datamodel`, transition executable content, ordered exit -> transition -> entry, `invoke` | Context, transition block, `onEnter` | No `onExit`, no invoke/cancel model, no hierarchy/parallel semantics |
+| SCXML | `datamodel`, transition executable content, ordered exit -> transition -> entry, `invoke` | Context, transition block, `onExit`, `onEnter` | No invoke/cancel model, no hierarchy/parallel semantics |
 | Tinder StateMachine | Kotlin DSL with `state`, `on`, `transitionTo`, side effect | Afsm DSL shape is close | Tinder is simpler; Afsm adds context and graph export, so validation matters more |
 | KStateMachine | Kotlin DSL, guards, targetless transitions, nested/parallel states, transition listeners | `stay` maps to targetless/internal transition; guards align | Afsm lacks nested/parallel, transition type, global listeners |
-| Redux | Pure reducer: state + action -> state; no side effects inside reducer | `AfsmStateMachine.transition` remains pure and Android-free | Afsm DSL lambdas can still hide impure work unless documented/tested |
+| Redux | Pure reducer: state + action -> state; no side effects inside reducer | `AfsmReducer.transition` remains pure and Android-free | Afsm DSL lambdas can still hide impure work unless documented/tested |
 | Elm | `update : Msg -> Model -> (Model, Cmd Msg)`; runtime executes commands | `AfsmTransition(state, commands, effects)` plus `AfsmHost` | Need clearer command naming and command exception/cancellation policy |
 | Square Workflow | State, render output, sinks, workers, snapshot/restoration | ViewModel as adapter plus command handler is compatible | Afsm has no first-class worker/subscription/restoration API yet |
 | Android official guidance | ViewModel state holder, lifecycle-aware collection, UI-local behavior stays UI | `afsm-viewmodel` and sample app align | SavedStateHandle and effect collection helpers remain incomplete |
@@ -48,7 +48,7 @@ The main problem is not the architecture direction. The main problem is that nam
 
 - Keep `ViewModel` as the Android lifecycle adapter. This aligns with Android guidance and avoids turning Afsm into a UI framework.
 - Keep the core state machine Android-free and synchronous.
-- Keep `AfsmState<Phase, Context>` as the standard state shape for graphable statecharts.
+- Keep `AfsmState<Phase, Context>` as the standard state shape for graphable machines.
 - Keep command execution outside transition logic. This preserves reducer purity and testability.
 - Keep `.mmd` generation from executable topology, not from a second graph-only DSL.
 - Keep Afsm optional for complex flows only. Ordinary data screens should stay ViewModel + Flow.
@@ -61,8 +61,8 @@ Current code mixes terms:
 
 - `AfsmTransition` exposes `commands`.
 - Runtime uses `AfsmCommandHandler`.
-- DSL exposes `action(...)`.
-- `AfsmStateChart<P, X, E, A, F>` uses generic `A`, but sample features pass `ProductEditorCommand`.
+- DSL exposes `command(...)`.
+- `AfsmMachine<P, X, E, C, F>` uses generic `C`, and sample features pass `ProductEditorCommand`.
 
 This is confusing. References split in two directions:
 
@@ -73,8 +73,8 @@ This is confusing. References split in two directions:
 Recommended Afsm direction:
 
 - Use `Command` consistently for host-executed outputs.
-- Rename DSL `action(...)` to `command(...)`.
-- Rename `AfsmStateChart<P, X, E, A, F>` generic `A` to `C`.
+- Keep DSL `command(...)` as the public spelling.
+- Keep `AfsmMachine<P, X, E, C, F>` generic `C`.
 - Keep documentation wording: “command is a transition action/output.”
 
 ### 2. Add Builder Validation

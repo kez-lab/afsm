@@ -1,6 +1,6 @@
 ---
 title: Android FSM Architecture
-updated: 2026-05-01
+updated: 2026-05-11
 ---
 
 # Android FSM Architecture
@@ -17,7 +17,7 @@ Make user interaction -> business logic -> state update -> view rendering easier
 View / Compose
 -> sends Event
 -> ViewModel.onEvent(event)
--> AfsmStateMachine.transition(currentState, event)
+-> AfsmReducer.transition(currentState, event)
 -> AfsmTransition(newState, commands, effects)
 -> ViewModel updates StateFlow
 -> ViewModel executes commands
@@ -34,9 +34,22 @@ data class AfsmTransition<S, C, F>(
     val effects: List<F> = emptyList(),
 )
 
-interface AfsmStateMachine<S, E, C, F> {
+fun interface AfsmReducer<S, E, C, F> {
     fun transition(state: S, event: E): AfsmTransition<S, C, F>
 }
+```
+
+For graphable phase/context flows, use `AfsmMachine<P, X, E, C, F>`:
+
+```kotlin
+data class AfsmState<P : Any, X : Any>(
+    val phase: P,
+    val context: X,
+)
+
+interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
+    AfsmReducer<AfsmState<P, X>, E, C, F>,
+    AfsmGraphSource
 ```
 
 ## Screen File Layout

@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Current State
@@ -29,10 +29,11 @@ The current direction is:
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
 - `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract from `AfsmMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
-- Deprecated compatibility aliases remain for `AfsmStateMachine`, `AfsmStateChart`, and `AfsmStateChartMachine`, but new code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmMachineAdapter`.
+- Deprecated pre-release aliases were removed from the public source surface. New code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmMachineAdapter`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, guard fallback, DSL build validation, and UI-side effect emission.
 - The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
 - `AfsmState<P, Context>` is now the standard phase/context state value. `AfsmMachine` directly implements `AfsmReducer<AfsmState<P, Context>, ...>` plus `AfsmGraphSource`.
+- Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
 - `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
@@ -43,7 +44,7 @@ The current direction is:
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
 - ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes `.mmd` graph metadata from the real sample implementation.
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
-- ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL chart, removing the previous phase/context adapter mapping.
+- ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL machine, removing the previous phase/context adapter mapping.
 - Kotlin `typealias` cannot share a same-named factory with the aliased constructor, so ProductEditor uses a lowercase `productEditorState()` factory for default initial state construction.
 - A reference architecture review compared Afsm against XState, SCXML, Tinder StateMachine, KStateMachine, Redux, Elm, Square Workflow, and Android guidance. The first hardening pass is now implemented: naming uses `AfsmReducer`/`AfsmMachine`, DSL output terminology is `command`, `onExit` exists, DSL build validation exists, topology metadata is richer, `AfsmHost` has a configurable command failure policy, and command cancellation remains explicit in feature commands/events.
 

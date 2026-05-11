@@ -1,6 +1,6 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Afsm KSP MMD Generation
@@ -33,8 +33,8 @@ Use a class annotation plus a small topology contract.
     fileName = "ProductEditorStateMachine.mmd",
 )
 class ProductEditorStateMachine(
-    chart: ProductEditorChart = productEditorChart(),
-) : ProductEditorChart by chart
+    machine: ProductEditorMachine = productEditorMachine(),
+) : ProductEditorMachine by machine
 ```
 
 Core types:
@@ -54,7 +54,7 @@ public interface AfsmGraphSource {
 
 Why require `AfsmGraphSource`:
 
-- `AfsmStateMachine<S, E, C, F>` should stay small and should not force every simple reducer to expose graph metadata.
+- `AfsmReducer<S, E, C, F>` should stay small and should not force every simple reducer to expose graph metadata.
 - Only graphable state machines opt in.
 - KSP can validate a clear type contract.
 - The writer can work with `AfsmTopology`, not with the generic machine internals.
@@ -66,8 +66,8 @@ The desired sample-shop usage should become:
 ```kotlin
 @AfsmGraph
 class ProductEditorStateMachine(
-    chart: ProductEditorChart = productEditorChart(),
-) : ProductEditorChart by chart
+    machine: ProductEditorMachine = productEditorMachine(),
+) : ProductEditorMachine by machine
 ```
 
 Then this should generate:
@@ -80,7 +80,7 @@ With a second class:
 
 ```kotlin
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
-class CheckoutStateMachine : AfsmStateChartMachine<...>(chart = checkoutChart()) {
+class CheckoutStateMachine : AfsmMachineAdapter<...>(machine = checkoutMachine()) {
     // mapping overrides
 }
 ```
@@ -107,7 +107,7 @@ KSP discovers @AfsmGraph classes
 -> write .mmd files
 ```
 
-Do not make KSP parse `afsmStateChart { ... }` bodies.
+Do not make KSP parse `afsmMachine { ... }` bodies.
 
 Reasons:
 
@@ -140,7 +140,7 @@ Valid:
 
 ```kotlin
 @AfsmGraph
-object CheckoutStateMachine : AfsmStateMachine<...>, AfsmGraphSource
+object CheckoutStateMachine : AfsmReducer<...>, AfsmGraphSource
 ```
 
 Invalid:

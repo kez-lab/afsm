@@ -497,3 +497,27 @@ Consequences:
 - `AfsmCommandFailurePolicy.Record` logs an `AfsmDiagnostic` with the failed command and throwable, then keeps processing later events.
 - `CancellationException` is always rethrown regardless of command failure policy.
 - Features that need cancellation should model it explicitly with commands such as `CancelUpload` or domain events such as `UploadCancelled`; structured invoked-service cancellation is deferred.
+
+## [2026-05-11] Remove pre-release compatibility aliases before public docs
+
+Decision: Remove deprecated pre-release aliases from source before writing public README/API docs.
+
+Removed aliases:
+
+- `AfsmStateMachine` -> `AfsmReducer`
+- `AfsmStateChart` -> `AfsmMachine`
+- `afsmStateChart` -> `afsmMachine`
+- `AfsmStateChartMachine` -> `AfsmMachineAdapter`
+- `AfsmChartState` -> `AfsmState`
+
+Rationale:
+
+- Afsm has not been published yet, so there is no external binary compatibility contract to preserve.
+- Keeping aliases would pollute IDE completion and make examples less decisive.
+- Public docs should teach one vocabulary: reducer for low-level transition logic, machine for executable phase/context topology.
+
+Consequences:
+
+- Public source no longer exports the old aliases.
+- `README.md` and `docs/afsm-public-api.md` document only current API names, with a short removed-alias mapping for migration context.
+- After the first published artifact, breaking renames should require a deliberate versioning decision.

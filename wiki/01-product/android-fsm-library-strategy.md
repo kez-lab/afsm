@@ -1,6 +1,6 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-05-01
+updated: 2026-05-11
 ---
 
 # Android FSM Library Strategy
@@ -22,7 +22,7 @@ The library should make this flow easy to model, inspect, test, and run:
 ```text
 UI event
 -> ViewModel
--> StateMachine.transition(state, event)
+-> AfsmReducer.transition(state, event)
 -> new state + commands/effects
 -> ViewModel executes commands
 -> results feed back as events
@@ -73,7 +73,8 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 
 The first usable library version should include:
 
-- `AfsmStateMachine<S, E, C, F>`
+- `AfsmReducer<S, E, C, F>`
+- `AfsmMachine<P, X, E, C, F>` for graphable phase/context machines
 - `AfsmTransition<S, C, F>`
 - invalid transition policy
 - command handling abstraction

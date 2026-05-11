@@ -179,7 +179,7 @@ Current feedback from the sample:
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
 - The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
-- A custom sealed Android-facing state is still possible through `AfsmStateChartMachine`, as shown by Auth.
+- A custom sealed Android-facing state is still possible through `AfsmMachineAdapter`, as shown by Auth.
 - A Compose/lifecycle effect collection helper or official snippet is now worth considering.
 
 ## Verification

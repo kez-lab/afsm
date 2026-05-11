@@ -16,16 +16,6 @@ public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmMachine(
     return builder.buildMachine()
 }
 
-@Deprecated(
-    message = "Use afsmMachine for executable Afsm DSL definitions.",
-    replaceWith = ReplaceWith("afsmMachine(build)"),
-)
-public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmStateChart(
-    build: AfsmMachineBuilder<P, X, E, C, F>.() -> Unit,
-): AfsmMachine<P, X, E, C, F> {
-    return afsmMachine(build)
-}
-
 public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     private var initialState: AfsmState<P, X>? = null
     private val states = mutableListOf<AfsmStateDefinition<P, X, E, C, F>>()

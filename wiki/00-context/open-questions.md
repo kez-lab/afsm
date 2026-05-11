@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Open Questions
@@ -46,7 +46,6 @@ Resolved:
 - Should the executable DSL live in `afsm-core`, `afsm-dsl`, or another module before public release?
 - How should graph extraction represent invalid/ignored branches declared in the executable DSL?
 - Should graph labels default to type names, require explicit human labels, or support both?
-- Should deprecated compatibility aliases for `AfsmStateMachine`, `AfsmStateChart`, and `AfsmStateChartMachine` stay until release, or be removed before public API stabilization?
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
 - Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
@@ -56,6 +55,7 @@ Resolved:
 Resolved:
 
 - `AfsmTransition<S, C, F>` is acceptable if feature-local typealiases are documented as the standard convention.
+- Pre-release compatibility aliases were removed before public documentation, so only current API names should be used in new source and docs.
 - `Ignored` is overloaded; the API should add `AfsmDecision.Stayed` and `Afsm.stay(...)` before implementation.
 - Use `Afsm` as public type prefix because the product name is Android State Machine.
 - Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
@@ -77,6 +77,7 @@ Resolved:
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; guard labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
 - Use `AfsmReducer<S, E, C, F>` for the low-level host contract and `AfsmMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
+- Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
 - `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features with this exact shape can use a typealias and delegate directly to the machine; custom sealed UI states can still adapt through `AfsmMachineAdapter`.
 - The DSL includes flat `onExit`; transition execution order is `onExit -> transition block -> onEnter` for phase-changing transitions.
@@ -89,5 +90,5 @@ Resolved:
 - In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
 - Context-only updates should be reserved for actual data updates; ProductEditor's current public style is executable DSL branches plus `updateContext`, not entry-policy-driven reducers.
 - The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.
-- `AfsmChartState` has been superseded by `AfsmState`; the old name remains only as a deprecated compatibility alias.
+- `AfsmChartState` has been removed before public API stabilization; use `AfsmState`.
 - Same-named factory functions conflict with Kotlin typealias constructors, so features should use lowercase factories such as `productEditorState()` when they need default initial state values.

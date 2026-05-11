@@ -275,3 +275,9 @@
 - Source: user request to unify command terminology, rename `AfsmStateMachine`/DSL concepts, add DSL validation, add `onExit`, expand topology metadata, and define command failure/cancellation policy.
 - Action: Implemented `AfsmReducer`, `AfsmMachine`, `command(...)`, `onExit`, `AfsmDefinitionException`, richer topology metadata, `AfsmCommandFailurePolicy`, sample migrations, and verification for core/runtime/ViewModel/sample-shop.
 - Updated: `afsm-core/`, `afsm-runtime/`, `afsm-viewmodel/`, `afsm-graph-ksp/`, `sample-shop/src/main/kotlin/`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Public API alias removal and README
+
+- Source: user request to decide when to remove deprecated aliases and prepare public README/API docs.
+- Action: Removed pre-release aliases from source, added root README and public API reference, and synchronized canonical wiki pages with the current `AfsmReducer` / `AfsmMachine` API vocabulary.
+- Updated: `README.md`, `docs/afsm-public-api.md`, `afsm-core/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/01-product/android-fsm-library-strategy.md`, `wiki/03-engineering/android-fsm-architecture.md`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/afsm-reference-architecture-review.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

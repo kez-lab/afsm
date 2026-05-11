@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Afsm v3 Executable DSL
@@ -128,7 +128,7 @@ or keep a custom Android-facing state and adapt it through `AfsmMachineAdapter`.
 
 The same-named factory pattern does not work with Kotlin `typealias` because it conflicts with the aliased constructor. Use a feature-local lowercase factory such as `productEditorState()` for defaults.
 
-`AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, and `AfsmChartState` remain only as deprecated compatibility names while the spike stabilizes. New code should use `AfsmReducer`, `AfsmMachine`, `afsmMachine`, `AfsmState`, and `AfsmMachineAdapter`.
+Pre-release compatibility aliases were removed before public documentation. Public examples should use only `AfsmReducer`, `AfsmMachine`, `afsmMachine`, `AfsmState`, and `AfsmMachineAdapter`.
 
 ## Ignore Semantics
 
@@ -524,7 +524,7 @@ Success criteria:
 Result on 2026-05-09:
 
 - Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract and `AfsmMachine<P, X, E, C, F>` for the DSL-built phase/context machine.
-- Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. `AfsmChartState` remains only as a deprecated compatibility alias.
+- Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. It was removed before public API stabilization.
 - Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, guard fallback, entry command emission, and effect-only stayed transitions work in compiled Kotlin tests.

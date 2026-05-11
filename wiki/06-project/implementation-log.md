@@ -638,3 +638,22 @@ Conclusion:
 
 - The hardened API compiles through core/runtime/ViewModel modules and real sample-shop usage.
 - Generated graphs still come from the compiled machine topology and are written to `sample-shop/build/generated/afsm/mmd/`.
+
+## [2026-05-11] Public API alias removal and README
+
+Change:
+
+- Removed pre-release compatibility aliases: `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState`.
+- Added root `README.md` with module overview, reducer example, machine DSL example, ViewModel integration, graph generation, runtime policies, and verification commands.
+- Added `docs/afsm-public-api.md` as the current API reference.
+- Updated canonical wiki pages away from the removed names where they describe current architecture.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --stacktrace
+```
+
+Conclusion:
+
+- New public-facing docs now teach the final pre-release vocabulary and the codebase compiles without the removed aliases.
