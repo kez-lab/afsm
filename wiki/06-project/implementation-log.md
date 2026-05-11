@@ -715,3 +715,21 @@ Conclusion:
 
 - The remaining Gradle deprecation warning is emitted from Kotlin Gradle plugin POM rewriting for a project dependency, not from direct Afsm build-script usage.
 - Current policy is to track it as a Kotlin/Gradle compatibility item and re-check during plugin upgrades rather than weakening publication metadata.
+
+## [2026-05-11] Kotlin explicit API gate
+
+Change:
+
+- Enabled Kotlin `explicitApi()` for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
+- Updated release readiness documentation to mark explicit API mode as part of the current local release gate.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-runtime:compileKotlin :afsm-graph-ksp:compileKotlin :afsm-viewmodel:compileDebugKotlin --stacktrace
+```
+
+Conclusion:
+
+- Existing Afsm public declarations already satisfy explicit API requirements.
+- Binary API validation remains the next stronger public API stability gate.

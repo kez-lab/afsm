@@ -28,6 +28,10 @@ kotlin {
     jvmToolchain(17)
 }
 
+kotlin {
+    explicitApi()
+}
+
 dependencies {
     api(project(":afsm-runtime"))
     api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")

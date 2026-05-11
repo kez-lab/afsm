@@ -299,3 +299,9 @@
 - Source: release-readiness autopilot loop after consumer smoke.
 - Action: Investigated Gradle deprecation warnings and documented the current local release gate, remaining product decisions, and warning policy.
 - Updated: `docs/release-readiness.md`, `README.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-11] implementation | Kotlin explicit API gate
+
+- Source: public API stability autopilot loop.
+- Action: Enabled Kotlin explicit API mode for all Afsm library modules and documented it as a release gate.
+- Updated: `afsm-core/build.gradle.kts`, `afsm-runtime/build.gradle.kts`, `afsm-viewmodel/build.gradle.kts`, `afsm-graph-ksp/build.gradle.kts`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

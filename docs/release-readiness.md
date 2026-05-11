@@ -20,6 +20,7 @@ What this proves:
 - The sample app compiles and exports `.mmd` graphs from real annotated machines.
 - Maven Local publishes all four library modules.
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR and KSP processor.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
 
 ## Current Pre-Release Artifacts
 
@@ -46,7 +47,6 @@ Required product decisions:
 Required engineering gates:
 
 - Add binary API validation before the first public release.
-- Decide whether Kotlin explicit API mode should be enabled for library modules.
 - Add a changelog with a clear `0.1.0` pre-release entry.
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
 - Keep `consumer-smoke` green after every publication metadata change.

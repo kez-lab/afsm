@@ -555,3 +555,19 @@ Consequences:
 - `scripts/verify-consumer-smoke.sh` publishes Afsm to Maven Local and compiles the separate Android consumer.
 - The consumer smoke covers `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
 - Remote release work should keep this smoke green before publishing public artifacts.
+
+## [2026-05-11] Enable Kotlin explicit API for public library modules
+
+Decision: Enable Kotlin `explicitApi()` for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
+
+Rationale:
+
+- Afsm is approaching a public library boundary; public declarations should not be accidental.
+- Explicit API mode forces public visibility and return types to be intentional before binary compatibility validation is introduced.
+- This is a low-cost compiler gate available through the Kotlin Gradle plugin without extra release tooling.
+
+Consequences:
+
+- Future public API additions must declare visibility and signatures clearly.
+- Internal implementation helpers should remain `internal` or `private`.
+- Binary API validation is still needed before the first public remote release.
