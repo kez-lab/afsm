@@ -11,6 +11,7 @@ Run from the repository root:
 The smoke build covers:
 
 - `io.github.afsm:afsm-core`
+- `io.github.afsm:afsm-compose`
 - `io.github.afsm:afsm-runtime`
 - `io.github.afsm:afsm-viewmodel`
 - `io.github.afsm:afsm-graph-ksp`

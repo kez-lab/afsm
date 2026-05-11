@@ -1,37 +1,28 @@
 # Afsm Public API
 
-This page describes the current public API surface intended for pre-release stabilization.
+This page describes the current pre-release public API surface.
 
-Current pre-release local Maven coordinates:
+## Coordinates
 
 ```kotlin
 implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
 ```
 
-Generate these artifacts with:
+Generate local artifacts:
 
 ```bash
 ./gradlew publishToMavenLocal
 ```
 
-Verify the published artifacts from a separate Android consumer build:
+Verify from a separate Android consumer build:
 
 ```bash
 ./scripts/verify-consumer-smoke.sh
 ```
-
-Removed pre-release aliases:
-
-- `AfsmStateMachine` -> use `AfsmReducer`
-- `AfsmStateChart` -> use `AfsmMachine`
-- `afsmStateChart` -> use `afsmMachine`
-- `AfsmStateChartMachine` -> use `AfsmMachine` with `AfsmState<Phase, Context>`
-- `AfsmChartState` -> use `AfsmState`
-
-Because Afsm has not been published yet, these aliases are removed before the first public release instead of kept as deprecated API.
 
 ## afsm-core
 
@@ -44,13 +35,6 @@ data class AfsmTransition<S : Any, C : Any, F : Any>(
     val effects: List<F> = emptyList(),
     val decision: AfsmDecision = AfsmDecision.Transitioned,
 )
-```
-
-Use feature-local typealiases to keep signatures readable:
-
-```kotlin
-typealias CheckoutTransition =
-    AfsmTransition<CheckoutState, CheckoutCommand, CheckoutEffect>
 ```
 
 ### AfsmDecision
@@ -70,20 +54,38 @@ fun interface AfsmReducer<S : Any, E : Any, C : Any, F : Any> {
 }
 ```
 
-Use this for simple or custom state shapes.
+Use this for custom state shapes or low-level integrations.
 
-### AfsmGraphReducer
+### AfsmMachine
 
 ```kotlin
-interface AfsmGraphReducer<S : Any, E : Any, C : Any, F : Any> :
+interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
     AfsmReducer<S, E, C, F>,
     AfsmGraphSource {
     val initialState: S
+    val topology: AfsmTopology
 }
 ```
 
-Use this at feature boundaries for graphable machines after the feature has
-named its state type.
+Use this at feature boundaries once the state type has been named.
+
+```kotlin
+typealias ProductEditorState =
+    AfsmState<ProductEditorPhase, ProductEditorContext>
+
+private typealias ProductEditorMachine =
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+```
+
+### AfsmPhaseMachine
+
+```kotlin
+interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<AfsmState<P, X>, E, C, F>
+```
+
+`afsmMachine { ... }` builds this type. Most app code should expose it through
+a feature-local `AfsmMachine<State, Event, Command, Effect>` alias.
 
 ### AfsmState
 
@@ -94,30 +96,10 @@ data class AfsmState<P : Any, X : Any>(
 )
 ```
 
-Use this for graphable machines where `phase` is the finite graph state and `context` is extended data.
+`phase` is the finite graph state. `context` is extended state data, not
+`android.content.Context`.
 
-### AfsmMachine
-
-```kotlin
-interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmGraphReducer<AfsmState<P, X>, E, C, F> {
-    val initialState: AfsmState<P, X>
-    override val topology: AfsmTopology
-}
-```
-
-At feature boundaries, prefer a state-based alias so `Phase + Context` stays
-collapsed behind the feature's state type:
-
-```kotlin
-typealias ProductEditorState =
-    AfsmState<ProductEditorPhase, ProductEditorContext>
-
-private typealias ProductEditorMachine =
-    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
-```
-
-Build it with:
+### DSL
 
 ```kotlin
 afsmMachine<Phase, Context, Event, Command, Effect> {
@@ -128,30 +110,25 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
             transitionTo(
                 phase = Phase.Submitting,
                 guardLabel = "valid form",
+                commandLabels = listOf("Submit"),
                 guard = { context.form.isValid() },
             ) {
                 updateContext { copy(errorMessage = null) }
             }
 
-            otherwise {
+            otherwise(label = "invalid form") {
                 updateContext { copy(errorMessage = "Invalid form") }
             }
         }
     }
 
     state(Phase.Submitting) {
-        onEnter {
+        onEnter(commandLabels = listOf("Submit")) {
             command(Command.Submit(context.form))
-        }
-
-        on<Event.SubmitSucceeded> {
-            transitionTo(Phase.Completed)
         }
     }
 }
 ```
-
-### DSL Semantics
 
 | API | Meaning |
 |---|---|
@@ -162,14 +139,14 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | `transitionTo(phase)` | Phase-changing transition |
 | `transitionTo<PayloadPhase>(phase = { ... })` | Phase-changing transition to payload phase |
 | `stay { ... }` | Handled internal branch with no phase change |
-| `otherwise { ... }` | Fallback internal branch after guards fail |
+| `otherwise(label = ...) { ... }` | Fallback internal branch after guards fail |
 | `ignore(reason)` | Expected no-op event; no graph edge |
 | `invalid(reason)` | Explicit invalid event; no graph edge |
 | `updateContext { ... }` | Immutable extended-state update |
 | `command(command)` | Host-executed work output |
 | `effect(effect)` | UI-side one-shot output |
-| `onEnter { ... }` | Runs after entering a phase |
-| `onExit { ... }` | Runs before leaving a phase |
+| `onEnter(commandLabels = ...) { ... }` | Runs after entering a phase |
+| `onExit(commandLabels = ...) { ... }` | Runs before leaving a phase |
 
 Phase-changing transition order:
 
@@ -177,41 +154,27 @@ Phase-changing transition order:
 onExit -> transition block -> onEnter
 ```
 
-### Definition Validation
-
-`afsmMachine { ... }` throws `AfsmDefinitionException` when:
-
-- no state is declared,
-- the initial phase has no matching state declaration,
-- a state label is duplicated,
-- an event handler is duplicated within a state,
-- a transition target has no matching state declaration.
-
-### Topology
+### Topology and MMD
 
 ```kotlin
 data class AfsmTopology(
     val states: List<AfsmTopologyState>,
     val transitions: List<AfsmTopologyTransition>,
+    val initialStateId: String? = null,
 )
 
-fun AfsmTopology.toMmd(): String
+fun AfsmTopology.toMmd(
+    options: AfsmMmdOptions = AfsmMmdOptions.Flow,
+): String
 ```
 
-`AfsmTopologyTransition` includes:
+`AfsmMmdOptions.Flow` hides ordinary internal self-loops. Use
+`AfsmMmdOptions.Full` for complete topology.
 
-- `from`
-- `event`
-- `to`
-- `guardLabel`
-- `commandLabels`
-- `effectLabels`
-- `kind`
-- `isFallback`
+`AfsmTopologyState` can include entry/exit command/effect labels. These labels
+are metadata only; runtime commands/effects must still be emitted in DSL blocks.
 
 ## afsm-runtime
-
-### AfsmHost
 
 ```kotlin
 class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
@@ -240,18 +203,7 @@ Runtime guarantees:
 - Commands are executed sequentially without blocking later event reduction.
 - Commands may dispatch follow-up events.
 - Follow-up events are queued, not re-entered recursively.
-- `tryDispatch(event)` returns `false` when the host is closed or the event
-  queue is full.
-
-### AfsmCommandHandler
-
-```kotlin
-fun interface AfsmCommandHandler<C : Any, E : Any> {
-    suspend fun handle(command: C, dispatch: suspend (E) -> Unit)
-}
-```
-
-Command handlers should convert domain results and failures into typed events.
+- `tryDispatch(event)` returns `false` when the host is closed or the event queue is full.
 
 ### AfsmConfig
 
@@ -266,6 +218,7 @@ class AfsmConfig(
     val effectDelivery: AfsmEffectDelivery =
         AfsmEffectDelivery.Default,
     val eventQueueCapacity: Int = 64,
+    val commandQueueCapacity: Int = 64,
     val logger: AfsmLogger =
         AfsmLogger.None,
 )
@@ -281,7 +234,14 @@ Command failure policy:
 
 ```kotlin
 fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmGraphReducer<S, E, C, F>,
+    machine: AfsmMachine<S, E, C, F>,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C, F>
+
+fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
+    machine: AfsmReducer<S, E, C, F>,
+    initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
@@ -294,11 +254,22 @@ fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
 ): AfsmHost<S, E, C, F>
 ```
 
-Use the `machine` overload for the standard graphable DSL path. Use the
-`initialState + reducer` overload when the initial state is dynamic, such as
-when it is derived from navigation arguments or `SavedStateHandle`.
+Use `machine` for the standard path. Use `machine + initialState` when the
+starting state is dynamic.
 
-The helper only supplies `viewModelScope`. It does not own navigation, DI, Compose policy, or `SavedStateHandle`.
+## afsm-compose
+
+```kotlin
+@Composable
+fun <F : Any> CollectAfsmEffects(
+    effects: Flow<F>,
+    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    onEffect: suspend (F) -> Unit,
+)
+```
+
+Use this in route-level composables for UI one-shot behavior such as navigation
+or snackbar display.
 
 ## afsm-graph-ksp
 
@@ -310,22 +281,19 @@ The helper only supplies `viewModelScope`. It does not own navigation, DI, Compo
 object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
-KSP discovers annotated classes or objects that implement the graphable reducer
-contract. Author code should prefer:
-
-- `AfsmGraphReducer<*, *, *, *>`
-
-`AfsmMachine` implements `AfsmGraphReducer` automatically. The processor
-validates the underlying `AfsmReducer + AfsmGraphSource` supertypes so
-typealias-based declarations remain supported.
-
-and generates a module-local graph registry.
+KSP discovers annotated classes or objects that implement both `AfsmReducer`
+and `AfsmGraphSource`. `AfsmMachine` satisfies both automatically.
 
 MVP constructor policy:
 
 - annotated classes must be `object`s, or
 - classes must be constructible with no required constructor parameters.
 
-## Release API Decision
+## Removed Pre-Release Names
 
-Pre-release aliases are removed before public documentation and before publishing. After the first published artifact, source/binary compatibility rules must become stricter and breaking renames should require a major version bump.
+- `AfsmStateMachine` -> use `AfsmReducer`
+- `AfsmStateChart` -> use `AfsmPhaseMachine` / `afsmMachine`
+- `afsmStateChart` -> use `afsmMachine`
+- `AfsmStateChartMachine` -> use `AfsmPhaseMachine`
+- `AfsmChartState` -> use `AfsmState`
+- `AfsmGraphReducer` -> use `AfsmMachine<State, Event, Command, Effect>`

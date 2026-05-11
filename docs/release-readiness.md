@@ -15,16 +15,18 @@ What this proves:
 - Core transition and executable machine APIs compile and pass unit tests.
 - Runtime dispatch, command execution, effects, invalid transitions, and command failure policies pass unit tests.
 - Android ViewModel helper compiles and passes unit tests.
+- Compose effect helper compiles.
 - The sample app compiles and exports `.mmd` graphs from real annotated machines.
-- Maven Local publishes all four library modules.
+- Maven Local publishes all five library modules.
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR and KSP processor.
-- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, and `afsm-graph-ksp`.
-- Binary API dumps are checked for all four Afsm library modules.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
+- Binary API dumps are checked for all five Afsm library modules.
 
 ## Current Pre-Release Artifacts
 
 ```kotlin
 implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
@@ -41,6 +43,7 @@ Current generated POMs contain:
 | `afsm-core` | `jar` | None | Yes |
 | `afsm-runtime` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
+| `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |
 
 Current generated POMs do not yet contain:

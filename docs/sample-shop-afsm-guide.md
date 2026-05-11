@@ -16,7 +16,7 @@ The point is not to force every screen into a finite state machine. The app uses
 
 The sample intentionally stays close to the Android/Kotlin stack:
 
-- Afsm modules: `afsm-core`, `afsm-runtime`, `afsm-viewmodel`
+- Afsm modules: `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`
 - Compose Material 3
 - Navigation Compose
 - AndroidX Lifecycle Compose
@@ -168,6 +168,18 @@ Policy:
 - Duplicate enter/pay events are ignored while work is already running.
 - First mock payment attempt fails for higher-priced products, so retry can be exercised.
 - Payment completion is an effect because navigation is a UI-side one-shot action.
+- Payment commands include a request id and result events echo that id. Late
+  results from older payment attempts are treated as stale `Ignored` events
+  instead of invalid programmer errors.
+- Checkout uses `afsmHost(machine = ..., initialState = ...)` because its
+  initial state comes from a navigation `productId`.
+
+## Compose Effect Collection
+
+Route composables use `CollectAfsmEffects(...)` from `afsm-compose` instead of
+hand-writing `LaunchedEffect { effects.collect { ... } }`.
+
+Effects remain UI one-shots. Durable business information must stay in state.
 
 ## Testing Policy
 
@@ -197,7 +209,7 @@ The current sample suggests:
 - `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
 - `AfsmReducer` is the host-facing contract. The executable DSL builds an `AfsmMachine`, and machines now operate directly on the standard `AfsmState<Phase, Context>` data class.
-- `AfsmGraphReducer<State, Event, Command, Effect>` is the feature-boundary alias shape for graphable machines, so sample code avoids repeating all five `AfsmMachine<Phase, Context, Event, Command, Effect>` parameters.
+- `AfsmMachine<State, Event, Command, Effect>` is the feature-boundary alias shape for graphable machines, so sample code avoids repeating all five `AfsmPhaseMachine<Phase, Context, Event, Command, Effect>` parameters.
 - The standard `AfsmState<Phase, Context>` model now removes Auth/ProductEditor adapter boilerplate while keeping state diagrams focused on phases.
 - Custom sealed UI states require an explicit feature-owned `AfsmReducer`; the core API no longer ships an adapter base.
 - Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.
@@ -206,6 +218,4 @@ The current sample suggests:
 
 Open follow-up:
 
-- Add a `collectEffectsWithLifecycle` helper or documentation snippet.
-- Add a concise README showing the `AuthViewModel` usage shape.
 - Add instrumentation smoke tests once an emulator target is available.
