@@ -1,7 +1,7 @@
 package afsm.consumer.smoke
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmGraphReducer
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -32,12 +32,16 @@ internal sealed interface SmokeCommand {
 
 internal typealias SmokeState = AfsmState<SmokePhase, SmokeContext>
 
+private typealias SmokeMachine = AfsmGraphReducer<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect>
+
 @AfsmGraph(
     id = "ConsumerSmoke",
     fileName = "ConsumerSmoke.mmd",
 )
-internal object ConsumerSmokeMachine :
-    AfsmMachine<SmokePhase, SmokeContext, SmokeEvent, SmokeCommand, AfsmNoEffect> by afsmMachine({
+internal object ConsumerSmokeMachine : SmokeMachine by smokeMachine()
+
+private fun smokeMachine(): SmokeMachine {
+    return afsmMachine {
         initial(
             phase = SmokePhase.Editing,
             context = SmokeContext(),
@@ -69,12 +73,12 @@ internal object ConsumerSmokeMachine :
 
         state(SmokePhase.Saved) {
         }
-    })
+    }
+}
 
 internal class ConsumerSmokeViewModel : ViewModel() {
     val host = afsmHost(
-        initialState = ConsumerSmokeMachine.initialState,
-        reducer = ConsumerSmokeMachine,
+        machine = ConsumerSmokeMachine,
         commandHandler = AfsmCommandHandler { command, dispatch ->
             when (command) {
                 is SmokeCommand.SaveTitle -> dispatch(SmokeEvent.Saved)

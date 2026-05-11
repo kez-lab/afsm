@@ -9,7 +9,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ProductEditorStateMachineTest {
-    private val machine = ProductEditorStateMachine()
+    private val machine = ProductEditorStateMachine
     private val validDraft = ProductDraft(
         form = ProductDraftForm(
             title = "Travel Mug",

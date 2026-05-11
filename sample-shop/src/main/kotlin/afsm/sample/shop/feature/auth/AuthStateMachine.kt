@@ -1,36 +1,16 @@
 package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmState
-import afsm.core.AfsmMachine
-import afsm.core.AfsmMachineAdapter
+import afsm.core.AfsmGraphReducer
 import afsm.core.afsmMachine
-import afsm.sample.shop.core.model.UserSession
 
-private typealias AuthMachine = AfsmMachine<AuthPhase, AuthContext, AuthEvent, AuthCommand, AuthEffect>
+private typealias AuthMachine = AfsmGraphReducer<AuthState, AuthEvent, AuthCommand, AuthEffect>
 
 @AfsmGraph(
     id = "Auth",
     fileName = "AuthStateMachine.mmd",
 )
-internal class AuthStateMachine : AfsmMachineAdapter<
-    AuthState,
-    AuthPhase,
-    AuthContext,
-    AuthEvent,
-    AuthCommand,
-    AuthEffect,
-    >(
-    machine = authMachine(),
-) {
-    override fun toAfsmState(state: AuthState): AfsmState<AuthPhase, AuthContext> {
-        return state.toAfsmState()
-    }
-
-    override fun toScreenState(state: AfsmState<AuthPhase, AuthContext>): AuthState {
-        return state.toAuthState()
-    }
-}
+internal object AuthStateMachine : AuthMachine by authMachine()
 
 private fun authMachine(): AuthMachine {
     return afsmMachine {
@@ -93,7 +73,6 @@ private fun authMachine(): AuthMachine {
                     updateContext {
                         normalized.copy(
                             errorMessage = null,
-                            session = null,
                         )
                     }
                     command(
@@ -112,7 +91,6 @@ private fun authMachine(): AuthMachine {
                     updateContext {
                         normalized.copy(
                             errorMessage = null,
-                            session = null,
                         )
                     }
                     command(
@@ -143,12 +121,15 @@ private fun authMachine(): AuthMachine {
 
         state(AuthPhase.Submitting) {
             on<AuthEvent.AuthSucceeded> {
-                transitionTo(AuthPhase.Authenticated) {
-                    updateContext {
-                        copy(
+                transitionTo<AuthPhase.Authenticated>(
+                    phase = {
+                        AuthPhase.Authenticated(
                             session = event.session,
-                            errorMessage = null,
                         )
+                    },
+                ) {
+                    updateContext {
+                        AuthContext()
                     }
                     effect(AuthEffect.OpenCatalog)
                 }
@@ -183,7 +164,7 @@ private fun authMachine(): AuthMachine {
             }
         }
 
-        state(AuthPhase.Authenticated) {
+        state<AuthPhase.Authenticated> {
             on<AuthEvent.AuthSucceeded> {
                 ignore(reason = "Auth flow already completed.")
             }
@@ -212,66 +193,6 @@ private fun authMachine(): AuthMachine {
                 ignore(reason = "Auth flow already completed.")
             }
         }
-    }
-}
-
-internal sealed interface AuthPhase {
-    data object Editing : AuthPhase
-    data object Submitting : AuthPhase
-    data object Authenticated : AuthPhase
-}
-
-internal data class AuthContext(
-    val mode: AuthMode = AuthMode.Login,
-    val form: AuthForm = AuthForm(),
-    val errorMessage: String? = null,
-    val session: UserSession? = null,
-)
-
-private fun AuthState.toAfsmState(): AfsmState<AuthPhase, AuthContext> {
-    return when (this) {
-        is AuthState.Editing -> AfsmState(
-            phase = AuthPhase.Editing,
-            context = AuthContext(
-                mode = mode,
-                form = form,
-                errorMessage = errorMessage,
-            ),
-        )
-
-        is AuthState.Submitting -> AfsmState(
-            phase = AuthPhase.Submitting,
-            context = AuthContext(
-                mode = mode,
-                form = form,
-            ),
-        )
-
-        is AuthState.Authenticated -> AfsmState(
-            phase = AuthPhase.Authenticated,
-            context = AuthContext(session = session),
-        )
-    }
-}
-
-private fun AfsmState<AuthPhase, AuthContext>.toAuthState(): AuthState {
-    return when (phase) {
-        AuthPhase.Editing -> AuthState.Editing(
-            mode = context.mode,
-            form = context.form,
-            errorMessage = context.errorMessage,
-        )
-
-        AuthPhase.Submitting -> AuthState.Submitting(
-            mode = context.mode,
-            form = context.form,
-        )
-
-        AuthPhase.Authenticated -> AuthState.Authenticated(
-            session = requireNotNull(context.session) {
-                "Authenticated phase requires a session in AuthContext."
-            },
-        )
     }
 }
 

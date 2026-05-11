@@ -1,6 +1,6 @@
 package afsm.sample.shop.feature.auth
 
-import afsm.core.AfsmTransition
+import afsm.core.AfsmState
 import afsm.sample.shop.core.model.UserSession
 
 enum class AuthMode {
@@ -14,27 +14,38 @@ data class AuthForm(
     val password: String = "",
 )
 
-sealed interface AuthState {
-    data class Editing(
-        val mode: AuthMode = AuthMode.Login,
-        val form: AuthForm = AuthForm(),
-        val errorMessage: String? = null,
-    ) : AuthState
+typealias AuthState = AfsmState<AuthPhase, AuthContext>
 
-    data class Submitting(
-        val mode: AuthMode,
-        val form: AuthForm,
-    ) : AuthState
+fun authState(
+    phase: AuthPhase = AuthPhase.Editing,
+    context: AuthContext = AuthContext(),
+): AuthState {
+    return AfsmState(
+        phase = phase,
+        context = context,
+    )
+}
+
+sealed interface AuthPhase {
+    data object Editing : AuthPhase
+
+    data object Submitting : AuthPhase
 
     data class Authenticated(
         val session: UserSession,
-    ) : AuthState
+    ) : AuthPhase
 }
 
 data class AuthRenderState(
     val mode: AuthMode,
     val form: AuthForm,
     val isLoading: Boolean,
+    val errorMessage: String? = null,
+)
+
+data class AuthContext(
+    val mode: AuthMode = AuthMode.Login,
+    val form: AuthForm = AuthForm(),
     val errorMessage: String? = null,
 )
 
@@ -71,24 +82,22 @@ sealed interface AuthEffect {
     data object OpenCatalog : AuthEffect
 }
 
-typealias AuthTransition = AfsmTransition<AuthState, AuthCommand, AuthEffect>
-
 fun AuthState.toRenderState(): AuthRenderState {
-    return when (this) {
-        is AuthState.Editing -> AuthRenderState(
-            mode = mode,
-            form = form,
+    return when (phase) {
+        AuthPhase.Editing -> AuthRenderState(
+            mode = context.mode,
+            form = context.form,
             isLoading = false,
-            errorMessage = errorMessage,
+            errorMessage = context.errorMessage,
         )
 
-        is AuthState.Submitting -> AuthRenderState(
-            mode = mode,
-            form = form,
+        AuthPhase.Submitting -> AuthRenderState(
+            mode = context.mode,
+            form = context.form,
             isLoading = true,
         )
 
-        is AuthState.Authenticated -> AuthRenderState(
+        is AuthPhase.Authenticated -> AuthRenderState(
             mode = AuthMode.Login,
             form = AuthForm(),
             isLoading = false,

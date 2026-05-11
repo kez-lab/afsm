@@ -7,16 +7,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class AuthStateMachineTest {
-    private val machine = AuthStateMachine()
+    private val machine = AuthStateMachine
 
     @Test
     fun `register submit trims inputs enters loading and emits register command`() {
-        val state = AuthState.Editing(
-            mode = AuthMode.Register,
-            form = AuthForm(
-                name = "  Mina  ",
-                email = "  mina@example.com  ",
-                password = "secret1",
+        val state = authState(
+            context = AuthContext(
+                mode = AuthMode.Register,
+                form = AuthForm(
+                    name = "  Mina  ",
+                    email = "  mina@example.com  ",
+                    password = "secret1",
+                ),
             ),
         )
 
@@ -24,12 +26,15 @@ class AuthStateMachineTest {
 
         assertEquals(AfsmDecision.Transitioned, result.decision)
         assertEquals(
-            AuthState.Submitting(
-                mode = AuthMode.Register,
-                form = AuthForm(
-                    name = "Mina",
-                    email = "mina@example.com",
-                    password = "secret1",
+            authState(
+                phase = AuthPhase.Submitting,
+                context = AuthContext(
+                    mode = AuthMode.Register,
+                    form = AuthForm(
+                        name = "Mina",
+                        email = "mina@example.com",
+                        password = "secret1",
+                    ),
                 ),
             ),
             result.state,
@@ -48,11 +53,13 @@ class AuthStateMachineTest {
 
     @Test
     fun `submit with invalid password stays and does not emit command`() {
-        val state = AuthState.Editing(
-            mode = AuthMode.Login,
-            form = AuthForm(
-                email = "mina@example.com",
-                password = "123",
+        val state = authState(
+            context = AuthContext(
+                mode = AuthMode.Login,
+                form = AuthForm(
+                    email = "mina@example.com",
+                    password = "123",
+                ),
             ),
         )
 
@@ -61,7 +68,7 @@ class AuthStateMachineTest {
         assertIs<AfsmDecision.Stayed>(result.decision)
         assertEquals(
             "Password must be at least 6 characters.",
-            (result.state as AuthState.Editing).errorMessage,
+            result.state.context.errorMessage,
         )
         assertEquals(emptyList(), result.commands)
     }
@@ -73,11 +80,14 @@ class AuthStateMachineTest {
             name = "Mina",
             email = "mina@example.com",
         )
-        val state = AuthState.Submitting(
-            mode = AuthMode.Login,
-            form = AuthForm(
-                email = "mina@example.com",
-                password = "secret1",
+        val state = authState(
+            phase = AuthPhase.Submitting,
+            context = AuthContext(
+                mode = AuthMode.Login,
+                form = AuthForm(
+                    email = "mina@example.com",
+                    password = "secret1",
+                ),
             ),
         )
 
@@ -86,13 +96,19 @@ class AuthStateMachineTest {
             event = AuthEvent.AuthSucceeded(session),
         )
 
-        assertEquals(AuthState.Authenticated(session), result.state)
+        assertEquals(
+            authState(
+                phase = AuthPhase.Authenticated(session),
+                context = AuthContext(),
+            ),
+            result.state,
+        )
         assertEquals(listOf(AuthEffect.OpenCatalog), result.effects)
     }
 
     @Test
     fun `auth command result without loading is invalid`() {
-        val state = AuthState.Editing()
+        val state = authState()
 
         val result = machine.transition(
             state = state,
@@ -105,9 +121,11 @@ class AuthStateMachineTest {
 
     @Test
     fun `form changes are self transitions inside editing phase`() {
-        val state = AuthState.Editing(
-            mode = AuthMode.Login,
-            form = AuthForm(email = "old@example.com"),
+        val state = authState(
+            context = AuthContext(
+                mode = AuthMode.Login,
+                form = AuthForm(email = "old@example.com"),
+            ),
         )
 
         val result = machine.transition(
@@ -116,9 +134,11 @@ class AuthStateMachineTest {
         )
 
         assertEquals(
-            AuthState.Editing(
-                mode = AuthMode.Login,
-                form = AuthForm(email = "new@example.com"),
+            authState(
+                context = AuthContext(
+                    mode = AuthMode.Login,
+                    form = AuthForm(email = "new@example.com"),
+                ),
             ),
             result.state,
         )

@@ -8,9 +8,8 @@ package afsm.core
  * optional UI effects.
  */
 public interface AfsmMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmReducer<AfsmState<P, X>, E, C, F>,
-    AfsmGraphSource {
-    public val initialState: AfsmState<P, X>
+    AfsmGraphReducer<AfsmState<P, X>, E, C, F> {
+    public override val initialState: AfsmState<P, X>
 
     /**
      * Static state and transition metadata declared by this machine.

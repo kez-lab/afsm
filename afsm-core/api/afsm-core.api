@@ -114,6 +114,10 @@ public final class afsm/core/AfsmGraphEntry {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class afsm/core/AfsmGraphReducer : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
+	public abstract fun getInitialState ()Ljava/lang/Object;
+}
+
 public abstract interface class afsm/core/AfsmGraphRegistry {
 	public abstract fun getEntries ()Ljava/util/List;
 }
@@ -122,18 +126,10 @@ public abstract interface class afsm/core/AfsmGraphSource {
 	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
 }
 
-public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
+public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphReducer {
 	public abstract fun getInitialState ()Lafsm/core/AfsmState;
 	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
 	public abstract fun transition (Lafsm/core/AfsmState;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
-}
-
-public abstract class afsm/core/AfsmMachineAdapter : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
-	public fun <init> (Lafsm/core/AfsmMachine;)V
-	public final fun getTopology ()Lafsm/core/AfsmTopology;
-	protected abstract fun toAfsmState (Ljava/lang/Object;)Lafsm/core/AfsmState;
-	protected abstract fun toScreenState (Lafsm/core/AfsmState;)Ljava/lang/Object;
-	public final fun transition (Ljava/lang/Object;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
 }
 
 public final class afsm/core/AfsmMachineBuilder {

@@ -1,8 +1,10 @@
 package afsm.viewmodel
 
 import afsm.core.Afsm
+import afsm.core.AfsmGraphReducer
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
+import afsm.core.AfsmTopology
 import afsm.core.AfsmTransition
 import afsm.runtime.AfsmCommandHandler
 import androidx.lifecycle.ViewModel
@@ -74,8 +76,7 @@ class AfsmViewModelTest {
         val handledCommands = mutableListOf<CounterCommand>()
 
         private val host = afsmHost(
-            initialState = CounterState(),
-            reducer = CounterStateMachine(),
+            machine = CounterStateMachine,
             commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
                 handledCommands += command
                 when (command) {
@@ -94,8 +95,14 @@ class AfsmViewModelTest {
         }
     }
 
-    private class CounterStateMachine :
-        AfsmReducer<CounterState, CounterEvent, CounterCommand, CounterEffect> {
+    private object CounterStateMachine :
+        AfsmGraphReducer<CounterState, CounterEvent, CounterCommand, CounterEffect> {
+        override val initialState: CounterState = CounterState()
+        override val topology: AfsmTopology = AfsmTopology(
+            states = emptyList(),
+            transitions = emptyList(),
+        )
+
         override fun transition(
             state: CounterState,
             event: CounterEvent,

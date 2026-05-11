@@ -1,24 +1,17 @@
 package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmGraphReducer
 import afsm.core.afsmMachine
 
-private typealias ProductEditorMachine = AfsmMachine<
-    ProductEditorPhase,
-    ProductEditorContext,
-    ProductEditorEvent,
-    ProductEditorCommand,
-    ProductEditorEffect,
-    >
+private typealias ProductEditorMachine =
+    AfsmGraphReducer<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 
 @AfsmGraph(
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-internal class ProductEditorStateMachine(
-    machine: ProductEditorMachine = productEditorMachine(),
-) : ProductEditorMachine by machine
+internal object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 
 private fun productEditorMachine(): ProductEditorMachine {
     return afsmMachine {
