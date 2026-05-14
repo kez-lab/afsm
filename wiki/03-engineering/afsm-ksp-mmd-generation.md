@@ -1,6 +1,6 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-05-11
+updated: 2026-05-14
 ---
 
 # Afsm KSP MMD Generation
@@ -356,6 +356,7 @@ Implementation status:
 - Done: adding a second real annotated `StateMachine` writes a second `.mmd`.
 - Open: invalid annotated classes should fail compilation with useful messages in processor tests.
 - Done: no explanatory markdown is generated as graph output.
+- Done: graph `fileName` values must be safe relative `.mmd` paths; absolute paths, traversal segments, empty segments, and non-`.mmd` files are rejected by both the KSP processor and runtime writer.
 
 Initial test targets:
 

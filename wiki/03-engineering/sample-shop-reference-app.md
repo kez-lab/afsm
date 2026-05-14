@@ -1,6 +1,6 @@
 ---
 title: Sample Shop Reference App
-updated: 2026-05-11
+updated: 2026-05-14
 ---
 
 # Sample Shop Reference App
@@ -179,6 +179,10 @@ Checkout now carries a payment `requestId` through `SubmitPayment`,
 results whose request id no longer matches the active payment request. This is
 the first official sample pattern for long-running command result safety.
 
+Checkout completion is now durable state plus effect. The screen renders the
+completed order if the navigation effect is missed, and duplicate pay/retry
+events after completion are ignored.
+
 ## Public API Feedback
 
 Current feedback from the sample:
@@ -213,5 +217,6 @@ Android CLI journey verification:
 
 ## Next Gaps
 
+- Convert Checkout into a graphable phase/context machine, or explicitly keep it documented as the custom reducer escape hatch.
 - Add Android CLI smoke evidence for the latest API-hardening pass if visual regression confidence is needed.
 - Consider a public codelab that walks through ProductEditor from contract to graph output.

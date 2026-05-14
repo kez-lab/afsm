@@ -1010,3 +1010,30 @@ Conclusion:
 
 - The public API now has a simpler first-contact vocabulary: `AfsmReducer`, `AfsmMachine`, `AfsmPhaseMachine`, `AfsmState`, `AfsmTransition`, `Command`, and optional `Effect`.
 - The full local release gate passes after the usability hardening pass, including Maven Local publication and the external consumer smoke compile/KSP check.
+
+## [2026-05-14] Afsm adoption hardening loop
+
+Change:
+
+- Ran a second 10-agent Android developer review and CTO synthesis.
+- Added `AfsmDslMarker`.
+- Refactored `afsm-core` DSL internals so `addState`, `addBranch`, `addEventDefinition`, and `afsmLabelForClass` no longer appear in the public API dump.
+- Changed `AfsmTransition` from public data-class construction to factory-based construction.
+- Split `ViewModel.afsmHost(machine = ..., initialState = ...)` from the custom `reducer = ..., initialState = ...` escape hatch.
+- Guarded completed Checkout against duplicate pay/retry events and rendered completion state.
+- Hardened graph `.mmd` output paths in both `AfsmMmdWriter` and the KSP processor.
+- Added `docs/modeling-rules.md` and linked it from README/sample docs.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:compileDebugKotlin --warning-mode all --no-daemon
+./gradlew :afsm-core:test :afsm-graph-ksp:test :sample-shop:generateAfsmMmd apiCheck --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Conclusion:
+
+- The P0 public ABI leak is fixed and the local release gate still passes.
+- Afsm is more credible for internal beta, but runtime pressure tests, restoration/effect policy, graph compile-testing, and Checkout graphability remain before public OSS/stable release.

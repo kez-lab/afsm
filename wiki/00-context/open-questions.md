@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-11
+updated: 2026-05-14
 ---
 
 # Open Questions
@@ -51,6 +51,8 @@ Resolved:
 - Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 - Should external MMD generation ship as a Gradle plugin, a documented task template, or a simple runtime writer API first?
+- How should command-result event overflow be handled when the event queue is full: fail the command, reserve internal capacity, split command-result queues, or introduce a policy?
+- What exact restoration policy should be documented for phases whose `onEnter` would normally start non-idempotent work?
 
 Resolved:
 
@@ -102,3 +104,7 @@ Resolved:
 - The first documented stale command result pattern is request/correlation id; Checkout now models payment request ids and ignores stale results.
 - Generated MMD defaults to `AfsmMmdOptions.Flow`, which hides ordinary internal self-loops; `AfsmMmdOptions.Full` remains available for complete topology debugging.
 - `CollectAfsmEffects(...)` is the official optional Compose effect collection helper.
+- Public API/ABI hardening removed `addState`, `addBranch`, `addEventDefinition`, and `afsmLabelForClass` from the API dump.
+- `AfsmTransition` is factory-based; ignored/invalid transitions cannot carry public commands/effects.
+- Checkout completed-payment state is now durable and duplicate pay/retry after completion is ignored.
+- `.mmd` graph output file names must be safe relative `.mmd` paths.

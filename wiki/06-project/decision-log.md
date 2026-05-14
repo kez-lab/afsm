@@ -724,3 +724,20 @@ Consequences:
 - Checkout demonstrates request-id-based stale command result handling.
 - `AfsmMmdOptions.Flow` is the default graph writer mode; `Full` remains available.
 - README, API docs, sample guide, testing guide, release readiness, and consumer-smoke docs are aligned to the minimal-first onboarding path.
+
+## [2026-05-14] Internal beta only after follow-up CTO review
+
+Decision: Keep Afsm moving forward, but treat it as internal beta only until the second hardening sequence is complete.
+
+Rationale:
+
+- The Android developer reviews found the core product idea compelling for complex flows, especially ProductEditor-like transaction screens.
+- The same reviews found stable release blockers in public ABI, runtime pressure behavior, restoration/effect policy, graph tooling safety, sample persuasiveness, and OSS packaging.
+- Freezing the API before removing internal DSL leaks would make future cleanup unnecessarily expensive.
+
+Consequences:
+
+- `AfsmPhaseMachine` stays out of onboarding; feature code should expose `AfsmMachine<State, Event, Command, Effect>`.
+- `AfsmReducer` remains a custom non-graphable escape hatch.
+- Effects remain best-effort; durable flows must use state plus acknowledgement or state plus optional effect.
+- The next release gate prioritizes API dump cleanliness, runtime pressure tests, restoration/effect/command policy, graph tooling hardening, and sample repair before OSS release identity work.

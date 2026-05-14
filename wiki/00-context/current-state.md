@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-11
+updated: 2026-05-14
 ---
 
 # Current State
@@ -68,6 +68,8 @@ The current direction is:
 - A ten-agent Android developer POC review concluded that the current executable DSL direction should continue, but Afsm must be positioned as a complex transaction/flow screen toolkit rather than a general ViewModel replacement.
 - The first public usability hardening pass is now implemented: README is minimal-first, `afsm-compose` provides `CollectAfsmEffects`, `AfsmConfig.commandQueueCapacity` exists, `afsmHost(machine, initialState)` exists, Checkout demonstrates request-id stale result handling, and MMD output has initial nodes, entry/exit metadata notes, labels, and `AfsmMmdOptions.Flow`/`Full`.
 - The remaining major release concern is external-project MMD generation ergonomics: current generation works through a documented task/registry pattern, but a dedicated Gradle plugin remains future work.
+- A 2026-05-14 ten-agent follow-up plus CTO review approved Afsm for internal beta only and blocked broad OSS/stable release until API/ABI, runtime pressure, restoration/effect policy, graph tooling, and OSS release identity are hardened.
+- The first follow-up hardening loop is complete: internal DSL helper functions no longer appear in the public API dump, `AfsmTransition` is factory-based, `AfsmDslMarker` exists, graphable `machine + initialState` is separated from custom `reducer + initialState`, Checkout guards completed payment, `.mmd` output paths are validated, and `docs/modeling-rules.md` documents modeling choices.
 
 ## Core Architecture Position
 
@@ -97,6 +99,8 @@ v3 executable DSL direction: [[../03-engineering/afsm-v3-executable-dsl|Afsm v3 
 KSP `.mmd` generation: [[../03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
 
 Reference architecture review: [[../03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]].
+
+10-agent CTO review: [[../08-meetings/2026-05-14-afsm-10-agent-cto-review|Afsm 10-Agent CTO Review]].
 
 Phased core spike: [[../03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]].
 
