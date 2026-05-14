@@ -407,3 +407,9 @@
 - Source: `wiki/08-meetings/2026-05-14-afsm-10-agent-cto-review.md`.
 - Action: Hardened public ABI, guarded Checkout completion, hardened MMD output paths, added modeling rules, updated public docs, and verified the local release gate.
 - Updated: `afsm-core/`, `afsm-graph-ksp/`, `afsm-runtime/`, `afsm-viewmodel/`, `sample-shop/`, `README.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-14] implementation | Runtime pressure and effect lifecycle hardening
+
+- Source: CTO execution order item for runtime pressure and lifecycle tests.
+- Action: Added fail-fast command queue overflow handling, documented the policy, and added tests for command queue saturation plus default no-replay effect delivery.
+- Updated: `afsm-runtime/`, `README.md`, `docs/afsm-public-api.md`, `docs/modeling-rules.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

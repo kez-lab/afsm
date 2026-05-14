@@ -58,6 +58,10 @@ does not need a distinct `SubmittingLogin` entry action.
 Long-running commands should carry a request or correlation id when stale
 results are possible.
 
+Do not emit large bursts of tiny commands from a single transition. Afsm keeps
+the command queue bounded and throws `AfsmCommandQueueOverflowException` if it
+fills, so prefer one coarse command that owns its internal fan-out.
+
 ## State vs Effect
 
 Effects are best-effort one-shot UI outputs. They are acceptable for disposable

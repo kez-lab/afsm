@@ -108,3 +108,5 @@ Resolved:
 - `AfsmTransition` is factory-based; ignored/invalid transitions cannot carry public commands/effects.
 - Checkout completed-payment state is now durable and duplicate pay/retry after completion is ignored.
 - `.mmd` graph output file names must be safe relative `.mmd` paths.
+- Command queue overflow now fails fast with `AfsmCommandQueueOverflowException`; machines should emit fewer/coarser commands or increase `commandQueueCapacity`.
+- Default effect delivery has no replay; late collectors do not receive old one-shot effects.

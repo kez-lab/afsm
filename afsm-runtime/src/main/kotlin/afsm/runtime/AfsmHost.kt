@@ -139,17 +139,44 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         when (config.commandExecutionPolicy) {
             AfsmCommandExecutionPolicy.Sequential -> {
                 for (command in transition.commands) {
-                    commandQueue.send(
-                        PendingCommand(
-                            state = transition.state,
-                            event = event,
-                            command = command,
-                            transition = transition,
-                        ),
+                    enqueueCommand(
+                        state = transition.state,
+                        event = event,
+                        command = command,
+                        transition = transition,
                     )
                 }
             }
         }
+    }
+
+    private fun enqueueCommand(
+        state: S,
+        event: E,
+        command: C,
+        transition: AfsmTransition<S, C, F>,
+    ) {
+        val pending = PendingCommand(
+            state = state,
+            event = event,
+            command = command,
+            transition = transition,
+        )
+
+        if (commandQueue.trySend(pending).isSuccess) {
+            return
+        }
+
+        val diagnostic = AfsmDiagnostic(
+            state = state,
+            event = event,
+            decision = transition.decision,
+            reason = "commandQueueCapacity=${config.commandQueueCapacity}",
+            message = "Afsm command queue rejected a command.",
+            command = command,
+        )
+
+        throw AfsmCommandQueueOverflowException(diagnostic)
     }
 
     private suspend fun processCommands() {

@@ -164,6 +164,41 @@ class AfsmHostTest {
     }
 
     @Test
+    fun `command queue overflow fails fast instead of suspending event processing`() = runTest {
+        val exceptions = mutableListOf<Throwable>()
+        val hostScope = newHostScope(
+            handler = CoroutineExceptionHandler { _, throwable ->
+                exceptions += throwable
+            },
+        )
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+            initialState = PressureState.Idle,
+            reducer = AfsmReducer { _: PressureState, _: PressureEvent ->
+                Afsm.transitionTo(
+                    state = PressureState.Queued,
+                    commands = listOf(
+                        PressureCommand.First,
+                        PressureCommand.Second,
+                        PressureCommand.Third,
+                    ),
+                )
+            },
+            commandHandler = AfsmCommandHandler { _: PressureCommand, _ -> },
+            scope = hostScope,
+            config = AfsmConfig(commandQueueCapacity = 1),
+        )
+
+        host.dispatch(PressureEvent.Start)
+        advanceUntilIdle()
+
+        val thrown = assertIs<AfsmCommandQueueOverflowException>(exceptions.single())
+        assertEquals(PressureCommand.Third, thrown.diagnostic.command)
+        assertEquals("commandQueueCapacity=1", thrown.diagnostic.reason)
+        assertEquals(PressureState.Queued, host.state.value)
+        hostScope.cancel()
+    }
+
+    @Test
     fun `Stayed keeps same state but may execute cleanup commands`() = runTest {
         val hostScope = newHostScope()
         val handledCommands = mutableListOf<NoEffectCommand>()
@@ -189,6 +224,47 @@ class AfsmHostTest {
 
         assertEquals(NoEffectState.Submitting, host.state.value)
         assertEquals(listOf(NoEffectCommand.CancelRequest), handledCommands)
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `default effects are not replayed to late collectors`() = runTest {
+        val hostScope = newHostScope()
+        val host: AfsmHost<EffectState, EffectEvent, EffectCommand, EffectOutput> = AfsmHost(
+            initialState = EffectState.Idle,
+            reducer = AfsmReducer { _: EffectState, event: EffectEvent ->
+                when (event) {
+                    EffectEvent.Start -> Afsm.transitionTo(
+                        state = EffectState.Started,
+                        effects = listOf(EffectOutput.ShowStarted),
+                    )
+
+                    EffectEvent.Completed -> Afsm.transitionTo(
+                        state = EffectState.Completed,
+                    )
+                }
+            },
+            commandHandler = AfsmCommandHandler.none(),
+            scope = hostScope,
+        )
+
+        host.dispatch(EffectEvent.Start)
+        advanceUntilIdle()
+
+        val lateEffects = mutableListOf<EffectOutput>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            host.effects.collect { effect ->
+                lateEffects += effect
+            }
+        }
+        advanceUntilIdle()
+
+        assertTrue(lateEffects.isEmpty())
+
+        host.dispatch(EffectEvent.Start)
+        advanceUntilIdle()
+
+        assertEquals(listOf(EffectOutput.ShowStarted), lateEffects)
         hostScope.cancel()
     }
 
@@ -454,6 +530,21 @@ class AfsmHostTest {
 
     private enum class ResponsiveCommand {
         LongRunning,
+    }
+
+    private enum class PressureState {
+        Idle,
+        Queued,
+    }
+
+    private enum class PressureEvent {
+        Start,
+    }
+
+    private enum class PressureCommand {
+        First,
+        Second,
+        Third,
     }
 
     private data class DecisionState(

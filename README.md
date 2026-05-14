@@ -334,7 +334,7 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 - `tryDispatch(event)` returns `false` when the event queue is closed or full.
 - Events use a bounded queue, default `64`.
 - Commands execute sequentially without blocking later event reduction.
-- Commands also use a bounded queue, default `64`; if it fills, event reduction back-pressures until command processing catches up.
+- Commands also use a bounded queue, default `64`; if it fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor.
 - Command results should dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.

@@ -741,3 +741,19 @@ Consequences:
 - `AfsmReducer` remains a custom non-graphable escape hatch.
 - Effects remain best-effort; durable flows must use state plus acknowledgement or state plus optional effect.
 - The next release gate prioritizes API dump cleanliness, runtime pressure tests, restoration/effect/command policy, graph tooling hardening, and sample repair before OSS release identity work.
+
+## [2026-05-14] Command queue overflow fails fast
+
+Decision: A full host command queue throws `AfsmCommandQueueOverflowException` instead of suspending event processing.
+
+Rationale:
+
+- Android UI event dispatch should not appear frozen because a machine emitted too many commands.
+- A full command queue is usually a modeling or capacity problem, not a recoverable domain failure.
+- Explicit failure is easier to test and diagnose than coroutine backpressure across event and command processors.
+
+Consequences:
+
+- `AfsmConfig.commandQueueCapacity` remains bounded and defaults to `64`.
+- Machines should emit fewer, coarser commands instead of large bursts of tiny commands.
+- Domain failures must still be represented as typed events from command handlers, not as queue overflow.

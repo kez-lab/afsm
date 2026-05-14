@@ -1037,3 +1037,25 @@ Conclusion:
 
 - The P0 public ABI leak is fixed and the local release gate still passes.
 - Afsm is more credible for internal beta, but runtime pressure tests, restoration/effect policy, graph compile-testing, and Checkout graphability remain before public OSS/stable release.
+
+## [2026-05-14] Runtime pressure and effect lifecycle hardening
+
+Change:
+
+- Added `AfsmCommandQueueOverflowException`.
+- Changed accepted command enqueueing from suspending `send` to fail-fast `trySend`.
+- Documented command queue overflow behavior in README, public API docs, modeling rules, and runtime wiki.
+- Added runtime tests for command queue overflow and default no-replay effect delivery.
+
+Verification:
+
+```bash
+./gradlew :afsm-runtime:test --warning-mode all --no-daemon
+./gradlew :afsm-runtime:apiDump --warning-mode all --no-daemon
+./gradlew apiCheck --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Afsm now surfaces command pressure as an explicit runtime error rather than risking an event-loop stall.
+- Remaining runtime concern: command-result event overflow when the external event queue is saturated.

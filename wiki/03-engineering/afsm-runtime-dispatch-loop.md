@@ -1,6 +1,6 @@
 ---
 title: Afsm Runtime Dispatch Loop
-updated: 2026-05-11
+updated: 2026-05-14
 ---
 
 # Afsm Runtime Dispatch Loop
@@ -30,6 +30,7 @@ Android-specific lifetime ownership remains a caller concern for now. In ViewMod
 - `AfsmLogger`
 - `AfsmDiagnostic`
 - `AfsmInvalidTransitionException`
+- `AfsmCommandQueueOverflowException`
 
 ## Dispatch Contract
 
@@ -62,6 +63,7 @@ Important behavior:
 - Commands execute sequentially in the order emitted by one transition.
 - Command execution does not block later event reduction.
 - Event and command queues are bounded by `AfsmConfig.eventQueueCapacity` and `AfsmConfig.commandQueueCapacity`, both defaulting to `64`.
+- If the command queue fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor indefinitely.
 - Long-running loops should not be modeled as never-ending commands.
 
 ## Decision Handling
@@ -162,6 +164,8 @@ Verified cases:
 - `Ignored` keeps runtime state and drops accidental outputs
 - `Invalid` with `Record` logs diagnostics and drops outputs
 - `Invalid` with `Throw` fails the runtime processing coroutine
+- command queue overflow fails fast instead of suspending event processing
+- default effects are not replayed to late collectors
 - invalid event and command queue capacities are rejected at construction time
 - command handling remains sequential while later UI events can still be reduced
 
@@ -175,6 +179,7 @@ For JVM tests, use a dedicated test `CoroutineScope` and advance the shared test
 
 ## Follow-Up
 
-Next runtime concern: decide whether Afsm needs higher-level invoked-service
-semantics for automatic command cancellation, or whether v1 should continue
+Next runtime concern: decide command-result event overflow behavior when the
+external event queue is saturated, then decide whether Afsm needs higher-level
+invoked-service semantics for automatic command cancellation or should continue
 with explicit feature-owned cancellation events and request ids.

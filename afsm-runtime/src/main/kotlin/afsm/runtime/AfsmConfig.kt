@@ -37,8 +37,9 @@ public class AfsmConfig(
      * Afsm commands are emitted by accepted transitions and are processed
      * separately from event reduction. Keeping this queue bounded prevents
      * accidental unbounded memory growth when a machine emits commands faster
-     * than the host can execute them. If the queue fills, event reduction
-     * back-pressures until the command processor catches up.
+     * than the host can execute them. If the queue fills, the host throws
+     * [AfsmCommandQueueOverflowException] instead of suspending the event
+     * processor indefinitely.
      */
     public val commandQueueCapacity: Int = 64,
     /**

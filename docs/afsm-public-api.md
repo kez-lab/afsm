@@ -209,6 +209,7 @@ Runtime guarantees:
 - `dispatch(event)` is non-suspending.
 - Events are processed serially in FIFO order.
 - Commands are executed sequentially without blocking later event reduction.
+- If the command queue fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor indefinitely.
 - Commands may dispatch follow-up events.
 - Follow-up events are queued, not re-entered recursively.
 - `tryDispatch(event)` returns `false` when the host is closed or the event queue is full.
@@ -237,6 +238,12 @@ Command failure policy:
 - `Throw`: fail the processing coroutine. This is the default for programmer errors.
 - `Record`: log `AfsmDiagnostic` and continue processing later events.
 - `CancellationException` is always rethrown.
+
+Command queue overflow:
+
+- `AfsmCommandQueueOverflowException` means a machine emitted accepted commands faster than the bounded host queue could accept them.
+- Prefer fewer, coarser commands or increase `commandQueueCapacity`.
+- Do not use command overflow as domain failure handling; domain failures should still become typed result events.
 
 ## afsm-viewmodel
 
