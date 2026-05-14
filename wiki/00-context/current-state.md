@@ -73,7 +73,7 @@ The current direction is:
 - Runtime pressure hardening now fails fast with `AfsmCommandQueueOverflowException` when accepted commands exceed the bounded command queue, instead of suspending the event processor indefinitely. Tests also lock down that default effects are not replayed to late collectors.
 - `docs/restoration-effect-command-policy.md` now documents the Android-facing rules for restoreable state, `onEnter`, effect durability, state-plus-acknowledgement UI work, command result events, request ids, explicit cancellation, and queue pressure.
 - Checkout is now a graphable phase/context `AfsmMachine` sample instead of a custom reducer escape hatch. It demonstrates dynamic initial state from navigation `productId`, product loading, payment retry, request-id stale result handling, durable completion state, optional navigation effect, render-state mapping, and generated `CheckoutStateMachine.mmd`.
-- Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md` and `docs/checkout-walkthrough.md`.
+- Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md`, `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md`.
 
 ## Core Architecture Position
 

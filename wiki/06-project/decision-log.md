@@ -772,5 +772,5 @@ Rationale:
 Consequences:
 
 - `docs/examples.md` is the public sample map.
-- `docs/checkout-walkthrough.md` is the first detailed walkthrough after the README.
+- `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md` are the primary walkthrough set.
 - Checkout must remain graphable and generated as `CheckoutStateMachine.mmd`.

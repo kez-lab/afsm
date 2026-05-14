@@ -10,18 +10,18 @@ data screens heavier. The examples are ordered from smallest to most persuasive.
 | Example | Read when | Shows | Main files |
 |---|---|---|---|
 | Minimal Draft | You want the smallest possible machine | `Phase`, `Context`, `Event`, `Command`, `onEnter`, `ViewModel.afsmHost` | [README.md](../README.md) |
-| Auth | You need login/register form submission | form context, validation guards, command result events, navigation effect | `sample-shop/.../feature/auth/*` |
+| Auth | You need login/register form submission | form context, validation guards, command result events, navigation effect | [auth-walkthrough.md](auth-walkthrough.md) |
 | Checkout | You need async loading, payment, retry, stale results, and durable completion | graphable payment flow, request ids, state plus optional effect, render mapping | [checkout-walkthrough.md](checkout-walkthrough.md) |
-| ProductEditor | You need a high-branching transaction flow | save draft, upload, review reject/resubmit, approve, publish, generated graph | `sample-shop/.../feature/editor/*` |
+| ProductEditor | You need a high-branching transaction flow | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) |
 | Catalog/Product/Reviews | You need to know when not to use Afsm | ordinary `ViewModel + Flow` for data screens | `sample-shop/.../feature/catalog/*`, `feature/product/*` |
 
 ## Recommended Reading Path
 
 1. Start with the README minimal Draft machine.
 2. Read [modeling-rules.md](modeling-rules.md).
-3. Read Auth for the smallest Android screen.
+3. Read [auth-walkthrough.md](auth-walkthrough.md) for the smallest Android screen.
 4. Read [checkout-walkthrough.md](checkout-walkthrough.md) for lifecycle and retry policy.
-5. Read ProductEditor only after Checkout; it is intentionally larger.
+5. Read [product-editor-walkthrough.md](product-editor-walkthrough.md) only after Checkout; it is intentionally larger.
 
 ## What Each Example Proves
 

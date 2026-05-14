@@ -14,6 +14,9 @@ The point is not to force every screen into a finite state machine. The app uses
 - Example catalog: [examples.md](examples.md)
 - Modeling rules: [modeling-rules.md](modeling-rules.md)
 - Restoration/effect/command policy: [restoration-effect-command-policy.md](restoration-effect-command-policy.md)
+- Auth walkthrough: [auth-walkthrough.md](auth-walkthrough.md)
+- Checkout walkthrough: [checkout-walkthrough.md](checkout-walkthrough.md)
+- ProductEditor walkthrough: [product-editor-walkthrough.md](product-editor-walkthrough.md)
 
 ## Dependencies
 
@@ -54,6 +57,7 @@ Files:
 - `feature/auth/AuthStateMachine.kt`
 - `feature/auth/AuthViewModel.kt`
 - `feature/auth/AuthScreen.kt`
+- Walkthrough: [auth-walkthrough.md](auth-walkthrough.md)
 
 Flow:
 
@@ -107,6 +111,7 @@ Files:
 - `feature/editor/ProductEditorStateMachine.kt`
 - `feature/editor/ProductEditorViewModel.kt`
 - `feature/editor/ProductEditorScreen.kt`
+- Walkthrough: [product-editor-walkthrough.md](product-editor-walkthrough.md)
 
 Flow:
 

@@ -1099,3 +1099,21 @@ Verification:
 Conclusion:
 
 - Checkout is now the mid-size adoption example for dynamic initial state, loading, retry, stale command results, durable completion, optional effects, and generated state diagrams.
+
+## [2026-05-14] Dedicated walkthroughs for all primary examples
+
+Change:
+
+- Added `docs/auth-walkthrough.md`.
+- Added `docs/product-editor-walkthrough.md`.
+- Updated `docs/examples.md`, README, and sample guide so Auth, Checkout, and ProductEditor each have a dedicated public walkthrough.
+
+Verification:
+
+```bash
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Conclusion:
+
+- The primary examples are now curated as a complete onboarding set rather than being buried inside the sample app guide.
