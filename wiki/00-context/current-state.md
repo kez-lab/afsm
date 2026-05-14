@@ -71,6 +71,7 @@ The current direction is:
 - A 2026-05-14 ten-agent follow-up plus CTO review approved Afsm for internal beta only and blocked broad OSS/stable release until API/ABI, runtime pressure, restoration/effect policy, graph tooling, and OSS release identity are hardened.
 - The first follow-up hardening loop is complete: internal DSL helper functions no longer appear in the public API dump, `AfsmTransition` is factory-based, `AfsmDslMarker` exists, graphable `machine + initialState` is separated from custom `reducer + initialState`, Checkout guards completed payment, `.mmd` output paths are validated, and `docs/modeling-rules.md` documents modeling choices.
 - Runtime pressure hardening now fails fast with `AfsmCommandQueueOverflowException` when accepted commands exceed the bounded command queue, instead of suspending the event processor indefinitely. Tests also lock down that default effects are not replayed to late collectors.
+- `docs/restoration-effect-command-policy.md` now documents the Android-facing rules for restoreable state, `onEnter`, effect durability, state-plus-acknowledgement UI work, command result events, request ids, explicit cancellation, and queue pressure.
 
 ## Core Architecture Position
 

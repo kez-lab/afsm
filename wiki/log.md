@@ -413,3 +413,9 @@
 - Source: CTO execution order item for runtime pressure and lifecycle tests.
 - Action: Added fail-fast command queue overflow handling, documented the policy, and added tests for command queue saturation plus default no-replay effect delivery.
 - Updated: `afsm-runtime/`, `README.md`, `docs/afsm-public-api.md`, `docs/modeling-rules.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-14] documentation | Restoration, effect, and command policy
+
+- Source: CTO execution order item for restoration/effect/command policy guide.
+- Action: Added a public Android-facing policy guide and linked it from onboarding docs.
+- Updated: `docs/restoration-effect-command-policy.md`, `README.md`, `docs/afsm-public-api.md`, `docs/modeling-rules.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

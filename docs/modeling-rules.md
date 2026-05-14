@@ -3,6 +3,10 @@
 Use this page before adding a new Afsm screen. It answers the questions that
 usually decide whether a machine will feel useful or ceremonial.
 
+After choosing the model shape, use
+[restoration-effect-command-policy.md](restoration-effect-command-policy.md) for
+Android restoration, effect, command failure, and queue pressure rules.
+
 ## Adoption Rule
 
 Use Afsm when a screen has meaningful business phases:

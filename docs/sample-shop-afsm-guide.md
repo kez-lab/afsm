@@ -12,6 +12,7 @@ The point is not to force every screen into a finite state machine. The app uses
 - Manual DI: `sample-shop/src/main/kotlin/afsm/sample/shop/app/ShopAppContainer.kt`
 - Database: `sample-shop/src/main/kotlin/afsm/sample/shop/core/database/ShopDatabase.kt`
 - Modeling rules: [modeling-rules.md](modeling-rules.md)
+- Restoration/effect/command policy: [restoration-effect-command-policy.md](restoration-effect-command-policy.md)
 
 ## Dependencies
 

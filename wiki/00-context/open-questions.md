@@ -110,3 +110,4 @@ Resolved:
 - `.mmd` graph output file names must be safe relative `.mmd` paths.
 - Command queue overflow now fails fast with `AfsmCommandQueueOverflowException`; machines should emit fewer/coarser commands or increase `commandQueueCapacity`.
 - Default effect delivery has no replay; late collectors do not receive old one-shot effects.
+- Restoration/effect/command policy is documented in `docs/restoration-effect-command-policy.md`; implementation helpers remain future work.

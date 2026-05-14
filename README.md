@@ -8,8 +8,9 @@ Recommended reading order:
 
 1. Build the minimal machine below.
 2. Read [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a real screen.
-3. Use `sample-shop` Auth as the smallest real example.
-4. Read the generated ProductEditor `.mmd` graph before the ProductEditor source.
+3. Read [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md) before wiring commands or effects.
+4. Use `sample-shop` Auth as the smallest real example.
+5. Read the generated ProductEditor `.mmd` graph before the ProductEditor source.
 
 ## Install
 
@@ -362,4 +363,4 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 
 `consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts without project-module shortcuts.
 
-See [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+See [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).

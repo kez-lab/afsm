@@ -2,6 +2,10 @@
 
 This page describes the current pre-release public API surface.
 
+For Android restoration, one-shot effects, command failures, request ids, and
+queue pressure policy, read
+[restoration-effect-command-policy.md](restoration-effect-command-policy.md).
+
 ## Coordinates
 
 ```kotlin

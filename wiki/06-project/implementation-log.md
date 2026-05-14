@@ -1059,3 +1059,21 @@ Conclusion:
 
 - Afsm now surfaces command pressure as an explicit runtime error rather than risking an event-loop stall.
 - Remaining runtime concern: command-result event overflow when the external event queue is saturated.
+
+## [2026-05-14] Restoration, effect, and command policy guide
+
+Change:
+
+- Added `docs/restoration-effect-command-policy.md`.
+- Documented restoreable state versus runtime work, `onEnter` restoration safety, best-effort effects, state-plus-acknowledgement UI work, command result events, request ids, explicit cancellation, and queue pressure.
+- Linked the guide from README, public API docs, modeling rules, and sample-shop guide.
+
+Verification:
+
+```bash
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Conclusion:
+
+- The pre-release docs now give Android developers a concrete policy for the lifecycle and command questions that were blocking broad adoption confidence.
