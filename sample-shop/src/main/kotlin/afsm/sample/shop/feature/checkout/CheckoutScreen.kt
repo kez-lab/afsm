@@ -81,7 +81,19 @@ fun CheckoutScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (state.isLoadingProduct) {
+            if (state.isComplete) {
+                Text(
+                    text = "Payment complete",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                state.orderId?.let { orderId ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Order #$orderId",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            } else if (state.isLoadingProduct) {
                 CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(12.dp))
                 Text("Loading product...")

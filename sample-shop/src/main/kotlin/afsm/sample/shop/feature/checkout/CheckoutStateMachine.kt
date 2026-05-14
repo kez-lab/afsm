@@ -90,6 +90,10 @@ class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutC
     private fun startPayment(state: CheckoutState): CheckoutTransition {
         val product = state.product
         return when {
+            state.isComplete -> {
+                Afsm.ignore(state, reason = "Checkout is already complete.")
+            }
+
             state.isPaying -> {
                 Afsm.ignore(state, reason = "Duplicate payment event while payment is in flight.")
             }

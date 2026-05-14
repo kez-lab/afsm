@@ -119,10 +119,16 @@ class CheckoutStateMachineTest {
         assertEquals(null, result.state.activePaymentRequestId)
         assertEquals(42, result.state.orderId)
         assertEquals(listOf(CheckoutEffect.PaymentCompleted(orderId = 42)), result.effects)
+
+        val duplicatePay = machine.transition(result.state, CheckoutEvent.PayClicked)
+        val duplicateRetry = machine.transition(result.state, CheckoutEvent.RetryClicked)
+
+        assertIs<AfsmDecision.Ignored>(duplicatePay.decision)
+        assertIs<AfsmDecision.Ignored>(duplicateRetry.decision)
     }
 
     @Test
-    fun `stale payment result is ignored`() {
+    fun `stale payment failure result is ignored`() {
         val result = machine.transition(
             state = CheckoutState(
                 productId = product.id,
@@ -140,5 +146,33 @@ class CheckoutStateMachineTest {
         assertIs<AfsmDecision.Ignored>(result.decision)
         assertEquals(true, result.state.isPaying)
         assertEquals(2, result.state.activePaymentRequestId)
+    }
+
+    @Test
+    fun `stale payment success result is ignored`() {
+        val receipt = OrderReceipt(
+            orderId = 42,
+            productId = product.id,
+            totalCents = product.priceCents,
+        )
+
+        val result = machine.transition(
+            state = CheckoutState(
+                productId = product.id,
+                product = product,
+                isPaying = true,
+                nextPaymentRequestId = 2,
+                activePaymentRequestId = 2,
+            ),
+            event = CheckoutEvent.PaymentSucceeded(
+                requestId = 1,
+                receipt = receipt,
+            ),
+        )
+
+        assertIs<AfsmDecision.Ignored>(result.decision)
+        assertEquals(true, result.state.isPaying)
+        assertEquals(2, result.state.activePaymentRequestId)
+        assertEquals(emptyList(), result.effects)
     }
 }
