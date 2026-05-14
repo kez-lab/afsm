@@ -757,3 +757,20 @@ Consequences:
 - `AfsmConfig.commandQueueCapacity` remains bounded and defaults to `64`.
 - Machines should emit fewer, coarser commands instead of large bursts of tiny commands.
 - Domain failures must still be represented as typed events from command handlers, not as queue overflow.
+
+## [2026-05-14] Use an example ladder for public usability
+
+Decision: Present Afsm through a staged example ladder: minimal Draft, Auth, Checkout, ProductEditor, and non-Afsm data screens.
+
+Rationale:
+
+- Android developers need a fast path from smallest API shape to a persuasive complex-flow example.
+- Checkout is the strongest mid-size example because it covers navigation argument initial state, loading, payment retry, request ids, durable completion, optional effect delivery, and render-state mapping.
+- ProductEditor remains the complex transaction reference, but it is too large to be the first persuasive sample.
+- Anti-examples are important: Afsm should not look like a general ViewModel replacement.
+
+Consequences:
+
+- `docs/examples.md` is the public sample map.
+- `docs/checkout-walkthrough.md` is the first detailed walkthrough after the README.
+- Checkout must remain graphable and generated as `CheckoutStateMachine.mmd`.

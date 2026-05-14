@@ -7,10 +7,10 @@ Use Afsm when a screen has meaningful phases, retries, async results, invalid tr
 Recommended reading order:
 
 1. Build the minimal machine below.
-2. Read [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a real screen.
-3. Read [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md) before wiring commands or effects.
-4. Use `sample-shop` Auth as the smallest real example.
-5. Read the generated ProductEditor `.mmd` graph before the ProductEditor source.
+2. Use [docs/examples.md](docs/examples.md) to choose the right sample.
+3. Read [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a real screen.
+4. Read [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md) before wiring commands or effects.
+5. Read [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md) for async loading, retry, stale results, durable completion, and graph output.
 
 ## Install
 
@@ -182,8 +182,8 @@ reducer at the call site:
 
 ```kotlin
 private val host = afsmHost(
-    reducer = CheckoutStateMachine(),
-    initialState = CheckoutState(productId = productId),
+    reducer = LegacyCheckoutReducer(),
+    initialState = restoredCheckoutState,
     commandHandler = checkoutCommandHandler,
 )
 ```
@@ -324,6 +324,7 @@ Sample output:
 
 ```text
 sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
+sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ```
 
@@ -363,4 +364,4 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 
 `consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts without project-module shortcuts.
 
-See [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+See [docs/examples.md](docs/examples.md), [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).

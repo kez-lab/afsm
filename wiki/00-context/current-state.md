@@ -47,7 +47,7 @@ The current direction is:
 - `scripts/verify-release-local.sh` now runs the full local release gate, including tests, sample graph generation, `apiCheck`, Maven Local publication, and external consumer smoke.
 - Maven Local generated POMs now have documented metadata audit status: packaging, internal dependency coordinates, names/descriptions are present; URL, license, SCM, and developer metadata remain product-owned decisions.
 - The KSP graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, and `generateAfsmMmd` writes one `.mmd` per registry entry.
-- `AuthStateMachine` and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` now writes both `AuthStateMachine.mmd` and `ProductEditorStateMachine.mmd`.
+- `AuthStateMachine`, `CheckoutStateMachine`, and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` writes `AuthStateMachine.mmd`, `CheckoutStateMachine.mmd`, and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
 - Afsm terminology now consistently treats `Command` as host-executed work emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from commands like `StartImageUpload`.
 - ProductEditor now uses transition-action naming in code: `ImageUploadInProgress` with `StartImageUpload`, `ReviewSubmissionInProgress` with `StartReviewSubmission`, and `PublishInProgress` with `StartProductPublish`.
@@ -72,6 +72,8 @@ The current direction is:
 - The first follow-up hardening loop is complete: internal DSL helper functions no longer appear in the public API dump, `AfsmTransition` is factory-based, `AfsmDslMarker` exists, graphable `machine + initialState` is separated from custom `reducer + initialState`, Checkout guards completed payment, `.mmd` output paths are validated, and `docs/modeling-rules.md` documents modeling choices.
 - Runtime pressure hardening now fails fast with `AfsmCommandQueueOverflowException` when accepted commands exceed the bounded command queue, instead of suspending the event processor indefinitely. Tests also lock down that default effects are not replayed to late collectors.
 - `docs/restoration-effect-command-policy.md` now documents the Android-facing rules for restoreable state, `onEnter`, effect durability, state-plus-acknowledgement UI work, command result events, request ids, explicit cancellation, and queue pressure.
+- Checkout is now a graphable phase/context `AfsmMachine` sample instead of a custom reducer escape hatch. It demonstrates dynamic initial state from navigation `productId`, product loading, payment retry, request-id stale result handling, durable completion state, optional navigation effect, render-state mapping, and generated `CheckoutStateMachine.mmd`.
+- Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md` and `docs/checkout-walkthrough.md`.
 
 ## Core Architecture Position
 
@@ -101,6 +103,8 @@ v3 executable DSL direction: [[../03-engineering/afsm-v3-executable-dsl|Afsm v3 
 KSP `.mmd` generation: [[../03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
 
 Reference architecture review: [[../03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]].
+
+Example catalog: [[../03-engineering/afsm-example-catalog|Afsm Example Catalog]].
 
 10-agent CTO review: [[../08-meetings/2026-05-14-afsm-10-agent-cto-review|Afsm 10-Agent CTO Review]].
 

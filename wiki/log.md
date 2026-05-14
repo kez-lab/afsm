@@ -419,3 +419,9 @@
 - Source: CTO execution order item for restoration/effect/command policy guide.
 - Action: Added a public Android-facing policy guide and linked it from onboarding docs.
 - Updated: `docs/restoration-effect-command-policy.md`, `README.md`, `docs/afsm-public-api.md`, `docs/modeling-rules.md`, `docs/sample-shop-afsm-guide.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-14] implementation | Graphable Checkout and curated examples
+
+- Source: user request to improve and curate usage examples until Afsm feels attractive for complex Android screens.
+- Action: Converted Checkout to a graphable phase/context machine, added generated graph coverage, created an example catalog and Checkout walkthrough, and updated public onboarding docs.
+- Updated: `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`, `README.md`, `docs/examples.md`, `docs/checkout-walkthrough.md`, `docs/modeling-rules.md`, `docs/sample-shop-afsm-guide.md`, `docs/testing-guide.md`, `wiki/03-engineering/afsm-example-catalog.md`, `wiki/03-engineering/sample-shop-reference-app.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

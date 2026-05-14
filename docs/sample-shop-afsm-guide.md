@@ -11,6 +11,7 @@ The point is not to force every screen into a finite state machine. The app uses
 - App entry point: `sample-shop/src/main/kotlin/afsm/sample/shop/MainActivity.kt`
 - Manual DI: `sample-shop/src/main/kotlin/afsm/sample/shop/app/ShopAppContainer.kt`
 - Database: `sample-shop/src/main/kotlin/afsm/sample/shop/core/database/ShopDatabase.kt`
+- Example catalog: [examples.md](examples.md)
 - Modeling rules: [modeling-rules.md](modeling-rules.md)
 - Restoration/effect/command policy: [restoration-effect-command-policy.md](restoration-effect-command-policy.md)
 
@@ -148,25 +149,34 @@ Files:
 - `feature/checkout/CheckoutStateMachine.kt`
 - `feature/checkout/CheckoutViewModel.kt`
 - `feature/checkout/CheckoutScreen.kt`
+- Walkthrough: [checkout-walkthrough.md](checkout-walkthrough.md)
 
 Flow:
 
 ```text
 CheckoutRoute enters with productId
 -> CheckoutEvent.ScreenEntered
+-> CheckoutPhase.ProductLoading
 -> CheckoutCommand.LoadProduct
 -> ProductRepository.findProduct(productId)
 -> CheckoutEvent.ProductLoaded/ProductUnavailable
+-> CheckoutPhase.ProductReady/ProductUnavailable
 -> PayClicked
+-> CheckoutPhase.PaymentInProgress(requestId)
 -> CheckoutCommand.SubmitPayment
 -> PaymentRepository.submitPayment(...)
 -> PaymentSucceeded/PaymentFailed
--> PaymentCompleted effect or retryable error state
+-> CheckoutPhase.Completed(orderId) + PaymentCompleted effect
+   or CheckoutPhase.PaymentFailed retry state
 ```
 
 Policy:
 
-- Product loading and payment commands are serialized by `AfsmHost`.
+- Checkout is now a graphable `AfsmMachine<CheckoutState, CheckoutEvent,
+  CheckoutCommand, CheckoutEffect>` built with the executable DSL.
+- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutContext>`.
+- Product loading and payment commands are emitted from phase `onEnter`
+  handlers and serialized by `AfsmHost`.
 - Duplicate enter/pay events are ignored while work is already running.
 - First mock payment attempt fails for higher-priced products, so retry can be exercised.
 - Payment completion is durable state plus an effect. The state renders
@@ -174,10 +184,12 @@ Policy:
 - Payment commands include a request id and result events echo that id. Late
   results from older payment attempts are treated as stale `Ignored` events
   instead of invalid programmer errors.
-- Checkout currently uses the custom reducer escape hatch with
-  `afsmHost(reducer = ..., initialState = ...)` because its initial state comes
-  from a navigation `productId` and it is not yet a graphable phase/context
-  sample.
+- Checkout demonstrates `afsmHost(machine = ..., initialState = ...)` for a
+  graphable machine whose starting state depends on a navigation argument.
+- `CheckoutState.toRenderState()` keeps Compose rendering simple while the
+  internal graph stays precise.
+- `./gradlew :sample-shop:generateAfsmMmd` now writes
+  `sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd`.
 
 ## Compose Effect Collection
 
@@ -206,8 +218,10 @@ Current verification:
 
 The current sample suggests:
 
-- `AfsmTransition<S, C, F>` is verbose in raw signatures but acceptable with screen-local typealiases such as `CheckoutTransition` when a feature implements `AfsmReducer` directly.
+- `AfsmTransition<S, C, F>` should rarely appear in app code now that primary samples expose graphable `AfsmMachine<State, Event, Command, Effect>` objects.
 - `ViewModel.afsmHost(...)` reads naturally in real Android ViewModels.
+- `afsmHost(machine = ..., initialState = ...)` keeps graphable state machines
+  usable for navigation-argument screens like Checkout.
 - `Command` is easier to explain than making transition functions suspend.
 - `Effect` should stay rare and focused on UI-side one-shot work.
 - Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
@@ -220,6 +234,8 @@ The current sample suggests:
 - Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.
 - A shared `AfsmStateFactory` was spiked but rejected for now because singleton phase inference requires explicit `<Phase, Context>` arguments and the extra public API is heavier than a small feature-local factory function.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
+- Checkout is now the mid-size reference for Android lifecycle, retry, request
+  id, durable completion, and render-state mapping policy.
 
 Open follow-up:
 

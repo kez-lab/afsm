@@ -164,12 +164,16 @@ Flow:
 
 ```text
 ScreenEntered
+-> ProductLoading phase
 -> LoadProduct command
 -> ProductLoaded/ProductUnavailable
+-> ProductReady/ProductUnavailable phase
 -> PayClicked
+-> PaymentInProgress(requestId) phase
 -> SubmitPayment command
 -> PaymentSucceeded/PaymentFailed
--> PaymentCompleted effect or retryable error state
+-> Completed(orderId) phase + PaymentCompleted effect
+   or PaymentFailed retry state
 ```
 
 The fake payment repository fails the first attempt for higher-priced products so retry behavior is visible without external services.
@@ -183,11 +187,22 @@ Checkout completion is now durable state plus effect. The screen renders the
 completed order if the navigation effect is missed, and duplicate pay/retry
 events after completion are ignored.
 
+Checkout is now a graphable DSL machine:
+
+- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutContext>`.
+- `CheckoutStateMachine` is an `@AfsmGraph` singleton `AfsmMachine`.
+- `CheckoutViewModel` uses `afsmHost(machine = CheckoutStateMachine, initialState = checkoutState(productId))`.
+- `ProductLoading` emits `LoadProduct` from `onEnter`.
+- `PaymentInProgress(requestId)` emits `SubmitPayment` from `onEnter`.
+- `CheckoutState.toRenderState()` keeps Compose rendering independent from internal phase details.
+- `./gradlew :sample-shop:generateAfsmMmd` writes `sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd`.
+
 ## Public API Feedback
 
 Current feedback from the sample:
 
 - `AfsmTransition<S, C, F>` is readable when each feature declares a local typealias.
+- Primary examples now hide raw transition type noise behind graphable `AfsmMachine<State, Event, Command, Effect>` feature objects.
 - `Command` keeps transition functions pure and avoids suspend state machines.
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
@@ -195,6 +210,7 @@ Current feedback from the sample:
 - The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
 - Auth now confirms the same direct `AfsmState<Phase, Context>` approach works for simpler flows too.
 - `CollectAfsmEffects(...)` removes repeated lifecycle-effect collection wiring from Compose routes.
+- Checkout is the mid-size public example for dynamic initial state, retry, request ids, durable completion, and render-state mapping.
 
 ## Verification
 
@@ -217,6 +233,5 @@ Android CLI journey verification:
 
 ## Next Gaps
 
-- Convert Checkout into a graphable phase/context machine, or explicitly keep it documented as the custom reducer escape hatch.
 - Add Android CLI smoke evidence for the latest API-hardening pass if visual regression confidence is needed.
-- Consider a public codelab that walks through ProductEditor from contract to graph output.
+- Consider a public codelab that walks through ProductEditor from contract to graph output after Checkout onboarding is stable.

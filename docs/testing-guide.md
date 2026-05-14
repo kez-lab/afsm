@@ -84,10 +84,13 @@ request/correlation id in both the command and the result event.
 @Test
 fun `stale payment failure is ignored`() {
     val result = machine.transition(
-        state = CheckoutState(
+        state = checkoutState(
             productId = 7,
-            isPaying = true,
-            activePaymentRequestId = 2,
+            phase = CheckoutPhase.PaymentInProgress(requestId = 2),
+            context = CheckoutContext(
+                productId = 7,
+                nextPaymentRequestId = 2,
+            ),
         ),
         event = CheckoutEvent.PaymentFailed(
             requestId = 1,
@@ -96,7 +99,7 @@ fun `stale payment failure is ignored`() {
     )
 
     assertIs<AfsmDecision.Ignored>(result.decision)
-    assertEquals(2, result.state.activePaymentRequestId)
+    assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
 }
 ```
 
@@ -124,4 +127,3 @@ If a transition test fails, treat it as a behavior regression first.
 
 Only change the test when the product behavior has intentionally changed. In
 that case, update the relevant wiki/spec/docs before changing the assertion.
-

@@ -374,6 +374,7 @@ Output:
 ```text
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
+sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 ```
 
 The generation task writes only the `.mmd` file. It does not create an explanatory document beside the graph.

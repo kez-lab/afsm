@@ -25,6 +25,8 @@ Resolved:
 
 - First real reference flow: signup + identity verification + retry.
 - The first complex app-level validation is a shopping sample with auth, product, review, like, and checkout retry flows.
+- Public example ladder: README minimal Draft, Auth, Checkout, ProductEditor, and non-Afsm data screens as anti-examples.
+- Checkout is now the mid-size graphable example for dynamic initial state, retry, stale command results, durable completion, and render-state mapping.
 
 ## Product
 

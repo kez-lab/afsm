@@ -1077,3 +1077,25 @@ Verification:
 Conclusion:
 
 - The pre-release docs now give Android developers a concrete policy for the lifecycle and command questions that were blocking broad adoption confidence.
+
+## [2026-05-14] Graphable Checkout and curated examples
+
+Change:
+
+- Converted Checkout from a custom `AfsmReducer` escape hatch to a graphable `AfsmMachine`.
+- Split Checkout into `CheckoutPhase + CheckoutContext` with `CheckoutState = AfsmState<CheckoutPhase, CheckoutContext>`.
+- Added `CheckoutRenderState` and `CheckoutState.toRenderState()` so Compose rendering does not need to know every internal phase.
+- Annotated `CheckoutStateMachine` with `@AfsmGraph`, producing `CheckoutStateMachine.mmd`.
+- Added tests for Checkout topology and updated payment retry/stale-result tests for the phase/context model.
+- Added `docs/examples.md` and `docs/checkout-walkthrough.md`.
+- Updated README, modeling rules, sample guide, testing guide, and wiki pages to make Auth -> Checkout -> ProductEditor the public example ladder.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:compileDebugKotlin :sample-shop:generateAfsmMmd --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Checkout is now the mid-size adoption example for dynamic initial state, loading, retry, stale command results, durable completion, optional effects, and generated state diagrams.

@@ -6,6 +6,9 @@ For Android restoration, one-shot effects, command failures, request ids, and
 queue pressure policy, read
 [restoration-effect-command-policy.md](restoration-effect-command-policy.md).
 
+For complete Android examples, read [examples.md](examples.md) and
+[checkout-walkthrough.md](checkout-walkthrough.md).
+
 ## Coordinates
 
 ```kotlin
