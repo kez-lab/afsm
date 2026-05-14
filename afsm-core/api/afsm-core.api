@@ -63,6 +63,9 @@ public final class afsm/core/AfsmDefinitionException : java/lang/IllegalArgument
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public abstract interface annotation class afsm/core/AfsmDslMarker : java/lang/annotation/Annotation {
+}
+
 public final class afsm/core/AfsmEntryScope {
 	public final fun command (Ljava/lang/Object;)V
 	public final fun effect (Ljava/lang/Object;)V
@@ -72,8 +75,6 @@ public final class afsm/core/AfsmEntryScope {
 }
 
 public final class afsm/core/AfsmEventBranchScope {
-	public final fun addBranch (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmTopologyTransitionKind;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun addBranch$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmTopologyTransitionKind;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun ignore (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun ignore$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun invalid (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
@@ -83,7 +84,9 @@ public final class afsm/core/AfsmEventBranchScope {
 	public final fun stay (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun stay$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun transitionTo (Ljava/lang/Object;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun transitionTo (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun transitionTo$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/Object;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun transitionTo$default (Lafsm/core/AfsmEventBranchScope;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class afsm/core/AfsmExitScope {
@@ -128,13 +131,12 @@ public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphSourc
 
 public final class afsm/core/AfsmMachineBuilder {
 	public fun <init> ()V
-	public final fun addState (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public final fun initial (Ljava/lang/Object;Ljava/lang/Object;)V
 	public final fun state (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)V
+	public final fun state (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class afsm/core/AfsmMachineDslKt {
-	public static final fun afsmLabelForClass (Lkotlin/reflect/KClass;)Ljava/lang/String;
 	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmPhaseMachine;
 }
 
@@ -198,7 +200,7 @@ public final class afsm/core/AfsmState {
 }
 
 public final class afsm/core/AfsmStateBuilder {
-	public final fun addEventDefinition (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun on (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
 	public final fun onEnter (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun onEnter$default (Lafsm/core/AfsmStateBuilder;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun onExit (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
@@ -285,14 +287,8 @@ public final class afsm/core/AfsmTopologyTransitionKind : java/lang/Enum {
 }
 
 public final class afsm/core/AfsmTransition {
-	public fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmDecision;)V
-	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmDecision;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()Ljava/util/List;
-	public final fun component3 ()Ljava/util/List;
-	public final fun component4 ()Lafsm/core/AfsmDecision;
-	public final fun copy (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmDecision;)Lafsm/core/AfsmTransition;
-	public static synthetic fun copy$default (Lafsm/core/AfsmTransition;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmDecision;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
+	public static final field Companion Lafsm/core/AfsmTransition$Companion;
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmDecision;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCommands ()Ljava/util/List;
 	public final fun getDecision ()Lafsm/core/AfsmDecision;
@@ -300,6 +296,17 @@ public final class afsm/core/AfsmTransition {
 	public final fun getState ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class afsm/core/AfsmTransition$Companion {
+	public final fun ignored (Ljava/lang/Object;Ljava/lang/String;)Lafsm/core/AfsmTransition;
+	public static synthetic fun ignored$default (Lafsm/core/AfsmTransition$Companion;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
+	public final fun invalid (Ljava/lang/Object;Ljava/lang/String;)Lafsm/core/AfsmTransition;
+	public static synthetic fun invalid$default (Lafsm/core/AfsmTransition$Companion;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
+	public final fun stayed (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)Lafsm/core/AfsmTransition;
+	public static synthetic fun stayed$default (Lafsm/core/AfsmTransition$Companion;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
+	public final fun transitioned (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;)Lafsm/core/AfsmTransition;
+	public static synthetic fun transitioned$default (Lafsm/core/AfsmTransition$Companion;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
 }
 
 public final class afsm/core/AfsmTransitionScope {

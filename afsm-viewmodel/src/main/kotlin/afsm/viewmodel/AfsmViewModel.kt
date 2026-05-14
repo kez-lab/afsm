@@ -40,7 +40,7 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * The supplied [initialState] wins over [machine]'s default initial state.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmReducer<S, E, C, F>,
+    machine: AfsmMachine<S, E, C, F>,
     initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
@@ -57,11 +57,12 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * Hosts an Afsm reducer with an explicit initial state in this [ViewModel].
  *
  * Use this overload when the initial state is dynamic, for example when it is
- * derived from navigation arguments or a [androidx.lifecycle.SavedStateHandle].
+ * derived from navigation arguments or a [androidx.lifecycle.SavedStateHandle],
+ * and the reducer intentionally does not expose graph topology.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    initialState: S,
     reducer: AfsmReducer<S, E, C, F>,
+    initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F> {

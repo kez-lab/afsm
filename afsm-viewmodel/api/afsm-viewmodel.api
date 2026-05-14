@@ -1,9 +1,9 @@
 public final class afsm/viewmodel/AfsmViewModelKt {
 	public static final fun afsmHost (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmMachine;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;)Lafsm/runtime/AfsmHost;
+	public static final fun afsmHost (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmMachine;Ljava/lang/Object;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;)Lafsm/runtime/AfsmHost;
 	public static final fun afsmHost (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmReducer;Ljava/lang/Object;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;)Lafsm/runtime/AfsmHost;
-	public static final fun afsmHost (Landroidx/lifecycle/ViewModel;Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;)Lafsm/runtime/AfsmHost;
 	public static synthetic fun afsmHost$default (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmMachine;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;ILjava/lang/Object;)Lafsm/runtime/AfsmHost;
+	public static synthetic fun afsmHost$default (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmMachine;Ljava/lang/Object;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;ILjava/lang/Object;)Lafsm/runtime/AfsmHost;
 	public static synthetic fun afsmHost$default (Landroidx/lifecycle/ViewModel;Lafsm/core/AfsmReducer;Ljava/lang/Object;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;ILjava/lang/Object;)Lafsm/runtime/AfsmHost;
-	public static synthetic fun afsmHost$default (Landroidx/lifecycle/ViewModel;Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lafsm/runtime/AfsmConfig;ILjava/lang/Object;)Lafsm/runtime/AfsmHost;
 }
 

@@ -6,11 +6,10 @@ public object Afsm {
         commands: List<C> = emptyList(),
         effects: List<F> = emptyList(),
     ): AfsmTransition<S, C, F> {
-        return AfsmTransition(
+        return AfsmTransition.transitioned(
             state = state,
             commands = commands,
             effects = effects,
-            decision = AfsmDecision.Transitioned,
         )
     }
 
@@ -20,11 +19,11 @@ public object Afsm {
         effects: List<F> = emptyList(),
         reason: String? = null,
     ): AfsmTransition<S, C, F> {
-        return AfsmTransition(
+        return AfsmTransition.stayed(
             state = state,
             commands = commands,
             effects = effects,
-            decision = AfsmDecision.Stayed(reason),
+            reason = reason,
         )
     }
 
@@ -32,9 +31,9 @@ public object Afsm {
         state: S,
         reason: String? = null,
     ): AfsmTransition<S, C, F> {
-        return AfsmTransition(
+        return AfsmTransition.ignored(
             state = state,
-            decision = AfsmDecision.Ignored(reason),
+            reason = reason,
         )
     }
 
@@ -42,10 +41,9 @@ public object Afsm {
         state: S,
         reason: String? = null,
     ): AfsmTransition<S, C, F> {
-        return AfsmTransition(
+        return AfsmTransition.invalid(
             state = state,
-            decision = AfsmDecision.Invalid(reason),
+            reason = reason,
         )
     }
-
 }

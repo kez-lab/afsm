@@ -4,7 +4,6 @@ import afsm.core.Afsm
 import afsm.core.AfsmDecision
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
-import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
@@ -194,7 +193,7 @@ class AfsmHostTest {
     }
 
     @Test
-    fun `Ignored keeps current state and drops accidental outputs`() = runTest {
+    fun `Ignored keeps current state and executes no outputs`() = runTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
         val handledCommands = mutableListOf<DecisionCommand>()
@@ -202,11 +201,9 @@ class AfsmHostTest {
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
-                AfsmTransition(
-                    state = DecisionState("wrong"),
-                    commands = listOf(DecisionCommand.ShouldNotRun),
-                    effects = listOf(DecisionEffect.ShouldNotEmit),
-                    decision = AfsmDecision.Ignored("stale event"),
+                Afsm.ignore(
+                    state = DecisionState("current"),
+                    reason = "stale event",
                 )
             },
             commandHandler = AfsmCommandHandler { command: DecisionCommand, _ ->
@@ -232,23 +229,21 @@ class AfsmHostTest {
         assertEquals(DecisionState("current"), host.state.value)
         assertTrue(handledCommands.isEmpty())
         assertTrue(emittedEffects.isEmpty())
-        assertEquals("stale event", diagnostics.single().reason)
+        assertTrue(diagnostics.isEmpty())
         hostScope.cancel()
     }
 
     @Test
-    fun `Invalid with Record policy keeps state drops outputs and records diagnostic`() = runTest {
+    fun `Invalid with Record policy keeps state and records diagnostic`() = runTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
         val handledCommands = mutableListOf<DecisionCommand>()
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
-                AfsmTransition(
-                    state = DecisionState("wrong"),
-                    commands = listOf(DecisionCommand.ShouldNotRun),
-                    effects = listOf(DecisionEffect.ShouldNotEmit),
-                    decision = AfsmDecision.Invalid("result before request"),
+                Afsm.invalid(
+                    state = DecisionState("current"),
+                    reason = "result before request",
                 )
             },
             commandHandler = AfsmCommandHandler { command: DecisionCommand, _ ->
@@ -283,9 +278,9 @@ class AfsmHostTest {
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
-                AfsmTransition(
+                Afsm.invalid(
                     state = DecisionState("current"),
-                    decision = AfsmDecision.Invalid("programmer error"),
+                    reason = "programmer error",
                 )
             },
             commandHandler = AfsmCommandHandler.none(),

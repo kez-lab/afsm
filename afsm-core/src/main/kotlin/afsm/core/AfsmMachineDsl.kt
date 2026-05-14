@@ -31,6 +31,7 @@ public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmMachine(
     return builder.buildMachine()
 }
 
+@AfsmDslMarker
 public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     private var initialState: AfsmState<P, X>? = null
     private val states = mutableListOf<AfsmStateDefinition<P, X, E, C, F>>()
@@ -91,15 +92,31 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     public inline fun <reified PS : P> state(
         noinline build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
     ) {
-        addState(
-            label = afsmLabelForClass(PS::class),
-            matcher = { phase -> phase as? PS },
+        state(
+            phaseType = PS::class,
             build = build,
         )
     }
 
-    @PublishedApi
-    internal fun <PS : P> addState(
+    /**
+     * Declares behavior for any phase instance of [phaseType].
+     *
+     * This non-inline overload is primarily the implementation target for the
+     * reified `state<Phase>` DSL and keeps internal builder plumbing out of the
+     * stable ABI.
+     */
+    public fun <PS : P> state(
+        phaseType: KClass<PS>,
+        build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
+    ) {
+        addState(
+            label = afsmLabelForClass(phaseType),
+            matcher = { phase -> phase.castIfInstance(phaseType) },
+            build = build,
+        )
+    }
+
+    private fun <PS : P> addState(
         label: String,
         matcher: (P) -> PS?,
         build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
@@ -179,6 +196,7 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     }
 }
 
+@AfsmDslMarker
 public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P> internal constructor(
     private val stateLabel: String,
     private val matcher: (P) -> PS?,
@@ -277,15 +295,31 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     public inline fun <reified EV : E> on(
         noinline build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
     ) {
-        addEventDefinition(
-            eventLabel = afsmLabelForClass(EV::class),
-            eventMatcher = { event -> event as? EV },
+        on(
+            eventType = EV::class,
             build = build,
         )
     }
 
-    @PublishedApi
-    internal fun <EV : E> addEventDefinition(
+    /**
+     * Declares graphable branches for events whose runtime type is [eventType].
+     *
+     * This non-inline overload is primarily the implementation target for the
+     * reified `on<Event>` DSL and keeps internal builder plumbing out of the
+     * stable ABI.
+     */
+    public fun <EV : E> on(
+        eventType: KClass<EV>,
+        build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
+    ) {
+        addEventDefinition(
+            eventLabel = afsmLabelForClass(eventType),
+            eventMatcher = { event -> event.castIfInstance(eventType) },
+            build = build,
+        )
+    }
+
+    private fun <EV : E> addEventDefinition(
         eventLabel: String,
         eventMatcher: (E) -> EV?,
         build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
@@ -315,6 +349,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     }
 }
 
+@AfsmDslMarker
 public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
     private val stateLabel: String,
     private val eventLabel: String,
@@ -395,8 +430,35 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         noinline guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
         noinline block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
     ) {
+        transitionTo(
+            phaseType = TP::class,
+            phase = phase,
+            guardLabel = guardLabel,
+            commandLabels = commandLabels,
+            effectLabels = effectLabels,
+            guard = guard,
+            block = block,
+        )
+    }
+
+    /**
+     * Declares a branch that transitions to a payload phase described by [phaseType].
+     *
+     * This non-inline overload is primarily the implementation target for the
+     * reified `transitionTo<Phase>` DSL and keeps internal branch plumbing out
+     * of the stable ABI.
+     */
+    public fun <TP : P> transitionTo(
+        phaseType: KClass<TP>,
+        phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+        guardLabel: String? = null,
+        commandLabels: List<String> = emptyList(),
+        effectLabels: List<String> = emptyList(),
+        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
+    ) {
         addBranch(
-            targetLabel = afsmLabelForClass(TP::class),
+            targetLabel = afsmLabelForClass(phaseType),
             targetFactory = phase,
             guardLabel = guardLabel,
             commandLabels = commandLabels,
@@ -533,8 +595,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         )
     }
 
-    @PublishedApi
-    internal fun addBranch(
+    private fun addBranch(
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
         targetFactory: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?,
@@ -622,6 +683,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
  * [phase] is the target phase instance being entered. For payload phases
  * declared with `state<PayloadPhase>`, it is typed as that payload phase.
  */
+@AfsmDslMarker
 public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
     public val phase: PS,
     private val execution: AfsmDslExecution<P, X, C, F>,
@@ -673,6 +735,7 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
  * [phase] is the source phase instance being exited. For payload phases
  * declared with `state<PayloadPhase>`, it is typed as that payload phase.
  */
+@AfsmDslMarker
 public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
     public val phase: PS,
     private val execution: AfsmDslExecution<P, X, C, F>,
@@ -721,6 +784,7 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
  * [phase] is the current source phase, typed as the enclosing state scope. [event]
  * is the incoming event, typed as the enclosing event scope.
  */
+@AfsmDslMarker
 public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
     public val phase: PS,
     public val event: EV,
@@ -893,16 +957,44 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
             context = execution.context,
         )
 
-        return AfsmTransition(
-            state = nextState,
-            commands = execution.commands.toList(),
-            effects = execution.effects.toList(),
-            decision = branchResult.decision ?: if (targetPhase != null) {
-                AfsmDecision.Transitioned
-            } else {
-                AfsmDecision.Stayed()
-            },
-        )
+        return when (val decision = branchResult.decision) {
+            null -> {
+                if (targetPhase != null) {
+                    AfsmTransition.transitioned(
+                        state = nextState,
+                        commands = execution.commands.toList(),
+                        effects = execution.effects.toList(),
+                    )
+                } else {
+                    AfsmTransition.stayed(
+                        state = nextState,
+                        commands = execution.commands.toList(),
+                        effects = execution.effects.toList(),
+                    )
+                }
+            }
+
+            is AfsmDecision.Ignored -> AfsmTransition.ignored(
+                state = nextState,
+                reason = decision.reason,
+            )
+
+            is AfsmDecision.Invalid -> AfsmTransition.invalid(
+                state = nextState,
+                reason = decision.reason,
+            )
+
+            is AfsmDecision.Stayed -> AfsmTransition.stayed(
+                state = nextState,
+                reason = decision.reason,
+            )
+
+            AfsmDecision.Transitioned -> AfsmTransition.transitioned(
+                state = nextState,
+                commands = execution.commands.toList(),
+                effects = execution.effects.toList(),
+            )
+        }
     }
 
     private fun applyExitHandlers(
@@ -939,7 +1031,11 @@ private fun afsmLabelForValue(value: Any): String {
     return value::class.simpleName ?: value.toString()
 }
 
-@PublishedApi
-internal fun afsmLabelForClass(kClass: KClass<*>): String {
+private fun afsmLabelForClass(kClass: KClass<*>): String {
     return kClass.simpleName ?: kClass.toString()
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun <T : Any> Any.castIfInstance(kClass: KClass<T>): T? {
+    return if (kClass.isInstance(this)) this as T else null
 }
