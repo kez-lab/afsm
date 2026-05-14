@@ -97,8 +97,11 @@ internal class AfsmGraphProcessor(
         val fileName = annotation.stringArgument("fileName")
             .ifBlank { "$id.mmd" }
 
-        if (!fileName.endsWith(".mmd")) {
-            logger.error("Afsm graph fileName must end with .mmd.", declaration)
+        if (!fileName.isSafeMmdFileName()) {
+            logger.error(
+                "Afsm graph fileName must be a safe relative .mmd path.",
+                declaration,
+            )
             return null
         }
 
@@ -172,5 +175,15 @@ internal class AfsmGraphProcessor(
         const val AFSM_REDUCER = "afsm.core.AfsmReducer"
         const val GENERATED_PACKAGE = "afsm.generated"
         const val GENERATED_REGISTRY_NAME = "AfsmGeneratedGraphRegistry"
+    }
+}
+
+internal fun String.isSafeMmdFileName(): Boolean {
+    if (isBlank()) return false
+    if (!endsWith(".mmd")) return false
+    if (startsWith("/") || startsWith("\\")) return false
+
+    return split('/', '\\').all { segment ->
+        segment.isNotBlank() && segment != "." && segment != ".."
     }
 }

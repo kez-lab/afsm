@@ -3,6 +3,7 @@ package afsm.core
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class AfsmMmdWriterTest {
@@ -66,6 +67,41 @@ class AfsmMmdWriterTest {
             """.trimIndent(),
             outputDir.resolve("nested/Second.mmd").readText().trimEnd(),
         )
+    }
+
+    @Test
+    fun `writeAll rejects unsafe graph file names`() {
+        val outputDir = Files.createTempDirectory("afsm-mmd-writer").toFile()
+
+        listOf(
+            "../Escape.mmd",
+            "nested/../Escape.mmd",
+            "/tmp/Escape.mmd",
+            "nested//Escape.mmd",
+            "Escape.txt",
+        ).forEach { fileName ->
+            val registry = object : AfsmGraphRegistry {
+                override val entries = listOf(
+                    AfsmGraphEntry(
+                        id = "Unsafe",
+                        fileName = fileName,
+                        createTopology = {
+                            AfsmTopology(
+                                states = listOf(AfsmTopologyState("Idle")),
+                                transitions = emptyList(),
+                            )
+                        },
+                    ),
+                )
+            }
+
+            assertFailsWith<IllegalArgumentException> {
+                AfsmMmdWriter.writeAll(
+                    registry = registry,
+                    outputDir = outputDir,
+                )
+            }
+        }
     }
 
     @Test

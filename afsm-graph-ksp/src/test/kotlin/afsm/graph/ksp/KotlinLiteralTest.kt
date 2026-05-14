@@ -11,4 +11,17 @@ class KotlinLiteralTest {
             "Line\n\"quoted\"\\path".kotlinLiteral(),
         )
     }
+
+    @Test
+    fun `safe mmd file names reject path traversal and absolute paths`() {
+        assertEquals(true, "ProductEditor.mmd".isSafeMmdFileName())
+        assertEquals(true, "nested/ProductEditor.mmd".isSafeMmdFileName())
+
+        assertEquals(false, "../ProductEditor.mmd".isSafeMmdFileName())
+        assertEquals(false, "nested/../ProductEditor.mmd".isSafeMmdFileName())
+        assertEquals(false, "/tmp/ProductEditor.mmd".isSafeMmdFileName())
+        assertEquals(false, "\\tmp\\ProductEditor.mmd".isSafeMmdFileName())
+        assertEquals(false, "ProductEditor.txt".isSafeMmdFileName())
+        assertEquals(false, "nested//ProductEditor.mmd".isSafeMmdFileName())
+    }
 }
