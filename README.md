@@ -4,6 +4,13 @@ Afsm is an Android-focused finite state machine toolkit for complex `ViewModel` 
 
 Use Afsm when a screen has meaningful phases, retries, async results, invalid transitions, or multi-step behavior. Do not force it onto simple product lists, detail pages, likes, review lists, or basic loading/content/error screens where ordinary `ViewModel + StateFlow` is clearer.
 
+Recommended reading order:
+
+1. Build the minimal machine below.
+2. Read [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a real screen.
+3. Use `sample-shop` Auth as the smallest real example.
+4. Read the generated ProductEditor `.mmd` graph before the ProductEditor source.
+
 ## Install
 
 Repository-local development:
@@ -86,37 +93,41 @@ sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-val DraftMachine = afsmMachine<DraftPhase, DraftContext, DraftEvent, DraftCommand, AfsmNoEffect> {
-    initial(
-        phase = DraftPhase.Editing,
-        context = DraftContext(),
-    )
+object DraftStateMachine :
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> by draftMachine()
 
-    state(DraftPhase.Editing) {
-        on<DraftEvent.TitleChanged> {
-            stay {
-                updateContext { copy(title = event.value) }
+private fun draftMachine() =
+    afsmMachine<DraftPhase, DraftContext, DraftEvent, DraftCommand, AfsmNoEffect> {
+        initial(
+            phase = DraftPhase.Editing,
+            context = DraftContext(),
+        )
+
+        state(DraftPhase.Editing) {
+            on<DraftEvent.TitleChanged> {
+                stay {
+                    updateContext { copy(title = event.value) }
+                }
+            }
+
+            on<DraftEvent.SaveClicked> {
+                transitionTo(DraftPhase.Saving)
             }
         }
 
-        on<DraftEvent.SaveClicked> {
-            transitionTo(DraftPhase.Saving)
+        state(DraftPhase.Saving) {
+            onEnter(commandLabels = listOf("SaveDraft")) {
+                command(DraftCommand.SaveDraft(context.title))
+            }
+
+            on<DraftEvent.Saved> {
+                transitionTo(DraftPhase.Saved)
+            }
+        }
+
+        state(DraftPhase.Saved) {
         }
     }
-
-    state(DraftPhase.Saving) {
-        onEnter(commandLabels = listOf("SaveDraft")) {
-            command(DraftCommand.SaveDraft(context.title))
-        }
-
-        on<DraftEvent.Saved> {
-            transitionTo(DraftPhase.Saved)
-        }
-    }
-
-    state(DraftPhase.Saved) {
-    }
-}
 ```
 
 `transitionTo(...)` changes phase. `stay(...)` handles an event without changing phase.
@@ -136,7 +147,7 @@ class DraftViewModel(
     private val repository: DraftRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = DraftMachine,
+        machine = DraftStateMachine,
         commandHandler = AfsmCommandHandler { command: DraftCommand, dispatch ->
             when (command) {
                 is DraftCommand.SaveDraft -> {
@@ -159,7 +170,18 @@ If the starting state comes from navigation arguments, a deep link, repository r
 
 ```kotlin
 private val host = afsmHost(
-    machine = CheckoutStateMachine(),
+    machine = DraftStateMachine,
+    initialState = restoredDraftState,
+    commandHandler = draftCommandHandler,
+)
+```
+
+If you intentionally use a custom non-graphable `AfsmReducer`, name it as a
+reducer at the call site:
+
+```kotlin
+private val host = afsmHost(
+    reducer = CheckoutStateMachine(),
     initialState = CheckoutState(productId = productId),
     commandHandler = checkoutCommandHandler,
 )
@@ -203,7 +225,7 @@ State machine tests are plain JVM tests.
 ```kotlin
 @Test
 fun `SaveClicked enters Saving and emits SaveDraft`() {
-    val result = DraftMachine.transition(
+    val result = DraftStateMachine.transition(
         state = DraftState(
             phase = DraftPhase.Editing,
             context = DraftContext(title = "Plan"),
@@ -251,7 +273,7 @@ private typealias DraftMachineType =
     id = "Draft",
     fileName = "DraftStateMachine.mmd",
 )
-object DraftStateMachine : DraftMachineType by DraftMachine
+object DraftStateMachine : DraftMachineType by draftMachine()
 ```
 
 Add an export test in the Android app module:

@@ -11,6 +11,7 @@ The point is not to force every screen into a finite state machine. The app uses
 - App entry point: `sample-shop/src/main/kotlin/afsm/sample/shop/MainActivity.kt`
 - Manual DI: `sample-shop/src/main/kotlin/afsm/sample/shop/app/ShopAppContainer.kt`
 - Database: `sample-shop/src/main/kotlin/afsm/sample/shop/core/database/ShopDatabase.kt`
+- Modeling rules: [modeling-rules.md](modeling-rules.md)
 
 ## Dependencies
 
@@ -167,12 +168,15 @@ Policy:
 - Product loading and payment commands are serialized by `AfsmHost`.
 - Duplicate enter/pay events are ignored while work is already running.
 - First mock payment attempt fails for higher-priced products, so retry can be exercised.
-- Payment completion is an effect because navigation is a UI-side one-shot action.
+- Payment completion is durable state plus an effect. The state renders
+  completion if the effect is missed; the effect lets the route navigate.
 - Payment commands include a request id and result events echo that id. Late
   results from older payment attempts are treated as stale `Ignored` events
   instead of invalid programmer errors.
-- Checkout uses `afsmHost(machine = ..., initialState = ...)` because its
-  initial state comes from a navigation `productId`.
+- Checkout currently uses the custom reducer escape hatch with
+  `afsmHost(reducer = ..., initialState = ...)` because its initial state comes
+  from a navigation `productId` and it is not yet a graphable phase/context
+  sample.
 
 ## Compose Effect Collection
 

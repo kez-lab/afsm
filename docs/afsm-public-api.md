@@ -28,14 +28,19 @@ Verify from a separate Android consumer build:
 
 ### AfsmTransition
 
+`AfsmTransition` is the result of reducing one `state + event` pair. Create it
+through `Afsm` helpers or `AfsmTransition` factory functions, not a raw public
+constructor.
+
 ```kotlin
-data class AfsmTransition<S : Any, C : Any, F : Any>(
-    val state: S,
-    val commands: List<C> = emptyList(),
-    val effects: List<F> = emptyList(),
-    val decision: AfsmDecision = AfsmDecision.Transitioned,
-)
+Afsm.transitionTo(state, commands, effects)
+Afsm.stay(state, commands, effects, reason)
+Afsm.ignore(state, reason)
+Afsm.invalid(state, reason)
 ```
+
+The constructor is intentionally not public so `Ignored` and `Invalid` decisions
+cannot accidentally carry commands, effects, or changed state output.
 
 ### AfsmDecision
 
@@ -135,9 +140,12 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | `initial(phase, context)` | Initial state value; does not run `onEnter` |
 | `state(phase)` | Exact phase scope |
 | `state<PayloadPhase>()` | Payload phase scope |
+| `state(phaseType = PayloadPhase::class)` | Non-inline payload phase scope |
 | `on<Event>()` | Event-specific branch scope |
+| `on(eventType = Event::class)` | Non-inline event-specific branch scope |
 | `transitionTo(phase)` | Phase-changing transition |
 | `transitionTo<PayloadPhase>(phase = { ... })` | Phase-changing transition to payload phase |
+| `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload transition |
 | `stay { ... }` | Handled internal branch with no phase change |
 | `otherwise(label = ...) { ... }` | Fallback internal branch after guards fail |
 | `ignore(reason)` | Expected no-op event; no graph edge |
@@ -240,22 +248,23 @@ fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
 ): AfsmHost<S, E, C, F>
 
 fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmReducer<S, E, C, F>,
+    machine: AfsmMachine<S, E, C, F>,
     initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 
 fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    initialState: S,
     reducer: AfsmReducer<S, E, C, F>,
+    initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 ```
 
 Use `machine` for the standard path. Use `machine + initialState` when the
-starting state is dynamic.
+starting state is dynamic. Use `reducer + initialState` only for custom
+non-graphable reducer escape hatches.
 
 ## afsm-compose
 
