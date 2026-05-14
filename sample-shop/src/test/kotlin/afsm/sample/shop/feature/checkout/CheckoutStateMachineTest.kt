@@ -1,14 +1,17 @@
 package afsm.sample.shop.feature.checkout
 
 import afsm.core.AfsmDecision
+import afsm.core.AfsmTopologyTransition
+import afsm.core.toMmd
 import afsm.sample.shop.core.model.OrderReceipt
 import afsm.sample.shop.core.model.Product
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class CheckoutStateMachineTest {
-    private val machine = CheckoutStateMachine()
+    private val machine = CheckoutStateMachine
     private val product = Product(
         id = 7,
         title = "Studio Headphones",
@@ -20,12 +23,12 @@ class CheckoutStateMachineTest {
     @Test
     fun `screen entered loads product exactly once`() {
         val result = machine.transition(
-            state = CheckoutState(productId = product.id),
+            state = checkoutState(productId = product.id),
             event = CheckoutEvent.ScreenEntered,
         )
 
         assertEquals(AfsmDecision.Transitioned, result.decision)
-        assertEquals(true, result.state.isLoadingProduct)
+        assertEquals(CheckoutPhase.ProductLoading, result.state.phase)
         assertEquals(listOf(CheckoutCommand.LoadProduct(product.id)), result.commands)
 
         val duplicate = machine.transition(
@@ -37,16 +40,35 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `pay clicked with loaded product enters paying and emits submit command`() {
-        val state = CheckoutState(
+    fun `product loaded enters ready phase with product context`() {
+        val result = machine.transition(
+            state = checkoutState(
+                productId = product.id,
+                phase = CheckoutPhase.ProductLoading,
+            ),
+            event = CheckoutEvent.ProductLoaded(product),
+        )
+
+        assertEquals(CheckoutPhase.ProductReady, result.state.phase)
+        assertEquals(product, result.state.context.product)
+        assertEquals(null, result.state.context.errorMessage)
+    }
+
+    @Test
+    fun `pay clicked with loaded product enters payment phase and emits submit command`() {
+        val state = checkoutState(
             productId = product.id,
-            product = product,
+            phase = CheckoutPhase.ProductReady,
+            context = CheckoutContext(
+                productId = product.id,
+                product = product,
+            ),
         )
 
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
-        assertEquals(true, result.state.isPaying)
-        assertEquals(1, result.state.activePaymentRequestId)
+        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 1), result.state.phase)
+        assertEquals(1, result.state.context.nextPaymentRequestId)
         assertEquals(
             listOf(
                 CheckoutCommand.SubmitPayment(
@@ -59,14 +81,16 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `payment failure stays on checkout and retry can emit payment command`() {
+    fun `payment failure enters failure phase and retry can emit payment command`() {
         val failed = machine.transition(
-            state = CheckoutState(
+            state = checkoutState(
                 productId = product.id,
-                product = product,
-                isPaying = true,
-                nextPaymentRequestId = 1,
-                activePaymentRequestId = 1,
+                phase = CheckoutPhase.PaymentInProgress(requestId = 1),
+                context = CheckoutContext(
+                    productId = product.id,
+                    product = product,
+                    nextPaymentRequestId = 1,
+                ),
             ),
             event = CheckoutEvent.PaymentFailed(
                 requestId = 1,
@@ -74,14 +98,13 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertEquals(false, failed.state.isPaying)
-        assertEquals(null, failed.state.activePaymentRequestId)
-        assertEquals("Mock payment declined.", failed.state.errorMessage)
+        assertEquals(CheckoutPhase.PaymentFailed, failed.state.phase)
+        assertEquals("Mock payment declined.", failed.state.context.errorMessage)
 
         val retry = machine.transition(failed.state, CheckoutEvent.RetryClicked)
 
-        assertEquals(true, retry.state.isPaying)
-        assertEquals(2, retry.state.activePaymentRequestId)
+        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), retry.state.phase)
+        assertEquals(2, retry.state.context.nextPaymentRequestId)
         assertEquals(
             listOf(
                 CheckoutCommand.SubmitPayment(
@@ -102,12 +125,14 @@ class CheckoutStateMachineTest {
         )
 
         val result = machine.transition(
-            state = CheckoutState(
+            state = checkoutState(
                 productId = product.id,
-                product = product,
-                isPaying = true,
-                nextPaymentRequestId = 1,
-                activePaymentRequestId = 1,
+                phase = CheckoutPhase.PaymentInProgress(requestId = 1),
+                context = CheckoutContext(
+                    productId = product.id,
+                    product = product,
+                    nextPaymentRequestId = 1,
+                ),
             ),
             event = CheckoutEvent.PaymentSucceeded(
                 requestId = 1,
@@ -115,9 +140,7 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertEquals(true, result.state.isComplete)
-        assertEquals(null, result.state.activePaymentRequestId)
-        assertEquals(42, result.state.orderId)
+        assertEquals(CheckoutPhase.Completed(orderId = 42), result.state.phase)
         assertEquals(listOf(CheckoutEffect.PaymentCompleted(orderId = 42)), result.effects)
 
         val duplicatePay = machine.transition(result.state, CheckoutEvent.PayClicked)
@@ -130,12 +153,14 @@ class CheckoutStateMachineTest {
     @Test
     fun `stale payment failure result is ignored`() {
         val result = machine.transition(
-            state = CheckoutState(
+            state = checkoutState(
                 productId = product.id,
-                product = product,
-                isPaying = true,
-                nextPaymentRequestId = 2,
-                activePaymentRequestId = 2,
+                phase = CheckoutPhase.PaymentInProgress(requestId = 2),
+                context = CheckoutContext(
+                    productId = product.id,
+                    product = product,
+                    nextPaymentRequestId = 2,
+                ),
             ),
             event = CheckoutEvent.PaymentFailed(
                 requestId = 1,
@@ -144,8 +169,7 @@ class CheckoutStateMachineTest {
         )
 
         assertIs<AfsmDecision.Ignored>(result.decision)
-        assertEquals(true, result.state.isPaying)
-        assertEquals(2, result.state.activePaymentRequestId)
+        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
     }
 
     @Test
@@ -157,12 +181,14 @@ class CheckoutStateMachineTest {
         )
 
         val result = machine.transition(
-            state = CheckoutState(
+            state = checkoutState(
                 productId = product.id,
-                product = product,
-                isPaying = true,
-                nextPaymentRequestId = 2,
-                activePaymentRequestId = 2,
+                phase = CheckoutPhase.PaymentInProgress(requestId = 2),
+                context = CheckoutContext(
+                    productId = product.id,
+                    product = product,
+                    nextPaymentRequestId = 2,
+                ),
             ),
             event = CheckoutEvent.PaymentSucceeded(
                 requestId = 1,
@@ -171,8 +197,43 @@ class CheckoutStateMachineTest {
         )
 
         assertIs<AfsmDecision.Ignored>(result.decision)
-        assertEquals(true, result.state.isPaying)
-        assertEquals(2, result.state.activePaymentRequestId)
+        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
         assertEquals(emptyList(), result.effects)
+    }
+
+    @Test
+    fun `topology exposes Checkout graph without sample events`() {
+        val transitions = machine.topology.transitions
+
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "Idle",
+                event = "ScreenEntered",
+                to = "ProductLoading",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "ProductReady",
+                event = "PayClicked",
+                to = "PaymentInProgress",
+                guardLabel = "product loaded",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "PaymentInProgress",
+                event = "PaymentSucceeded",
+                to = "Completed",
+                guardLabel = "matching request",
+                effectLabels = listOf("PaymentCompleted"),
+            ) in transitions,
+        )
+
+        val mmd = machine.topology.toMmd()
+
+        assertTrue("Idle --> ProductLoading: ScreenEntered" in mmd)
+        assertTrue("ProductReady --> PaymentInProgress: PayClicked [product loaded]" in mmd)
+        assertTrue("PaymentInProgress --> Completed: PaymentSucceeded [matching request]" in mmd)
     }
 }

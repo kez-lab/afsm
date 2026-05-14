@@ -51,7 +51,7 @@ fun CheckoutRoute(
     }
 
     CheckoutScreen(
-        state = state,
+        state = state.toRenderState(),
         onBack = onBack,
         onPayClick = { viewModel.onEvent(CheckoutEvent.PayClicked) },
         onRetryClick = { viewModel.onEvent(CheckoutEvent.RetryClicked) },
@@ -60,7 +60,7 @@ fun CheckoutRoute(
 
 @Composable
 fun CheckoutScreen(
-    state: CheckoutState,
+    state: CheckoutRenderState,
     onBack: () -> Unit,
     onPayClick: () -> Unit,
     onRetryClick: () -> Unit,

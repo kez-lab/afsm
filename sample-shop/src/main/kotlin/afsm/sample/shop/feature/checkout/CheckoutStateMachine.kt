@@ -1,127 +1,254 @@
 package afsm.sample.shop.feature.checkout
 
-import afsm.core.Afsm
-import afsm.core.AfsmReducer
+import afsm.core.AfsmGraph
+import afsm.core.AfsmMachine
+import afsm.core.afsmMachine
 
-class CheckoutStateMachine : AfsmReducer<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> {
-    override fun transition(
-        state: CheckoutState,
-        event: CheckoutEvent,
-    ): CheckoutTransition {
-        return when (event) {
-            CheckoutEvent.ScreenEntered -> {
-                if (state.product != null || state.isLoadingProduct) {
-                    Afsm.ignore(state, reason = "Product is already loaded or loading.")
-                } else {
-                    Afsm.transitionTo(
-                        state = state.copy(
-                            isLoadingProduct = true,
-                            errorMessage = null,
-                        ),
-                        commands = listOf(CheckoutCommand.LoadProduct(state.productId)),
-                    )
+private typealias CheckoutMachine =
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect>
+
+@AfsmGraph(
+    id = "Checkout",
+    fileName = "CheckoutStateMachine.mmd",
+)
+internal object CheckoutStateMachine : CheckoutMachine by checkoutMachine()
+
+private fun checkoutMachine(): CheckoutMachine {
+    return afsmMachine {
+        initial(
+            phase = CheckoutPhase.Idle,
+            context = CheckoutContext(productId = 0),
+        )
+
+        state(CheckoutPhase.Idle) {
+            on<CheckoutEvent.ScreenEntered> {
+                transitionTo(CheckoutPhase.ProductLoading)
+            }
+
+            on<CheckoutEvent.PayClicked> {
+                stay {
+                    updateContext {
+                        copy(errorMessage = "Product is required before payment.")
+                    }
                 }
             }
 
-            is CheckoutEvent.ProductLoaded -> {
-                if (!state.isLoadingProduct) {
-                    Afsm.invalid(state, reason = "Product loaded without a pending load command.")
-                } else {
-                    Afsm.transitionTo(
-                        state = state.copy(
-                            product = event.product,
-                            isLoadingProduct = false,
-                            errorMessage = null,
-                        ),
-                    )
-                }
-            }
-
-            CheckoutEvent.ProductUnavailable -> {
-                if (!state.isLoadingProduct) {
-                    Afsm.invalid(state, reason = "Product unavailable without a pending load command.")
-                } else {
-                    Afsm.transitionTo(
-                        state = state.copy(
-                            isLoadingProduct = false,
-                            errorMessage = "Product is no longer available.",
-                        ),
-                    )
-                }
-            }
-
-            CheckoutEvent.PayClicked -> startPayment(state)
-
-            CheckoutEvent.RetryClicked -> startPayment(state)
-
-            is CheckoutEvent.PaymentSucceeded -> {
-                if (state.activePaymentRequestId != event.requestId) {
-                    Afsm.ignore(state, reason = "Stale payment success result.")
-                } else {
-                    Afsm.transitionTo(
-                        state = state.copy(
-                            isPaying = false,
-                            isComplete = true,
-                            activePaymentRequestId = null,
-                            orderId = event.receipt.orderId,
-                            errorMessage = null,
-                        ),
-                        effects = listOf(CheckoutEffect.PaymentCompleted(event.receipt.orderId)),
-                    )
-                }
-            }
-
-            is CheckoutEvent.PaymentFailed -> {
-                if (state.activePaymentRequestId != event.requestId) {
-                    Afsm.ignore(state, reason = "Stale payment failure result.")
-                } else {
-                    Afsm.transitionTo(
-                        state = state.copy(
-                            isPaying = false,
-                            activePaymentRequestId = null,
-                            errorMessage = event.message,
-                        ),
-                    )
+            on<CheckoutEvent.RetryClicked> {
+                stay {
+                    updateContext {
+                        copy(errorMessage = "Product is required before payment.")
+                    }
                 }
             }
         }
-    }
 
-    private fun startPayment(state: CheckoutState): CheckoutTransition {
-        val product = state.product
-        return when {
-            state.isComplete -> {
-                Afsm.ignore(state, reason = "Checkout is already complete.")
+        state(CheckoutPhase.ProductLoading) {
+            onEnter(commandLabels = listOf("LoadProduct")) {
+                updateContext { copy(errorMessage = null) }
+                command(CheckoutCommand.LoadProduct(context.productId))
             }
 
-            state.isPaying -> {
-                Afsm.ignore(state, reason = "Duplicate payment event while payment is in flight.")
+            on<CheckoutEvent.ScreenEntered> {
+                ignore(reason = "Product load is already in flight.")
             }
 
-            state.isLoadingProduct -> {
-                Afsm.ignore(state, reason = "Cannot pay before product load finishes.")
+            on<CheckoutEvent.ProductLoaded> {
+                transitionTo(CheckoutPhase.ProductReady) {
+                    updateContext {
+                        copy(
+                            product = event.product,
+                            errorMessage = null,
+                        )
+                    }
+                }
             }
 
-            product == null -> {
-                Afsm.stay(state.copy(errorMessage = "Product is required before payment."))
+            on<CheckoutEvent.ProductUnavailable> {
+                transitionTo(CheckoutPhase.ProductUnavailable) {
+                    updateContext {
+                        copy(
+                            product = null,
+                            errorMessage = "Product is no longer available.",
+                        )
+                    }
+                }
             }
 
-            else -> {
-                val requestId = state.nextPaymentRequestId + 1
-                Afsm.transitionTo(
-                    state = state.copy(
-                        isPaying = true,
-                        nextPaymentRequestId = requestId,
-                        activePaymentRequestId = requestId,
-                        errorMessage = null,
-                    ),
-                    commands = listOf(
+            on<CheckoutEvent.PayClicked> {
+                ignore(reason = "Cannot pay before product load finishes.")
+            }
+
+            on<CheckoutEvent.RetryClicked> {
+                ignore(reason = "Cannot retry before product load finishes.")
+            }
+        }
+
+        state(CheckoutPhase.ProductReady) {
+            on<CheckoutEvent.PayClicked> {
+                transitionTo<CheckoutPhase.PaymentInProgress>(
+                    phase = {
+                        CheckoutPhase.PaymentInProgress(
+                            requestId = context.nextPaymentRequestId + 1,
+                        )
+                    },
+                    guardLabel = "product loaded",
+                    guard = { context.product != null },
+                ) {
+                    updateContext {
+                        copy(
+                            nextPaymentRequestId = nextPaymentRequestId + 1,
+                            errorMessage = null,
+                        )
+                    }
+                }
+
+                otherwise(label = "missing product") {
+                    updateContext {
+                        copy(errorMessage = "Product is required before payment.")
+                    }
+                }
+            }
+
+            on<CheckoutEvent.RetryClicked> {
+                ignore(reason = "Retry is only valid after a payment failure.")
+            }
+
+            on<CheckoutEvent.PaymentSucceeded> {
+                ignore(reason = "Payment result arrived without an active request.")
+            }
+
+            on<CheckoutEvent.PaymentFailed> {
+                ignore(reason = "Payment result arrived without an active request.")
+            }
+        }
+
+        state<CheckoutPhase.PaymentInProgress> {
+            onEnter(commandLabels = listOf("SubmitPayment")) {
+                context.product?.let { product ->
+                    command(
                         CheckoutCommand.SubmitPayment(
-                            requestId = requestId,
+                            requestId = phase.requestId,
                             product = product,
                         ),
-                    ),
+                    )
+                }
+            }
+
+            on<CheckoutEvent.PayClicked> {
+                ignore(reason = "Duplicate payment event while payment is in flight.")
+            }
+
+            on<CheckoutEvent.RetryClicked> {
+                ignore(reason = "Duplicate retry event while payment is in flight.")
+            }
+
+            on<CheckoutEvent.PaymentSucceeded> {
+                transitionTo<CheckoutPhase.Completed>(
+                    phase = {
+                        CheckoutPhase.Completed(
+                            orderId = event.receipt.orderId,
+                        )
+                    },
+                    effectLabels = listOf("PaymentCompleted"),
+                    guardLabel = "matching request",
+                    guard = { phase.requestId == event.requestId },
+                ) {
+                    updateContext { copy(errorMessage = null) }
+                    effect(CheckoutEffect.PaymentCompleted(event.receipt.orderId))
+                }
+
+                ignore(
+                    reason = "Stale payment success result.",
+                    guard = { phase.requestId != event.requestId },
                 )
+            }
+
+            on<CheckoutEvent.PaymentFailed> {
+                transitionTo(
+                    phase = CheckoutPhase.PaymentFailed,
+                    guardLabel = "matching request",
+                    guard = { phase.requestId == event.requestId },
+                ) {
+                    updateContext {
+                        copy(errorMessage = event.message)
+                    }
+                }
+
+                ignore(
+                    reason = "Stale payment failure result.",
+                    guard = { phase.requestId != event.requestId },
+                )
+            }
+        }
+
+        state(CheckoutPhase.PaymentFailed) {
+            on<CheckoutEvent.RetryClicked> {
+                transitionTo<CheckoutPhase.PaymentInProgress>(
+                    phase = {
+                        CheckoutPhase.PaymentInProgress(
+                            requestId = context.nextPaymentRequestId + 1,
+                        )
+                    },
+                    guardLabel = "product loaded",
+                    guard = { context.product != null },
+                ) {
+                    updateContext {
+                        copy(
+                            nextPaymentRequestId = nextPaymentRequestId + 1,
+                            errorMessage = null,
+                        )
+                    }
+                }
+
+                otherwise(label = "missing product") {
+                    updateContext {
+                        copy(errorMessage = "Product is required before payment.")
+                    }
+                }
+            }
+
+            on<CheckoutEvent.PayClicked> {
+                ignore(reason = "Use retry after payment failure.")
+            }
+
+            on<CheckoutEvent.PaymentSucceeded> {
+                ignore(reason = "Payment result arrived without an active request.")
+            }
+
+            on<CheckoutEvent.PaymentFailed> {
+                ignore(reason = "Payment result arrived without an active request.")
+            }
+        }
+
+        state(CheckoutPhase.ProductUnavailable) {
+            on<CheckoutEvent.ScreenEntered> {
+                ignore(reason = "Product is unavailable.")
+            }
+
+            on<CheckoutEvent.PayClicked> {
+                ignore(reason = "Cannot pay for an unavailable product.")
+            }
+
+            on<CheckoutEvent.RetryClicked> {
+                ignore(reason = "Cannot retry payment for an unavailable product.")
+            }
+        }
+
+        state<CheckoutPhase.Completed> {
+            on<CheckoutEvent.PayClicked> {
+                ignore(reason = "Checkout is already complete.")
+            }
+
+            on<CheckoutEvent.RetryClicked> {
+                ignore(reason = "Checkout is already complete.")
+            }
+
+            on<CheckoutEvent.PaymentSucceeded> {
+                ignore(reason = "Checkout is already complete.")
+            }
+
+            on<CheckoutEvent.PaymentFailed> {
+                ignore(reason = "Checkout is already complete.")
             }
         }
     }
