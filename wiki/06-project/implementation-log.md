@@ -1117,3 +1117,24 @@ Verification:
 Conclusion:
 
 - The primary examples are now curated as a complete onboarding set rather than being buried inside the sample app guide.
+
+## [2026-05-16] GitHub-facing README and CI
+
+Change:
+
+- Added `.github/workflows/ci.yml`.
+- Added README status badges, internal-beta status, quickstart commands, and clearer GitHub first-screen positioning.
+- Updated `docs/release-readiness.md` with the private GitHub repo, CI workflow, and badge visibility note.
+- Updated `CONTRIBUTING.md` and `CHANGELOG.md`.
+- Updated verification scripts so additional Gradle arguments such as `--warning-mode all` are forwarded to all underlying Gradle invocations.
+
+Verification:
+
+```bash
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Conclusion:
+
+- The GitHub README now communicates current maturity and the fastest validation path.
+- CI and local release verification now share the same command.

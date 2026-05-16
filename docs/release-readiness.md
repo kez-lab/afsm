@@ -7,7 +7,7 @@ This checklist defines the current gate for turning Afsm into a publishable Andr
 Run:
 
 ```bash
-./scripts/verify-release-local.sh
+./scripts/verify-release-local.sh --warning-mode all
 ```
 
 What this proves:
@@ -21,6 +21,31 @@ What this proves:
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR and KSP processor.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
 - Binary API dumps are checked for all five Afsm library modules.
+
+## GitHub CI
+
+The private GitHub repository is:
+
+```text
+https://github.com/kez-lab/afsm
+```
+
+CI workflow:
+
+```text
+.github/workflows/ci.yml
+```
+
+The workflow runs on pushes to `main`, pull requests, and manual dispatch. It
+uses JDK 17, the Android SDK, Gradle caching, and the same local release gate:
+
+```bash
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+The CI badge in `README.md` points to this workflow. Because the repository is
+private, badge visibility depends on GitHub authentication and repository
+access.
 
 ## Current Pre-Release Artifacts
 
@@ -70,6 +95,7 @@ Required engineering gates:
 
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
 - Keep `consumer-smoke` green after every publication metadata change.
+- Keep `.github/workflows/ci.yml` aligned with `./scripts/verify-release-local.sh`.
 - Keep `CONTRIBUTING.md` aligned with the current release gate and test policy.
 
 ## Known Warning

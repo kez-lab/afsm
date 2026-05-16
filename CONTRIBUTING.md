@@ -57,10 +57,13 @@ For public API changes:
 Local release gate:
 
 ```bash
-./scripts/verify-release-local.sh
+./scripts/verify-release-local.sh --warning-mode all
 ```
 
 Use narrower commands while developing, but run the full gate before release-facing commits.
+
+GitHub CI runs the same release gate from `.github/workflows/ci.yml` on pushes
+to `main`, pull requests, and manual dispatch.
 
 ## Documentation
 

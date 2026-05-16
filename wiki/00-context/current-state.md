@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-14
+updated: 2026-05-16
 ---
 
 # Current State
@@ -74,6 +74,7 @@ The current direction is:
 - `docs/restoration-effect-command-policy.md` now documents the Android-facing rules for restoreable state, `onEnter`, effect durability, state-plus-acknowledgement UI work, command result events, request ids, explicit cancellation, and queue pressure.
 - Checkout is now a graphable phase/context `AfsmMachine` sample instead of a custom reducer escape hatch. It demonstrates dynamic initial state from navigation `productId`, product loading, payment retry, request-id stale result handling, durable completion state, optional navigation effect, render-state mapping, and generated `CheckoutStateMachine.mmd`.
 - Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md`, `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md`.
+- The project is now pushed to the private GitHub repository `kez-lab/afsm`. README has GitHub-facing status badges, a quickstart, and internal-beta positioning. `.github/workflows/ci.yml` runs the same local release gate on push, pull request, and manual dispatch.
 
 ## Core Architecture Position
 

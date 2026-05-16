@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GRADLE_ARGS=("$@")
 
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" \
   :afsm-core:test \
@@ -12,6 +13,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   :sample-shop:testDebugUnitTest \
   :sample-shop:generateAfsmMmd \
   apiCheck \
-  --stacktrace
+  --stacktrace \
+  "${GRADLE_ARGS[@]}"
 
-"$ROOT_DIR/scripts/verify-consumer-smoke.sh"
+"$ROOT_DIR/scripts/verify-consumer-smoke.sh" "${GRADLE_ARGS[@]}"

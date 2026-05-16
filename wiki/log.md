@@ -431,3 +431,9 @@
 - Source: follow-up review of the example catalog after Checkout was promoted.
 - Action: Added dedicated Auth and ProductEditor walkthroughs, then linked all three primary walkthroughs from README, the example catalog, the sample guide, and wiki.
 - Updated: `docs/auth-walkthrough.md`, `docs/product-editor-walkthrough.md`, `docs/examples.md`, `README.md`, `docs/sample-shop-afsm-guide.md`, `wiki/03-engineering/afsm-example-catalog.md`, `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-16] implementation | GitHub README and CI
+
+- Source: user request to proceed with GitHub first-screen polish after creating the private repository.
+- Action: Added GitHub Actions CI, README badges/quickstart/status, release-readiness CI documentation, and Gradle-argument forwarding in verification scripts.
+- Updated: `.github/workflows/ci.yml`, `README.md`, `docs/release-readiness.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `scripts/verify-release-local.sh`, `scripts/verify-consumer-smoke.sh`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

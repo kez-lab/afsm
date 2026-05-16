@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GRADLE_ARGS=("$@")
 
 if [[ -z "${ANDROID_HOME:-}" && -f "$ROOT_DIR/local.properties" ]]; then
   SDK_DIR="$(sed -n 's/^sdk.dir=//p' "$ROOT_DIR/local.properties" | tail -n 1)"
@@ -10,5 +11,5 @@ if [[ -z "${ANDROID_HOME:-}" && -f "$ROOT_DIR/local.properties" ]]; then
   fi
 fi
 
-"$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal
-"$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" :app:compileDebugKotlin
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal "${GRADLE_ARGS[@]}"
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" :app:compileDebugKotlin "${GRADLE_ARGS[@]}"

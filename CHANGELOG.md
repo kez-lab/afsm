@@ -37,6 +37,8 @@ Initial pre-release candidate.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
+- GitHub CI workflow that runs the local release gate.
+- Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
 - Kotlin explicit API mode for public library modules.
 - Binary API validation baseline for public library modules.

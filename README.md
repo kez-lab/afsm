@@ -1,10 +1,46 @@
 # Afsm
 
+[![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
+![Status](https://img.shields.io/badge/status-internal%20beta-orange)
+![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
+![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
+![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
+
 Afsm is an Android-focused finite state machine toolkit for complex `ViewModel` flows.
 
 Use Afsm when a screen has meaningful phases, retries, async results, invalid transitions, or multi-step behavior. Do not force it onto simple product lists, detail pages, likes, review lists, or basic loading/content/error screens where ordinary `ViewModel + StateFlow` is clearer.
 
-Recommended reading order:
+## Current Status
+
+Afsm is in private internal beta. The local release gate is green, Maven Local
+evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
+flows. Stable OSS/Maven Central publishing is intentionally blocked until
+license, final coordinates, SCM metadata, signing, and release ownership are
+decided.
+
+## Quickstart
+
+Verify the repository:
+
+```bash
+./scripts/verify-release-local.sh --warning-mode all
+```
+
+Generate sample state diagrams:
+
+```bash
+./gradlew :sample-shop:generateAfsmMmd
+```
+
+Read the generated graphs:
+
+```text
+sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
+sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
+sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
+```
+
+## Learning Path
 
 1. Build the minimal machine below.
 2. Use [docs/examples.md](docs/examples.md) to choose the right sample.

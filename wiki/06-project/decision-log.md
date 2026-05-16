@@ -774,3 +774,19 @@ Consequences:
 - `docs/examples.md` is the public sample map.
 - `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md` are the primary walkthrough set.
 - Checkout must remain graphable and generated as `CheckoutStateMachine.mmd`.
+
+## [2026-05-16] Keep GitHub CI aligned with the local release gate
+
+Decision: GitHub CI should run `./scripts/verify-release-local.sh --warning-mode all` instead of maintaining a separate CI-only command list.
+
+Rationale:
+
+- Afsm's release confidence depends on tests, sample graph generation, API checks, Maven Local publication, and external consumer smoke together.
+- A separate CI task list would drift from the local release gate and weaken the meaning of the README CI badge.
+- Passing Gradle arguments through the verification scripts lets local and CI runs use the same warning policy.
+
+Consequences:
+
+- `.github/workflows/ci.yml` is the private-repo CI entrypoint.
+- `scripts/verify-release-local.sh` and `scripts/verify-consumer-smoke.sh` forward extra Gradle arguments.
+- README can advertise the CI badge as the same gate developers should run locally.
