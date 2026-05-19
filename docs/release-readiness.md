@@ -47,6 +47,49 @@ The CI badge in `README.md` points to this workflow. Because the repository is
 private, badge visibility depends on GitHub authentication and repository
 access.
 
+## Internal Beta Adoption Contract
+
+Afsm is currently suitable for controlled internal beta pilots on complex
+Android flow screens only.
+
+| Topic | Current contract |
+|---|---|
+| Distribution | Maven Local snapshot or direct project-module dependency inside this repository |
+| Support owner | Product/engineering owner must be assigned before the first pilot starts |
+| Allowed usage | Complex transaction or multi-step screens with meaningful phases, retries, async results, or invalid transitions |
+| Discouraged usage | Simple data display screens where ordinary `ViewModel + StateFlow` is clearer |
+| API stability | Breaking API changes are allowed during internal beta, but they must update docs, API dumps, examples, and migration notes in the same change |
+| Rollback | Pilot apps should keep Afsm usage isolated to feature modules so rollback can replace the machine with a local reducer/ViewModel implementation |
+| Verification | Pilot branches must pass their app tests plus this repository's local release gate before upgrading Afsm |
+
+Current compatibility baseline:
+
+| Item | Version |
+|---|---|
+| JDK | 17 |
+| Kotlin | 2.0.21 |
+| Android Gradle Plugin | 8.10.1 |
+| KSP | 2.0.21-1.0.28 |
+| compileSdk / targetSdk | 36 |
+| minSdk | 23 |
+
+`consumer-smoke` proves that a separate Android Gradle build can resolve and
+compile against the Maven Local artifacts. It does not prove sample behavior,
+runtime correctness, or binary compatibility by itself; those remain covered by
+the module tests, sample tests, graph generation, and `apiCheck` in the local
+release gate.
+
+Before starting a pilot, record:
+
+- Product/engineering owner.
+- Target app, feature module, and screen flow.
+- Success criteria, such as reduced ViewModel transition logic, clearer review
+  graph, or fewer missed invalid transitions.
+- Stop criteria, such as excessive DSL ceremony, missing restoration support,
+  runtime pressure issues, or graph generation friction.
+- Upgrade command: `./scripts/verify-release-local.sh --warning-mode all` in
+  this repository plus the pilot app's affected test suite.
+
 ## Current Pre-Release Artifacts
 
 ```kotlin

@@ -80,6 +80,18 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     }
 
     /**
+     * Declares an exact phase value with no entry, exit, or event handlers.
+     *
+     * This is useful for terminal or marker phases that only need to appear in
+     * topology validation and generated diagrams. It is equivalent to
+     * `state(phase) { }`, but reads better in first-use examples.
+     */
+    public fun state(phase: P) {
+        state(phase = phase) {
+        }
+    }
+
+    /**
      * Declares behavior for any phase instance of [PS], typically a payload phase.
      *
      * Use this overload for phase classes that carry data, for example
@@ -99,11 +111,24 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     }
 
     /**
+     * Declares any phase instance of [PS] with no entry, exit, or event handlers.
+     *
+     * Use this for terminal payload phase classes that should be valid targets
+     * in topology and generated diagrams but do not handle further events.
+     */
+    public inline fun <reified PS : P> state() {
+        state(
+            phaseType = PS::class,
+            build = {},
+        )
+    }
+
+    /**
      * Declares behavior for any phase instance of [phaseType].
      *
-     * This non-inline overload is primarily the implementation target for the
-     * reified `state<Phase>` DSL and keeps internal builder plumbing out of the
-     * stable ABI.
+     * Prefer the reified `state<Phase> { ... }` overload in ordinary Kotlin
+     * feature code. Use this overload when the phase class is only available as
+     * a [KClass], for example from shared tooling or generated code.
      */
     public fun <PS : P> state(
         phaseType: KClass<PS>,
@@ -304,9 +329,9 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     /**
      * Declares graphable branches for events whose runtime type is [eventType].
      *
-     * This non-inline overload is primarily the implementation target for the
-     * reified `on<Event>` DSL and keeps internal builder plumbing out of the
-     * stable ABI.
+     * Prefer the reified `on<Event> { ... }` overload in ordinary Kotlin
+     * feature code. Use this overload when the event class is only available as
+     * a [KClass], for example from shared tooling or generated code.
      */
     public fun <EV : E> on(
         eventType: KClass<EV>,
@@ -444,9 +469,10 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     /**
      * Declares a branch that transitions to a payload phase described by [phaseType].
      *
-     * This non-inline overload is primarily the implementation target for the
-     * reified `transitionTo<Phase>` DSL and keeps internal branch plumbing out
-     * of the stable ABI.
+     * Prefer the reified `transitionTo<Phase>(phase = { ... })` overload in
+     * ordinary Kotlin feature code. Use this overload when the target phase
+     * class is only available as a [KClass], for example from shared tooling or
+     * generated code.
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,

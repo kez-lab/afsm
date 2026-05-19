@@ -790,3 +790,29 @@ Consequences:
 - `.github/workflows/ci.yml` is the private-repo CI entrypoint.
 - `scripts/verify-release-local.sh` and `scripts/verify-consumer-smoke.sh` forward extra Gradle arguments.
 - README can advertise the CI badge as the same gate developers should run locally.
+
+## [2026-05-19] Optimize first-use onboarding before adding larger abstractions
+
+Decision: Improve Afsm usability through smaller onboarding and sample-boundary
+cleanup before introducing another core abstraction.
+
+Rationale:
+
+- Six Android-developer reviewers found the first README path too close to
+  maintainer verification and too far from copy-paste adoption.
+- The no-block `state(phase)` overload removes visible terminal-state
+  boilerplate while preserving the existing `state` concept.
+- Render-state mapping is the right sample boundary: machines own flow state,
+  while Compose screens should receive ordinary UI state.
+- Graph generation needs better documentation now and a dedicated Gradle plugin
+  later; adding more DSL concepts would not solve that adoption blocker.
+
+Consequences:
+
+- README now presents install -> minimal machine -> ViewModel -> test -> graph
+  generation.
+- `state(phase)` is part of the pre-release public API and API dump.
+- Auth and Checkout samples use explicit render-state output for UI boundaries.
+- ProductEditor docs explain `onExit -> transition block -> onEnter`.
+- Internal beta pilots require an owner, target screen, success criteria, stop
+  criteria, and upgrade verification command.

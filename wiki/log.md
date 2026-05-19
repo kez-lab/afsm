@@ -437,3 +437,9 @@
 - Source: user request to proceed with GitHub first-screen polish after creating the private repository.
 - Action: Added GitHub Actions CI, README badges/quickstart/status, release-readiness CI documentation, and Gradle-argument forwarding in verification scripts.
 - Updated: `.github/workflows/ci.yml`, `README.md`, `docs/release-readiness.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `scripts/verify-release-local.sh`, `scripts/verify-consumer-smoke.sh`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-19] implementation | Six-agent usability hardening loop
+
+- Source: user request to continue `/goal 12` style usability loops with six Android developer subagents per round.
+- Action: Ran six initial usability reviewers and six post-change reviewers, added terminal-state DSL convenience, simplified README first-use onboarding, clarified graph generation setup, aligned Auth/Checkout render-state sample boundaries, documented ProductEditor execution order, and added internal beta pilot criteria.
+- Updated: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`, `afsm-core/api/afsm-core.api`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/`, `README.md`, `CHANGELOG.md`, `consumer-smoke/README.md`, `docs/`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

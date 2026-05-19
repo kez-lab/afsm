@@ -270,8 +270,7 @@ class AfsmExecutableDslCompileCheckTest {
                 }
             }
 
-            state(DslProductEditorPhase.ImageUploadInProgress) {
-            }
+            state(DslProductEditorPhase.ImageUploadInProgress)
         }
 
         assertEquals(
@@ -401,8 +400,7 @@ class AfsmExecutableDslCompileCheckTest {
                 }
             }
 
-            state(DslProductEditorPhase.DraftSaved) {
-            }
+            state(DslProductEditorPhase.DraftSaved)
 
             state(DslProductEditorPhase.ImageUploadInProgress) {
                 onEnter {

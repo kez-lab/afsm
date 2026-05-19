@@ -61,6 +61,7 @@ updated: 2026-05-14
 - [[08-meetings/2026-05-11-afsm-public-api-usability-review|Afsm Public API Usability Review]] - Five-perspective review of public API complexity, runtime risks, graph semantics, and onboarding.
 - [[08-meetings/2026-05-11-afsm-10-agent-usability-poc|Afsm 10-Agent Usability POC]] - Android developer POC review covering onboarding, TDD, runtime, graph generation, commerce sample, and OSS adoption.
 - [[08-meetings/2026-05-14-afsm-10-agent-cto-review|Afsm 10-Agent CTO Review]] - Follow-up Android developer review and CTO synthesis that sets the internal-beta verdict and hardening order.
+- [[08-meetings/2026-05-19-afsm-6-agent-usability-loop|Afsm 6-Agent Usability Loop]] - Two-round usability review covering first-use onboarding, render-state sample boundaries, ProductEditor explanation, graph generation, and beta adoption contract.
 
 ## Raw Sources
 

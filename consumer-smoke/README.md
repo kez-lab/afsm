@@ -17,3 +17,12 @@ The smoke build covers:
 - `io.github.afsm:afsm-graph-ksp`
 
 It intentionally stays small. The goal is dependency and API consumption verification, not sample app behavior coverage.
+
+Current compatibility baseline:
+
+- JDK 17
+- Kotlin 2.0.21
+- Android Gradle Plugin 8.10.1
+- KSP 2.0.21-1.0.28
+- compileSdk/targetSdk 36
+- minSdk 23

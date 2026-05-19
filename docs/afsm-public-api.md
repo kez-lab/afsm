@@ -9,7 +9,8 @@ queue pressure policy, read
 For complete Android examples, read [examples.md](examples.md),
 [auth-walkthrough.md](auth-walkthrough.md),
 [checkout-walkthrough.md](checkout-walkthrough.md), and
-[product-editor-walkthrough.md](product-editor-walkthrough.md).
+[product-editor-walkthrough.md](product-editor-walkthrough.md). For `.mmd`
+setup, read [graph-generation.md](graph-generation.md).
 
 ## Coordinates
 
@@ -147,9 +148,11 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | API | Meaning |
 |---|---|
 | `initial(phase, context)` | Initial state value; does not run `onEnter` |
-| `state(phase)` | Exact phase scope |
-| `state<PayloadPhase>()` | Payload phase scope |
-| `state(phaseType = PayloadPhase::class)` | Non-inline payload phase scope |
+| `state(phase) { ... }` | Exact phase scope |
+| `state(phase)` | Exact phase declaration with no handlers, useful for terminal states |
+| `state<PayloadPhase> { ... }` | Payload phase scope |
+| `state<PayloadPhase>()` | Payload phase declaration with no handlers |
+| `state(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
 | `on<Event>()` | Event-specific branch scope |
 | `on(eventType = Event::class)` | Non-inline event-specific branch scope |
 | `transitionTo(phase)` | Phase-changing transition |
@@ -164,6 +167,10 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | `effect(effect)` | UI-side one-shot output |
 | `onEnter(commandLabels = ...) { ... }` | Runs after entering a phase |
 | `onExit(commandLabels = ...) { ... }` | Runs before leaving a phase |
+
+Use `state(phase)` for singleton/data-object phases. For payload phase classes,
+prefer `state<PayloadPhase>()` or `state<PayloadPhase> { ... }` so the machine
+matches any payload instance rather than one exact value.
 
 Phase-changing transition order:
 

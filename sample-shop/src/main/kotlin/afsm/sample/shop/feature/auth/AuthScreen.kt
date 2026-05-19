@@ -45,6 +45,7 @@ fun AuthRoute(
     }
     val viewModel: AuthViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val renderState = state.toRenderState()
 
     CollectAfsmEffects(viewModel.effects) { effect ->
         when (effect) {
@@ -53,18 +54,16 @@ fun AuthRoute(
     }
 
     AuthScreen(
-        state = state,
+        state = renderState,
         onEvent = viewModel::onEvent,
     )
 }
 
 @Composable
 fun AuthScreen(
-    state: AuthState,
+    state: AuthRenderState,
     onEvent: (AuthEvent) -> Unit,
 ) {
-    val renderState = state.toRenderState()
-
     Surface {
         Column(
             modifier = Modifier
@@ -83,80 +82,95 @@ fun AuthScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(
-                    enabled = renderState.mode != AuthMode.Login && !renderState.isLoading,
-                    onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Login)) },
-                ) {
-                    Text("Login")
+            if (state.isAuthenticated) {
+                Text(
+                    text = "Signed in",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                state.authenticatedEmail?.let { email ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-                TextButton(
-                    enabled = renderState.mode != AuthMode.Register && !renderState.isLoading,
-                    onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Register)) },
-                ) {
-                    Text("Register")
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(
+                        enabled = state.mode != AuthMode.Login && !state.isLoading,
+                        onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Login)) },
+                    ) {
+                        Text("Login")
+                    }
+                    TextButton(
+                        enabled = state.mode != AuthMode.Register && !state.isLoading,
+                        onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Register)) },
+                    ) {
+                        Text("Register")
+                    }
                 }
-            }
 
-            if (renderState.mode == AuthMode.Register) {
+                if (state.mode == AuthMode.Register) {
+                    OutlinedTextField(
+                        value = state.form.name,
+                        enabled = !state.isLoading,
+                        onValueChange = { onEvent(AuthEvent.NameChanged(it)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text("Name") },
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
                 OutlinedTextField(
-                    value = renderState.form.name,
-                    enabled = !renderState.isLoading,
-                    onValueChange = { onEvent(AuthEvent.NameChanged(it)) },
+                    value = state.form.email,
+                    enabled = !state.isLoading,
+                    onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { Text("Name") },
+                    label = { Text("Email") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            OutlinedTextField(
-                value = renderState.form.email,
-                enabled = !renderState.isLoading,
-                onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text("Email") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = renderState.form.password,
-                enabled = !renderState.isLoading,
-                onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-            )
-
-            renderState.errorMessage?.let { message ->
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = message,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
+                OutlinedTextField(
+                    value = state.form.password,
+                    enabled = !state.isLoading,
+                    onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
                 )
-            }
 
-            Spacer(modifier = Modifier.height(18.dp))
-            Button(
-                enabled = !renderState.isLoading,
-                onClick = { onEvent(AuthEvent.SubmitClicked) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                if (renderState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
+                state.errorMessage?.let { message ->
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = when (renderState.mode) {
-                            AuthMode.Login -> "Login"
-                            AuthMode.Register -> "Create account"
-                        },
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+                Button(
+                    enabled = !state.isLoading,
+                    onClick = { onEvent(AuthEvent.SubmitClicked) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(
+                            text = when (state.mode) {
+                                AuthMode.Login -> "Login"
+                                AuthMode.Register -> "Create account"
+                            },
+                        )
+                    }
                 }
             }
         }

@@ -1138,3 +1138,35 @@ Conclusion:
 
 - The GitHub README now communicates current maturity and the fastest validation path.
 - CI and local release verification now share the same command.
+
+## [2026-05-19] Six-agent usability hardening loop
+
+Change:
+
+- Ran six Android-developer usability reviews, implemented the high-signal
+  feedback, then ran six post-change reviews.
+- Added `state(phase)` and `state<PayloadPhase>()` no-block DSL convenience.
+- Updated README first-use onboarding and minimal Draft naming.
+- Added `docs/graph-generation.md`.
+- Moved Auth screen rendering to `AuthRenderState` and explicit authenticated
+  render state.
+- Added Checkout `primaryAction` render state and kept payment-in-progress
+  button visible.
+- Clarified ProductEditor transition execution order and beta adoption policy.
+- Updated `CHANGELOG.md`, public API docs, sample guide, example catalog, and
+  wiki meeting notes.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+./gradlew :afsm-core:apiDump --warning-mode all --no-daemon
+./gradlew apiCheck --warning-mode all --no-daemon
+./gradlew :sample-shop:generateAfsmMmd :sample-shop:assembleDebug --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use path is lighter, sample UI boundaries are more consistent, and
+  graph setup is better documented. The next major usability target is a
+  first-class graph-generation Gradle plugin.

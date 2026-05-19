@@ -16,37 +16,20 @@ Afsm is in private internal beta. The local release gate is green, Maven Local
 evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
 flows. Stable OSS/Maven Central publishing is intentionally blocked until
 license, final coordinates, SCM metadata, signing, and release ownership are
-decided.
+decided. Internal pilot rules are documented in
+[docs/release-readiness.md](docs/release-readiness.md).
 
-## Quickstart
+## First Use Path
 
-Verify the repository:
+1. Add the dependencies below.
+2. Paste the minimal Draft machine.
+3. Host it from a `ViewModel`.
+4. Add the first JVM transition test.
+5. Add graph generation only after the machine is useful.
 
-```bash
-./scripts/verify-release-local.sh --warning-mode all
-```
-
-Generate sample state diagrams:
-
-```bash
-./gradlew :sample-shop:generateAfsmMmd
-```
-
-Read the generated graphs:
-
-```text
-sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
-sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
-sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
-```
-
-## Learning Path
-
-1. Build the minimal machine below.
-2. Use [docs/examples.md](docs/examples.md) to choose the right sample.
-3. Read [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a real screen.
-4. Read [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md) before wiring commands or effects.
-5. Read [docs/auth-walkthrough.md](docs/auth-walkthrough.md), [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md), then [docs/product-editor-walkthrough.md](docs/product-editor-walkthrough.md).
+Use [docs/examples.md](docs/examples.md) to choose a real sample, then read
+[docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
+screen.
 
 ## Install
 
@@ -108,6 +91,11 @@ The core mental model:
 Define a small machine first. Do not start with graph/KSP.
 
 ```kotlin
+import afsm.core.AfsmMachine
+import afsm.core.AfsmNoEffect
+import afsm.core.AfsmState
+import afsm.core.afsmMachine
+
 sealed interface DraftPhase {
     data object Editing : DraftPhase
     data object Saving : DraftPhase
@@ -123,48 +111,48 @@ typealias DraftState = AfsmState<DraftPhase, DraftContext>
 sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
-    data object Saved : DraftEvent
+    data object DraftSaveCompleted : DraftEvent
 }
 
 sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-object DraftStateMachine :
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> by draftMachine()
+typealias DraftMachine =
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
 
-private fun draftMachine() =
-    afsmMachine<DraftPhase, DraftContext, DraftEvent, DraftCommand, AfsmNoEffect> {
-        initial(
-            phase = DraftPhase.Editing,
-            context = DraftContext(),
-        )
+object DraftStateMachine : DraftMachine by draftMachine()
 
-        state(DraftPhase.Editing) {
-            on<DraftEvent.TitleChanged> {
-                stay {
-                    updateContext { copy(title = event.value) }
-                }
-            }
+private fun draftMachine(): DraftMachine = afsmMachine {
+    initial(
+        phase = DraftPhase.Editing,
+        context = DraftContext(),
+    )
 
-            on<DraftEvent.SaveClicked> {
-                transitionTo(DraftPhase.Saving)
+    state(DraftPhase.Editing) {
+        on<DraftEvent.TitleChanged> {
+            stay {
+                updateContext { copy(title = event.value) }
             }
         }
 
-        state(DraftPhase.Saving) {
-            onEnter(commandLabels = listOf("SaveDraft")) {
-                command(DraftCommand.SaveDraft(context.title))
-            }
-
-            on<DraftEvent.Saved> {
-                transitionTo(DraftPhase.Saved)
-            }
-        }
-
-        state(DraftPhase.Saved) {
+        on<DraftEvent.SaveClicked> {
+            transitionTo(DraftPhase.Saving)
         }
     }
+
+    state(DraftPhase.Saving) {
+        onEnter {
+            command(DraftCommand.SaveDraft(context.title))
+        }
+
+        on<DraftEvent.DraftSaveCompleted> {
+            transitionTo(DraftPhase.Saved)
+        }
+    }
+
+    state(DraftPhase.Saved)
+}
 ```
 
 `transitionTo(...)` changes phase. `stay(...)` handles an event without changing phase.
@@ -180,6 +168,11 @@ Initial state construction does not run `onEnter`. Trigger startup work with an 
 ## ViewModel
 
 ```kotlin
+import afsm.runtime.AfsmCommandHandler
+import afsm.viewmodel.afsmHost
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.StateFlow
+
 class DraftViewModel(
     private val repository: DraftRepository,
 ) : ViewModel() {
@@ -189,7 +182,7 @@ class DraftViewModel(
             when (command) {
                 is DraftCommand.SaveDraft -> {
                     repository.save(command.title)
-                    dispatch(DraftEvent.Saved)
+                    dispatch(DraftEvent.DraftSaveCompleted)
                 }
             }
         },
@@ -223,37 +216,6 @@ private val host = afsmHost(
     commandHandler = checkoutCommandHandler,
 )
 ```
-
-## Compose Effects
-
-For machines that emit UI effects, collect them at route level. The minimal
-draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
-feature defines an effect type.
-
-Collect effects at route level. Navigation, snackbar display, focus, scroll, and animation state should stay in UI unless they are part of the business flow.
-
-```kotlin
-@Composable
-fun EditorRoute(
-    viewModel: EditorViewModel,
-    onDone: () -> Unit,
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    CollectAfsmEffects(viewModel.effects) { effect ->
-        when (effect) {
-            ProductEditorEffect.CloseEditor -> onDone()
-        }
-    }
-
-    EditorScreen(
-        state = state,
-        onEvent = viewModel::onEvent,
-    )
-}
-```
-
-Effects are best-effort one-shot outputs. Anything that must survive recreation should be state plus an acknowledgement event.
 
 ## Test First
 
@@ -298,9 +260,46 @@ Recommended pattern:
 
 The sample checkout flow uses this policy for mock payment retry.
 
+## Compose Effects
+
+For machines that emit UI effects, collect them at route level. The minimal
+draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
+feature defines an effect type.
+
+Collect effects at route level. Navigation, snackbar display, focus, scroll, and animation state should stay in UI unless they are part of the business flow.
+
+```kotlin
+@Composable
+fun EditorRoute(
+    viewModel: EditorViewModel,
+    onDone: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    CollectAfsmEffects(viewModel.effects) { effect ->
+        when (effect) {
+            ProductEditorEffect.CloseEditor -> onDone()
+        }
+    }
+
+    EditorScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+    )
+}
+```
+
+Effects are best-effort one-shot outputs. Anything that must survive recreation should be state plus an acknowledgement event.
+
 ## Optional MMD Graphs
 
 After the machine works, opt into graph generation.
+
+Current pre-release graph export uses KSP discovery plus a small Gradle test
+task. A dedicated Gradle plugin is the planned replacement before broad external
+adoption, so application teams do not have to write this wiring by hand.
+See [docs/graph-generation.md](docs/graph-generation.md) for the complete
+copy-paste setup.
 
 ```kotlin
 private typealias DraftMachineType =
@@ -312,6 +311,10 @@ private typealias DraftMachineType =
 )
 object DraftStateMachine : DraftMachineType by draftMachine()
 ```
+
+Add `commandLabels` or `effectLabels` only when you want those labels to appear
+in generated diagrams. They are documentation metadata; runtime commands and
+effects still come from `command(...)` and `effect(...)`.
 
 Add an export test in the Android app module:
 
@@ -395,9 +398,9 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ## Verification
 
 ```bash
-./scripts/verify-release-local.sh
+./scripts/verify-release-local.sh --warning-mode all
 ```
 
 `consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts without project-module shortcuts.
 
-See [docs/examples.md](docs/examples.md), [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/auth-walkthrough.md](docs/auth-walkthrough.md), [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md), [docs/product-editor-walkthrough.md](docs/product-editor-walkthrough.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+See [docs/examples.md](docs/examples.md), [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/graph-generation.md](docs/graph-generation.md), [docs/auth-walkthrough.md](docs/auth-walkthrough.md), [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md), [docs/product-editor-walkthrough.md](docs/product-editor-walkthrough.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).

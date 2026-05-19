@@ -124,6 +124,66 @@ state<ProductEditorPhase.ReviewSubmissionInProgress> {
 
 This keeps transition branches focused on phase movement and context updates.
 
+## Transition Execution Order
+
+For a phase-changing branch, Afsm runs:
+
+```text
+source onExit -> transition block -> target onEnter
+```
+
+If a source phase has no `onExit`, Afsm skips that step. In the payload-phase
+overload, `phase = { ... }` creates the next phase value, while the trailing
+block is the edge logic that updates context or emits commands/effects.
+
+That order matters when the target `onEnter` command reads updated context.
+For example, image upload success increments `reviewAttempt` in the transition
+block, then `ReviewSubmissionInProgress.onEnter` submits the updated draft:
+
+```kotlin
+state(ProductEditorPhase.ImageUploadInProgress) {
+    on<ProductEditorEvent.ImageUploadSucceeded> {
+        transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
+            phase = {
+                ProductEditorPhase.ReviewSubmissionInProgress(
+                    uploadToken = event.uploadToken,
+                )
+            },
+        ) {
+            updateContext {
+                copy(
+                    draft = draft.copy(
+                        reviewAttempt = draft.reviewAttempt + 1,
+                    ),
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+}
+
+state<ProductEditorPhase.ReviewSubmissionInProgress> {
+    onEnter(commandLabels = listOf("StartReviewSubmission")) {
+        command(
+            ProductEditorCommand.StartReviewSubmission(
+                draft = context.draft,
+                uploadToken = phase.uploadToken,
+            ),
+        )
+    }
+}
+```
+
+Read this as one edge:
+
+```text
+ImageUploadInProgress
+-> ImageUploadSucceeded
+-> update context
+-> enter ReviewSubmissionInProgress
+-> emit StartReviewSubmission
+```
+
 ## Validation
 
 Invalid submit does not fake a phase transition. It stays in the current phase

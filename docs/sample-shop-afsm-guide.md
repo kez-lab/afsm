@@ -14,6 +14,7 @@ The point is not to force every screen into a finite state machine. The app uses
 - Example catalog: [examples.md](examples.md)
 - Modeling rules: [modeling-rules.md](modeling-rules.md)
 - Restoration/effect/command policy: [restoration-effect-command-policy.md](restoration-effect-command-policy.md)
+- Graph generation: [graph-generation.md](graph-generation.md)
 - Auth walkthrough: [auth-walkthrough.md](auth-walkthrough.md)
 - Checkout walkthrough: [checkout-walkthrough.md](checkout-walkthrough.md)
 - ProductEditor walkthrough: [product-editor-walkthrough.md](product-editor-walkthrough.md)
@@ -79,7 +80,7 @@ Contract:
 - `AuthPhase` contains the finite graph states: `Editing`, `Submitting`, and `Authenticated`.
 - `AuthContext` keeps mode, form, and error data outside the finite phase; the terminal `Authenticated` phase carries its `UserSession` payload.
 - `AuthStateMachine` uses the executable DSL directly with `AuthPhase + AuthContext`.
-- `AuthStateMachine` is annotated with `@AfsmGraph`, so KSP writes `AuthStateMachine.mmd` through the generated registry.
+- `AuthStateMachine` is annotated with `@AfsmGraph`; KSP discovers it and a Gradle export task writes `AuthStateMachine.mmd` through the generated registry.
 - `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
 - `AuthCommand` models async work the ViewModel must execute.
@@ -90,7 +91,7 @@ Key usage shape:
 ```kotlin
 private val host = afsmHost(
     machine = AuthStateMachine,
-    commandHandler = { command, dispatch ->
+    commandHandler = AfsmCommandHandler { command, dispatch ->
         // Execute repository work, then dispatch result events.
     },
 )

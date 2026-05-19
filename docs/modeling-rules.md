@@ -21,6 +21,16 @@ Do not use Afsm for ordinary data screens where `ViewModel + StateFlow` is
 already direct: catalog lists, detail display, likes, review lists, and simple
 loading/content/error views.
 
+Before adding Afsm, answer these checks:
+
+- Can a reviewer draw at least three meaningful business phases?
+- Can some events be valid in one phase and invalid or ignored in another?
+- Does the screen start async work whose result may arrive later?
+- Does retry, cancellation, restoration, or stale result handling matter?
+- Would a generated state diagram make code review easier?
+
+If most answers are no, start with ordinary `ViewModel + StateFlow`.
+
 ## Phase vs Context
 
 | Put it in | Use for | Example |
@@ -88,7 +98,8 @@ the product flow, do not model it as effect-only.
 | `stay` | accepted event with no phase change |
 | `otherwise` | fallback handled branch after guards fail |
 | `ignore` | expected no-op event, such as duplicate submit while already submitting |
-| `invalid` | event is a flow bug in this phase |
+| omitted handler | invalid by default because the event is not valid in that phase |
+| `invalid(reason)` | explicit invalid branch when a clearer diagnostic is worth writing |
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.

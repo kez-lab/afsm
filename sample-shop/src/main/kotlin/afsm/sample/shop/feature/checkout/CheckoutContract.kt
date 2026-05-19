@@ -51,8 +51,14 @@ data class CheckoutRenderState(
     val isPaying: Boolean,
     val isComplete: Boolean,
     val orderId: Long?,
+    val primaryAction: CheckoutPrimaryAction? = null,
     val errorMessage: String? = null,
 )
+
+enum class CheckoutPrimaryAction {
+    Pay,
+    RetryPayment,
+}
 
 sealed interface CheckoutEvent {
     data object ScreenEntered : CheckoutEvent
@@ -116,6 +122,7 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
             isPaying = false,
             isComplete = false,
             orderId = null,
+            primaryAction = CheckoutPrimaryAction.Pay,
             errorMessage = context.errorMessage,
         )
 
@@ -125,6 +132,7 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
             isPaying = true,
             isComplete = false,
             orderId = null,
+            primaryAction = CheckoutPrimaryAction.Pay,
             errorMessage = context.errorMessage,
         )
 
@@ -134,6 +142,7 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
             isPaying = false,
             isComplete = false,
             orderId = null,
+            primaryAction = CheckoutPrimaryAction.RetryPayment,
             errorMessage = context.errorMessage,
         )
 

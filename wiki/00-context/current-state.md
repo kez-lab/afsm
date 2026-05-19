@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-16
+updated: 2026-05-19
 ---
 
 # Current State
@@ -75,6 +75,8 @@ The current direction is:
 - Checkout is now a graphable phase/context `AfsmMachine` sample instead of a custom reducer escape hatch. It demonstrates dynamic initial state from navigation `productId`, product loading, payment retry, request-id stale result handling, durable completion state, optional navigation effect, render-state mapping, and generated `CheckoutStateMachine.mmd`.
 - Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md`, `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md`.
 - The project is now pushed to the private GitHub repository `kez-lab/afsm`. README has GitHub-facing status badges, a quickstart, and internal-beta positioning. `.github/workflows/ci.yml` runs the same local release gate on push, pull request, and manual dispatch.
+- A 2026-05-19 six-agent usability loop simplified first-use onboarding, added terminal-state `state(phase)` convenience, moved Auth to a render-state UI boundary, made Checkout primary UI actions explicit, documented ProductEditor transition execution order, added `docs/graph-generation.md`, and clarified the internal beta adoption contract.
+- The current graph-generation workflow remains KSP discovery plus an app-module export test/task; a dedicated Gradle plugin is still the next major ergonomics improvement before broad external adoption.
 
 ## Core Architecture Position
 

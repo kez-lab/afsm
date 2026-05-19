@@ -128,18 +128,25 @@ fun CheckoutScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(18.dp))
-                    Button(
-                        enabled = !state.isPaying,
-                        onClick = if (state.errorMessage == null) onPayClick else onRetryClick,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            when {
-                                state.isPaying -> "Processing..."
-                                state.errorMessage == null -> "Pay"
-                                else -> "Retry payment"
+                    state.primaryAction?.let { action ->
+                        Button(
+                            enabled = !state.isPaying,
+                            onClick = {
+                                when (action) {
+                                    CheckoutPrimaryAction.Pay -> onPayClick()
+                                    CheckoutPrimaryAction.RetryPayment -> onRetryClick()
+                                }
                             },
-                        )
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                when {
+                                    state.isPaying -> "Processing..."
+                                    action == CheckoutPrimaryAction.Pay -> "Pay"
+                                    else -> "Retry payment"
+                                },
+                            )
+                        }
                     }
                 }
             }

@@ -40,6 +40,8 @@ data class AuthRenderState(
     val mode: AuthMode,
     val form: AuthForm,
     val isLoading: Boolean,
+    val isAuthenticated: Boolean = false,
+    val authenticatedEmail: String? = null,
     val errorMessage: String? = null,
 )
 
@@ -83,7 +85,7 @@ sealed interface AuthEffect {
 }
 
 fun AuthState.toRenderState(): AuthRenderState {
-    return when (phase) {
+    return when (val currentPhase = phase) {
         AuthPhase.Editing -> AuthRenderState(
             mode = context.mode,
             form = context.form,
@@ -101,6 +103,8 @@ fun AuthState.toRenderState(): AuthRenderState {
             mode = AuthMode.Login,
             form = AuthForm(),
             isLoading = false,
+            isAuthenticated = true,
+            authenticatedEmail = currentPhase.session.email,
         )
     }
 }

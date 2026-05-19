@@ -189,6 +189,9 @@ CheckoutScreen(
 ```
 
 This keeps the machine graph precise while keeping Compose rendering ordinary.
+The render state should expose UI choices directly. For example, Checkout maps
+phases to a `primaryAction` instead of making the button infer retry behavior
+from `errorMessage`.
 
 ## Tests To Read
 
