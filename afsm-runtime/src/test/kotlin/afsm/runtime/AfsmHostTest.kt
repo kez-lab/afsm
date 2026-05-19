@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -16,6 +17,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -195,6 +197,117 @@ class AfsmHostTest {
         assertEquals(PressureCommand.Third, thrown.diagnostic.command)
         assertEquals("commandQueueCapacity=1", thrown.diagnostic.reason)
         assertEquals(PressureState.Queued, host.state.value)
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `command result event overflow fails fast instead of suspending command processing`() = runTest {
+        val exceptions = mutableListOf<Throwable>()
+        val hostScope = newHostScope(
+            handler = CoroutineExceptionHandler { _, throwable ->
+                exceptions += throwable
+            },
+        )
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+            initialState = PressureState.Idle,
+            reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
+                when (event) {
+                    PressureEvent.Start -> Afsm.transitionTo(
+                        state = PressureState.Queued,
+                        commands = listOf(PressureCommand.First),
+                    )
+
+                    PressureEvent.ResultOne -> Afsm.transitionTo(
+                        state = state,
+                    )
+
+                    PressureEvent.ResultTwo -> Afsm.transitionTo(
+                        state = state,
+                    )
+
+                    PressureEvent.ResultThree -> Afsm.transitionTo(
+                        state = state,
+                    )
+                }
+            },
+            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatch ->
+                dispatch(PressureEvent.ResultOne)
+                dispatch(PressureEvent.ResultTwo)
+                dispatch(PressureEvent.ResultThree)
+            },
+            scope = hostScope,
+            config = AfsmConfig(eventQueueCapacity = 1),
+        )
+
+        host.dispatch(PressureEvent.Start)
+        advanceUntilIdle()
+
+        val thrown = assertIs<AfsmEventQueueOverflowException>(exceptions.single())
+        assertEquals(PressureEvent.ResultThree, thrown.diagnostic.event)
+        assertEquals(PressureCommand.First, thrown.diagnostic.command)
+        assertEquals("eventQueueCapacity=1", thrown.diagnostic.reason)
+        assertEquals(PressureState.Queued, host.state.value)
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `command result event after host close is dropped as lifecycle completion`() = runTest {
+        val exceptions = mutableListOf<Throwable>()
+        val diagnostics = mutableListOf<AfsmDiagnostic>()
+        val commandStarted = CompletableDeferred<Unit>()
+        val releaseCommand = CompletableDeferred<Unit>()
+        val hostScope = newHostScope(
+            handler = CoroutineExceptionHandler { _, throwable ->
+                exceptions += throwable
+            },
+        )
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+            initialState = PressureState.Idle,
+            reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
+                when (event) {
+                    PressureEvent.Start -> Afsm.transitionTo(
+                        state = PressureState.Queued,
+                        commands = listOf(PressureCommand.First),
+                    )
+
+                    PressureEvent.ResultOne,
+                    PressureEvent.ResultTwo,
+                    PressureEvent.ResultThree -> Afsm.transitionTo(
+                        state = state,
+                    )
+                }
+            },
+            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatch ->
+                commandStarted.complete(Unit)
+                withContext(NonCancellable) {
+                    releaseCommand.await()
+                    dispatch(PressureEvent.ResultOne)
+                }
+            },
+            scope = hostScope,
+            config = AfsmConfig(
+                logger = AfsmLogger { diagnostic ->
+                    diagnostics += diagnostic
+                },
+            ),
+        )
+
+        host.dispatch(PressureEvent.Start)
+        advanceUntilIdle()
+        commandStarted.await()
+
+        host.close()
+        releaseCommand.complete(Unit)
+        advanceUntilIdle()
+
+        assertTrue(
+            exceptions.isEmpty(),
+            "Expected no coroutine exceptions, got $exceptions",
+        )
+        assertEquals(PressureState.Queued, host.state.value)
+        assertEquals("eventQueueClosed", diagnostics.single().reason)
+        assertEquals(PressureEvent.ResultOne, diagnostics.single().event)
+        assertEquals(PressureCommand.First, diagnostics.single().command)
         hostScope.cancel()
     }
 
@@ -539,6 +652,9 @@ class AfsmHostTest {
 
     private enum class PressureEvent {
         Start,
+        ResultOne,
+        ResultTwo,
+        ResultThree,
     }
 
     private enum class PressureCommand {

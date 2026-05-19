@@ -28,6 +28,10 @@ public class AfsmConfig(
         AfsmEffectDelivery.Default,
     /**
      * Maximum number of events that can be queued by non-suspending dispatch.
+     *
+     * Command result events also use this queue. If a command result event
+     * cannot be queued, the host throws [AfsmEventQueueOverflowException]
+     * instead of suspending the sequential command processor indefinitely.
      */
     public val eventQueueCapacity: Int = 64,
     /**

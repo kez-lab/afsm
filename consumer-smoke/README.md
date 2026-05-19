@@ -8,6 +8,13 @@ Run from the repository root:
 ./scripts/verify-consumer-smoke.sh
 ```
 
+The script reads `afsmVersion` from the repository root `gradle.properties`,
+publishes that version to Maven Local, passes it into this separate build as
+`-PafsmVersion=...`, refreshes dependencies, and cleans this fixture before
+compiling and generating graphs. That prevents the smoke test from accidentally
+using older Maven Local artifacts or stale generated `.mmd` output after a
+version bump.
+
 The smoke build covers:
 
 - `io.github.afsm:afsm-core`

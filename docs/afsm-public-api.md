@@ -49,7 +49,10 @@ Verify from a separate Android consumer build:
 ```
 
 The graph Gradle plugin adds `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT`
-to the app module by default when `com.google.devtools.ksp` is applied.
+to the app module by default when `com.google.devtools.ksp` is applied. That
+default is generated from the graph plugin version, so a published
+`io.github.afsm.graph` plugin and its KSP processor stay on the same Afsm
+version unless the consumer explicitly overrides `processorDependency`.
 
 ## afsm-core
 
@@ -246,6 +249,10 @@ Runtime guarantees:
 
 - `dispatch(event)` is non-suspending.
 - Events are processed serially in FIFO order.
+- Command result events use the same bounded event queue. If a command result
+  cannot be queued, the host throws `AfsmEventQueueOverflowException` instead
+  of blocking the sequential command processor. If the host is already closed,
+  the result event is dropped and logged because the screen lifecycle has ended.
 - Commands are executed sequentially without blocking later event reduction.
 - If the command queue fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor indefinitely.
 - Commands may dispatch follow-up events.

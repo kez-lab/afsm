@@ -8,9 +8,12 @@ plugins {
     kotlin("jvm") version "2.0.21" apply false
 }
 
+val afsmVersion = providers.gradleProperty("afsmVersion")
+    .get()
+
 allprojects {
     group = "io.github.afsm"
-    version = "0.1.0-SNAPSHOT"
+    version = afsmVersion
 }
 
 apiValidation {

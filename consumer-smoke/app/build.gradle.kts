@@ -5,6 +5,10 @@ plugins {
     kotlin("android")
 }
 
+val afsmVersion = providers.gradleProperty("afsmVersion")
+    .orElse("0.1.0-SNAPSHOT")
+    .get()
+
 android {
     namespace = "afsm.consumer.smoke"
     compileSdk = 36
@@ -24,8 +28,8 @@ android {
 }
 
 dependencies {
-    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-core:$afsmVersion")
+    implementation("io.github.afsm:afsm-compose:$afsmVersion")
+    implementation("io.github.afsm:afsm-runtime:$afsmVersion")
+    implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
 }

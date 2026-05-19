@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-19
+updated: 2026-05-20
 ---
 
 # Current State
@@ -48,6 +48,9 @@ The current direction is:
 - Maven Local generated POMs now have documented metadata audit status: packaging, internal dependency coordinates, names/descriptions are present; URL, license, SCM, and developer metadata remain product-owned decisions.
 - The graph-generation slice now exists: annotated `StateMachine` classes implement `AfsmGraphSource`, `afsm-graph-ksp` generates `AfsmGeneratedGraphRegistry`, the `io.github.afsm.graph` Gradle plugin generates a JUnit4-compatible export test, and `generateAfsmMmd` writes one `.mmd` per registry entry without running the app's whole unit-test suite.
 - Graph tooling verification now includes KSP functional tests for registry generation and invalid annotation diagnostics, plus Gradle TestKit functional tests for Android app/library plugin usage, KSP-missing failure messaging, ordinary unit-test separation, and no-registry `generateAfsmMmd` failure messaging.
+- The graph Gradle plugin now generates its default `afsm-graph-ksp` processor dependency from the shared Afsm version, and `consumer-smoke` receives the same `afsmVersion` from the root verification script so local release checks do not accidentally use stale Maven Local artifacts.
+- `consumer-smoke` now runs with dependency refresh and a clean fixture build so generated `.mmd` validation cannot pass on stale build outputs.
+- Command result events now fail fast with `AfsmEventQueueOverflowException` if a full bounded event queue rejects them, while command results after host close are dropped and logged as lifecycle completion.
 - `AuthStateMachine`, `CheckoutStateMachine`, and `ProductEditorStateMachine` are annotated graph sources; `generateAfsmMmd` writes `AuthStateMachine.mmd`, `CheckoutStateMachine.mmd`, and `ProductEditorStateMachine.mmd`.
 - The phased-state helper spike has been removed from `afsm-core`; it remains only as superseded design history.
 - Afsm terminology now consistently treats `Command` as host-executed work emitted by the machine and executed by the host, not as another input event; v3 naming should distinguish phase states like `ImageUploadInProgress` from commands like `StartImageUpload`.
@@ -78,7 +81,7 @@ The current direction is:
 - Public example onboarding is now organized as a ladder: README minimal Draft, Auth, Checkout, ProductEditor, plus ordinary non-Afsm data screens as anti-examples. Public docs live in `docs/examples.md`, `docs/auth-walkthrough.md`, `docs/checkout-walkthrough.md`, and `docs/product-editor-walkthrough.md`.
 - The project is now pushed to the private GitHub repository `kez-lab/afsm`. README has GitHub-facing status badges, a quickstart, and internal-beta positioning. `.github/workflows/ci.yml` runs the same local release gate on push, pull request, and manual dispatch.
 - A 2026-05-19 six-agent usability loop simplified first-use onboarding, added terminal-state `state(phase)` convenience, moved Auth to a render-state UI boundary, made Checkout primary UI actions explicit, documented ProductEditor transition execution order, added `docs/graph-generation.md`, and clarified the internal beta adoption contract.
-- The first graph Gradle plugin slice and its KSP/Gradle functional verification pass are implemented. The remaining graph-tooling concerns are plugin/processor version synchronization, multi-variant/multi-module aggregation, and eventual graph API/module-boundary decisions before broad external adoption.
+- The first graph Gradle plugin slice, KSP/Gradle functional verification, plugin/processor version synchronization, and external consumer version alignment are implemented. The remaining graph-tooling concerns are multi-variant/multi-module aggregation and eventual graph API/module-boundary decisions before broad external adoption.
 
 ## Core Architecture Position
 

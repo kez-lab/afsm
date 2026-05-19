@@ -15,6 +15,17 @@ data screens heavier. The examples are ordered from smallest to most persuasive.
 | ProductEditor | You need a high-branching transaction flow | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) | [ProductEditorStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt), [ProductEditorViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt), [ProductEditorStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt) |
 | Catalog/Product/Reviews | You need to know when not to use Afsm | ordinary `ViewModel + Flow` for data screens | This page | [CatalogViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/catalog/CatalogViewModel.kt), [ProductDetailViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/product/ProductDetailViewModel.kt) |
 
+## Adoption Decision Examples
+
+Use this table before copying a sample. Afsm should make a flow easier to
+review, test, or diagram; it should not be the default for every screen.
+
+| Screen shape | Recommendation | Why |
+|---|---|---|
+| Auth | Use as a syntax tutorial or when auth includes real multi-step policy | The sample is intentionally small, so it teaches guards, commands, render state, and effects without a large domain. A basic login-only form can stay ordinary `ViewModel + StateFlow`. |
+| Checkout / ProductEditor | Strong Afsm candidates | They have visible phases, invalid transitions, async command results, retry or resubmission, and graph value during review. |
+| Catalog / ProductDetail / Review list | Prefer ordinary ViewModel | They are mostly data projection, filtering, likes, or form submission without a meaningful business-flow state diagram. |
+
 ## Recommended Reading Path
 
 1. Start with the README minimal Draft machine.

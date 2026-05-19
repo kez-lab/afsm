@@ -273,7 +273,8 @@ afsmGraph {
 
 The plugin:
 
-- add the KSP processor by default when the `ksp` configuration exists,
+- adds the matching-version KSP processor by default when the `ksp`
+  configuration exists,
 - generate an Android unit-test source that loads `AfsmGeneratedGraphRegistry`
   at runtime,
 - register `generateAfsmMmd` as the user-facing task,
@@ -282,6 +283,11 @@ The plugin:
   task,
 - support Android app/library modules,
 - publish to Maven Local for external consumer verification.
+
+The default processor coordinate is generated from the shared Afsm version at
+plugin build time. External consumers should normally set only the
+`io.github.afsm.graph` plugin version and let the plugin add the matching
+`io.github.afsm:afsm-graph-ksp:<same-version>` processor.
 
 ### Superseded Spike: Registry + Existing Generate Task
 
@@ -370,6 +376,8 @@ Implementation status:
 - Done: graph `fileName` values must be safe relative `.mmd` paths; absolute paths, traversal segments, empty segments, and non-`.mmd` files are rejected by both the KSP processor and runtime writer.
 - Done: KSP processor functional tests cover valid object/default-arg class registry generation, non-machine annotations, required constructor parameters, unsafe file names, and duplicate ids/file names.
 - Done: Gradle plugin functional tests cover Android app/library modules, KSP-missing failure messaging, normal unit-test separation from graph export, and no-registry `generateAfsmMmd` failure messaging.
+- Done: graph plugin default processor dependency is synchronized to the shared Afsm version and covered by a functional test.
+- Done: `consumer-smoke` receives the root `afsmVersion`, preventing stale Maven Local artifact verification after version bumps.
 
 Initial test targets:
 

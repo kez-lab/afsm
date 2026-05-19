@@ -65,6 +65,11 @@ public final class afsm/runtime/AfsmEffectDelivery$Companion {
 	public final fun getRendezvous ()Lafsm/runtime/AfsmEffectDelivery;
 }
 
+public final class afsm/runtime/AfsmEventQueueOverflowException : java/lang/IllegalStateException {
+	public fun <init> (Lafsm/runtime/AfsmDiagnostic;)V
+	public final fun getDiagnostic ()Lafsm/runtime/AfsmDiagnostic;
+}
+
 public final class afsm/runtime/AfsmHost {
 	public fun <init> (Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lkotlinx/coroutines/CoroutineScope;Lafsm/runtime/AfsmConfig;)V
 	public synthetic fun <init> (Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lkotlinx/coroutines/CoroutineScope;Lafsm/runtime/AfsmConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

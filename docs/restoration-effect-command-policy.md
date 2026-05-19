@@ -188,6 +188,12 @@ Afsm uses bounded event and command queues.
 
 - `tryDispatch(event)` returns `false` if the external event queue is full.
 - `dispatch(event)` throws if the external event queue rejects the event.
+- Command result events use the same bounded event queue. If a command result
+  event cannot be queued, the host throws `AfsmEventQueueOverflowException`
+  instead of suspending the sequential command processor.
+- If the host is already closed, command result events are dropped and logged.
+  This is a normal Android lifecycle path when a `ViewModel` is cleared while
+  command work is finishing.
 - Accepted commands use a bounded queue and throw
   `AfsmCommandQueueOverflowException` if the queue is full.
 

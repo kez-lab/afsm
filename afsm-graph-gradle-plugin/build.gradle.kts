@@ -1,11 +1,20 @@
+import java.util.Properties
+
 plugins {
     kotlin("jvm") version "2.0.21"
     `java-gradle-plugin`
     `maven-publish`
 }
 
+val afsmVersion = Properties()
+    .also { properties ->
+        file("../gradle.properties").inputStream().use(properties::load)
+    }
+    .getProperty("afsmVersion")
+    ?: error("Missing afsmVersion in ../gradle.properties")
+
 group = "io.github.afsm"
-version = "0.1.0-SNAPSHOT"
+version = afsmVersion
 
 kotlin {
     jvmToolchain(17)
@@ -25,5 +34,12 @@ gradlePlugin {
             displayName = "Afsm Graph"
             description = "Generates Afsm Mermaid state diagrams from @AfsmGraph machines."
         }
+    }
+}
+
+tasks.processResources {
+    inputs.property("afsmVersion", afsmVersion)
+    filesMatching("afsm/gradle/afsm-graph-plugin.properties") {
+        expand("afsmVersion" to afsmVersion)
     }
 }

@@ -26,13 +26,30 @@ public abstract class AfsmGraphExtension @Inject constructor(
         .convention(true)
 
     public val processorDependency: Property<String> = objects.property(String::class.java)
-        .convention("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
+        .convention(AfsmGraphPluginDefaults.processorDependency)
 
     public val addJunitDependency: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(true)
 
     public val junitDependency: Property<String> = objects.property(String::class.java)
         .convention("junit:junit:4.13.2")
+}
+
+internal object AfsmGraphPluginDefaults {
+    val processorDependency: String by lazy {
+        val properties = java.util.Properties()
+        val resourceName = "afsm/gradle/afsm-graph-plugin.properties"
+        val stream = requireNotNull(
+            javaClass.classLoader.getResourceAsStream(resourceName),
+        ) {
+            "Afsm graph plugin resource is missing: $resourceName"
+        }
+
+        stream.use(properties::load)
+        requireNotNull(properties.getProperty("processorDependency")) {
+            "Afsm graph plugin resource is missing processorDependency."
+        }
+    }
 }
 
 public class AfsmGraphPlugin : Plugin<Project> {

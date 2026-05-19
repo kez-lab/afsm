@@ -455,3 +455,9 @@
 - Source: fourth six-agent usability review after graph Gradle plugin introduction.
 - Action: Added KSP processor functional tests, graph Gradle plugin TestKit functional tests, normal unit-test/export-test separation, no-registry failure messaging, and consumer-smoke `.mmd` file assertions.
 - Updated: `afsm-graph-ksp/`, `afsm-graph-gradle-plugin/`, `scripts/verify-consumer-smoke.sh`, `docs/graph-generation.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/06-project/implementation-log.md`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/log.md`.
+
+## [2026-05-20] implementation | Version alignment and command-result pressure hardening
+
+- Source: fifth six-agent usability review focused on external setup, graph version behavior, runtime pressure, and sample adoption clarity.
+- Action: Added shared `afsmVersion`, generated the graph plugin's default processor coordinate from that version, made `consumer-smoke` verify the current version with a clean dependency-refreshed fixture build, added command-result event overflow fail-fast handling, and improved README/example adoption guidance.
+- Updated: `gradle.properties`, `build.gradle.kts`, `afsm-runtime/`, `afsm-graph-gradle-plugin/`, `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`, `README.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/log.md`.

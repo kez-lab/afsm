@@ -1,4 +1,15 @@
 pluginManagement {
+    val afsmVersion = providers.gradleProperty("afsmVersion")
+        .orElse("0.1.0-SNAPSHOT")
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "io.github.afsm.graph") {
+                useVersion(afsmVersion.get())
+            }
+        }
+    }
+
     repositories {
         mavenLocal()
         google()

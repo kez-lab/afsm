@@ -152,7 +152,8 @@ Deferred findings:
 - Multi-flavor/variant examples remain documentation work after the single
   variant path is stable.
 - Plugin/processor version synchronization needs a release-policy decision
-  before remote Maven publication.
+  before remote Maven publication. Resolved in the fifth round by generating
+  the default processor coordinate from the shared Afsm version.
 - Dedicated graph source sets could further reduce test dependency mixing, but
   they are not necessary for the current internal beta gate.
 
@@ -172,3 +173,60 @@ Deferred findings:
 - Excluded the generated export test from the normal Android unit-test task.
 - Added consumer-smoke shell validation that `ConsumerSmoke.mmd` exists and
   starts with `stateDiagram-v2`, including representative transition lines.
+
+## Fifth Review Findings
+
+Six Android-developer reviewers focused on whether Afsm is ready to feel
+trustworthy to external Android teams.
+
+Accepted findings:
+
+- First-time Maven Local setup should be copy-pasteable from the README, not
+  inferred from `consumer-smoke`.
+- The graph Gradle plugin and `afsm-graph-ksp` processor must stay version
+  synchronized by default.
+- `consumer-smoke` must consume the current root `afsmVersion`, otherwise a
+  version bump could pass against stale Maven Local artifacts.
+- `consumer-smoke` must not validate stale generated `.mmd` outputs from a
+  previous build.
+- Command-result event overflow must be explicit; blocking the sequential
+  command processor on a full event queue is not acceptable runtime behavior.
+- `docs/examples.md` should teach adoption decisions, not only sample locations:
+  Auth is a syntax tutorial, Checkout/ProductEditor are stronger Afsm proof
+  cases, and Catalog/ProductDetail remain ordinary ViewModel examples.
+
+Deferred findings:
+
+- Splitting `AfsmMachine` from graph metadata may improve public API simplicity,
+  but it is a broader API change and should be prototyped separately.
+- Required navigation in samples should be reconsidered so durable terminal
+  state, not only best-effort effects, can drive unavoidable product progress.
+- Restoration needs a runnable `SavedStateHandle` sample before broad external
+  release.
+
+## Fifth Round Implemented Changes
+
+- Added shared `afsmVersion` and wired root build, graph plugin build, and
+  consumer smoke around it.
+- The graph plugin now packages the matching default
+  `io.github.afsm:afsm-graph-ksp:<afsmVersion>` processor coordinate.
+- `verify-consumer-smoke.sh` passes `-PafsmVersion=...` to the external
+  consumer build and forces a clean dependency-refreshed fixture run.
+- Added `AfsmEventQueueOverflowException` for command-result event pressure,
+  while dropping and logging closed-host result events as lifecycle completion.
+- Documented command-result overflow policy in README, public API docs, and
+  restoration/effect/command policy.
+- Added a README Maven Local pilot setup section and an adoption decision table
+  in `docs/examples.md`.
+
+Post-review blocker fixes:
+
+- `verify-consumer-smoke.sh` now refreshes dependencies and cleans the consumer
+  fixture before compiling and generating `.mmd`, so stale Gradle outputs do
+  not satisfy the release gate.
+- README Maven Local pilot snippets now use `com.android.application` for the
+  app-consumer path.
+- `docs/graph-generation.md` now labels `pluginManagement { ... }` as a
+  `settings.gradle.kts` block.
+- Command-result events after host close are now dropped and logged as normal
+  lifecycle completion rather than reported as queue pressure.

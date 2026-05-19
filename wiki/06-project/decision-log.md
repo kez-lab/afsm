@@ -891,3 +891,50 @@ Consequences:
 - `generateAfsmMmd` loads the generated registry reflectively and fails clearly
   only when the graph export task is run without graph sources.
 - Normal Android unit-test tasks exclude the generated graph export test.
+
+## [2026-05-20] Synchronize graph plugin and processor versions
+
+Decision: Generate the graph plugin's default `afsm-graph-ksp` dependency from
+the shared Afsm version, and pass that same version into `consumer-smoke`.
+
+Rationale:
+
+- Six Android-developer reviewers identified stale Maven Local artifacts as a
+  high-risk false-positive path after a version bump.
+- External consumers should apply one `io.github.afsm.graph` plugin version and
+  get the matching KSP processor by default.
+- The release gate should verify the just-published local artifacts, not a
+  previous snapshot that still happens to exist in Maven Local.
+
+Consequences:
+
+- `gradle.properties` now owns `afsmVersion`.
+- The root build and graph plugin build both read that version.
+- The graph plugin packages a processed resource containing the matching
+  processor coordinate.
+- `verify-consumer-smoke.sh` passes the root version into the separate consumer
+  build.
+
+## [2026-05-20] Fail fast on command-result event overflow
+
+Decision: Command result events use the bounded event queue and throw
+`AfsmEventQueueOverflowException` if a full queue rejects them. If the host is
+already closed, command result events are dropped and logged as lifecycle
+completion.
+
+Rationale:
+
+- Raw `eventQueue.send(nextEvent)` could suspend the single sequential command
+  processor when the event queue was full.
+- Event pressure is a runtime/modeling failure, not a domain failure that should
+  be hidden behind a command result.
+- This matches the existing fail-fast command queue overflow policy.
+
+Consequences:
+
+- Command handlers still dispatch typed events through the same callback.
+- External `tryDispatch` remains available for UI callers that want a boolean.
+- Runtime pressure docs now cover external events, command-result events, and
+  accepted command queue overflow separately.
+- ViewModel clearing while command work finishes is not treated as event
+  pressure.

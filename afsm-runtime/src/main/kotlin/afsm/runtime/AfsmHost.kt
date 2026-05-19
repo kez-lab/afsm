@@ -198,9 +198,16 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     ) {
         try {
             commandHandler.handle(command) { nextEvent ->
-                eventQueue.send(nextEvent)
+                enqueueCommandResultEvent(
+                    state = state,
+                    event = nextEvent,
+                    command = command,
+                    transition = transition,
+                )
             }
         } catch (throwable: CancellationException) {
+            throw throwable
+        } catch (throwable: AfsmEventQueueOverflowException) {
             throw throwable
         } catch (throwable: Throwable) {
             val diagnostic = AfsmDiagnostic(
@@ -218,6 +225,43 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
                 AfsmCommandFailurePolicy.Throw -> throw throwable
             }
         }
+    }
+
+    private fun enqueueCommandResultEvent(
+        state: S,
+        event: E,
+        command: C,
+        transition: AfsmTransition<S, C, F>,
+    ) {
+        val result = eventQueue.trySend(event)
+        if (result.isSuccess) {
+            return
+        }
+
+        if (result.isClosed) {
+            config.logger.log(
+                AfsmDiagnostic(
+                    state = state,
+                    event = event,
+                    decision = transition.decision,
+                    reason = "eventQueueClosed",
+                    message = "Afsm command result event was dropped because the host event queue is closed.",
+                    command = command,
+                ),
+            )
+            return
+        }
+
+        val diagnostic = AfsmDiagnostic(
+            state = state,
+            event = event,
+            decision = transition.decision,
+            reason = "eventQueueCapacity=${config.eventQueueCapacity}",
+            message = "Afsm event queue rejected a command result event.",
+            command = command,
+        )
+
+        throw AfsmEventQueueOverflowException(diagnostic)
     }
 
     private fun recordDroppedIgnoredOutputsIfNeeded(

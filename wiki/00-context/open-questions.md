@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-14
+updated: 2026-05-20
 ---
 
 # Open Questions
@@ -52,8 +52,8 @@ Resolved:
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
 - Should graph generation later support multi-variant and multi-module aggregation, or keep module-local `debug` output as the public MVP?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
-- How should the graph Gradle plugin keep its default KSP processor dependency version synchronized with the plugin version for remote releases?
-- How should command-result event overflow be handled when the event queue is full: fail the command, reserve internal capacity, split command-result queues, or introduce a policy?
+- Should `AfsmMachine` remain graphable by extending `AfsmGraphSource`, or should public API split a plain machine type from a graphable machine type before broad release?
+- Should required navigation in samples react to durable terminal state instead of relying on best-effort effect collectors?
 - What exact restoration policy should be documented for phases whose `onEnter` would normally start non-idempotent work?
 
 Resolved:
@@ -116,3 +116,6 @@ Resolved:
 - KSP `.mmd` generation now ships through the first `io.github.afsm.graph` Gradle plugin slice; the plugin generates the export test and registers `generateAfsmMmd`.
 - KSP processor functional tests and Gradle plugin functional tests now cover the first graph-tooling hardening pass.
 - External `.mmd` generation ships first as the `io.github.afsm.graph` Gradle plugin; the documented task-template approach is superseded.
+- The graph Gradle plugin default `afsm-graph-ksp` processor dependency is generated from the shared Afsm version and covered by a plugin functional test.
+- `consumer-smoke` consumes the root `afsmVersion` through `-PafsmVersion=...`, so version bumps verify the current Maven Local artifacts instead of stale coordinates.
+- Command-result event overflow now fails fast with `AfsmEventQueueOverflowException` when a full bounded event queue rejects a command result event. Closed-host command results are dropped and logged as lifecycle completion.

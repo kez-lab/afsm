@@ -22,8 +22,13 @@ What this proves:
 - Graph Gradle plugin functional tests cover Android app/library fixture usage,
   KSP-missing setup errors, ordinary unit-test separation, and no-registry graph
   generation failures.
+- The graph Gradle plugin default processor dependency is generated from the
+  shared Afsm version and tested so `io.github.afsm.graph` and
+  `afsm-graph-ksp` stay aligned.
 - Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
+- The separate consumer build is cleaned and dependency-refreshed by
+  `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
 - Binary API dumps are checked for the five API-tracked Afsm library modules.
 
@@ -112,7 +117,8 @@ plugins {
 ```
 
 The graph plugin adds `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT` to the
-app module by default.
+app module by default. That default is generated from the plugin's Afsm version
+at build time.
 
 `io.github.afsm` is a temporary pre-release group id for local evaluation.
 
@@ -152,9 +158,6 @@ Required product decisions:
 Required engineering gates:
 
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
-- Define how the graph Gradle plugin keeps its default
-  `afsm-graph-ksp` processor dependency version synchronized with the plugin
-  version.
 - Keep `consumer-smoke` green after every publication metadata change.
 - Keep `.github/workflows/ci.yml` aligned with `./scripts/verify-release-local.sh`.
 - Keep `CONTRIBUTING.md` aligned with the current release gate and test policy.

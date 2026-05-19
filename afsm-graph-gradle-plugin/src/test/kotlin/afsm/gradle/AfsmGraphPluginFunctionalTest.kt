@@ -11,6 +11,16 @@ import org.gradle.testkit.runner.GradleRunner
 
 class AfsmGraphPluginFunctionalTest {
     @Test
+    fun `default processor dependency follows shared Afsm version`() {
+        val afsmVersion = sharedAfsmVersion()
+
+        assertEquals(
+            "io.github.afsm:afsm-graph-ksp:$afsmVersion",
+            AfsmGraphPluginDefaults.processorDependency,
+        )
+    }
+
+    @Test
     fun `generateAfsmMmd runs only the generated graph export test`() {
         val projectDir = createAndroidProject(
             applyKsp = true,
@@ -314,6 +324,22 @@ class AfsmGraphPluginFunctionalTest {
             "Android SDK path is required for Afsm graph plugin functional tests."
         }
         return File(sdkPath)
+    }
+
+    private fun sharedAfsmVersion(): String {
+        val start = File(System.getProperty("user.dir")).canonicalFile
+        val gradleProperties = generateSequence(start) { it.parentFile }
+            .map { directory -> directory.resolve("gradle.properties") }
+            .firstOrNull { file ->
+                file.isFile && file.readLines().any { line -> line.startsWith("afsmVersion=") }
+            }
+            ?: error("Could not find shared gradle.properties with afsmVersion from $start")
+
+        val properties = java.util.Properties()
+        gradleProperties.inputStream().use(properties::load)
+        return requireNotNull(properties.getProperty("afsmVersion")) {
+            "Missing afsmVersion in ${gradleProperties.absolutePath}"
+        }
     }
 
     private val File.invariantSeparatorsPath: String

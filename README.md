@@ -100,6 +100,72 @@ android.useAndroidX=true
 
 `io.github.afsm` is the current pre-release group id. Final Maven Central coordinates still need product approval.
 
+### Maven Local Pilot Setup
+
+For a separate Android app that consumes the local snapshot, mirror the
+`consumer-smoke` setup.
+
+`settings.gradle.kts`:
+
+```kotlin
+pluginManagement {
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+    }
+}
+```
+
+Root `build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("com.android.application") version "8.10.1" apply false
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT" apply false
+    kotlin("android") version "2.0.21" apply false
+}
+```
+
+App module:
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph")
+    kotlin("android")
+}
+
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+}
+```
+
+`gradle.properties`:
+
+```properties
+android.useAndroidX=true
+```
+
+The graph plugin automatically adds the matching
+`io.github.afsm:afsm-graph-ksp` processor for its own version. Override
+`afsmGraph.processorDependency` only when testing a custom processor build.
+
 ## Minimal Machine
 
 The core mental model:
@@ -373,6 +439,10 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 - `dispatch(event)` is non-suspending and serialized through FIFO event processing.
 - `tryDispatch(event)` returns `false` when the event queue is closed or full.
 - Events use a bounded queue, default `64`.
+- Command result events use that same bounded event queue; if the queue is
+  full, the host throws `AfsmEventQueueOverflowException` instead of suspending
+  command processing. If the host is already closed, the result event is
+  dropped and logged because the screen lifecycle has ended.
 - Commands execute sequentially without blocking later event reduction.
 - Commands also use a bounded queue, default `64`; if it fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor.
 - Command results should dispatch typed events back into the host.

@@ -1058,7 +1058,8 @@ Verification:
 Conclusion:
 
 - Afsm now surfaces command pressure as an explicit runtime error rather than risking an event-loop stall.
-- Remaining runtime concern: command-result event overflow when the external event queue is saturated.
+- Superseded follow-up: command-result event overflow was later resolved by
+  `AfsmEventQueueOverflowException` in the 2026-05-20 hardening pass.
 
 ## [2026-05-14] Restoration, effect, and command policy guide
 
@@ -1246,3 +1247,46 @@ Conclusion:
   Gradle plugin UX.
 - The next graph-tooling work should focus on multi-variant/multi-module policy
   rather than adding more public API.
+
+## [2026-05-20] Version alignment and command-result pressure hardening
+
+Change:
+
+- Ran a fifth six-agent Android developer usability review focused on external
+  setup, public API complexity, graph plugin version behavior, runtime pressure,
+  and sample adoption boundaries.
+- Moved the shared pre-release version to `gradle.properties` as `afsmVersion`.
+- Updated the graph Gradle plugin so its default `afsm-graph-ksp` processor
+  coordinate is generated from the shared Afsm version.
+- Updated `consumer-smoke` and `verify-consumer-smoke.sh` so the separate build
+  verifies the root `afsmVersion` instead of hardcoded stale Maven Local
+  coordinates.
+- Added fail-fast command-result event overflow handling through
+  `AfsmEventQueueOverflowException`, while dropping and logging closed-host
+  command results as lifecycle completion.
+- Added the `docs/examples.md` adoption decision table to make Auth a syntax
+  tutorial and Checkout/ProductEditor the stronger Afsm proof cases.
+- Added README Maven Local pilot setup snippets based on `consumer-smoke`.
+- Post-review fixes forced `consumer-smoke` to clean and refresh dependencies,
+  corrected app-consumer README plugin snippets, corrected the graph setup
+  block label, and changed closed-host command result handling to logged drops
+  instead of overflow errors.
+
+Verification:
+
+```bash
+./gradlew :afsm-runtime:test --tests afsm.runtime.AfsmHostTest.'command result event overflow fails fast instead of suspending command processing' --warning-mode all --no-daemon
+./gradlew :afsm-runtime:test --tests "afsm.runtime.AfsmHostTest.command result event after host close is dropped as lifecycle completion" --warning-mode all --no-daemon
+./gradlew :afsm-runtime:apiDump --warning-mode all --no-daemon
+./gradlew -p afsm-graph-gradle-plugin test --warning-mode all --no-daemon
+./gradlew :afsm-runtime:test --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The current hardening pass closes two concrete false-positive/stall risks:
+  stale local artifact verification and suspended command-result dispatch.
+  The full local release gate passes with the existing documented Gradle
+  deprecation warning from Kotlin POM rewriting.

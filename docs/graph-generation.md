@@ -17,7 +17,7 @@ the executable `afsmMachine { ... }` DSL.
 
 ## 1. Configure Plugins
 
-Root or app build:
+`settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {
@@ -49,7 +49,8 @@ plugins {
 ```
 
 The graph plugin adds the `afsm-graph-ksp` processor to the app module by
-default and registers:
+default using the same version as the applied `io.github.afsm.graph` plugin,
+and registers:
 
 ```text
 generateAfsmMmd
@@ -116,7 +117,7 @@ afsmGraph {
     variant.set("debug")
     outputDir.set(layout.buildDirectory.dir("generated/afsm/mmd"))
 
-    // Defaults to io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT.
+    // Defaults to the afsm-graph-ksp artifact that matches the graph plugin version.
     processorDependency.set("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
     addProcessorDependency.set(true)
 
