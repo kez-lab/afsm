@@ -242,6 +242,70 @@ class ProductEditorStateMachineTest {
     }
 
     @Test
+    fun `render state hides internal phase details from product editor ui`() {
+        val state = productEditorState(
+            phase = ProductEditorPhase.Rejected(
+                reason = "Mock reviewer asks for one resubmission.",
+            ),
+            context = ProductEditorContext(draft = validDraft),
+        )
+
+        val renderState = state.toRenderState()
+
+        assertEquals(validDraft.form, renderState.form)
+        assertEquals("Review rejected", renderState.statusText)
+        assertEquals(true, renderState.showDraftFields)
+        assertEquals(true, renderState.fieldsEnabled)
+        assertEquals(false, renderState.isProcessing)
+        assertEquals(ProductEditorPrimaryAction.ResubmitForReview, renderState.primaryAction)
+        assertEquals(ProductEditorSecondaryAction.ContinueEditing, renderState.secondaryAction)
+        assertEquals("Mock reviewer asks for one resubmission.", renderState.reviewNote)
+    }
+
+    @Test
+    fun `published render state hides draft fields and exposes completion action`() {
+        val state = productEditorState(
+            phase = ProductEditorPhase.Published(
+                productId = 100,
+                title = "Travel Mug",
+            ),
+            context = ProductEditorContext(draft = validDraft),
+        )
+
+        val renderState = state.toRenderState()
+
+        assertEquals(false, renderState.showDraftFields)
+        assertEquals(false, renderState.fieldsEnabled)
+        assertEquals(false, renderState.isProcessing)
+        assertEquals(ProductEditorPrimaryAction.Done, renderState.primaryAction)
+        assertEquals(null, renderState.secondaryAction)
+        assertEquals("Travel Mug", renderState.publishedTitle)
+    }
+
+    @Test
+    fun `processing render states hide actions and disable draft fields`() {
+        val processingPhases = listOf(
+            ProductEditorPhase.SavingDraft,
+            ProductEditorPhase.ImageUploadInProgress,
+            ProductEditorPhase.ReviewSubmissionInProgress(uploadToken = "upload-1"),
+            ProductEditorPhase.PublishInProgress,
+        )
+
+        processingPhases.forEach { phase ->
+            val renderState = productEditorState(
+                phase = phase,
+                context = ProductEditorContext(draft = validDraft),
+            ).toRenderState()
+
+            assertEquals(true, renderState.showDraftFields)
+            assertEquals(false, renderState.fieldsEnabled)
+            assertEquals(true, renderState.isProcessing)
+            assertEquals(null, renderState.primaryAction)
+            assertEquals(null, renderState.secondaryAction)
+        }
+    }
+
+    @Test
     fun `topology exposes ProductEditor graph without sample events`() {
         val transitions = machine.topology.transitions
 

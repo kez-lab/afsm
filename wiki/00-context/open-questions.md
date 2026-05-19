@@ -50,7 +50,7 @@ Resolved:
 - Should the DSL support nested/hierarchical states in v3 MVP or defer them?
 - Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
-- Should KSP `.mmd` generation ship first as generated unit-test infrastructure or as a dedicated Gradle plugin?
+- Should graph generation later support multi-variant and multi-module aggregation, or keep module-local `debug` output as the public MVP?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 - Should external MMD generation ship as a Gradle plugin, a documented task template, or a simple runtime writer API first?
 - How should command-result event overflow be handled when the event queue is full: fail the command, reserve internal capacity, split command-result queues, or introduce a policy?
@@ -113,3 +113,4 @@ Resolved:
 - Command queue overflow now fails fast with `AfsmCommandQueueOverflowException`; machines should emit fewer/coarser commands or increase `commandQueueCapacity`.
 - Default effect delivery has no replay; late collectors do not receive old one-shot effects.
 - Restoration/effect/command policy is documented in `docs/restoration-effect-command-policy.md`; implementation helpers remain future work.
+- KSP `.mmd` generation now ships through the first `io.github.afsm.graph` Gradle plugin slice; the plugin generates the export test and registers `generateAfsmMmd`.

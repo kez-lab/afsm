@@ -15,8 +15,10 @@ The smoke build covers:
 - `io.github.afsm:afsm-runtime`
 - `io.github.afsm:afsm-viewmodel`
 - `io.github.afsm:afsm-graph-ksp`
+- `io.github.afsm.graph` Gradle plugin
 
-It intentionally stays small. The goal is dependency and API consumption verification, not sample app behavior coverage.
+It intentionally stays small. The goal is dependency, plugin, KSP, graph
+generation, and API consumption verification, not sample app behavior coverage.
 
 Current compatibility baseline:
 

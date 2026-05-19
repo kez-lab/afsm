@@ -131,7 +131,8 @@ EditingDraft
 
 Policy:
 
-- ProductEditor now uses the v3 executable DSL while exposing `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` to Android UI code.
+- ProductEditor uses the executable DSL with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` at the state-machine boundary.
+- `ProductEditorState.toRenderState()` maps internal phases to ordinary Compose render data so `ProductEditorScreen` does not branch on `ProductEditorPhase`.
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
@@ -140,6 +141,7 @@ Policy:
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
+- The `io.github.afsm.graph` Gradle plugin generates the export test and registers `./gradlew :sample-shop:generateAfsmMmd`.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `updateContext`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
@@ -217,7 +219,7 @@ These tests are executable specs. If a test fails, treat it as a product behavio
 Current verification:
 
 ```bash
-./gradlew :sample-shop:testDebugUnitTest :sample-shop:assembleDebug --warning-mode all --no-daemon
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd :sample-shop:assembleDebug --warning-mode all --no-daemon
 ```
 
 ## Early API Feedback
@@ -242,6 +244,8 @@ The current sample suggests:
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 - Checkout is now the mid-size reference for Android lifecycle, retry, request
   id, durable completion, and render-state mapping policy.
+- `io.github.afsm.graph` should remain the public graph-generation entry point;
+  sample modules should not own copy-paste MMD export tests.
 
 Open follow-up:
 

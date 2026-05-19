@@ -17,10 +17,10 @@ What this proves:
 - Android ViewModel helper compiles and passes unit tests.
 - Compose effect helper compiles.
 - The sample app compiles and exports `.mmd` graphs from real annotated machines.
-- Maven Local publishes all five library modules.
-- A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR and KSP processor.
+- Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
+- A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
-- Binary API dumps are checked for all five Afsm library modules.
+- Binary API dumps are checked for the five API-tracked Afsm library modules.
 
 ## GitHub CI
 
@@ -97,8 +97,17 @@ implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
 ```
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
+}
+```
+
+The graph plugin adds `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT` to the
+app module by default.
 
 `io.github.afsm` is a temporary pre-release group id for local evaluation.
 
@@ -113,6 +122,7 @@ Current generated POMs contain:
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
 | `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |
+| `afsm-graph-gradle-plugin` | Gradle plugin marker + `jar` | Gradle API / AGP compile-only | Yes |
 
 Current generated POMs do not yet contain:
 

@@ -4,9 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GRADLE_ARGS=("$@")
 
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" \
+  test \
+  --stacktrace \
+  "${GRADLE_ARGS[@]}"
+
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" \
   :afsm-core:test \
   :afsm-compose:compileDebugKotlin \
+  :afsm-graph-ksp:test \
   :afsm-runtime:test \
   :afsm-viewmodel:testDebugUnitTest \
   :sample-shop:compileDebugKotlin \

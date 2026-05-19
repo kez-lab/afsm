@@ -67,3 +67,64 @@ Follow-up fixes applied:
 The largest adoption blocker remains first-class graph generation ergonomics.
 The current pre-release workflow is documented, but a dedicated Gradle plugin is
 still the right direction before broad external adoption.
+
+## Third Review Findings
+
+The follow-up six-agent round focused on external Android developer usability.
+
+Accepted findings:
+
+- Graph generation should feel automatic after `@AfsmGraph`; app-maintained
+  export tests and task wiring are too much for beta adoption.
+- The existing KSP registry is the correct source of graph truth; the next
+  slice should hide build wiring, not parse Kotlin bodies or introduce sample
+  data.
+- `sample-shop` graph export assertions should be registry-driven instead of
+  naming only selected machines.
+- ProductEditor, the most complex sample, should match Auth/Checkout by mapping
+  internal FSM phase to a Compose render state.
+- Release gate should include `afsm-graph-ksp:test`, and consumer smoke should
+  verify graph generation rather than registry compilation only.
+
+Deferred findings:
+
+- Processor compile-testing for invalid annotations and duplicate ids remains
+  important but is a separate hardening task.
+- Multi-variant and multi-module graph aggregation should wait until the single
+  app-module plugin path is stable.
+- Graph API module splitting should be decided before public OSS release, not
+  inside this usability slice.
+
+## Third Round Implemented Changes
+
+- Added `io.github.afsm.graph` as the first graph Gradle plugin slice.
+- The plugin generates `AfsmGeneratedMmdExportTest`, wires unit-test source
+  generation, configures `afsm.mmd.outputDir`, and registers `generateAfsmMmd`.
+- `sample-shop` now applies the plugin and no longer owns a hand-written MMD
+  export test.
+- `consumer-smoke` now applies the published plugin and runs
+  `:app:generateAfsmMmd`.
+- `scripts/verify-release-local.sh` now runs `afsm-graph-ksp:test` and the
+  graph plugin build test.
+- ProductEditor now uses `ProductEditorRenderState` so Compose does not branch
+  on `ProductEditorPhase`.
+
+Post-change review fixes:
+
+- `generateAfsmMmd` is now a dedicated `Test` task that only runs the generated
+  graph export test; it does not depend on the whole app unit-test task.
+- The generated export test is JUnit4-compatible, and the plugin no longer
+  forces JUnit Platform on existing app tests.
+- README and graph docs now include Maven Local plugin publication and
+  `pluginManagement.repositories.mavenLocal()` guidance.
+- ProductEditor published render state hides draft fields, and render mapping
+  tests cover published and processing states.
+- Sample-shop tests now assert the documented Auth, Checkout, and ProductEditor
+  graph registry entries.
+
+## Updated Remaining Priority
+
+The next strongest hardening target is graph tooling verification: add processor
+compile tests for invalid annotations and duplicate ids, then add a Gradle
+plugin functional test that proves the generated export test/task in a fixture
+Android module.

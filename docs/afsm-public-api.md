@@ -14,18 +14,32 @@ setup, read [graph-generation.md](graph-generation.md).
 
 ## Coordinates
 
+Required dependencies:
+
 ```kotlin
 implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+```
+
+Optional Compose and graph tooling:
+
+```kotlin
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
+```
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
+}
 ```
 
 Generate local artifacts:
 
 ```bash
 ./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # optional graph plugin
 ```
 
 Verify from a separate Android consumer build:
@@ -33,6 +47,9 @@ Verify from a separate Android consumer build:
 ```bash
 ./scripts/verify-consumer-smoke.sh
 ```
+
+The graph Gradle plugin adds `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT`
+to the app module by default when `com.google.devtools.ksp` is applied.
 
 ## afsm-core
 
@@ -197,6 +214,11 @@ fun AfsmTopology.toMmd(
 
 `AfsmTopologyState` can include entry/exit command/effect labels. These labels
 are metadata only; runtime commands/effects must still be emitted in DSL blocks.
+
+The `io.github.afsm.graph` Gradle plugin is the preferred Android app-module
+entry point for `.mmd` output. It generates the export test internally and
+registers `generateAfsmMmd`; app modules should not maintain a hand-written
+`AfsmMmdExportTest`.
 
 ## afsm-runtime
 

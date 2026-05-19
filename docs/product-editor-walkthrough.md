@@ -61,6 +61,26 @@ hide the flow:
 The generated graph lets a reviewer understand the flow before reading the
 Compose screen.
 
+## Render State Boundary
+
+ProductEditor keeps the internal FSM phase precise, but Compose does not render
+directly from every phase. `ProductEditorState.toRenderState()` maps the FSM
+snapshot to ordinary UI data:
+
+| FSM condition | UI state |
+|---|---|
+| `EditingDraft` | fields enabled, save draft secondary action, submit primary action |
+| `SavingDraft` | fields disabled, processing button |
+| `DraftSaved` | fields disabled, continue editing secondary action, submit primary action |
+| `ImageUploadInProgress` / `ReviewSubmissionInProgress` / `PublishInProgress` | fields disabled, processing button |
+| `Rejected(reason)` | fields enabled, review note, continue editing secondary action, resubmit primary action |
+| `Approved` | fields disabled, continue editing secondary action, publish primary action |
+| `Published(title)` | draft fields hidden, published title, done primary action |
+
+This is the recommended Android boundary: the state machine owns phase and
+transition correctness, while Compose receives a stable render model that can
+survive internal phase refactors.
+
 ## Phase And Context
 
 ProductEditor uses:
@@ -217,6 +237,7 @@ Read `ProductEditorStateMachineTest` in this order:
 4. `image upload success increments review attempt in context and submits review command`
 5. `rejected draft can be resubmitted through upload again without passing draft through phase`
 6. `approved draft publishes product through phase entry command`
-7. `topology exposes ProductEditor graph without sample events`
+7. `render state hides internal phase details from product editor ui`
+8. `topology exposes ProductEditor graph without sample events`
 
 These tests are the practical review checklist for complex Afsm screens.

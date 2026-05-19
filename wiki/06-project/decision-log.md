@@ -816,3 +816,52 @@ Consequences:
 - ProductEditor docs explain `onExit -> transition block -> onEnter`.
 - Internal beta pilots require an owner, target screen, success criteria, stop
   criteria, and upgrade verification command.
+
+## [2026-05-19] Ship first graph Gradle plugin slice
+
+Decision: Add `io.github.afsm.graph` as the first Gradle plugin slice for
+Android app/library modules, replacing hand-written app export tests.
+
+Rationale:
+
+- Six-agent usability review found that graph generation still felt like a
+  documented workaround because apps had to maintain an export test and Gradle
+  task manually.
+- The existing KSP registry already proves code-synced graph extraction; the
+  next ergonomic problem is build wiring, not a new graph engine.
+- Running the writer from a generated unit test keeps access to the module-local
+  internal `AfsmGeneratedGraphRegistry` without introducing reflection or a
+  separate JavaExec classpath problem.
+
+Consequences:
+
+- App modules apply `com.google.devtools.ksp` and `io.github.afsm.graph`.
+- The plugin generates `AfsmGeneratedMmdExportTest`, configures the selected
+  Android unit-test variant, and registers `generateAfsmMmd`.
+- `sample-shop` no longer owns a hand-written graph export test.
+- `consumer-smoke` applies the published plugin from Maven Local and verifies
+  `.mmd` generation from external coordinates.
+- Multi-variant output, multi-module aggregation, and processor compile-testing
+  remain future hardening work.
+
+## [2026-05-19] Keep complex sample UI behind render state
+
+Decision: ProductEditor should map internal `ProductEditorState` to
+`ProductEditorRenderState` before Compose rendering.
+
+Rationale:
+
+- ProductEditor is the most persuasive complex-flow sample, so it should show
+  the intended Android boundary clearly.
+- Reviewers found it inconsistent that Auth and Checkout hid phase details from
+  Compose while ProductEditor still branched on `ProductEditorPhase` directly.
+- The FSM phase model should be free to evolve for graph/transition correctness
+  without forcing every UI layout branch to know internal phase classes.
+
+Consequences:
+
+- `ProductEditorScreen` now receives `ProductEditorRenderState`.
+- UI actions are represented as small primary/secondary action enums and mapped
+  to events at the screen boundary.
+- State-machine tests now include a render-state mapping assertion for the
+  rejected review state.

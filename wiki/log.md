@@ -443,3 +443,9 @@
 - Source: user request to continue `/goal 12` style usability loops with six Android developer subagents per round.
 - Action: Ran six initial usability reviewers and six post-change reviewers, added terminal-state DSL convenience, simplified README first-use onboarding, clarified graph generation setup, aligned Auth/Checkout render-state sample boundaries, documented ProductEditor execution order, and added internal beta pilot criteria.
 - Updated: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`, `afsm-core/api/afsm-core.api`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/`, `README.md`, `CHANGELOG.md`, `consumer-smoke/README.md`, `docs/`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/index.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-19] implementation | Graph plugin and ProductEditor render-state loop
+
+- Source: follow-up six-agent usability review finding that `.mmd` generation still required app-owned export wiring and ProductEditor exposed internal FSM phase details to Compose.
+- Action: Added `io.github.afsm.graph` Gradle plugin, migrated `sample-shop` and `consumer-smoke` graph generation to the plugin, added ProductEditor render-state mapping, and refreshed public docs/wiki.
+- Updated: `afsm-graph-gradle-plugin/`, `settings.gradle.kts`, `sample-shop/build.gradle.kts`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `consumer-smoke/`, `scripts/verify-release-local.sh`, `scripts/verify-consumer-smoke.sh`, `README.md`, `CHANGELOG.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.

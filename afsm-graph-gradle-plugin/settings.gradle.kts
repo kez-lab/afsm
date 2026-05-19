@@ -1,6 +1,4 @@
 pluginManagement {
-    includeBuild("afsm-graph-gradle-plugin")
-
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -16,11 +14,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "afsm"
-
-include(":afsm-core")
-include(":afsm-compose")
-include(":afsm-graph-ksp")
-include(":afsm-runtime")
-include(":afsm-viewmodel")
-include(":sample-shop")
+rootProject.name = "afsm-graph-gradle-plugin"

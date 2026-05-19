@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("com.google.devtools.ksp")
+    id("io.github.afsm.graph")
     kotlin("android")
 }
 
@@ -27,6 +28,4 @@ dependencies {
     implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-
-    ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
 }

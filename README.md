@@ -40,7 +40,8 @@ dependencies {
     implementation(project(":afsm-core"))
     implementation(project(":afsm-runtime"))
     implementation(project(":afsm-viewmodel"))
-    implementation(project(":afsm-compose")) // optional Compose helpers
+    implementation(project(":afsm-compose")) // optional
+    ksp(project(":afsm-graph-ksp")) // optional graph registry
 }
 ```
 
@@ -48,6 +49,7 @@ Maven Local evaluation:
 
 ```bash
 ./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # only needed for optional graph plugin
 ```
 
 ```kotlin
@@ -61,10 +63,33 @@ dependencies {
     implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT") // optional
-
-    ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT") // optional MMD generation
 }
+```
+
+Optional Compose and graph tooling:
+
+For Maven Local graph plugin resolution, include `mavenLocal()` in
+`pluginManagement.repositories` in `settings.gradle.kts`.
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
+}
+
+dependencies {
+    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+}
+```
+
+The graph plugin adds `afsm-graph-ksp` to the app module by default and
+registers `generateAfsmMmd`.
+
+The full local consumer check publishes the plugin and verifies graph generation
+from an external Android build:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all
 ```
 
 Android consumers must enable AndroidX:
@@ -295,11 +320,10 @@ Effects are best-effort one-shot outputs. Anything that must survive recreation 
 
 After the machine works, opt into graph generation.
 
-Current pre-release graph export uses KSP discovery plus a small Gradle test
-task. A dedicated Gradle plugin is the planned replacement before broad external
-adoption, so application teams do not have to write this wiring by hand.
-See [docs/graph-generation.md](docs/graph-generation.md) for the complete
-copy-paste setup.
+Current pre-release graph export uses KSP discovery plus the Afsm graph Gradle
+plugin. You annotate graphable machines and run one task; the plugin generates
+the small unit-test writer internally so app teams do not maintain export tests.
+See [docs/graph-generation.md](docs/graph-generation.md) for the full setup.
 
 ```kotlin
 private typealias DraftMachineType =
@@ -316,42 +340,17 @@ Add `commandLabels` or `effectLabels` only when you want those labels to appear
 in generated diagrams. They are documentation metadata; runtime commands and
 effects still come from `command(...)` and `effect(...)`.
 
-Add an export test in the Android app module:
+Apply the plugin:
 
 ```kotlin
-class AfsmMmdExportTest {
-    @Test
-    fun `writes afsm graphs`() {
-        val outputDir = File(
-            System.getProperty("afsm.mmd.outputDir")
-                ?: "build/generated/afsm/mmd",
-        )
-
-        AfsmMmdWriter.writeAll(
-            registry = AfsmGeneratedGraphRegistry,
-            outputDir = outputDir,
-            options = AfsmMmdOptions.Flow,
-        )
-    }
-}
-```
-
-Wire a Gradle task:
-
-```kotlin
-tasks.withType<Test>().configureEach {
-    systemProperty(
-        "afsm.mmd.outputDir",
-        layout.buildDirectory.dir("generated/afsm/mmd").get().asFile.absolutePath,
-    )
-    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
+plugins {
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
 }
 
-tasks.register("generateAfsmMmd") {
-    group = "documentation"
-    description = "Generates Afsm state machine .mmd graph files."
-    dependsOn("testDebugUnitTest")
-    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
+afsmGraph {
+    variant.set("debug") // default
+    outputDir.set(layout.buildDirectory.dir("generated/afsm/mmd")) // default
 }
 ```
 

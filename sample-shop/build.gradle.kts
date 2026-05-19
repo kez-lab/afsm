@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
+    id("io.github.afsm.graph")
     kotlin("android")
     kotlin("plugin.compose")
 }
@@ -33,6 +34,10 @@ android {
     }
 }
 
+afsmGraph {
+    addProcessorDependency.set(false)
+}
+
 dependencies {
     implementation(project(":afsm-core"))
     implementation(project(":afsm-compose"))
@@ -54,22 +59,6 @@ dependencies {
     ksp(project(":afsm-graph-ksp"))
     ksp("androidx.room:room-compiler:2.8.4")
 
-    testImplementation(kotlin("test-junit5"))
+    testImplementation(kotlin("test-junit"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-}
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-    systemProperty(
-        "afsm.mmd.outputDir",
-        layout.buildDirectory.dir("generated/afsm/mmd").get().asFile.absolutePath,
-    )
-    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
-}
-
-tasks.register("generateAfsmMmd") {
-    group = "documentation"
-    description = "Generates Afsm state machine .mmd graph files."
-    dependsOn("testDebugUnitTest")
-    outputs.dir(layout.buildDirectory.dir("generated/afsm/mmd"))
 }

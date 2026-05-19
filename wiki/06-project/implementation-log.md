@@ -1170,3 +1170,45 @@ Conclusion:
 - The first-use path is lighter, sample UI boundaries are more consistent, and
   graph setup is better documented. The next major usability target is a
   first-class graph-generation Gradle plugin.
+
+## [2026-05-19] Graph plugin and ProductEditor render-state loop
+
+Change:
+
+- Added the `afsm-graph-gradle-plugin` included build and Gradle plugin
+  artifact with plugin id `io.github.afsm.graph`.
+- The graph plugin generates a JUnit4-compatible `AfsmGeneratedMmdExportTest`,
+  reuses the selected Android unit-test variant classpath, wires
+  `afsm.mmd.outputDir`, and registers `generateAfsmMmd` as a dedicated graph
+  export `Test` task.
+- Removed the hand-written `ProductEditorMmdExportTest`; sample graph
+  generation is now plugin-driven.
+- Updated `consumer-smoke` so an external Maven Local Android build applies the
+  published graph plugin and runs `:app:generateAfsmMmd`.
+- Added `ProductEditorRenderState` plus primary/secondary UI actions so
+  `ProductEditorScreen` no longer branches on internal `ProductEditorPhase`.
+- Added sample graph registry coverage so Auth, Checkout, and ProductEditor
+  graph registration cannot silently regress.
+- Hid draft fields in ProductEditor published render state and added render
+  mapping tests for rejected, processing, and published UI states.
+- Updated release/docs/wiki guidance to make the graph plugin the preferred
+  graph-generation path.
+
+Verification:
+
+```bash
+./gradlew -p afsm-graph-gradle-plugin clean test --warning-mode all --no-daemon
+./gradlew :sample-shop:compileDebugKotlin :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The most visible graph-generation boilerplate is now library-owned instead of
+  app-owned.
+- `generateAfsmMmd` no longer runs the whole app unit-test suite and does not
+  force JUnit Platform on existing Android tests.
+- The next graph hardening target is processor compile-testing and plugin
+  functional tests.

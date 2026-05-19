@@ -35,13 +35,14 @@ Initial pre-release candidate.
 - `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including machine and dynamic initial state overloads.
 - `afsm-compose` with `CollectAfsmEffects(...)`.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
+- `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
 - `state(phase)` DSL convenience for terminal or marker phases with no handlers.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - GitHub CI workflow that runs the local release gate.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.
-- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
+- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
 - Kotlin explicit API mode for public library modules.
 - Binary API validation baseline for public library modules.
 

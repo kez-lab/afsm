@@ -1,11 +1,12 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-05-14
+updated: 2026-05-19
 ---
 
 # Afsm KSP MMD Generation
 
-This page designs KSP-based automatic `.mmd` generation for Afsm state machines.
+This page designs KSP + Gradle-plugin based automatic `.mmd` generation for
+Afsm state machines.
 
 Correction: graph registration should happen on the `StateMachine` class, not on a separate machine-provider function.
 
@@ -275,14 +276,16 @@ generateAfsmMmd
 
 For Android modules, the simplest early proof can run through the unit-test runtime, because it already has access to compiled app classes.
 
-### Later: Gradle Plugin
+### Gradle Plugin
 
-After the registry proof works, add an `afsm-graph-gradle-plugin`.
+The first `afsm-graph-gradle-plugin` slice now exists as an included build for
+repo-local use and as a Maven Local Gradle plugin for consumer smoke tests.
 
 Target usage:
 
 ```kotlin
 plugins {
+    id("com.google.devtools.ksp")
     id("io.github.afsm.graph")
 }
 
@@ -293,13 +296,19 @@ afsmGraph {
 
 The plugin should:
 
-- add/configure the KSP processor,
-- register `generateAfsmMmd`,
-- wire variant/source-set classpaths,
+- add the KSP processor by default when the `ksp` configuration exists,
+- generate an app-module unit test that imports `AfsmGeneratedGraphRegistry`,
+- register `generateAfsmMmd` as the user-facing task,
+- wire generated test sources into the selected Android unit-test variant,
 - support Android app/library modules,
-- optionally aggregate graphs across modules.
+- publish to Maven Local for external consumer verification.
 
-Do not start with the plugin; prove the class annotation and generated registry first.
+Deferred plugin work:
+
+- multi-variant output,
+- multi-module aggregation,
+- first-class plugin functional tests,
+- graph API/module split decisions.
 
 ## Module Layout
 
@@ -318,13 +327,16 @@ afsm-graph-ksp
   AfsmGraphProcessor
   generated registry
 
+afsm-graph-gradle-plugin
+  io.github.afsm.graph
+  generated AfsmGeneratedMmdExportTest
+  generateAfsmMmd task
+
 sample-shop
   @AfsmGraph on ProductEditorStateMachine
   @AfsmGraph on another sample state machine if graphable
+  io.github.afsm.graph plugin
   generateAfsmMmd writes all registry entries
-
-future:
-  afsm-graph-gradle-plugin
 ```
 
 ## Multi-Module Policy
@@ -355,6 +367,8 @@ Implementation status:
 - Done: `generateAfsmMmd` writes `AuthStateMachine.mmd`, `CheckoutStateMachine.mmd`, and `ProductEditorStateMachine.mmd`.
 - Done: adding additional real annotated `StateMachine` objects writes additional `.mmd` files.
 - Open: invalid annotated classes should fail compilation with useful messages in processor tests.
+- Done: `io.github.afsm.graph` removes app-maintained export test boilerplate.
+- Done: `consumer-smoke` applies the published graph Gradle plugin and generates `.mmd` output from Maven Local artifacts.
 - Done: no explanatory markdown is generated as graph output.
 - Done: graph `fileName` values must be safe relative `.mmd` paths; absolute paths, traversal segments, empty segments, and non-`.mmd` files are rejected by both the KSP processor and runtime writer.
 
@@ -376,6 +390,7 @@ The correct design is:
 @AfsmGraph StateMachine class
 + AfsmGraphSource topology contract
 + KSP-generated registry
++ generated unit-test writer from io.github.afsm.graph
 + runtime mmd writer
 ```
 

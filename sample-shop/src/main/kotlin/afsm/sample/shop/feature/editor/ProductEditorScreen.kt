@@ -52,28 +52,16 @@ fun ProductEditorRoute(
     }
 
     ProductEditorScreen(
-        state = state,
+        state = state.toRenderState(),
         onEvent = viewModel::onEvent,
     )
 }
 
 @Composable
 fun ProductEditorScreen(
-    state: ProductEditorState,
+    state: ProductEditorRenderState,
     onEvent: (ProductEditorEvent) -> Unit,
 ) {
-    val draft = state.draftOrNull()
-    val form = draft?.form ?: ProductDraftForm()
-    val fieldsEnabled = state.phase == ProductEditorPhase.EditingDraft ||
-        state.phase is ProductEditorPhase.Rejected
-    val errorMessage = when (state.phase) {
-        ProductEditorPhase.EditingDraft,
-        ProductEditorPhase.DraftSaved,
-        is ProductEditorPhase.Rejected -> state.context.errorMessage
-
-        else -> null
-    }
-
     Surface {
         Column(
             modifier = Modifier
@@ -87,38 +75,39 @@ fun ProductEditorScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Status: ${state.statusText()}",
+                text = "Status: ${state.statusText}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            ProductDraftFields(
-                form = form,
-                enabled = fieldsEnabled,
-                onTitleChange = { onEvent(ProductEditorEvent.TitleChanged(it)) },
-                onDescriptionChange = { onEvent(ProductEditorEvent.DescriptionChanged(it)) },
-                onPriceChange = { onEvent(ProductEditorEvent.PriceChanged(it)) },
-            )
+            if (state.showDraftFields) {
+                ProductDraftFields(
+                    form = state.form,
+                    enabled = state.fieldsEnabled,
+                    onTitleChange = { onEvent(ProductEditorEvent.TitleChanged(it)) },
+                    onDescriptionChange = { onEvent(ProductEditorEvent.DescriptionChanged(it)) },
+                    onPriceChange = { onEvent(ProductEditorEvent.PriceChanged(it)) },
+                )
+            }
 
-            val phase = state.phase
-            if (phase is ProductEditorPhase.Rejected) {
+            state.reviewNote?.let { reviewNote ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Review note: ${phase.reason}",
+                    text = "Review note: $reviewNote",
                     color = MaterialTheme.colorScheme.error,
                 )
             }
 
-            if (phase is ProductEditorPhase.Published) {
+            state.publishedTitle?.let { title ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Published product: ${phase.title}",
+                    text = "Published product: $title",
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
 
-            errorMessage?.let { message ->
+            state.errorMessage?.let { message ->
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = message,
@@ -174,102 +163,77 @@ private fun ProductDraftFields(
 
 @Composable
 private fun ProductEditorActions(
-    state: ProductEditorState,
+    state: ProductEditorRenderState,
     onEvent: (ProductEditorEvent) -> Unit,
 ) {
-    when (state.phase) {
-        ProductEditorPhase.EditingDraft -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(
-                    onClick = { onEvent(ProductEditorEvent.SaveDraftClicked) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Save draft")
-                }
-                Button(
-                    onClick = { onEvent(ProductEditorEvent.SubmitClicked) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Submit for review")
-                }
-            }
+    if (state.isProcessing) {
+        Button(
+            enabled = false,
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Processing...")
         }
+        return
+    }
 
-        ProductEditorPhase.DraftSaved -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(
-                    onClick = { onEvent(ProductEditorEvent.ContinueEditingClicked) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Continue editing")
-                }
-                Button(
-                    onClick = { onEvent(ProductEditorEvent.SubmitClicked) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Submit for review")
-                }
-            }
+    val primaryAction = state.primaryAction ?: return
+    val secondaryAction = state.secondaryAction
+
+    if (secondaryAction == null) {
+        Button(
+            onClick = { onEvent(primaryAction.toEvent()) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(primaryAction.label)
         }
-
-        is ProductEditorPhase.Rejected -> {
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedButton(
+                onClick = { onEvent(secondaryAction.toEvent()) },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(secondaryAction.label)
+            }
             Button(
-                onClick = { onEvent(ProductEditorEvent.ResubmitClicked) },
-                modifier = Modifier.fillMaxWidth(),
+                onClick = { onEvent(primaryAction.toEvent()) },
+                modifier = Modifier.weight(1f),
             ) {
-                Text("Resubmit for review")
-            }
-        }
-
-        ProductEditorPhase.Approved -> {
-            Button(
-                onClick = { onEvent(ProductEditorEvent.PublishClicked) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Publish")
-            }
-        }
-
-        is ProductEditorPhase.Published -> {
-            Button(
-                onClick = { onEvent(ProductEditorEvent.DoneClicked) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Done")
-            }
-        }
-
-        ProductEditorPhase.SavingDraft,
-        ProductEditorPhase.ImageUploadInProgress,
-        is ProductEditorPhase.ReviewSubmissionInProgress,
-        ProductEditorPhase.PublishInProgress -> {
-            Button(
-                enabled = false,
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Processing...")
+                Text(primaryAction.label)
             }
         }
     }
 }
 
-private fun ProductEditorState.statusText(): String {
-    return when (phase) {
-        ProductEditorPhase.EditingDraft -> "Editing draft"
-        ProductEditorPhase.SavingDraft -> "Saving draft"
-        ProductEditorPhase.DraftSaved -> "Draft saved"
-        ProductEditorPhase.ImageUploadInProgress -> "Uploading mock images"
-        is ProductEditorPhase.ReviewSubmissionInProgress -> "Submitting for review"
-        is ProductEditorPhase.Rejected -> "Review rejected"
-        ProductEditorPhase.Approved -> "Review approved"
-        ProductEditorPhase.PublishInProgress -> "Publishing product"
-        is ProductEditorPhase.Published -> "Product published"
+private val ProductEditorPrimaryAction.label: String
+    get() = when (this) {
+        ProductEditorPrimaryAction.SubmitForReview -> "Submit for review"
+        ProductEditorPrimaryAction.ResubmitForReview -> "Resubmit for review"
+        ProductEditorPrimaryAction.Publish -> "Publish"
+        ProductEditorPrimaryAction.Done -> "Done"
+    }
+
+private val ProductEditorSecondaryAction.label: String
+    get() = when (this) {
+        ProductEditorSecondaryAction.SaveDraft -> "Save draft"
+        ProductEditorSecondaryAction.ContinueEditing -> "Continue editing"
+    }
+
+private fun ProductEditorPrimaryAction.toEvent(): ProductEditorEvent {
+    return when (this) {
+        ProductEditorPrimaryAction.SubmitForReview -> ProductEditorEvent.SubmitClicked
+        ProductEditorPrimaryAction.ResubmitForReview -> ProductEditorEvent.ResubmitClicked
+        ProductEditorPrimaryAction.Publish -> ProductEditorEvent.PublishClicked
+        ProductEditorPrimaryAction.Done -> ProductEditorEvent.DoneClicked
+    }
+}
+
+private fun ProductEditorSecondaryAction.toEvent(): ProductEditorEvent {
+    return when (this) {
+        ProductEditorSecondaryAction.SaveDraft -> ProductEditorEvent.SaveDraftClicked
+        ProductEditorSecondaryAction.ContinueEditing -> ProductEditorEvent.ContinueEditingClicked
     }
 }

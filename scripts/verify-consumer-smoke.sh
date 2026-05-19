@@ -12,4 +12,5 @@ if [[ -z "${ANDROID_HOME:-}" && -f "$ROOT_DIR/local.properties" ]]; then
 fi
 
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal "${GRADLE_ARGS[@]}"
-"$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" :app:compileDebugKotlin "${GRADLE_ARGS[@]}"
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" publishToMavenLocal "${GRADLE_ARGS[@]}"
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" :app:compileDebugKotlin :app:generateAfsmMmd "${GRADLE_ARGS[@]}"

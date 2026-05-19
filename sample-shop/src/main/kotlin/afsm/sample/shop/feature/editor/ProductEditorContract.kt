@@ -58,6 +58,31 @@ sealed interface ProductEditorPhase {
     ) : ProductEditorPhase
 }
 
+data class ProductEditorRenderState(
+    val form: ProductDraftForm,
+    val statusText: String,
+    val showDraftFields: Boolean = true,
+    val fieldsEnabled: Boolean,
+    val isProcessing: Boolean,
+    val primaryAction: ProductEditorPrimaryAction? = null,
+    val secondaryAction: ProductEditorSecondaryAction? = null,
+    val reviewNote: String? = null,
+    val publishedTitle: String? = null,
+    val errorMessage: String? = null,
+)
+
+enum class ProductEditorPrimaryAction {
+    SubmitForReview,
+    ResubmitForReview,
+    Publish,
+    Done,
+}
+
+enum class ProductEditorSecondaryAction {
+    SaveDraft,
+    ContinueEditing,
+}
+
 sealed interface ProductEditorEvent {
     data class TitleChanged(val value: String) : ProductEditorEvent
 
@@ -116,6 +141,92 @@ fun ProductEditorState.draftOrNull(): ProductDraft? {
     return when (phase) {
         is ProductEditorPhase.Published -> null
         else -> context.draft
+    }
+}
+
+fun ProductEditorState.toRenderState(): ProductEditorRenderState {
+    val draft = draftOrNull()
+    val form = draft?.form ?: ProductDraftForm()
+
+    return when (val currentPhase = phase) {
+        ProductEditorPhase.EditingDraft -> ProductEditorRenderState(
+            form = form,
+            statusText = "Editing draft",
+            fieldsEnabled = true,
+            isProcessing = false,
+            primaryAction = ProductEditorPrimaryAction.SubmitForReview,
+            secondaryAction = ProductEditorSecondaryAction.SaveDraft,
+            errorMessage = context.errorMessage,
+        )
+
+        ProductEditorPhase.SavingDraft -> ProductEditorRenderState(
+            form = form,
+            statusText = "Saving draft",
+            fieldsEnabled = false,
+            isProcessing = true,
+        )
+
+        ProductEditorPhase.DraftSaved -> ProductEditorRenderState(
+            form = form,
+            statusText = "Draft saved",
+            fieldsEnabled = false,
+            isProcessing = false,
+            primaryAction = ProductEditorPrimaryAction.SubmitForReview,
+            secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
+            errorMessage = context.errorMessage,
+        )
+
+        ProductEditorPhase.ImageUploadInProgress -> ProductEditorRenderState(
+            form = form,
+            statusText = "Uploading mock images",
+            fieldsEnabled = false,
+            isProcessing = true,
+        )
+
+        is ProductEditorPhase.ReviewSubmissionInProgress -> ProductEditorRenderState(
+            form = form,
+            statusText = "Submitting for review",
+            fieldsEnabled = false,
+            isProcessing = true,
+        )
+
+        is ProductEditorPhase.Rejected -> ProductEditorRenderState(
+            form = form,
+            statusText = "Review rejected",
+            fieldsEnabled = true,
+            isProcessing = false,
+            primaryAction = ProductEditorPrimaryAction.ResubmitForReview,
+            secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
+            reviewNote = currentPhase.reason,
+            errorMessage = context.errorMessage,
+        )
+
+        ProductEditorPhase.Approved -> ProductEditorRenderState(
+            form = form,
+            statusText = "Review approved",
+            fieldsEnabled = false,
+            isProcessing = false,
+            primaryAction = ProductEditorPrimaryAction.Publish,
+            secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
+            errorMessage = context.errorMessage,
+        )
+
+        ProductEditorPhase.PublishInProgress -> ProductEditorRenderState(
+            form = form,
+            statusText = "Publishing product",
+            fieldsEnabled = false,
+            isProcessing = true,
+        )
+
+        is ProductEditorPhase.Published -> ProductEditorRenderState(
+            form = form,
+            statusText = "Product published",
+            showDraftFields = false,
+            fieldsEnabled = false,
+            isProcessing = false,
+            primaryAction = ProductEditorPrimaryAction.Done,
+            publishedTitle = currentPhase.title,
+        )
     }
 }
 
