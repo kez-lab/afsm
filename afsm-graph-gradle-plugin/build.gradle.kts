@@ -12,7 +12,9 @@ kotlin {
 }
 
 dependencies {
-    compileOnly("com.android.tools.build:gradle:8.10.1")
+    testImplementation(gradleTestKit())
+    testImplementation(kotlin("test-junit"))
+    testImplementation("junit:junit:4.13.2")
 }
 
 gradlePlugin {

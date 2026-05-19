@@ -865,3 +865,29 @@ Consequences:
   to events at the screen boundary.
 - State-machine tests now include a render-state mapping assertion for the
   rejected review state.
+
+## [2026-05-19] Harden graph tooling through executable fixtures
+
+Decision: Treat graph generation trust as an executable contract covered by KSP
+functional tests and Gradle plugin TestKit fixtures, not only by sample app
+happy paths.
+
+Rationale:
+
+- Six Android-developer reviewers found that external adoption risk now sits in
+  incorrect annotation use, generated registry drift, Gradle classloader issues,
+  and graph export task behavior.
+- KSP validation is user-facing because it determines whether `@AfsmGraph`
+  mistakes fail at compile time with useful messages.
+- The Gradle plugin must not change ordinary Android unit-test behavior just to
+  support graph export.
+
+Consequences:
+
+- `afsm-graph-ksp:test` now runs real Kotlin/KSP fixture builds for valid and
+  invalid graph sources.
+- `afsm-graph-gradle-plugin:test` now runs Android app/library fixture builds
+  through Gradle TestKit.
+- `generateAfsmMmd` loads the generated registry reflectively and fails clearly
+  only when the graph export task is run without graph sources.
+- Normal Android unit-test tasks exclude the generated graph export test.

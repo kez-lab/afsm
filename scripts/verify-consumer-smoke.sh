@@ -14,3 +14,24 @@ fi
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal "${GRADLE_ARGS[@]}"
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" publishToMavenLocal "${GRADLE_ARGS[@]}"
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" :app:compileDebugKotlin :app:generateAfsmMmd "${GRADLE_ARGS[@]}"
+
+MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/ConsumerSmoke.mmd"
+if [[ ! -f "$MMD_FILE" ]]; then
+  echo "Missing consumer smoke Afsm graph: $MMD_FILE" >&2
+  exit 1
+fi
+
+if ! head -n 1 "$MMD_FILE" | grep -q '^stateDiagram-v2$'; then
+  echo "Invalid consumer smoke Afsm graph header: $MMD_FILE" >&2
+  exit 1
+fi
+
+if ! grep -q '^  Editing --> Saving: SaveClicked$' "$MMD_FILE"; then
+  echo "Missing consumer smoke Afsm graph transition: Editing --> Saving: SaveClicked" >&2
+  exit 1
+fi
+
+if ! grep -q '^  Saving --> Saved: Saved$' "$MMD_FILE"; then
+  echo "Missing consumer smoke Afsm graph transition: Saving --> Saved: Saved" >&2
+  exit 1
+fi

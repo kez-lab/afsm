@@ -17,11 +17,13 @@ java {
 dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:2.0.21-1.0.28")
 
+    testImplementation(gradleTestKit())
     testImplementation(kotlin("test-junit5"))
 }
 
 tasks.test {
     useJUnitPlatform()
+    dependsOn(":afsm-core:jar", "jar")
 }
 
 publishing {

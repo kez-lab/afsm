@@ -253,30 +253,7 @@ Afsm graph fileName must end with .mmd.
 
 ## Gradle Integration
 
-There are two phases.
-
-### MVP: Registry + Existing Generate Task
-
-The first implementation spike can keep the existing `generateAfsmMmd` task shape but remove ProductEditor-specific knowledge.
-
-Current ProductEditor-only behavior:
-
-```text
-generateAfsmMmd
--> ProductEditorStateMachine.topology.toMmd()
-```
-
-Target registry behavior:
-
-```text
-generateAfsmMmd
--> AfsmGeneratedGraphRegistry.entries
--> write every entry as .mmd
-```
-
-For Android modules, the simplest early proof can run through the unit-test runtime, because it already has access to compiled app classes.
-
-### Gradle Plugin
+### Current: Gradle Plugin
 
 The first `afsm-graph-gradle-plugin` slice now exists as an included build for
 repo-local use and as a Maven Local Gradle plugin for consumer smoke tests.
@@ -294,20 +271,40 @@ afsmGraph {
 }
 ```
 
-The plugin should:
+The plugin:
 
 - add the KSP processor by default when the `ksp` configuration exists,
-- generate an app-module unit test that imports `AfsmGeneratedGraphRegistry`,
+- generate an Android unit-test source that loads `AfsmGeneratedGraphRegistry`
+  at runtime,
 - register `generateAfsmMmd` as the user-facing task,
 - wire generated test sources into the selected Android unit-test variant,
+- exclude the generated graph export test from the ordinary Android unit-test
+  task,
 - support Android app/library modules,
 - publish to Maven Local for external consumer verification.
+
+### Superseded Spike: Registry + Existing Generate Task
+
+The earlier proof removed ProductEditor-specific knowledge from a handwritten
+task:
+
+```text
+generateAfsmMmd
+-> ProductEditorStateMachine.topology.toMmd()
+```
+
+That spike has been replaced by the plugin-driven flow:
+
+```text
+generateAfsmMmd
+-> AfsmGeneratedGraphRegistry.entries
+-> write every entry as .mmd
+```
 
 Deferred plugin work:
 
 - multi-variant output,
 - multi-module aggregation,
-- first-class plugin functional tests,
 - graph API/module split decisions.
 
 ## Module Layout
@@ -366,11 +363,13 @@ Implementation status:
 - Done: `generateAfsmMmd` no longer references ProductEditor directly.
 - Done: `generateAfsmMmd` writes `AuthStateMachine.mmd`, `CheckoutStateMachine.mmd`, and `ProductEditorStateMachine.mmd`.
 - Done: adding additional real annotated `StateMachine` objects writes additional `.mmd` files.
-- Open: invalid annotated classes should fail compilation with useful messages in processor tests.
+- Done: invalid annotated classes fail compilation with useful messages in processor functional tests.
 - Done: `io.github.afsm.graph` removes app-maintained export test boilerplate.
 - Done: `consumer-smoke` applies the published graph Gradle plugin and generates `.mmd` output from Maven Local artifacts.
 - Done: no explanatory markdown is generated as graph output.
 - Done: graph `fileName` values must be safe relative `.mmd` paths; absolute paths, traversal segments, empty segments, and non-`.mmd` files are rejected by both the KSP processor and runtime writer.
+- Done: KSP processor functional tests cover valid object/default-arg class registry generation, non-machine annotations, required constructor parameters, unsafe file names, and duplicate ids/file names.
+- Done: Gradle plugin functional tests cover Android app/library modules, KSP-missing failure messaging, normal unit-test separation from graph export, and no-registry `generateAfsmMmd` failure messaging.
 
 Initial test targets:
 

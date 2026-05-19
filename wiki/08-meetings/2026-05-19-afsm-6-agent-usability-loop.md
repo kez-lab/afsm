@@ -128,3 +128,47 @@ The next strongest hardening target is graph tooling verification: add processor
 compile tests for invalid annotations and duplicate ids, then add a Gradle
 plugin functional test that proves the generated export test/task in a fixture
 Android module.
+
+## Fourth Review Findings
+
+Six Android-developer reviewers focused on whether the first graph plugin slice
+was trustworthy enough for external Android projects.
+
+Accepted findings:
+
+- KSP generation needed executable coverage, not only string utility tests.
+- The graph plugin needed real Android app/library fixture tests because
+  `afsm-graph-gradle-plugin:test` previously had little functional value.
+- `generateAfsmMmd` must stay separate from normal `testDebugUnitTest`; users
+  should not see graph export behavior during ordinary unit tests.
+- Applying the graph plugin before adding any `@AfsmGraph` source should not
+  break normal unit tests. Running `generateAfsmMmd` in that state should fail
+  with a clear message.
+- Consumer smoke should verify the generated `.mmd` file, not only that the
+  task ran.
+
+Deferred findings:
+
+- Multi-flavor/variant examples remain documentation work after the single
+  variant path is stable.
+- Plugin/processor version synchronization needs a release-policy decision
+  before remote Maven publication.
+- Dedicated graph source sets could further reduce test dependency mixing, but
+  they are not necessary for the current internal beta gate.
+
+## Fourth Round Implemented Changes
+
+- Added KSP functional tests that run a real Kotlin/KSP fixture and verify
+  registry generation for object and no-required-arg class machines.
+- Added KSP failure fixtures for invalid graph sources, required constructor
+  parameters, unsafe file names, duplicate ids, and duplicate file names.
+- Added Gradle TestKit functional tests for Android app and library modules.
+- Removed runtime AGP type references from the graph plugin so TestKit and
+  consumer builds do not depend on AGP classes being visible in the plugin
+  classloader.
+- Changed the generated export test to load the registry reflectively. Normal
+  unit tests can compile before any `@AfsmGraph` exists; `generateAfsmMmd`
+  fails clearly if no registry was generated.
+- Excluded the generated export test from the normal Android unit-test task.
+- Added consumer-smoke shell validation that `ConsumerSmoke.mmd` exists and
+  starts with `stateDiagram-v2`, including representative transition lines.

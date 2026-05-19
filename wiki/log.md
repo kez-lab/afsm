@@ -449,3 +449,9 @@
 - Source: follow-up six-agent usability review finding that `.mmd` generation still required app-owned export wiring and ProductEditor exposed internal FSM phase details to Compose.
 - Action: Added `io.github.afsm.graph` Gradle plugin, migrated `sample-shop` and `consumer-smoke` graph generation to the plugin, added ProductEditor render-state mapping, and refreshed public docs/wiki.
 - Updated: `afsm-graph-gradle-plugin/`, `settings.gradle.kts`, `sample-shop/build.gradle.kts`, `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/`, `consumer-smoke/`, `scripts/verify-release-local.sh`, `scripts/verify-consumer-smoke.sh`, `README.md`, `CHANGELOG.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-19] implementation | Graph tooling verification hardening
+
+- Source: fourth six-agent usability review after graph Gradle plugin introduction.
+- Action: Added KSP processor functional tests, graph Gradle plugin TestKit functional tests, normal unit-test/export-test separation, no-registry failure messaging, and consumer-smoke `.mmd` file assertions.
+- Updated: `afsm-graph-ksp/`, `afsm-graph-gradle-plugin/`, `scripts/verify-consumer-smoke.sh`, `docs/graph-generation.md`, `docs/release-readiness.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-ksp-mmd-generation.md`, `wiki/06-project/implementation-log.md`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/log.md`.

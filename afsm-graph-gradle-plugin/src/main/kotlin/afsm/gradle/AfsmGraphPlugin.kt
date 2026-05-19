@@ -1,7 +1,5 @@
 package afsm.gradle
 
-import com.android.build.api.dsl.ApplicationExtension
-import com.android.build.api.dsl.LibraryExtension
 import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -11,6 +9,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.Test
@@ -60,17 +59,11 @@ public class AfsmGraphPlugin : Plugin<Project> {
         )
 
         project.pluginManager.withPlugin("com.android.application") {
-            val android = project.extensions.getByType(ApplicationExtension::class.java)
-            android.sourceSets.getByName("test").java.srcDir(
-                generatedTest.flatMap { it.outputDir },
-            )
+            project.addGeneratedTestSource(generatedTest)
         }
 
         project.pluginManager.withPlugin("com.android.library") {
-            val android = project.extensions.getByType(LibraryExtension::class.java)
-            android.sourceSets.getByName("test").java.srcDir(
-                generatedTest.flatMap { it.outputDir },
-            )
+            project.addGeneratedTestSource(generatedTest)
         }
 
         val generateMmd = project.tasks.register(
@@ -81,6 +74,7 @@ public class AfsmGraphPlugin : Plugin<Project> {
                 task.description = "Generates Afsm state machine .mmd graph files."
                 task.outputs.dir(extension.outputDir)
                 task.include("afsm/generated/AfsmGeneratedMmdExportTest.class")
+                task.testLogging.showStandardStreams = true
                 task.doFirst {
                     task.systemProperty(
                         "afsm.mmd.outputDir",
@@ -125,6 +119,11 @@ public class AfsmGraphPlugin : Plugin<Project> {
             )
 
             val unitTestTask = project.tasks.named(testTaskName, Test::class.java)
+            unitTestTask.configure(
+                Action<Test> { task ->
+                    task.exclude("afsm/generated/AfsmGeneratedMmdExportTest.class")
+                },
+            )
             generateMmd.configure(
                 Action<Test> { task ->
                     task.dependsOn(compileKotlinTaskName)
@@ -135,6 +134,36 @@ public class AfsmGraphPlugin : Plugin<Project> {
                 },
             )
         }
+    }
+
+    private fun Project.addGeneratedTestSource(
+        generatedTest: TaskProvider<GenerateAfsmMmdExportTestTask>,
+    ) {
+        extensions.configure(
+            "android",
+            Action<Any> { android ->
+                val sourceSets = android.callNoArg("getSourceSets")
+                val testSourceSet = sourceSets.call("getByName", "test")
+                val javaSources = testSourceSet.callNoArg("getJava")
+                javaSources.call("srcDir", generatedTest.flatMap { it.outputDir })
+            },
+        )
+    }
+
+    private fun Any.callNoArg(methodName: String): Any {
+        return call(methodName)
+    }
+
+    private fun Any.call(
+        methodName: String,
+        vararg args: Any,
+    ): Any {
+        val method = javaClass.methods.firstOrNull { method ->
+            method.name == methodName && method.parameterTypes.size == args.size
+        } ?: error("Afsm graph plugin could not call $methodName on ${javaClass.name}.")
+
+        return method.invoke(this, *args)
+            ?: error("Afsm graph plugin expected $methodName on ${javaClass.name} to return a value.")
     }
 }
 
@@ -155,6 +184,7 @@ public abstract class GenerateAfsmMmdExportTestTask : DefaultTask() {
 
             import afsm.core.AfsmMmdOptions
             import afsm.core.AfsmMmdWriter
+            import afsm.core.AfsmGraphRegistry
             import java.io.File
             import org.junit.Assert.assertTrue
             import org.junit.Test
@@ -166,19 +196,20 @@ public abstract class GenerateAfsmMmdExportTestTask : DefaultTask() {
                         System.getProperty("afsm.mmd.outputDir")
                             ?: "build/generated/afsm/mmd",
                     )
+                    val registry = generatedRegistry()
 
                     AfsmMmdWriter.writeAll(
-                        registry = AfsmGeneratedGraphRegistry,
+                        registry = registry,
                         outputDir = outputDir,
                         options = AfsmMmdOptions.Flow,
                     )
 
                     assertTrue(
                         "No Afsm graph entries were registered.",
-                        AfsmGeneratedGraphRegistry.entries.isNotEmpty(),
+                        registry.entries.isNotEmpty(),
                     )
 
-                    AfsmGeneratedGraphRegistry.entries.forEach { entry ->
+                    registry.entries.forEach { entry ->
                         val graphFile = outputDir.resolve(entry.fileName)
                         assertTrue(
                             "Missing Afsm graph file: ${'$'}{entry.fileName}",
@@ -189,6 +220,26 @@ public abstract class GenerateAfsmMmdExportTestTask : DefaultTask() {
                             graphFile.readText().startsWith("stateDiagram-v2"),
                         )
                     }
+                }
+
+                private fun generatedRegistry(): AfsmGraphRegistry {
+                    val registryClass = try {
+                        Class.forName("afsm.generated.AfsmGeneratedGraphRegistry")
+                    } catch (error: ClassNotFoundException) {
+                        val message =
+                            "No Afsm graph registry was generated. Add @AfsmGraph to at least one Afsm graph source, or run normal unit tests instead of generateAfsmMmd."
+                        System.err.println(message)
+                        throw AssertionError(
+                            message,
+                            error,
+                        )
+                    }
+
+                    val instance = registryClass.getField("INSTANCE").get(null)
+                    return instance as? AfsmGraphRegistry
+                        ?: throw AssertionError(
+                            "AfsmGeneratedGraphRegistry does not implement AfsmGraphRegistry.",
+                        )
                 }
             }
             """.trimIndent(),

@@ -17,6 +17,11 @@ What this proves:
 - Android ViewModel helper compiles and passes unit tests.
 - Compose effect helper compiles.
 - The sample app compiles and exports `.mmd` graphs from real annotated machines.
+- Graph KSP processor functional tests cover registry generation and invalid
+  annotation diagnostics.
+- Graph Gradle plugin functional tests cover Android app/library fixture usage,
+  KSP-missing setup errors, ordinary unit-test separation, and no-registry graph
+  generation failures.
 - Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
@@ -122,7 +127,7 @@ Current generated POMs contain:
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
 | `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |
-| `afsm-graph-gradle-plugin` | Gradle plugin marker + `jar` | Gradle API / AGP compile-only | Yes |
+| `afsm-graph-gradle-plugin` | Gradle plugin marker + `jar` | Gradle API | Yes |
 
 Current generated POMs do not yet contain:
 
@@ -147,6 +152,9 @@ Required product decisions:
 Required engineering gates:
 
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
+- Define how the graph Gradle plugin keeps its default
+  `afsm-graph-ksp` processor dependency version synchronized with the plugin
+  version.
 - Keep `consumer-smoke` green after every publication metadata change.
 - Keep `.github/workflows/ci.yml` aligned with `./scripts/verify-release-local.sh`.
 - Keep `CONTRIBUTING.md` aligned with the current release gate and test policy.

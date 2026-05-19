@@ -140,7 +140,7 @@ build/generated/afsm/graph-test/kotlin/afsm/generated/AfsmGeneratedMmdExportTest
 
 The generated test:
 
-- imports the KSP-generated `AfsmGeneratedGraphRegistry`,
+- loads the KSP-generated `AfsmGeneratedGraphRegistry` at runtime,
 - calls `AfsmMmdWriter.writeAll(...)`,
 - asserts that the registry is not empty,
 - asserts that every registered `.mmd` file exists.
@@ -150,12 +150,15 @@ This replaces app-maintained copy-paste export tests.
 `generateAfsmMmd` is a dedicated `Test` task that runs only the generated graph
 export test class. It reuses the selected Android unit-test variant classpath,
 but it does not run the app module's whole unit-test suite and does not force
-JUnit Platform on existing tests.
+JUnit Platform on existing tests. The ordinary Android unit-test task excludes
+the generated graph export test, so normal `testDebugUnitTest` runs are not
+turned into graph-generation runs.
 
 ## Troubleshooting
 
-- `Unresolved reference: AfsmGeneratedGraphRegistry`: check that the KSP plugin
-  is applied and that at least one machine is annotated with `@AfsmGraph`.
+- `No Afsm graph registry was generated`: check that at least one machine is
+  annotated with `@AfsmGraph`. Normal unit tests can still run before graphs
+  exist; this failure is specific to `generateAfsmMmd`.
 - `Afsm graph generation requires the com.google.devtools.ksp plugin`: apply
   `com.google.devtools.ksp`, or set `addProcessorDependency=false` and add the
   processor manually.

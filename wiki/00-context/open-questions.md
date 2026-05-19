@@ -52,7 +52,7 @@ Resolved:
 - How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
 - Should graph generation later support multi-variant and multi-module aggregation, or keep module-local `debug` output as the public MVP?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
-- Should external MMD generation ship as a Gradle plugin, a documented task template, or a simple runtime writer API first?
+- How should the graph Gradle plugin keep its default KSP processor dependency version synchronized with the plugin version for remote releases?
 - How should command-result event overflow be handled when the event queue is full: fail the command, reserve internal capacity, split command-result queues, or introduce a policy?
 - What exact restoration policy should be documented for phases whose `onEnter` would normally start non-idempotent work?
 
@@ -114,3 +114,5 @@ Resolved:
 - Default effect delivery has no replay; late collectors do not receive old one-shot effects.
 - Restoration/effect/command policy is documented in `docs/restoration-effect-command-policy.md`; implementation helpers remain future work.
 - KSP `.mmd` generation now ships through the first `io.github.afsm.graph` Gradle plugin slice; the plugin generates the export test and registers `generateAfsmMmd`.
+- KSP processor functional tests and Gradle plugin functional tests now cover the first graph-tooling hardening pass.
+- External `.mmd` generation ships first as the `io.github.afsm.graph` Gradle plugin; the documented task-template approach is superseded.

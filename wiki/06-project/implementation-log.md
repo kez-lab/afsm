@@ -1212,3 +1212,37 @@ Conclusion:
   force JUnit Platform on existing Android tests.
 - The next graph hardening target is processor compile-testing and plugin
   functional tests.
+
+## [2026-05-19] Graph tooling verification hardening
+
+Change:
+
+- Ran a fourth six-agent Android developer review round focused on graph
+  plugin/KSP trustworthiness.
+- Added `afsm-graph-ksp` functional tests that run a real Kotlin/KSP fixture
+  and verify generated registry output plus invalid annotation diagnostics.
+- Added `afsm-graph-gradle-plugin` TestKit functional tests for Android
+  app/library modules, missing KSP plugin messaging, normal unit-test
+  separation, and no-registry `generateAfsmMmd` messaging.
+- Removed direct AGP DSL type references from the graph Gradle plugin to avoid
+  plugin classloader fragility.
+- Made the generated graph export test reflection-based, excluded it from
+  ordinary Android unit-test execution, and kept graph generation behind the
+  dedicated `generateAfsmMmd` task.
+- Updated consumer smoke to assert the generated `.mmd` file exists, starts
+  with `stateDiagram-v2`, and contains representative transition lines.
+
+Verification:
+
+```bash
+./gradlew :afsm-graph-ksp:test --warning-mode all --no-daemon
+./gradlew -p afsm-graph-gradle-plugin test --warning-mode all --no-daemon
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Graph generation now has executable coverage for both processor contracts and
+  Gradle plugin UX.
+- The next graph-tooling work should focus on multi-variant/multi-module policy
+  rather than adding more public API.
