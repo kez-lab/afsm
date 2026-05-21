@@ -49,10 +49,8 @@ private fun smokeMachine(): SmokeMachine {
 
         state(SmokePhase.Editing) {
             on<SmokeEvent.TitleChanged> {
-                stay {
-                    updateContext {
-                        copy(title = event.value)
-                    }
+                updateContext { context, event ->
+                    context.copy(title = event.value)
                 }
             }
 

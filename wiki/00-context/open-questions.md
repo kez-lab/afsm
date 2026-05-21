@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-20
+updated: 2026-05-21
 ---
 
 # Open Questions
@@ -84,7 +84,7 @@ Resolved:
 - Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
 - `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
-- The DSL includes flat `onExit`; transition execution order is `onExit -> transition block -> onEnter` for phase-changing transitions.
+- The DSL includes flat `onExit`; transition execution order is `onExit -> case actions -> onEnter` for phase-changing transitions.
 - Initial state construction does not run `onEnter`; startup work should be triggered by an explicit event such as `ScreenEntered` or by a future dedicated `initialTransition` API if needed.
 - `AfsmHost` command-handler exceptions use `AfsmCommandFailurePolicy`: `Throw` by default for programmer errors, `Record` when a resilient host should log and continue. `CancellationException` is always rethrown.
 - MVP commands are not automatically cancelled by later events. Cancellation is explicit through feature commands/events, while future invoked-service support can add structured cancellation semantics.
@@ -119,3 +119,4 @@ Resolved:
 - The graph Gradle plugin default `afsm-graph-ksp` processor dependency is generated from the shared Afsm version and covered by a plugin functional test.
 - `consumer-smoke` consumes the root `afsmVersion` through `-PafsmVersion=...`, so version bumps verify the current Maven Local artifacts instead of stale coordinates.
 - Command-result event overflow now fails fast with `AfsmEventQueueOverflowException` when a full bounded event queue rejects a command result event. Closed-host command results are dropped and logged as lifecycle completion.
+- Public DSL onboarding should now prefer named `case(...)` blocks, direct context updates, and `transitionTo` as phase change only. DSL-level `stay(...)` and `otherwise(...)` were removed from source; remaining historical docs should be treated as superseded context.

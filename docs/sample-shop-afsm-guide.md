@@ -135,15 +135,15 @@ Policy:
 - `ProductEditorState.toRenderState()` maps internal phases to ordinary Compose render data so `ProductEditorScreen` does not branch on `ProductEditorPhase`.
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
-- Event branches are declared with `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
 - ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to context transformations so graph-relevant flow remains visible.
-- Validation failure is modeled as a stayed handled branch with `otherwise`, not as a second competing `transitionTo`.
+- Validation failure is modeled as a no-transition `case(label = "invalid ...")` that updates context, not as a second competing `transitionTo`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - The `io.github.afsm.graph` Gradle plugin generates the export test and registers `./gradlew :sample-shop:generateAfsmMmd`.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
-- Text changes inside `EditingDraft` and `Rejected` are stayed branches that update context with `updateContext`.
+- Text changes inside `EditingDraft` and `Rejected` are no-transition handlers that update context with `updateContext { context, event -> ... }`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.

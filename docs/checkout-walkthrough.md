@@ -139,12 +139,16 @@ data class PaymentFailed(val requestId: Long, val message: String)
 Only matching results are accepted:
 
 ```kotlin
-transitionTo<CheckoutPhase.Completed>(
-    phase = { CheckoutPhase.Completed(orderId = event.receipt.orderId) },
-    guardLabel = "matching request",
-    guard = { phase.requestId == event.requestId },
+case(
+    label = "matching request",
+    condition = { phase.requestId == event.requestId },
 ) {
-    effect(CheckoutEffect.PaymentCompleted(event.receipt.orderId))
+    effect(label = "PaymentCompleted") {
+        CheckoutEffect.PaymentCompleted(event.receipt.orderId)
+    }
+    transitionTo<CheckoutPhase.Completed> {
+        CheckoutPhase.Completed(orderId = event.receipt.orderId)
+    }
 }
 
 ignore(

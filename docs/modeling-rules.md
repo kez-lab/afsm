@@ -62,7 +62,7 @@ escape hatch, not the primary onboarding style.
 | Emit command from | Use when |
 |---|---|
 | `onEnter` | work starts because a phase was entered |
-| transition block | work belongs to one specific edge |
+| `case(...)` | work belongs to one specific event branch |
 | `onExit` | cleanup/cancel work belongs to leaving a phase |
 
 Example: entering `ImageUploadInProgress` can emit `StartImageUpload` from

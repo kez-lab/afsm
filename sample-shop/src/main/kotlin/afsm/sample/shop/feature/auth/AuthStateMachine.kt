@@ -21,95 +21,90 @@ private fun authMachine(): AuthMachine {
 
         state(AuthPhase.Editing) {
             on<AuthEvent.ModeChanged> {
-                stay {
-                    updateContext {
-                        copy(
-                            mode = event.mode,
-                            errorMessage = null,
-                        )
-                    }
+                updateContext { context, event ->
+                    context.copy(
+                        mode = event.mode,
+                        errorMessage = null,
+                    )
                 }
             }
 
             on<AuthEvent.NameChanged> {
-                stay {
-                    updateContext {
-                        copy(
-                            form = form.copy(name = event.value),
-                            errorMessage = null,
-                        )
-                    }
+                updateContext { context, event ->
+                    context.copy(
+                        form = context.form.copy(name = event.value),
+                        errorMessage = null,
+                    )
                 }
             }
 
             on<AuthEvent.EmailChanged> {
-                stay {
-                    updateContext {
-                        copy(
-                            form = form.copy(email = event.value),
-                            errorMessage = null,
-                        )
-                    }
+                updateContext { context, event ->
+                    context.copy(
+                        form = context.form.copy(email = event.value),
+                        errorMessage = null,
+                    )
                 }
             }
 
             on<AuthEvent.PasswordChanged> {
-                stay {
-                    updateContext {
-                        copy(
-                            form = form.copy(password = event.value),
-                            errorMessage = null,
-                        )
-                    }
+                updateContext { context, event ->
+                    context.copy(
+                        form = context.form.copy(password = event.value),
+                        errorMessage = null,
+                    )
                 }
             }
 
             on<AuthEvent.SubmitClicked> {
-                transitionTo(
-                    phase = AuthPhase.Submitting,
-                    guardLabel = "login form",
-                    commandLabels = listOf("Login"),
-                    guard = { context.canSubmitLogin() },
+                case(
+                    label = "login form",
+                    condition = { context.canSubmitLogin() },
                 ) {
-                    val normalized = context.normalized()
                     updateContext {
+                        val normalized = normalized()
                         normalized.copy(
                             errorMessage = null,
                         )
                     }
-                    command(
+                    command(label = "Login") {
+                        val normalized = context.normalized()
                         AuthCommand.Login(
                             email = normalized.form.email,
                             password = normalized.form.password,
-                        ),
-                    )
+                        )
+                    }
+                    transitionTo(AuthPhase.Submitting)
                 }
 
-                transitionTo(
-                    phase = AuthPhase.Submitting,
-                    guardLabel = "register form",
-                    commandLabels = listOf("Register"),
-                    guard = { context.canSubmitRegister() },
+                case(
+                    label = "register form",
+                    condition = { context.canSubmitRegister() },
                 ) {
-                    val normalized = context.normalized()
                     updateContext {
+                        val normalized = normalized()
                         normalized.copy(
                             errorMessage = null,
                         )
                     }
-                    command(
+                    command(label = "Register") {
+                        val normalized = context.normalized()
                         AuthCommand.Register(
                             name = normalized.form.name,
                             email = normalized.form.email,
                             password = normalized.form.password,
-                        ),
-                    )
+                        )
+                    }
+                    transitionTo(AuthPhase.Submitting)
                 }
 
-                otherwise(label = "invalid form") {
+                case(label = "invalid form") {
                     updateContext {
                         val normalized = normalized()
-                        normalized.copy(errorMessage = normalized.submitError())
+                        copy(
+                            form = normalized.form,
+                            errorMessage = normalized.submitError(),
+                        )
                     }
                 }
             }
@@ -125,26 +120,25 @@ private fun authMachine(): AuthMachine {
 
         state(AuthPhase.Submitting) {
             on<AuthEvent.AuthSucceeded> {
-                transitionTo<AuthPhase.Authenticated>(
-                    phase = {
-                        AuthPhase.Authenticated(
-                            session = event.session,
-                        )
-                    },
-                    effectLabels = listOf("OpenCatalog"),
-                ) {
+                case {
                     updateContext {
                         AuthContext()
                     }
-                    effect(AuthEffect.OpenCatalog)
+                    effect(label = "OpenCatalog") { AuthEffect.OpenCatalog }
+                    transitionTo<AuthPhase.Authenticated> {
+                        AuthPhase.Authenticated(
+                            session = event.session,
+                        )
+                    }
                 }
             }
 
             on<AuthEvent.AuthFailed> {
-                transitionTo(AuthPhase.Editing) {
-                    updateContext {
-                        copy(errorMessage = event.message)
+                case {
+                    updateContext { context, event ->
+                        context.copy(errorMessage = event.message)
                     }
+                    transitionTo(AuthPhase.Editing)
                 }
             }
 

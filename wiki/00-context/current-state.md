@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-20
+updated: 2026-05-21
 ---
 
 # Current State
@@ -28,13 +28,13 @@ The current direction is:
 - Auth now uses the executable DSL directly with `typealias AuthState = AfsmState<AuthPhase, AuthContext>`.
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
-- The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
+- The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, named `case`, phase-only `transitionTo`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
 - Afsm DSL public KDoc now explains phase/context/event/command/effect type parameters, runtime parameters, topology-only metadata parameters, guard behavior, branch ordering, and entry/exit execution order.
 - `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract, `AfsmMachine<S, E, C, F>` as the graphable feature-boundary machine, and `AfsmPhaseMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
 - The pre-release `AfsmGraphReducer` name was removed from the public API before release docs; new graphable code should use `AfsmMachine<State, Event, Command, Effect>`.
 - Deprecated pre-release aliases and the temporary `AfsmMachineAdapter` base were removed from the public source surface. New graphable code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmState`.
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, guard fallback, DSL build validation, and UI-side effect emission.
-- The executable DSL now exposes `AfsmPhaseMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)`.
+- The executable DSL now exposes `AfsmPhaseMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable named `case(...)` blocks and phase-only `transitionTo(...)`.
 - `AfsmState<P, Context>` is now the standard phase/context state value. `AfsmPhaseMachine` directly implements `AfsmMachine<AfsmState<P, Context>, ...>`.
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - Maven local publishing now works for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the `io.github.afsm.graph` Gradle plugin using `io.github.afsm:*:0.1.0-SNAPSHOT` pre-release coordinates.
@@ -82,6 +82,7 @@ The current direction is:
 - The project is now pushed to the private GitHub repository `kez-lab/afsm`. README has GitHub-facing status badges, a quickstart, and internal-beta positioning. `.github/workflows/ci.yml` runs the same local release gate on push, pull request, and manual dispatch.
 - A 2026-05-19 six-agent usability loop simplified first-use onboarding, added terminal-state `state(phase)` convenience, moved Auth to a render-state UI boundary, made Checkout primary UI actions explicit, documented ProductEditor transition execution order, added `docs/graph-generation.md`, and clarified the internal beta adoption contract.
 - The first graph Gradle plugin slice, KSP/Gradle functional verification, plugin/processor version synchronization, and external consumer version alignment are implemented. The remaining graph-tooling concerns are multi-variant/multi-module aggregation and eventual graph API/module-boundary decisions before broad external adoption.
+- A case-oriented DSL usability pass is in progress. New public event-branch helpers let examples use `case(label, condition = ...) { updateContext(...); transitionTo(...) }`, direct `updateContext(...)`, event-aware `updateContext { context, event -> ... }`, and `effect(label) { ... }`. Public examples should now treat `transitionTo` as phase change only and avoid `stay`/`otherwise` usage in the graphable DSL.
 
 ## Core Architecture Position
 

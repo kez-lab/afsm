@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-05-11
+updated: 2026-05-21
 ---
 
 # Afsm v3 Executable DSL
@@ -91,7 +91,7 @@ This matches standard statechart vocabulary while keeping Android execution in `
 | `Phase` | Finite statechart node | Renderable business phase |
 | `Context` | Extended state carried across phases | Form data, ids, retry count, validation error |
 | `Event` | Something that happened | User input or command result |
-| `Guard` | Boolean decision before transition | Validation, retry allowance, auth requirement |
+| `Condition` | Named boolean decision before a case is accepted | Validation, retry allowance, auth requirement |
 | `updateContext` | Explicit context update | Immutable state data update |
 | `Command` | Host-executed work emitted by transition or entry | Repository/use case call, timer, local DB write |
 | `Effect` | UI-side one-shot output | Close screen, launch permission, optional navigation signal |
@@ -99,6 +99,69 @@ This matches standard statechart vocabulary while keeping Android execution in `
 | `Exit` | Work when leaving a phase | Cancel timer, clear transient context |
 
 Current v3 APIs use the word `Command` consistently for host-executed transition outputs.
+
+## 2026-05-21 Usability Revision
+
+The public DSL remains the primary authoring model, but the default style should
+read closer to ordinary Android/Kotlin event handling.
+
+Accepted direction:
+
+- Use `case(label, condition = ...) { ... }` for named alternatives inside an
+  `on<Event>` block.
+- Treat `transitionTo(phase)` as phase change only. Do not hide context updates,
+  commands, or effects inside the `transitionTo` call in public examples.
+- Treat context-only handling as `updateContext { ... }`; if no transition is
+  declared, the machine stays in the current phase.
+- Use `updateContext { context, event -> ... }` when the context update needs
+  the typed event payload. This avoids a second update verb while making event
+  payload usage visible.
+- Prefer named cases such as `case("valid draft", condition = { ... })` over
+  anonymous guard predicates. The condition still needs domain code, but the
+  label explains the business branch in code and generated diagrams.
+- Remove DSL-level `stay(...)` and `otherwise(...)` from the public source
+  surface. The low-level `Afsm.stay(...)` reducer helper may remain for custom
+  reducers, but graphable `afsmMachine { ... }` users should not need it.
+
+Revised event shape:
+
+```kotlin
+state(ProductEditorPhase.EditingDraft) {
+    on<ProductEditorEvent.TitleChanged> {
+        updateContext { context, event ->
+            context.copy(
+                draft = context.draft.withTitle(event.value),
+                errorMessage = null,
+            )
+        }
+    }
+
+    on<ProductEditorEvent.SubmitClicked> {
+        case(
+            label = "valid draft",
+            condition = { context.draft.validationMessage() == null },
+        ) {
+            updateContext {
+                copy(
+                    draft = draft.normalized(),
+                    errorMessage = null,
+                )
+            }
+            transitionTo(ProductEditorPhase.ImageUploadInProgress)
+        }
+
+        case(label = "invalid draft") {
+            updateContext {
+                copy(errorMessage = draft.validationMessage())
+            }
+        }
+    }
+}
+```
+
+This shape keeps the graphable statechart structure while reducing the surprise
+that `stay` and `otherwise` created for Android developers. A no-transition
+case is simply an accepted event that updates context, emits outputs, or both.
 
 ## Current Naming Decision
 
@@ -156,13 +219,11 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            stay {
-                updateContext {
-                    copy(
-                        draft = draft.withTitle(event.value),
-                        errorMessage = null,
-                    )
-                }
+            updateContext { context, event ->
+                context.copy(
+                    draft = context.draft.withTitle(event.value),
+                    errorMessage = null,
+                )
             }
         }
 
@@ -171,14 +232,15 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         }
 
         on<ProductEditorEvent.SubmitClicked> {
-            transitionTo(
-                phase = ProductEditorPhase.ImageUploadInProgress,
-                guard = { context.draft.isValidForSubmission() },
+            case(
+                label = "valid draft",
+                condition = { context.draft.validationMessage() == null },
             ) {
                 updateContext { copy(draft = draft.normalized(), errorMessage = null) }
+                transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
 
-            otherwise {
+            case(label = "invalid draft") {
                 updateContext {
                     copy(errorMessage = draft.validationMessage())
                 }
@@ -203,13 +265,15 @@ Important properties:
 - `state(Phase)` creates a structural state scope.
 - `on<Event>` creates a structural event scope.
 - `AfsmEventBranchScope` is the receiver behind `on<Event> { ... }`; its job is only to declare ordered graphable branches for that event.
-- `transitionTo(...)`, `transitionTo<PayloadPhase>(phase = { ... })`, `stay(...)`, and `otherwise(...)` create graphable branches inside the event scope.
+- `case(...)` creates a named graphable branch inside the event scope.
+- `transitionTo(...)` and `transitionTo<PayloadPhase> { ... }` change phase inside a case.
+- `updateContext(...)`, `command(...)`, and `effect(...)` are explicit case actions.
 - `ignore(...)` and `invalid(...)` handle events without adding state-diagram edges.
 - `onEnter` and `onExit` are state-local and visible.
 - `updateContext` updates context immutably.
 - `command` emits host-executed work.
 - `effect` emits UI-side one-shot output.
-- `transitionTo` changes phase; `stay` handles context/effect updates without changing phase.
+- `transitionTo` changes phase; omitting `transitionTo` means the event is handled in the current phase.
 - The same definition is executable and graphable.
 
 ## ProductEditor Pseudo Implementation
@@ -259,8 +323,11 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
     state(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            stay {
-                updateContext { copy(draft = draft.withTitle(event.value), errorMessage = null) }
+            updateContext { context, event ->
+                context.copy(
+                    draft = context.draft.withTitle(event.value),
+                    errorMessage = null,
+                )
             }
         }
 
@@ -361,7 +428,7 @@ stateDiagram-v2
   PublishInProgress --> Approved: PublishFailed
 ```
 
-Context-only `updateContext` operations are not separate graph files; they are runtime behavior attached to graphable `stay(...)`, `transitionTo(...)`, or `otherwise(...)` branches.
+Context-only `updateContext` operations are not separate graph files; they are runtime behavior attached to named graphable `case(...)` branches. If a case does not call `transitionTo(...)`, it is handled in the current phase.
 
 Current sample generation:
 
@@ -518,10 +585,10 @@ Result on 2026-05-09:
 
 - Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines, and `AfsmPhaseMachine<P, X, E, C, F>` for the DSL-built phase/context machine.
 - Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. It was removed before public API stabilization.
-- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `transitionTo`, `stay`, `otherwise`, `updateContext`, `command`, and `effect`.
+- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `case`, `transitionTo`, `updateContext`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, guard fallback, entry command emission, and effect-only stayed transitions work in compiled Kotlin tests.
-- Superseded by the follow-up graphability spike: branch targets now need to be declared in `transitionTo(...)`/`stay(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
+- Superseded by the follow-up graphability spike and 2026-05-21 usability pass: branch targets now need to be declared through `case { transitionTo(...) }` or direct unconditional `transitionTo(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
 
 ### Step 2: Interpreter Spike
 
@@ -537,7 +604,7 @@ Implement enough interpreter behavior to execute one event:
 
 Current spike status:
 
-- Implemented current state lookup, event handler lookup, ordered branch matching, ordered `onExit -> transition block -> onEnter`, ordered `updateContext`, command collection, effect collection, and `Stayed` versus `Transitioned` decisions.
+- Implemented current state lookup, event handler lookup, ordered case matching, ordered `onExit -> case actions -> onEnter`, ordered `updateContext`, command collection, effect collection, and `Stayed` versus `Transitioned` decisions.
 - Build-time validation now rejects missing initial state declarations, duplicate state declarations, duplicate event handlers in a state, and transition targets that have no declared state.
 - `ignore(...)` and `invalid(...)` now preserve `AfsmDecision.Ignored` / `AfsmDecision.Invalid` for handled non-graph transitions.
 

@@ -461,3 +461,23 @@
 - Source: fifth six-agent usability review focused on external setup, graph version behavior, runtime pressure, and sample adoption clarity.
 - Action: Added shared `afsmVersion`, generated the graph plugin's default processor coordinate from that version, made `consumer-smoke` verify the current version with a clean dependency-refreshed fixture build, added command-result event overflow fail-fast handling, and improved README/example adoption guidance.
 - Updated: `gradle.properties`, `build.gradle.kts`, `afsm-runtime/`, `afsm-graph-gradle-plugin/`, `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`, `README.md`, `docs/`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`, `wiki/08-meetings/2026-05-19-afsm-6-agent-usability-loop.md`, `wiki/log.md`.
+
+## [2026-05-21] implementation | Case-oriented DSL usability loop
+
+- Source: user feedback that the public DSL direction is good, but `stay`,
+  `otherwise`, and `transitionTo { updateContext(...) }` feel hard for Android
+  developers.
+- Action: Accepted breaking API cleanup, added the `case(...)` event-branch API,
+  kept context changes under `updateContext(...)` including an event-aware
+  `updateContext { context, event -> ... }` overload, added direct effect
+  helpers, and began migrating samples to the style where `transitionTo` only
+  means phase change.
+- Updated: `afsm-core/src/main/kotlin/afsm/core/AfsmMachineDsl.kt`,
+  `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`,
+  `consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/ConsumerSmoke.kt`,
+  `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`,
+  `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt`,
+  `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

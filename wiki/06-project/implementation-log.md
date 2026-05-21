@@ -1290,3 +1290,34 @@ Conclusion:
   stale local artifact verification and suspended command-result dispatch.
   The full local release gate passes with the existing documented Gradle
   deprecation warning from Kotlin POM rewriting.
+
+## [2026-05-21] Case-oriented DSL usability pass
+
+Change:
+
+- Added named `case(label, condition = ...) { ... }` event branches to the
+  executable DSL.
+- Simplified DSL-level `transitionTo(...)` so it only declares phase changes.
+- Removed DSL-level `stay(...)` and `otherwise(...)` from the public source
+  surface.
+- Kept context mutation under `updateContext(...)`, including an overload for
+  `updateContext { context, event -> ... }` when event payload is needed.
+- Migrated Auth, Checkout, ProductEditor, README, public API docs, walkthroughs,
+  and `consumer-smoke` to the case-oriented style.
+- Updated API dumps and canonical wiki/decision pages.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+./gradlew :afsm-core:apiCheck --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The graphable DSL no longer requires Android developers to learn `stay` or
+  `otherwise` for normal usage.
+- `transitionTo` now reads as phase change only, while named cases carry
+  conditions, context updates, commands, effects, and graph labels.

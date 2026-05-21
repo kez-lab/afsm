@@ -149,7 +149,7 @@ This keeps transition branches focused on phase movement and context updates.
 For a phase-changing branch, Afsm runs:
 
 ```text
-source onExit -> transition block -> target onEnter
+source onExit -> case actions -> target onEnter
 ```
 
 If a source phase has no `onExit`, Afsm skips that step. In the payload-phase
@@ -211,15 +211,15 @@ with context error state:
 
 ```kotlin
 on<ProductEditorEvent.SubmitClicked> {
-    transitionTo(
-        phase = ProductEditorPhase.ImageUploadInProgress,
-        guardLabel = "valid draft",
-        guard = { context.draft.form.validationError() == null },
+    case(
+        label = "valid draft",
+        condition = { context.draft.form.validationError() == null },
     ) {
         updateContext { normalizeDraftForSubmit() }
+        transitionTo(ProductEditorPhase.ImageUploadInProgress)
     }
 
-    otherwise(label = "invalid draft") {
+    case(label = "invalid draft") {
         updateContext { withValidationError() }
     }
 }

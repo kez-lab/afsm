@@ -222,8 +222,8 @@ private fun draftMachine(): DraftMachine = afsmMachine {
 
     state(DraftPhase.Editing) {
         on<DraftEvent.TitleChanged> {
-            stay {
-                updateContext { copy(title = event.value) }
+            updateContext { context, event ->
+                context.copy(title = event.value)
             }
         }
 
@@ -246,12 +246,12 @@ private fun draftMachine(): DraftMachine = afsmMachine {
 }
 ```
 
-`transitionTo(...)` changes phase. `stay(...)` handles an event without changing phase.
+`transitionTo(...)` changes phase. If an event only updates context or emits an output, handle it with `updateContext(...)` or `effect(...)` without calling `transitionTo(...)`.
 
 Phase-changing transitions run:
 
 ```text
-onExit -> transition block -> onEnter
+onExit -> case actions -> onEnter
 ```
 
 Initial state construction does not run `onEnter`. Trigger startup work with an explicit event such as `ScreenEntered`.

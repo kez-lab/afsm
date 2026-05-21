@@ -938,3 +938,32 @@ Consequences:
   accepted command queue overflow separately.
 - ViewModel clearing while command work finishes is not treated as event
   pressure.
+
+## [2026-05-21] Make the executable DSL case-oriented
+
+Decision: Keep the public executable DSL as the primary authoring model, but
+shift beginner-facing event handlers from `stay`/`otherwise` and
+`transitionTo { updateContext(...) }` toward named `case(...)` blocks plus
+direct `updateContext` actions.
+
+Rationale:
+
+- User feedback confirmed that the public DSL direction is acceptable, but the
+  current branch vocabulary feels harder than Kotlin/Android developers expect.
+- `transitionTo` should mean one thing: change the finite phase.
+- A no-transition event does not need a `stay` verb; if no phase transition is
+  declared, the current phase remains active.
+- Named cases make conditions visible in both source code and generated `.mmd`
+  graphs, avoiding anonymous predicates such as `context.draft.isValid()` that
+  are hard for new users to understand.
+
+Consequences:
+
+- Public examples should prefer `case(label, condition = ...) { ... }`.
+- Context changes should be separate actions through `updateContext`, using the
+  `updateContext { context, event -> ... }` overload when the typed event
+  payload is needed.
+- `stay(...)` and `otherwise(...)` are no longer recommended for onboarding and
+  should be considered removal/deprecation candidates before public API freeze.
+- Graph generation still comes from the executable DSL because each case records
+  its transition target and labels at build time.

@@ -22,15 +22,15 @@ private fun productEditorMachine(): ProductEditorMachine {
 
         state(ProductEditorPhase.EditingDraft) {
             on<ProductEditorEvent.TitleChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.SaveDraftClicked> {
@@ -38,15 +38,15 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.SubmitClicked> {
-                transitionTo(
-                    phase = ProductEditorPhase.ImageUploadInProgress,
-                    guardLabel = "valid draft",
-                    guard = { context.draft.form.validationError() == null },
+                case(
+                    label = "valid draft",
+                    condition = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
+                    transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
-                otherwise(label = "invalid draft") {
+                case(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
@@ -73,34 +73,37 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.SubmitClicked> {
-                transitionTo(
-                    phase = ProductEditorPhase.ImageUploadInProgress,
-                    guardLabel = "valid draft",
-                    guard = { context.draft.form.validationError() == null },
+                case(
+                    label = "valid draft",
+                    condition = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
+                    transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
-                otherwise(label = "invalid draft") {
+                case(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
 
             on<ProductEditorEvent.TitleChanged> {
-                transitionTo(ProductEditorPhase.EditingDraft) {
-                    updateContext { updateDraft(event) }
+                case {
+                    updateContext { context, event -> context.updateDraft(event) }
+                    transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                transitionTo(ProductEditorPhase.EditingDraft) {
-                    updateContext { updateDraft(event) }
+                case {
+                    updateContext { context, event -> context.updateDraft(event) }
+                    transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                transitionTo(ProductEditorPhase.EditingDraft) {
-                    updateContext { updateDraft(event) }
+                case {
+                    updateContext { context, event -> context.updateDraft(event) }
+                    transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
         }
@@ -111,13 +114,7 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
-                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
-                    phase = {
-                        ProductEditorPhase.ReviewSubmissionInProgress(
-                            uploadToken = event.uploadToken,
-                        )
-                    },
-                ) {
+                case {
                     updateContext {
                         copy(
                             draft = draft.copy(
@@ -126,14 +123,20 @@ private fun productEditorMachine(): ProductEditorMachine {
                             errorMessage = null,
                         )
                     }
+                    transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+                        ProductEditorPhase.ReviewSubmissionInProgress(
+                            uploadToken = event.uploadToken,
+                        )
+                    }
                 }
             }
 
             on<ProductEditorEvent.ImageUploadFailed> {
-                transitionTo(ProductEditorPhase.EditingDraft) {
-                    updateContext {
-                        copy(errorMessage = event.message)
+                case {
+                    updateContext { context, event ->
+                        context.copy(errorMessage = event.message)
                     }
+                    transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
         }
@@ -149,47 +152,47 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.ReviewApproved> {
-                transitionTo(ProductEditorPhase.Approved) {
+                case {
                     updateContext { copy(errorMessage = null) }
+                    transitionTo(ProductEditorPhase.Approved)
                 }
             }
 
             on<ProductEditorEvent.ReviewRejected> {
-                transitionTo<ProductEditorPhase.Rejected>(
-                    phase = {
+                case {
+                    updateContext { copy(errorMessage = null) }
+                    transitionTo<ProductEditorPhase.Rejected> {
                         ProductEditorPhase.Rejected(
                             reason = event.reason,
                         )
-                    },
-                ) {
-                    updateContext { copy(errorMessage = null) }
+                    }
                 }
             }
         }
 
         state<ProductEditorPhase.Rejected> {
             on<ProductEditorEvent.TitleChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                stay { updateContext { updateDraft(event) } }
+                updateContext { context, event -> context.updateDraft(event) }
             }
 
             on<ProductEditorEvent.ResubmitClicked> {
-                transitionTo(
-                    phase = ProductEditorPhase.ImageUploadInProgress,
-                    guardLabel = "valid draft",
-                    guard = { context.draft.form.validationError() == null },
+                case(
+                    label = "valid draft",
+                    condition = { context.draft.form.validationError() == null },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
+                    transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
-                otherwise(label = "invalid draft") {
+                case(label = "invalid draft") {
                     updateContext { withValidationError() }
                 }
             }
@@ -216,32 +219,30 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
 
             on<ProductEditorEvent.PublishSucceeded> {
-                transitionTo<ProductEditorPhase.Published>(
-                    phase = {
+                case {
+                    updateContext { copy(errorMessage = null) }
+                    transitionTo<ProductEditorPhase.Published> {
                         ProductEditorPhase.Published(
                             productId = event.productId,
                             title = context.draft.form.title.trim(),
                         )
-                    },
-                ) {
-                    updateContext { copy(errorMessage = null) }
+                    }
                 }
             }
 
             on<ProductEditorEvent.PublishFailed> {
-                transitionTo(ProductEditorPhase.Approved) {
-                    updateContext {
-                        copy(errorMessage = event.message)
+                case {
+                    updateContext { context, event ->
+                        context.copy(errorMessage = event.message)
                     }
+                    transitionTo(ProductEditorPhase.Approved)
                 }
             }
         }
 
         state<ProductEditorPhase.Published> {
             on<ProductEditorEvent.DoneClicked> {
-                stay(effectLabels = listOf("CloseEditor")) {
-                    effect(ProductEditorEffect.CloseEditor)
-                }
+                effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
             }
         }
     }

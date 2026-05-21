@@ -96,8 +96,8 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      *
      * Use this overload for phase classes that carry data, for example
      * `ReviewSubmissionInProgress(uploadToken)`. The state scope exposes the
-     * current phase as type [PS], so entry/exit handlers and transition blocks
-     * can safely read the payload.
+     * current phase as type [PS], so entry/exit handlers and cases can safely
+     * read the payload.
      *
      * The generated topology uses the [PS] class name as the state label.
      */
@@ -237,11 +237,10 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     /**
      * Runs when this phase is entered through an event branch transition.
      *
-     * [handler] runs after the matching transition block has executed and only
+     * [handler] runs after the matching case actions have executed and only
      * for phase-changing branches such as [AfsmEventBranchScope.transitionTo].
-     * It does not run for [AfsmEventBranchScope.stay],
-     * [AfsmEventBranchScope.otherwise], [AfsmEventBranchScope.ignore], or
-     * [AfsmEventBranchScope.invalid].
+     * It does not run for no-transition cases, [AfsmEventBranchScope.ignore],
+     * or [AfsmEventBranchScope.invalid].
      *
      * Use `onEnter` for work that logically starts because a phase was entered:
      * emitting a command, clearing an error, or initializing phase-specific
@@ -272,11 +271,11 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     /**
      * Runs when this phase is exited by a phase-changing transition.
      *
-     * [handler] runs before the transition block and target phase `onEnter`
+     * [handler] runs before the accepted case actions and target phase `onEnter`
      * handler. The execution order is:
      *
      * ```text
-     * source onExit -> transition block -> target onEnter
+     * source onExit -> case actions -> target onEnter
      * ```
      *
      * Use `onExit` for cleanup work that logically belongs to leaving a phase,
@@ -385,195 +384,156 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     private val transitions = mutableListOf<AfsmTopologyTransition>()
 
     /**
-     * Declares a branch that transitions to a concrete phase value.
+     * Declares one named runtime case for this event in the current phase.
      *
-     * [phase] is the target finite phase. If this branch matches, the returned
-     * state uses [phase] with the current context after `onExit`, [block], and
-     * target `onEnter` have run.
+     * Use `case` when an event has domain alternatives that should be explicit
+     * in code and generated diagrams, for example `valid draft`, `invalid form`,
+     * or `matching request`.
      *
-     * [guard] is a runtime predicate. Afsm evaluates it when the event is
-     * processed. If it returns `false`, this branch is skipped and later branches
-     * in the same `on<Event>` scope may match.
+     * [label] is a human-readable condition name. For phase-changing cases it is
+     * rendered as the transition condition label. For non-transition cases it is
+     * rendered as part of the internal transition label.
      *
-     * [guardLabel], [commandLabels], and [effectLabels] are topology metadata for
-     * generated diagrams and documentation. They do not execute commands,
-     * effects, or guards. Runtime commands and effects must be emitted from
-     * [block], `onEnter`, or `onExit`.
+     * [condition] is evaluated at runtime with typed [phase], [event], and
+     * [AfsmTransitionScope.context]. If it returns `false`, Afsm tries the next
+     * declared case in this `on<Event>` block.
      *
-     * [block] is runtime transition logic. Use it to update context and emit
-     * commands/effects that are specific to this transition. For phase-changing
-     * branches, execution order is source `onExit`, then [block], then target
-     * `onEnter`.
+     * [build] declares what the accepted case does. Calling
+     * [AfsmEventCaseScope.transitionTo] changes phase. If no transition target is
+     * declared, the case handles the event in the current phase. Context updates,
+     * commands, and effects are declared as separate statements so
+     * `transitionTo(...)` keeps one meaning: phase change.
      */
-    public fun transitionTo(
-        phase: P,
-        guardLabel: String? = null,
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
+    public fun case(
+        label: String? = null,
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        build: AfsmEventCaseScope<P, X, E, C, F, PS, EV>.() -> Unit,
     ) {
+        val builder = AfsmEventCaseScope<P, X, E, C, F, PS, EV>()
+        builder.build()
+        val builtCase = builder.buildCase()
         addBranch(
-            targetLabel = afsmLabelForValue(phase),
-            targetFactory = { phase },
-            guardLabel = guardLabel,
-            commandLabels = commandLabels,
-            effectLabels = effectLabels,
-            kind = AfsmTopologyTransitionKind.External,
+            targetLabel = builtCase.targetLabel ?: stateLabel,
+            eventLabelOverride = if (builtCase.targetLabel == null && label != null) {
+                "$eventLabel [$label]"
+            } else {
+                eventLabel
+            },
+            targetFactory = builtCase.targetFactory ?: { null },
+            guardLabel = if (builtCase.targetLabel != null) label else null,
+            commandLabels = builtCase.commandLabels,
+            effectLabels = builtCase.effectLabels,
+            kind = if (builtCase.targetLabel != null) {
+                AfsmTopologyTransitionKind.External
+            } else {
+                AfsmTopologyTransitionKind.Internal
+            },
             isFallback = false,
-            guard = guard,
-            block = block,
+            guard = condition,
+            block = {
+                builtCase.actions.forEach { action ->
+                    action()
+                }
+            },
         )
     }
 
     /**
-     * Declares a branch that transitions to a payload phase created from runtime data.
+     * Handles this event by updating context without changing phase.
      *
-     * Use this overload when the target phase is a class that needs data from the
-     * current [AfsmTransitionScope], such as an event payload:
+     * This is the preferred replacement for `stay { updateContext { ... } }`
+     * when the event only changes extended state such as form fields or errors.
+     */
+    public fun updateContext(
+        label: String? = null,
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        update: X.() -> X,
+    ) {
+        case(
+            label = label,
+            condition = condition,
+        ) {
+            updateContext(update)
+        }
+    }
+
+    /**
+     * Handles this event by updating context with access to the typed event.
      *
-     * ```kotlin
-     * transitionTo<Phase.Reviewing>(
-     *     phase = { Phase.Reviewing(uploadToken = event.uploadToken) },
-     * )
-     * ```
+     * Use this overload for input events whose payload changes context. The
+     * first lambda parameter is the current context; the second is the typed
+     * event payload.
+     */
+    public fun updateContext(
+        label: String? = null,
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        update: (X, EV) -> X,
+    ) {
+        case(
+            label = label,
+            condition = condition,
+        ) {
+            updateContext(update)
+        }
+    }
+
+    /**
+     * Handles this event by emitting a UI-side one-shot effect without changing phase.
      *
-     * [phase] creates the target phase instance at runtime. The reified [TP]
-     * type is used for static topology labels, while the returned value is used
-     * as the actual next phase.
+     * Use this for rare terminal UI actions such as closing a screen after a
+     * durable terminal state has already been reached.
+     */
+    public fun effect(
+        label: String? = null,
+        effect: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> F,
+    ) {
+        case(label = label) {
+            effect(label = label, effect = effect)
+        }
+    }
+
+    /**
+     * Handles this event by changing to [phase].
      *
-     * [guard] is a runtime predicate. If it returns `false`, the branch is
-     * skipped. [guardLabel], [commandLabels], and [effectLabels] are diagram
-     * metadata only. [block] performs runtime context updates and command/effect
-     * emission for the transition.
+     * This convenience is for unconditional phase changes. If the event needs a
+     * named condition, context update, command, or effect, use [case] and call
+     * [AfsmEventCaseScope.transitionTo] inside that case.
+     */
+    public fun transitionTo(phase: P) {
+        case {
+            transitionTo(phase)
+        }
+    }
+
+    /**
+     * Handles this event by changing to a payload phase created from runtime data.
+     *
+     * This convenience is for unconditional phase changes. If the event needs a
+     * named condition, context update, command, or effect, use [case].
      */
     public inline fun <reified TP : P> transitionTo(
         noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
-        guardLabel: String? = null,
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
-        noinline guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        noinline block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
     ) {
         transitionTo(
             phaseType = TP::class,
             phase = phase,
-            guardLabel = guardLabel,
-            commandLabels = commandLabels,
-            effectLabels = effectLabels,
-            guard = guard,
-            block = block,
         )
     }
 
     /**
-     * Declares a branch that transitions to a payload phase described by [phaseType].
-     *
-     * Prefer the reified `transitionTo<Phase>(phase = { ... })` overload in
-     * ordinary Kotlin feature code. Use this overload when the target phase
-     * class is only available as a [KClass], for example from shared tooling or
-     * generated code.
+     * Handles this event by changing to a payload phase whose type is available
+     * as a [KClass].
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,
         phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
-        guardLabel: String? = null,
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
     ) {
-        addBranch(
-            targetLabel = afsmLabelForClass(phaseType),
-            targetFactory = phase,
-            guardLabel = guardLabel,
-            commandLabels = commandLabels,
-            effectLabels = effectLabels,
-            kind = AfsmTopologyTransitionKind.External,
-            isFallback = false,
-            guard = guard,
-            block = block,
-        )
-    }
-
-    /**
-     * Declares a branch that handles the event without changing the finite phase.
-     *
-     * Use `stay` for self-handled events where the phase is still the same
-     * business state, for example text input updates inside an editing phase.
-     *
-     * [guard] is a runtime predicate. If it returns `false`, the branch is
-     * skipped. [guardLabel], [commandLabels], and [effectLabels] are topology
-     * metadata only. [block] can update context and emit commands/effects.
-     *
-     * `stay` does not run `onExit` or `onEnter`; it returns an
-     * [AfsmDecision.Stayed] decision when accepted.
-     */
-    public fun stay(
-        guardLabel: String? = null,
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
-    ) {
-        addBranch(
-            targetLabel = stateLabel,
-            targetFactory = { null },
-            guardLabel = guardLabel,
-            commandLabels = commandLabels,
-            effectLabels = effectLabels,
-            kind = AfsmTopologyTransitionKind.Internal,
-            isFallback = false,
-            guard = guard,
-            block = block,
-        )
-    }
-
-    /**
-     * Declares a final stayed branch for unmatched guards in this event handler.
-     *
-     * `otherwise` is a fallback branch. It always matches if earlier branches in
-     * the same `on<Event>` scope did not match. It is useful for validation
-     * failure or default handled behavior:
-     *
-     * ```kotlin
-     * on<Event.SubmitClicked> {
-     *     transitionTo(Phase.Submitting, guard = { context.form.isValid() })
-     *
-     *     otherwise {
-     *         updateContext { copy(errorMessage = "Invalid form") }
-     *     }
-     * }
-     * ```
-     *
-     * [label] replaces the default `otherwise` diagram label with a
-     * domain-specific reason such as `invalid form`. [commandLabels] and
-     * [effectLabels] are metadata for generated diagrams. [block] is runtime
-     * logic. `otherwise` does not change phase and does not run `onExit` or
-     * `onEnter`.
-     */
-    public fun otherwise(
-        label: String? = null,
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
-        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit = {},
-    ) {
-        addBranch(
-            targetLabel = stateLabel,
-            eventLabelOverride = if (label == null) {
-                "$eventLabel [otherwise]"
-            } else {
-                "$eventLabel [$label]"
-            },
-            targetFactory = { null },
-            guardLabel = null,
-            commandLabels = commandLabels,
-            effectLabels = effectLabels,
-            kind = AfsmTopologyTransitionKind.Internal,
-            isFallback = true,
-            guard = { true },
-            block = block,
-        )
+        case {
+            transitionTo(
+                phaseType = phaseType,
+                phase = phase,
+            )
+        }
     }
 
     /**
@@ -703,6 +663,134 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     }
 }
 
+@AfsmDslMarker
+public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor() {
+    internal var targetLabel: String? = null
+    internal var targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)? = null
+    internal val actions = mutableListOf<AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit>()
+    internal val commandLabels = mutableListOf<String>()
+    internal val effectLabels = mutableListOf<String>()
+
+    /**
+     * Changes the finite phase for this accepted case.
+     *
+     * `transitionTo` only records the target phase. Put context updates,
+     * commands, and effects in separate statements in the same case.
+     */
+    public fun transitionTo(phase: P) {
+        setTarget(
+            label = afsmLabelForValue(phase),
+            factory = { phase },
+        )
+    }
+
+    /**
+     * Changes to a payload phase created from runtime data.
+     *
+     * Use this when the target phase carries event or context data, such as an
+     * upload token or order id.
+     */
+    public inline fun <reified TP : P> transitionTo(
+        noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+    ) {
+        transitionTo(
+            phaseType = TP::class,
+            phase = phase,
+        )
+    }
+
+    /**
+     * Changes to a payload phase whose type is available as a [KClass].
+     */
+    public fun <TP : P> transitionTo(
+        phaseType: KClass<TP>,
+        phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+    ) {
+        setTarget(
+            label = afsmLabelForClass(phaseType),
+            factory = phase,
+        )
+    }
+
+    /**
+     * Replaces context without changing phase by itself.
+     */
+    public fun updateContext(update: X.() -> X) {
+        actions += {
+            updateContext(update)
+        }
+    }
+
+    /**
+     * Replaces context with access to the typed event payload.
+     */
+    public fun updateContext(update: (X, EV) -> X) {
+        actions += {
+            val nextContext = update(context, event)
+            updateContext { nextContext }
+        }
+    }
+
+    /**
+     * Emits host-executed work from this accepted case.
+     *
+     * [label] is optional graph metadata. Runtime work is produced by [command].
+     */
+    public fun command(
+        label: String? = null,
+        command: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> C,
+    ) {
+        label?.let { commandLabels += it }
+        actions += {
+            command(command())
+        }
+    }
+
+    /**
+     * Emits a UI-side one-shot effect from this accepted case.
+     *
+     * [label] is optional graph metadata. Runtime work is produced by [effect].
+     */
+    public fun effect(
+        label: String? = null,
+        effect: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> F,
+    ) {
+        label?.let { effectLabels += it }
+        actions += {
+            effect(effect())
+        }
+    }
+
+    internal fun buildCase(): AfsmBuiltEventCase<P, X, E, C, F, PS, EV> {
+        return AfsmBuiltEventCase(
+            targetLabel = targetLabel,
+            targetFactory = targetFactory,
+            actions = actions.toList(),
+            commandLabels = commandLabels.toList(),
+            effectLabels = effectLabels.toList(),
+        )
+    }
+
+    private fun setTarget(
+        label: String,
+        factory: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P,
+    ) {
+        check(targetLabel == null) {
+            "Only one transition target can be declared in one Afsm case."
+        }
+        targetLabel = label
+        targetFactory = factory
+    }
+}
+
+internal data class AfsmBuiltEventCase<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E>(
+    val targetLabel: String?,
+    val targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)?,
+    val actions: List<AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit>,
+    val commandLabels: List<String>,
+    val effectLabels: List<String>,
+)
+
 /**
  * Runtime scope for a phase `onEnter` handler.
  *
@@ -715,7 +803,7 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
     private val execution: AfsmDslExecution<P, X, C, F>,
 ) {
     /**
-     * Current extended context after source `onExit` and the transition block
+     * Current extended context after source `onExit` and case actions
      * have run.
      */
     public val context: X
@@ -767,7 +855,7 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
     private val execution: AfsmDslExecution<P, X, C, F>,
 ) {
     /**
-     * Current extended context before the transition block and target entry
+     * Current extended context before case actions and target entry
      * handlers run.
      */
     public val context: X
@@ -777,7 +865,7 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
      * Replaces the current context with an immutable copy.
      *
      * The [update] receiver is the current context. Return the next context
-     * value that should be visible to the transition block.
+     * value that should be visible to the accepted case actions.
      */
     public fun updateContext(update: X.() -> X) {
         execution.context = execution.context.update()
@@ -842,8 +930,7 @@ public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS
      *
      * [command] is appended to the accepted transition output. Prefer emitting
      * long-running work from `onEnter` when the work is tied to entering a phase;
-     * emit from a transition block when the work belongs specifically to the
-     * edge.
+     * emit from a case when the work belongs specifically to one event branch.
      */
     public fun command(command: C) {
         execution.commands += command

@@ -75,18 +75,31 @@ public final class afsm/core/AfsmEntryScope {
 }
 
 public final class afsm/core/AfsmEventBranchScope {
+	public final fun case (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun case$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun effect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun effect$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun ignore (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun ignore$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun invalid (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun invalid$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun otherwise (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun otherwise$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun stay (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun stay$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun transitionTo (Ljava/lang/Object;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public final fun transitionTo (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun transitionTo$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/Object;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public static synthetic fun transitionTo$default (Lafsm/core/AfsmEventBranchScope;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun transitionTo (Ljava/lang/Object;)V
+	public final fun transitionTo (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun updateContext$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun updateContext$default (Lafsm/core/AfsmEventBranchScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+}
+
+public final class afsm/core/AfsmEventCaseScope {
+	public final fun command (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun command$default (Lafsm/core/AfsmEventCaseScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun effect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun effect$default (Lafsm/core/AfsmEventCaseScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun transitionTo (Ljava/lang/Object;)V
+	public final fun transitionTo (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class afsm/core/AfsmExitScope {

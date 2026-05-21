@@ -64,29 +64,27 @@ screen data.
 
 ## Validation Branches
 
-`SubmitClicked` has two successful guarded branches and one fallback:
+`SubmitClicked` has two successful named cases and one invalid-input case:
 
 ```kotlin
 on<AuthEvent.SubmitClicked> {
-    transitionTo(
-        phase = AuthPhase.Submitting,
-        guardLabel = "login form",
-        commandLabels = listOf("Login"),
-        guard = { context.canSubmitLogin() },
+    case(
+        label = "login form",
+        condition = { context.canSubmitLogin() },
     ) {
-        command(AuthCommand.Login(...))
+        command(label = "Login") { AuthCommand.Login(...) }
+        transitionTo(AuthPhase.Submitting)
     }
 
-    transitionTo(
-        phase = AuthPhase.Submitting,
-        guardLabel = "register form",
-        commandLabels = listOf("Register"),
-        guard = { context.canSubmitRegister() },
+    case(
+        label = "register form",
+        condition = { context.canSubmitRegister() },
     ) {
-        command(AuthCommand.Register(...))
+        command(label = "Register") { AuthCommand.Register(...) }
+        transitionTo(AuthPhase.Submitting)
     }
 
-    otherwise(label = "invalid form") {
+    case(label = "invalid form") {
         updateContext { copy(errorMessage = submitError()) }
     }
 }

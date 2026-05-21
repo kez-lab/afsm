@@ -142,16 +142,16 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 
     state(Phase.Editing) {
         on<Event.SubmitClicked> {
-            transitionTo(
-                phase = Phase.Submitting,
-                guardLabel = "valid form",
-                commandLabels = listOf("Submit"),
-                guard = { context.form.isValid() },
+            case(
+                label = "valid form",
+                condition = { context.form.isValid() },
             ) {
                 updateContext { copy(errorMessage = null) }
+                command(label = "Submit") { Command.Submit(context.form) }
+                transitionTo(Phase.Submitting)
             }
 
-            otherwise(label = "invalid form") {
+            case(label = "invalid form") {
                 updateContext { copy(errorMessage = "Invalid form") }
             }
         }
@@ -175,16 +175,16 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | `state(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
 | `on<Event>()` | Event-specific branch scope |
 | `on(eventType = Event::class)` | Non-inline event-specific branch scope |
-| `transitionTo(phase)` | Phase-changing transition |
-| `transitionTo<PayloadPhase>(phase = { ... })` | Phase-changing transition to payload phase |
-| `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload transition |
-| `stay { ... }` | Handled internal branch with no phase change |
-| `otherwise(label = ...) { ... }` | Fallback internal branch after guards fail |
+| `case(label, condition = ...) { ... }` | Named branch for a domain condition |
+| `transitionTo(phase)` | Phase change only |
+| `transitionTo<PayloadPhase> { ... }` | Phase change to payload phase |
+| `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload phase change |
+| `updateContext { ... }` | Handles event by immutably updating context |
+| `updateContext { context, event -> ... }` | Context update that uses the typed event payload |
 | `ignore(reason)` | Expected no-op event; no graph edge |
 | `invalid(reason)` | Explicit invalid event; no graph edge |
-| `updateContext { ... }` | Immutable extended-state update |
-| `command(command)` | Host-executed work output |
-| `effect(effect)` | UI-side one-shot output |
+| `command(label = ...) { ... }` | Host-executed work output from a case |
+| `effect(label = ...) { ... }` | UI-side one-shot output from a case |
 | `onEnter(commandLabels = ...) { ... }` | Runs after entering a phase |
 | `onExit(commandLabels = ...) { ... }` | Runs before leaving a phase |
 
@@ -195,7 +195,7 @@ matches any payload instance rather than one exact value.
 Phase-changing transition order:
 
 ```text
-onExit -> transition block -> onEnter
+onExit -> case actions -> onEnter
 ```
 
 ### Topology and MMD

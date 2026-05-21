@@ -73,7 +73,7 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
-    fun `guard otherwise branch can update context without leaving phase`() {
+    fun `failed named case can update context without leaving phase`() {
         val machine = productEditorMachine()
 
         val result = machine.transition(
@@ -94,6 +94,30 @@ class AfsmExecutableDslCompileCheckTest {
         assertEquals("Description must be at least 10 characters.", result.state.context.errorMessage)
         assertEquals(emptyList(), result.commands)
         assertIs<AfsmDecision.Stayed>(result.decision)
+    }
+
+    @Test
+    fun `named cases separate conditions phase changes and context updates`() {
+        val machine = productEditorMachine()
+
+        val transitions = machine.topology.transitions
+
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "EditingDraft",
+                event = "SubmitClicked",
+                to = "ImageUploadInProgress",
+                guardLabel = "valid draft",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "EditingDraft",
+                event = "SubmitClicked [invalid draft]",
+                to = "EditingDraft",
+                kind = AfsmTopologyTransitionKind.Internal,
+            ) in transitions,
+        )
     }
 
     @Test
@@ -137,8 +161,9 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.SubmitClicked> {
-                    transitionTo(DslProductEditorPhase.SavingDraft) {
+                    case {
                         updateContext { this + "transition;" }
+                        transitionTo(DslProductEditorPhase.SavingDraft)
                     }
                 }
             }
@@ -258,15 +283,13 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.EditingDraft) {
                 on<DslProductEditorEvent.SubmitClicked> {
-                    transitionTo(
-                        phase = DslProductEditorPhase.ImageUploadInProgress,
-                        guard = { context.draft.title.isNotBlank() },
-                    )
+                    case(condition = { context.draft.title.isNotBlank() }) {
+                        transitionTo(DslProductEditorPhase.ImageUploadInProgress)
+                    }
 
-                    transitionTo(
-                        phase = DslProductEditorPhase.ImageUploadInProgress,
-                        guard = { context.draft.description.isNotBlank() },
-                    )
+                    case(condition = { context.draft.description.isNotBlank() }) {
+                        transitionTo(DslProductEditorPhase.ImageUploadInProgress)
+                    }
                 }
             }
 
@@ -306,13 +329,13 @@ class AfsmExecutableDslCompileCheckTest {
                     from = "EditingDraft",
                     event = "SubmitClicked",
                     to = "ImageUploadInProgress",
+                    guardLabel = "valid draft",
                 ),
                 AfsmTopologyTransition(
                     from = "EditingDraft",
-                    event = "SubmitClicked [otherwise]",
+                    event = "SubmitClicked [invalid draft]",
                     to = "EditingDraft",
                     kind = AfsmTopologyTransitionKind.Internal,
-                    isFallback = true,
                 ),
                 AfsmTopologyTransition(
                     from = "SavingDraft",
@@ -326,8 +349,9 @@ class AfsmExecutableDslCompileCheckTest {
                 ),
                 AfsmTopologyTransition(
                     from = "Published",
-                    event = "DoneClicked",
+                    event = "DoneClicked [CloseEditor]",
                     to = "Published",
+                    effectLabels = listOf("CloseEditor"),
                     kind = AfsmTopologyTransitionKind.Internal,
                 ),
             ),
@@ -355,13 +379,11 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.EditingDraft) {
                 on<DslProductEditorEvent.TitleChanged> {
-                    stay {
-                        updateContext {
-                            copy(
-                                draft = draft.withTitle(event.value),
-                                errorMessage = null,
-                            )
-                        }
+                    updateContext { context, event ->
+                        context.copy(
+                            draft = context.draft.withTitle(event.value),
+                            errorMessage = null,
+                        )
                     }
                 }
 
@@ -370,9 +392,9 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.SubmitClicked> {
-                    transitionTo(
-                        phase = DslProductEditorPhase.ImageUploadInProgress,
-                        guard = { context.draft.validationMessage() == null },
+                    case(
+                        label = "valid draft",
+                        condition = { context.draft.validationMessage() == null },
                     ) {
                         updateContext {
                             copy(
@@ -380,9 +402,10 @@ class AfsmExecutableDslCompileCheckTest {
                                 errorMessage = null,
                             )
                         }
+                        transitionTo(DslProductEditorPhase.ImageUploadInProgress)
                     }
 
-                    otherwise {
+                    case(label = "invalid draft") {
                         updateContext {
                             copy(errorMessage = draft.validationMessage())
                         }
@@ -408,17 +431,16 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
-                    transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress>(
-                        phase = {
-                            DslProductEditorPhase.ReviewSubmissionInProgress(
-                                uploadToken = event.uploadToken,
-                            )
-                        },
-                    ) {
+                    case {
                         updateContext {
                             copy(
                                 draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
                                 errorMessage = null,
+                            )
+                        }
+                        transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
+                            DslProductEditorPhase.ReviewSubmissionInProgress(
+                                uploadToken = event.uploadToken,
                             )
                         }
                     }
@@ -438,9 +460,7 @@ class AfsmExecutableDslCompileCheckTest {
 
             state<DslProductEditorPhase.Published> {
                 on<DslProductEditorEvent.DoneClicked> {
-                    stay {
-                        effect(DslProductEditorEffect.CloseEditor)
-                    }
+                    effect(label = "CloseEditor") { DslProductEditorEffect.CloseEditor }
                 }
             }
         }
