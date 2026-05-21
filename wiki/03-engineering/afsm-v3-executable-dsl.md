@@ -261,7 +261,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
             command(ProductEditorCommand.SaveDraft(context.draft))
         }
 
-        on<ProductEditorEvent.DraftSaved> {
+        on<ProductEditorEvent.DraftSaveCompleted> {
             transitionTo(ProductEditorPhase.DraftSaved)
         }
     }
@@ -366,7 +366,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
             command(ProductEditorCommand.SaveDraft(context.draft))
         }
 
-        on<ProductEditorEvent.DraftSaved> {
+        on<ProductEditorEvent.DraftSaveCompleted> {
             transitionTo(ProductEditorPhase.DraftSaved)
         }
     }
@@ -421,7 +421,7 @@ The machine definition can produce `.mmd` source without source scanning or samp
 ```mermaid
 stateDiagram-v2
   EditingDraft --> SavingDraft: SaveDraftClicked / SaveDraft
-  SavingDraft --> DraftSaved: DraftSaved
+  SavingDraft --> DraftSaved: DraftSaveCompleted
   DraftSaved --> EditingDraft: ContinueEditingClicked
   DraftSaved --> ImageUploadInProgress: SubmitClicked / StartImageUpload
   EditingDraft --> ImageUploadInProgress: SubmitClicked / StartImageUpload
@@ -522,7 +522,7 @@ class ProductEditorViewModel(
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     productRepository.saveDraft(command.draft)
-                    dispatch(ProductEditorEvent.DraftSaved)
+                    dispatch(ProductEditorEvent.DraftSaveCompleted)
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {

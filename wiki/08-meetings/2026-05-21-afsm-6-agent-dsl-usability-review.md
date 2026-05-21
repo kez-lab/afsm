@@ -38,5 +38,5 @@ Scope: review the case-oriented public DSL after removing DSL-level `stay`,
   calls, especially in `onEnter`/`onExit`.
 - Decide whether unlabeled conditional branches to the same target should warn
   or require labels instead of being silently deduplicated in topology.
-- Consider renaming `ProductEditorEvent.DraftSaved` to `DraftSaveCompleted` to
-  avoid phase/event naming overlap.
+- Done: rename `ProductEditorEvent.DraftSaved` to `DraftSaveCompleted` to avoid
+  phase/event naming overlap.

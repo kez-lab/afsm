@@ -88,6 +88,7 @@ The current direction is:
 - Payload phase factories now run after source `onExit` and accepted case actions, so `transitionTo<PayloadPhase> { ... }` observes context updates declared earlier in the same case.
 - Flow `.mmd` output now includes named no-transition condition cases such as validation failures and missing-context branches, while still hiding unlabeled context-only self-loops.
 - The graph Gradle plugin now supports `afsmGraph { mmdOptions.set("Flow"|"Full") }` and `-PafsmMmdOptions=Full`, so Android modules can choose between review-friendly and complete topology output.
+- ProductEditor now uses `DraftSaveCompleted` for the save-result event while keeping `DraftSaved` as the phase name, matching the naming rule that events describe what happened and phases describe the current condition.
 
 ## Core Architecture Position
 

@@ -61,7 +61,7 @@ private fun productEditorMachine(): ProductEditorMachine {
                 command(ProductEditorCommand.SaveDraft(context.draft))
             }
 
-            on<ProductEditorEvent.DraftSaved> {
+            on<ProductEditorEvent.DraftSaveCompleted> {
                 transitionTo(ProductEditorPhase.DraftSaved)
             }
         }

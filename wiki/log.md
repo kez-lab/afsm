@@ -531,3 +531,14 @@
   `docs/graph-generation.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-21] implementation | ProductEditor save event naming cleanup
+
+- Source: six-agent DSL usability review finding that `DraftSaved` was both a
+  phase and an event.
+- Action: Renamed the ProductEditor save-result event to `DraftSaveCompleted`
+  while keeping `DraftSaved` as the phase.
+- Updated: `sample-shop/`, `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`,
+  `docs/product-editor-walkthrough.md`, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

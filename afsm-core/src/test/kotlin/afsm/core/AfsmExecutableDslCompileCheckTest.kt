@@ -391,7 +391,7 @@ class AfsmExecutableDslCompileCheckTest {
                 ),
                 AfsmTopologyTransition(
                     from = "SavingDraft",
-                    event = "DraftSaved",
+                    event = "DraftSaveCompleted",
                     to = "DraftSaved",
                 ),
                 AfsmTopologyTransition(
@@ -473,7 +473,7 @@ class AfsmExecutableDslCompileCheckTest {
                     command(DslProductEditorCommand.SaveDraft(context.draft))
                 }
 
-                on<DslProductEditorEvent.DraftSaved> {
+                on<DslProductEditorEvent.DraftSaveCompleted> {
                     transitionTo(DslProductEditorPhase.DraftSaved)
                 }
             }
@@ -574,7 +574,7 @@ private data class DslProductDraft(
 private sealed interface DslProductEditorEvent {
     data class TitleChanged(val value: String) : DslProductEditorEvent
     data object SaveDraftClicked : DslProductEditorEvent
-    data object DraftSaved : DslProductEditorEvent
+    data object DraftSaveCompleted : DslProductEditorEvent
     data object SubmitClicked : DslProductEditorEvent
     data class ImageUploadSucceeded(val uploadToken: String) : DslProductEditorEvent
     data object DoneClicked : DslProductEditorEvent

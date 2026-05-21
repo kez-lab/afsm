@@ -27,7 +27,7 @@ Current main flow:
 stateDiagram-v2
   [*] --> EditingDraft
   EditingDraft --> SavingDraft: SaveDraftClicked
-  SavingDraft --> DraftSaved: DraftSaved
+  SavingDraft --> DraftSaved: DraftSaveCompleted
   EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]
   EditingDraft --> EditingDraft: SubmitClicked [invalid draft]
   ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded

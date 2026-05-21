@@ -51,7 +51,7 @@ class ProductEditorStateMachineTest {
             context = ProductEditorContext(draft = validDraft),
         )
 
-        val result = machine.transition(state, ProductEditorEvent.DraftSaved)
+        val result = machine.transition(state, ProductEditorEvent.DraftSaveCompleted)
 
         assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
         assertEquals(validDraft, result.state.context.draft)

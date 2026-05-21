@@ -17,7 +17,7 @@ class ProductEditorViewModel(
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     delay(120)
-                    dispatch(ProductEditorEvent.DraftSaved)
+                    dispatch(ProductEditorEvent.DraftSaveCompleted)
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {

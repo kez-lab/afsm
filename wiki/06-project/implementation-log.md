@@ -1419,3 +1419,23 @@ Conclusion:
 
 - Developers can now choose complete graph output from the official Gradle
   entry point instead of writing their own export test.
+
+## [2026-05-21] ProductEditor save event naming cleanup
+
+Change:
+
+- Renamed `ProductEditorEvent.DraftSaved` to
+  `ProductEditorEvent.DraftSaveCompleted`.
+- Updated the ProductEditor state machine, ViewModel command result dispatch,
+  tests, generated graph expectations, and docs.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- ProductEditor now follows the documented naming rule: phases describe current
+  business condition, while result events describe what happened.

@@ -102,7 +102,7 @@ sealed interface ProductEditorEvent {
 
     data object DoneClicked : ProductEditorEvent
 
-    data object DraftSaved : ProductEditorEvent
+    data object DraftSaveCompleted : ProductEditorEvent
 
     data class ImageUploadSucceeded(val uploadToken: String) : ProductEditorEvent
 
