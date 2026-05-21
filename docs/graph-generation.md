@@ -116,6 +116,7 @@ sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 afsmGraph {
     variant.set("debug")
     outputDir.set(layout.buildDirectory.dir("generated/afsm/mmd"))
+    mmdOptions.set("Flow") // or "Full"
 
     // Defaults to the afsm-graph-ksp artifact that matches the graph plugin version.
     processorDependency.set("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
@@ -130,6 +131,14 @@ afsmGraph {
 
 The plugin currently targets one Android unit-test variant, `debug` by default.
 That keeps the MVP predictable and avoids premature multi-variant aggregation.
+
+`Flow` is the default diagram mode. It hides ordinary unlabeled internal
+self-loops such as text input, while preserving named condition, command, and
+effect edges. Use `Full` for complete topology:
+
+```bash
+./gradlew :app:generateAfsmMmd -PafsmMmdOptions=Full
+```
 
 ## What The Plugin Generates
 

@@ -1036,3 +1036,24 @@ Consequences:
   phase.
 - Flow `.mmd` output includes named no-transition condition branches so
   validation and missing-context cases remain visible in generated diagrams.
+
+## [2026-05-21] Expose Flow and Full graph modes through the Gradle plugin
+
+Decision: `generateAfsmMmd` should support both review-friendly `Flow` output
+and complete `Full` topology output through `afsmGraph.mmdOptions` and the
+`-PafsmMmdOptions` Gradle property.
+
+Rationale:
+
+- The core API already exposes `AfsmMmdOptions.Flow` and `AfsmMmdOptions.Full`.
+- Android developers use the Gradle task, not a hand-written export test, so
+  the official entry point must expose the same choice.
+- Review diagrams and audit/debug diagrams have different needs.
+
+Consequences:
+
+- Default `generateAfsmMmd` remains `Flow`.
+- `./gradlew :app:generateAfsmMmd -PafsmMmdOptions=Full` generates complete
+  topology without editing build files.
+- `afsmGraph { mmdOptions.set("Full") }` can make Full output the module
+  default.

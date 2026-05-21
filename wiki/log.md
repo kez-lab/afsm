@@ -520,3 +520,14 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-21-afsm-6-agent-dsl-usability-review.md`,
   `wiki/log.md`.
+
+## [2026-05-21] implementation | Graph plugin Flow and Full options
+
+- Source: six-agent graph usability review finding that `Full` was available in
+  core but not from `generateAfsmMmd`.
+- Action: Added `afsmGraph.mmdOptions`, `-PafsmMmdOptions=Full`, generated test
+  option mapping, TestKit coverage, and docs.
+- Updated: `afsm-graph-gradle-plugin/`, `README.md`, `docs/afsm-public-api.md`,
+  `docs/graph-generation.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

@@ -32,7 +32,8 @@ Scope: review the case-oriented public DSL after removing DSL-level `stay`,
 
 ## Remaining Follow-Ups
 
-- Add a Gradle option for `generateAfsmMmd` to choose Flow versus Full output.
+- Done: add a Gradle option for `generateAfsmMmd` to choose Flow versus Full
+  output.
 - Reduce manual drift between `commandLabels` metadata and actual `command(...)`
   calls, especially in `onEnter`/`onExit`.
 - Decide whether unlabeled conditional branches to the same target should warn

@@ -437,6 +437,7 @@ plugins {
 afsmGraph {
     variant.set("debug") // default
     outputDir.set(layout.buildDirectory.dir("generated/afsm/mmd")) // default
+    mmdOptions.set("Flow") // default; use "Full" for every internal edge
 }
 ```
 
@@ -452,7 +453,13 @@ sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ```
 
-`AfsmMmdOptions.Flow` hides ordinary internal self-loops such as text changes. Use `AfsmMmdOptions.Full` when you need the complete topology.
+`Flow` hides ordinary unlabeled internal self-loops such as text changes, but
+keeps named condition, command, and effect edges. Use `Full` when you need every
+internal edge:
+
+```bash
+./gradlew :sample-shop:generateAfsmMmd -PafsmMmdOptions=Full
+```
 
 ## Runtime Policies
 

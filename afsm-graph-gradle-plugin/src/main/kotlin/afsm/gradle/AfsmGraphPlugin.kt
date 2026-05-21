@@ -19,6 +19,9 @@ public abstract class AfsmGraphExtension @Inject constructor(
 ) {
     public val outputDir: DirectoryProperty = objects.directoryProperty()
 
+    public val mmdOptions: Property<String> = objects.property(String::class.java)
+        .convention("Flow")
+
     public val variant: Property<String> = objects.property(String::class.java)
         .convention("debug")
 
@@ -62,6 +65,9 @@ public class AfsmGraphPlugin : Plugin<Project> {
         extension.outputDir.convention(
             project.layout.buildDirectory.dir("generated/afsm/mmd"),
         )
+        val mmdOptions = project.providers
+            .gradleProperty("afsmMmdOptions")
+            .orElse(extension.mmdOptions)
 
         val generatedTest = project.tasks.register(
             "generateAfsmMmdExportTest",
@@ -96,6 +102,10 @@ public class AfsmGraphPlugin : Plugin<Project> {
                     task.systemProperty(
                         "afsm.mmd.outputDir",
                         extension.outputDir.get().asFile.absolutePath,
+                    )
+                    task.systemProperty(
+                        "afsm.mmd.options",
+                        mmdOptions.get(),
                     )
                 }
             },
@@ -214,11 +224,12 @@ public abstract class GenerateAfsmMmdExportTestTask : DefaultTask() {
                             ?: "build/generated/afsm/mmd",
                     )
                     val registry = generatedRegistry()
+                    val options = mmdOptions()
 
                     AfsmMmdWriter.writeAll(
                         registry = registry,
                         outputDir = outputDir,
-                        options = AfsmMmdOptions.Flow,
+                        options = options,
                     )
 
                     assertTrue(
@@ -235,6 +246,19 @@ public abstract class GenerateAfsmMmdExportTestTask : DefaultTask() {
                         assertTrue(
                             "Invalid Afsm graph file: ${'$'}{entry.fileName}",
                             graphFile.readText().startsWith("stateDiagram-v2"),
+                        )
+                    }
+                }
+
+                private fun mmdOptions(): AfsmMmdOptions {
+                    return when (
+                        val option = System.getProperty("afsm.mmd.options")
+                            ?: "Flow"
+                    ) {
+                        "Flow" -> AfsmMmdOptions.Flow
+                        "Full" -> AfsmMmdOptions.Full
+                        else -> throw AssertionError(
+                            "Unsupported Afsm MMD options: ${'$'}option. Use Flow or Full.",
                         )
                     }
                 }

@@ -1394,3 +1394,28 @@ Conclusion:
 
 - The DSL now follows the order users read in source code, and generated flow
   diagrams include meaningful no-transition branch labels.
+
+## [2026-05-21] Graph plugin Flow and Full options
+
+Change:
+
+- Added `afsmGraph.mmdOptions` with default `Flow`.
+- Added `-PafsmMmdOptions=Full` override support for the `generateAfsmMmd`
+  task.
+- Updated generated graph export tests to map `Flow`/`Full` strings to
+  `AfsmMmdOptions`.
+- Added Gradle TestKit coverage for Full output.
+- Updated README and graph docs.
+
+Verification:
+
+```bash
+./gradlew -p afsm-graph-gradle-plugin test --warning-mode all --no-daemon
+./gradlew :sample-shop:generateAfsmMmd -PafsmMmdOptions=Full --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Developers can now choose complete graph output from the official Gradle
+  entry point instead of writing their own export test.

@@ -225,8 +225,9 @@ fun AfsmTopology.toMmd(
 ): String
 ```
 
-`AfsmMmdOptions.Flow` hides ordinary internal self-loops. Use
-`AfsmMmdOptions.Full` for complete topology.
+`AfsmMmdOptions.Flow` hides ordinary unlabeled internal self-loops. Named
+condition, command, and effect edges remain visible. Use `AfsmMmdOptions.Full`
+for complete topology.
 
 `AfsmTopologyState` can include entry/exit command/effect labels. These labels
 are metadata only; runtime commands/effects must still be emitted in DSL blocks.
@@ -235,6 +236,9 @@ The `io.github.afsm.graph` Gradle plugin is the preferred Android app-module
 entry point for `.mmd` output. It generates the export test internally and
 registers `generateAfsmMmd`; app modules should not maintain a hand-written
 `AfsmMmdExportTest`.
+
+Set `afsmGraph { mmdOptions.set("Full") }` or run with
+`-PafsmMmdOptions=Full` when you need full topology output.
 
 ## afsm-runtime
 

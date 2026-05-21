@@ -84,6 +84,25 @@ class AfsmGraphPluginFunctionalTest {
     }
 
     @Test
+    fun `generateAfsmMmd can use full topology options`() {
+        val projectDir = createAndroidProject(
+            applyKsp = true,
+            configureAfsmGraph = """
+                addProcessorDependency.set(false)
+                mmdOptions.set("Full")
+            """.trimIndent(),
+        )
+        projectDir.writeAfsmCoreTestStubs(expectedOptions = "Full")
+
+        gradle(projectDir)
+            .withArguments(":app:generateAfsmMmd", "--stacktrace")
+            .build()
+
+        val graphFile = projectDir.resolve("app/build/generated/afsm/mmd/FixtureGraph.mmd")
+        assertTrue(graphFile.isFile)
+    }
+
+    @Test
     fun `normal unit tests do not run generated graph export test`() {
         val projectDir = createAndroidProject(
             applyKsp = true,
@@ -224,6 +243,7 @@ class AfsmGraphPluginFunctionalTest {
 
     private fun File.writeAfsmCoreTestStubs(
         includeRegistry: Boolean = true,
+        expectedOptions: String = "Flow",
     ) {
         writeTextFile(
             "app/src/test/kotlin/afsm/core/AfsmCoreStubs.kt",
@@ -234,6 +254,7 @@ class AfsmGraphPluginFunctionalTest {
 
             sealed interface AfsmMmdOptions {
                 data object Flow : AfsmMmdOptions
+                data object Full : AfsmMmdOptions
             }
 
             data class AfsmTopology(
@@ -256,7 +277,7 @@ class AfsmGraphPluginFunctionalTest {
                     outputDir: File,
                     options: AfsmMmdOptions,
                 ) {
-                    check(options == AfsmMmdOptions.Flow)
+                    check(options == AfsmMmdOptions.$expectedOptions)
                     registry.entries.forEach { entry ->
                         val file = outputDir.resolve(entry.fileName)
                         file.parentFile.mkdirs()

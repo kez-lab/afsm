@@ -87,6 +87,7 @@ The current direction is:
 - ProductEditor and Auth examples now make validation failure branches explicit with named `case(..., condition = ...)` blocks instead of relying on a final unconditional fallback case.
 - Payload phase factories now run after source `onExit` and accepted case actions, so `transitionTo<PayloadPhase> { ... }` observes context updates declared earlier in the same case.
 - Flow `.mmd` output now includes named no-transition condition cases such as validation failures and missing-context branches, while still hiding unlabeled context-only self-loops.
+- The graph Gradle plugin now supports `afsmGraph { mmdOptions.set("Flow"|"Full") }` and `-PafsmMmdOptions=Full`, so Android modules can choose between review-friendly and complete topology output.
 
 ## Core Architecture Position
 
