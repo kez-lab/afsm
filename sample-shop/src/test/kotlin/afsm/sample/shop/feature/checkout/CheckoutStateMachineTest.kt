@@ -217,7 +217,7 @@ class CheckoutStateMachineTest {
                 from = "ProductReady",
                 event = "PayClicked",
                 to = "PaymentInProgress",
-                guardLabel = "product loaded",
+                conditionLabel = "product loaded",
             ) in transitions,
         )
         assertTrue(
@@ -225,7 +225,7 @@ class CheckoutStateMachineTest {
                 from = "PaymentInProgress",
                 event = "PaymentSucceeded",
                 to = "Completed",
-                guardLabel = "matching request",
+                conditionLabel = "matching request",
                 effectLabels = listOf("PaymentCompleted"),
             ) in transitions,
         )

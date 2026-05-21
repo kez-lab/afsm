@@ -67,7 +67,7 @@ The `when + transitionTo(Phase) + PhaseEntryPolicy` spike proved a useful concep
 - Graph generation depends on source-code inference.
 - The current phase/event scope is not structurally declared.
 - Entry policy hides behavior that users expect to see near the state.
-- Context update, guard, command emission, and transition are still split across files.
+- Context update, condition checks, command emission, and transition are still split across files.
 - Users must follow conventions precisely or graph extraction and runtime behavior drift apart.
 
 A scoped executable DSL makes the structure explicit:
@@ -75,7 +75,7 @@ A scoped executable DSL makes the structure explicit:
 ```text
 state scope
 -> event handler
--> guard
+-> condition
 -> update context
 -> emit command
 -> transition target
@@ -117,8 +117,10 @@ Accepted direction:
   the typed event payload. This avoids a second update verb while making event
   payload usage visible.
 - Prefer named cases such as `case("valid draft", condition = { ... })` over
-  anonymous guard predicates. The condition still needs domain code, but the
+  anonymous predicates. The condition still needs domain code, but the
   label explains the business branch in code and generated diagrams.
+- Public topology metadata uses `conditionLabel`; the earlier `guardLabel`
+  name is superseded because the user-facing DSL says `condition`.
 - Remove DSL-level `stay(...)` and `otherwise(...)` from the public source
   surface. The low-level `Afsm.stay(...)` reducer helper may remain for custom
   reducers, but graphable `afsmMachine { ... }` users should not need it.
@@ -336,15 +338,16 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         }
 
         on<ProductEditorEvent.SubmitClicked> {
-            transitionTo(
-                phase = ProductEditorPhase.ImageUploadInProgress,
-                guard = { context.draft.isValidForSubmission() },
+            case(
+                label = "valid draft",
+                condition = { context.draft.form.validationError() == null },
             ) {
-                updateContext { copy(draft = draft.normalized(), errorMessage = null) }
+                updateContext { normalizeDraftForSubmit() }
+                transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
 
-            otherwise {
-                updateContext { copy(errorMessage = draft.validationMessage()) }
+            case(label = "invalid draft") {
+                updateContext { withValidationError() }
             }
         }
     }
@@ -365,17 +368,16 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         }
 
         on<ProductEditorEvent.ImageUploadSucceeded> {
-            transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
-                phase = {
-                    ProductEditorPhase.ReviewSubmissionInProgress(
-                        uploadToken = event.uploadToken,
-                    )
-                },
-            ) {
+            case {
                 updateContext {
                     copy(
                         draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
                         errorMessage = null,
+                    )
+                }
+                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+                    ProductEditorPhase.ReviewSubmissionInProgress(
+                        uploadToken = event.uploadToken,
                     )
                 }
             }
@@ -395,15 +397,13 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
     state<ProductEditorPhase.Published> {
         on<ProductEditorEvent.DoneClicked> {
-            stay {
-                effect(ProductEditorEffect.CloseEditor)
-            }
+            effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
         }
     }
 }
 ```
 
-This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `transitionTo`, `transitionTo<PayloadPhase>`, `stay`, `otherwise`, `updateContext`, `onEnter`, `command`, and `effect`.
+This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `case`, `transitionTo`, `transitionTo<PayloadPhase>`, `updateContext`, `onEnter`, `onExit`, `command`, `ignore`, `invalid`, and `effect`.
 
 ## MMD Output
 
@@ -563,13 +563,13 @@ state(phase) { ... }
 state<PSubtype> { ... }
 on<EventSubtype> { ... }
 onEnter { ... }
-transitionTo(phase, guard = { ... }) { ... }
-transitionTo<PayloadPhase>(phase = { ... }) { ... }
-stay { ... }
-otherwise { ... }
+case(label = "valid branch", condition = { ... }) { ... }
+transitionTo(phase)
+transitionTo<PayloadPhase> { ... }
 ignore(reason = "...")
 invalid(reason = "...")
 updateContext { ... }
+updateContext { context, event -> ... }
 command(command)
 effect(effect)
 ```
@@ -587,7 +587,7 @@ Result on 2026-05-09:
 - Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. It was removed before public API stabilization.
 - Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `case`, `transitionTo`, `updateContext`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
-- Verified that event subtype access, typed payload phase access, guard fallback, entry command emission, and effect-only stayed transitions work in compiled Kotlin tests.
+- Verified that event subtype access, typed payload phase access, named condition branches, entry command emission, and effect-only no-transition cases work in compiled Kotlin tests.
 - Superseded by the follow-up graphability spike and 2026-05-21 usability pass: branch targets now need to be declared through `case { transitionTo(...) }` or direct unconditional `transitionTo(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
 
 ### Step 2: Interpreter Spike
@@ -596,7 +596,7 @@ Implement enough interpreter behavior to execute one event:
 
 - find current state definition,
 - find matching event handler,
-- evaluate guards in declaration order,
+- evaluate conditions in declaration order,
 - apply `updateContext` operations in order,
 - apply one transition target,
 - run exit/transition/entry outputs in deterministic order,
@@ -616,13 +616,13 @@ Success criteria:
 
 - ProductEditor `.mmd` graph is generated from the machine object.
 - No source scanning is required.
-- Optional command, effect, guard, kind, and fallback metadata can be attached to topology edges.
+- Optional command, effect, condition, kind, and fallback metadata can be attached to topology edges.
 
 Result on 2026-05-09:
 
 - Added `AfsmTopology`, `AfsmTopologyState`, `AfsmTopologyTransition`, and `AfsmTopology.toMmd()`.
 - Added machine `topology`.
-- Changed event declarations so branch targets are known at build time: `on<Event> { transitionTo(...) { ... } }`, `on<Event> { transitionTo<PayloadPhase>(phase = { ... }) { ... } }`, `stay { ... }`, and `otherwise { ... }`.
+- Changed event declarations so branch targets are known at build time through direct `transitionTo(...)` calls and named `case(...) { transitionTo(...) }` branches. The earlier `stay`/`otherwise` branch surface is superseded.
 - Verified topology export without executing sample events.
 - Added `:sample-shop:generateAfsmMmd` to generate `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Current limitation: topology metadata is available on declared edges, but entry-node rendering is still future work.

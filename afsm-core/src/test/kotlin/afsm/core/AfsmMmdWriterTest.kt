@@ -126,7 +126,7 @@ class AfsmMmdWriterTest {
                     from = "Editing",
                     event = "SaveClicked",
                     to = "Saving",
-                    guardLabel = "valid title",
+                    conditionLabel = "valid title",
                 ),
                 AfsmTopologyTransition(
                     from = "Editing",

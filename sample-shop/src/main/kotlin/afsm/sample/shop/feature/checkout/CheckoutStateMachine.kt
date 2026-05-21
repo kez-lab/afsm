@@ -158,7 +158,7 @@ private fun checkoutMachine(): CheckoutMachine {
 
                 ignore(
                     reason = "Stale payment success result.",
-                    guard = { phase.requestId != event.requestId },
+                    condition = { phase.requestId != event.requestId },
                 )
             }
 
@@ -175,7 +175,7 @@ private fun checkoutMachine(): CheckoutMachine {
 
                 ignore(
                     reason = "Stale payment failure result.",
-                    guard = { phase.requestId != event.requestId },
+                    condition = { phase.requestId != event.requestId },
                 )
             }
         }

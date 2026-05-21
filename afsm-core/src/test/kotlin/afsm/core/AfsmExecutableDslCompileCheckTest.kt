@@ -107,7 +107,7 @@ class AfsmExecutableDslCompileCheckTest {
                 from = "EditingDraft",
                 event = "SubmitClicked",
                 to = "ImageUploadInProgress",
-                guardLabel = "valid draft",
+                conditionLabel = "valid draft",
             ) in transitions,
         )
         assertTrue(
@@ -329,7 +329,7 @@ class AfsmExecutableDslCompileCheckTest {
                     from = "EditingDraft",
                     event = "SubmitClicked",
                     to = "ImageUploadInProgress",
-                    guardLabel = "valid draft",
+                    conditionLabel = "valid draft",
                 ),
                 AfsmTopologyTransition(
                     from = "EditingDraft",

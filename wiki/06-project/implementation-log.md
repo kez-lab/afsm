@@ -1321,3 +1321,27 @@ Conclusion:
   `otherwise` for normal usage.
 - `transitionTo` now reads as phase change only, while named cases carry
   conditions, context updates, commands, effects, and graph labels.
+
+## [2026-05-21] Public condition terminology cleanup
+
+Change:
+
+- Renamed `AfsmTopologyTransition.guardLabel` to `conditionLabel`.
+- Renamed optional `ignore`/`invalid` branch parameters from `guard` to
+  `condition`.
+- Updated sample expectations and canonical docs so DSL source, topology
+  metadata, and `.mmd` labels use one term.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-core:compileTestKotlin :sample-shop:compileDebugKotlin :sample-shop:compileDebugUnitTestKotlin --no-daemon
+./gradlew :afsm-core:apiDump --no-daemon
+./gradlew :afsm-core:apiCheck :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The current public surface no longer asks Android users to learn both
+  `condition` and `guard` for the same idea.

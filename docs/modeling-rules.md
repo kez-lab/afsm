@@ -90,19 +90,22 @@ UI behavior, but they are not durable state.
 If losing the output across process death or a stopped lifecycle would break
 the product flow, do not model it as effect-only.
 
-## stay vs ignore vs invalid
+## No-Transition Cases vs Ignore vs Invalid
 
 | API | Meaning |
 |---|---|
 | `transitionTo` | accepted phase change |
-| `stay` | accepted event with no phase change |
-| `otherwise` | fallback handled branch after guards fail |
+| `case { updateContext(...) }` | accepted event with no phase change |
+| `updateContext { ... }` | shorthand for context-only event handling |
 | `ignore` | expected no-op event, such as duplicate submit while already submitting |
 | omitted handler | invalid by default because the event is not valid in that phase |
 | `invalid(reason)` | explicit invalid branch when a clearer diagnostic is worth writing |
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
+Low-level reducers may still use `Afsm.stay(...)`, but graphable DSL examples
+should model no-transition handling by omitting `transitionTo(...)` from the
+accepted case.
 
 ## First Reading Order
 

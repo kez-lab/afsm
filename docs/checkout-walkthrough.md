@@ -153,7 +153,7 @@ case(
 
 ignore(
     reason = "Stale payment success result.",
-    guard = { phase.requestId != event.requestId },
+    condition = { phase.requestId != event.requestId },
 )
 ```
 

@@ -314,7 +314,7 @@ class ProductEditorStateMachineTest {
                 from = "EditingDraft",
                 event = "SubmitClicked",
                 to = "ImageUploadInProgress",
-                guardLabel = "valid draft",
+                conditionLabel = "valid draft",
             ) in transitions,
         )
         assertTrue(

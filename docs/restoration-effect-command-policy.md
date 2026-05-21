@@ -105,18 +105,14 @@ data class FormContext(
 )
 
 on<FormEvent.SubmitFailed> {
-    stay {
-        updateContext {
-            copy(pendingMessage = "Submit failed")
-        }
+    updateContext {
+        copy(pendingMessage = "Submit failed")
     }
 }
 
 on<FormEvent.PendingMessageShown> {
-    stay {
-        updateContext {
-            copy(pendingMessage = null)
-        }
+    updateContext {
+        copy(pendingMessage = null)
     }
 }
 ```

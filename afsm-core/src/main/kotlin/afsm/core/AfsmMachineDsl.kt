@@ -311,10 +311,11 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      * the declared branches in declaration order and executes the first matching
      * branch.
      *
-     * Prefer a single success [AfsmEventBranchScope.transitionTo] plus
-     * [AfsmEventBranchScope.otherwise] for validation failure. Multiple guarded
-     * transition branches are allowed for real alternative destinations, but they
-     * should read as mutually exclusive state-machine branches.
+     * Prefer named [AfsmEventBranchScope.case] branches for validation or
+     * domain alternatives so code and generated diagrams say why a branch was
+     * accepted. Multiple conditional transition branches are allowed for real
+     * alternative destinations, but they should read as mutually exclusive
+     * state-machine branches.
      */
     public inline fun <reified EV : E> on(
         noinline build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
@@ -420,7 +421,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
                 eventLabel
             },
             targetFactory = builtCase.targetFactory ?: { null },
-            guardLabel = if (builtCase.targetLabel != null) label else null,
+            conditionLabel = if (builtCase.targetLabel != null) label else null,
             commandLabels = builtCase.commandLabels,
             effectLabels = builtCase.effectLabels,
             kind = if (builtCase.targetLabel != null) {
@@ -429,7 +430,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
                 AfsmTopologyTransitionKind.Internal
             },
             isFallback = false,
-            guard = condition,
+            condition = condition,
             block = {
                 builtCase.actions.forEach { action ->
                     action()
@@ -441,8 +442,9 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     /**
      * Handles this event by updating context without changing phase.
      *
-     * This is the preferred replacement for `stay { updateContext { ... } }`
-     * when the event only changes extended state such as form fields or errors.
+     * Use this when the event only changes extended state such as form fields
+     * or errors. Because no phase target is declared, the machine remains in
+     * the current phase.
      */
     public fun updateContext(
         label: String? = null,
@@ -543,18 +545,18 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * does nothing, such as a duplicate submit while already submitting.
      *
      * [reason] is diagnostic text surfaced through [AfsmDecision.Ignored].
-     * [guard] optionally limits when the ignored decision applies.
+     * [condition] optionally limits when the ignored decision applies.
      *
      * Ignored branches produce no topology edge and any state/command/effect
      * output is dropped by the runtime.
      */
     public fun ignore(
         reason: String? = null,
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Ignored(reason),
-            guard = guard,
+            condition = condition,
         )
     }
 
@@ -566,18 +568,18 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * policy.
      *
      * [reason] is diagnostic text surfaced through [AfsmDecision.Invalid].
-     * [guard] optionally limits when the invalid decision applies.
+     * [condition] optionally limits when the invalid decision applies.
      *
      * Invalid branches produce no topology edge and do not run entry/exit
      * handlers.
      */
     public fun invalid(
         reason: String? = null,
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Invalid(reason),
-            guard = guard,
+            condition = condition,
         )
     }
 
@@ -585,19 +587,19 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
         targetFactory: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?,
-        guardLabel: String?,
+        conditionLabel: String?,
         commandLabels: List<String>,
         effectLabels: List<String>,
         kind: AfsmTopologyTransitionKind,
         isFallback: Boolean,
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
         block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit,
     ) {
         transitions += AfsmTopologyTransition(
             from = stateLabel,
             event = eventLabelOverride,
             to = targetLabel,
-            guardLabel = guardLabel,
+            conditionLabel = conditionLabel,
             commandLabels = commandLabels,
             effectLabels = effectLabels,
             kind = kind,
@@ -612,7 +614,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
                 execution = execution,
             )
 
-            if (!scope.guard()) {
+            if (!scope.condition()) {
                 return@AfsmEventBranch AfsmBranchResult.Unmatched
             }
 
@@ -630,7 +632,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     internal fun addDecisionBranch(
         decision: AfsmDecision,
-        guard: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
+        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
     ) {
         branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
             val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
@@ -641,7 +643,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
                 execution = execution,
             )
 
-            if (!scope.guard()) {
+            if (!scope.condition()) {
                 return@AfsmEventBranch AfsmBranchResult.Unmatched
             }
 
@@ -909,7 +911,7 @@ public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS
      * pipeline.
      *
      * For a phase-changing transition this is after source `onExit` has run.
-     * For a stayed branch this starts as the current state's context.
+     * For a no-transition case this starts as the current state's context.
      */
     public val context: X
         get() = execution.context

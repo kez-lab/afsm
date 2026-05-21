@@ -29,11 +29,11 @@ The current direction is:
 - Product registration is now the stronger FSM reference flow: draft editing, mock image upload, review rejection, resubmission, approval, publishing, and close effect.
 - Android CLI smoke verification passed for signup and product registration, with layout/screenshot evidence under `raw/verification/2026-05-09-sample-shop-fsm-smoke/`.
 - The canonical v3 API direction is now a scoped executable machine DSL: `state`, `on`, named `case`, phase-only `transitionTo`, `updateContext`, `onEnter`, `onExit`, `command`, and `effect` in one machine definition.
-- Afsm DSL public KDoc now explains phase/context/event/command/effect type parameters, runtime parameters, topology-only metadata parameters, guard behavior, branch ordering, and entry/exit execution order.
+- Afsm DSL public KDoc now explains phase/context/event/command/effect type parameters, runtime parameters, topology-only metadata parameters, condition behavior, branch ordering, and entry/exit execution order.
 - `afsm-core` now distinguishes `AfsmReducer<S, E, C, F>` as the low-level host-facing contract, `AfsmMachine<S, E, C, F>` as the graphable feature-boundary machine, and `AfsmPhaseMachine<P, X, E, C, F>` as the DSL-built phase/context machine.
 - The pre-release `AfsmGraphReducer` name was removed from the public API before release docs; new graphable code should use `AfsmMachine<State, Event, Command, Effect>`.
 - Deprecated pre-release aliases and the temporary `AfsmMachineAdapter` base were removed from the public source surface. New graphable code uses `AfsmReducer`, `AfsmMachine`, `afsmMachine`, and `AfsmState`.
-- The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, guard fallback, DSL build validation, and UI-side effect emission.
+- The executable DSL spike passes ProductEditor-like core tests for phase transitions, context updates, `onExit -> transition -> onEnter` ordering, typed payload phases, named conditions, DSL build validation, and UI-side effect emission.
 - The executable DSL now exposes `AfsmPhaseMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable named `case(...)` blocks and phase-only `transitionTo(...)`.
 - `AfsmState<P, Context>` is now the standard phase/context state value. `AfsmPhaseMachine` directly implements `AfsmMachine<AfsmState<P, Context>, ...>`.
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
@@ -61,7 +61,7 @@ The current direction is:
 - The failed intermediate idea of hiding `SavingDraft`/`DraftSaved` as context flags was rejected; meaningful flow states must remain phases so the state diagram stays visible.
 - ProductEditor has now been migrated from the phased helper to the executable DSL while keeping `State = Phase + Context`; `ProductEditorStateMachine.topology` exposes `.mmd` graph metadata from the real sample implementation.
 - ProductEditor submit/resubmit transitions now stay inline inside each event branch; only context transformations are helperized so the FSM flow remains readable in the machine body.
-- ProductEditor validation failure is modeled as `otherwise` staying in the current phase with a context error, not as a second `transitionTo` competing with the success transition.
+- ProductEditor validation failure is modeled as a named no-transition `case` that updates context with an error, not as a second `transitionTo` competing with the success transition.
 - Android CLI smoke verification passed after the ProductEditor executable DSL migration, with layout/screenshot evidence under `raw/verification/2026-05-09-product-editor-executable-dsl-smoke/`.
 - ProductEditor now uses `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` and delegates `ProductEditorStateMachine` directly to the DSL machine, removing the previous phase/context adapter mapping.
 - Kotlin `typealias` cannot share a same-named factory with the aliased constructor, so ProductEditor uses a lowercase `productEditorState()` factory for default initial state construction.
@@ -83,6 +83,7 @@ The current direction is:
 - A 2026-05-19 six-agent usability loop simplified first-use onboarding, added terminal-state `state(phase)` convenience, moved Auth to a render-state UI boundary, made Checkout primary UI actions explicit, documented ProductEditor transition execution order, added `docs/graph-generation.md`, and clarified the internal beta adoption contract.
 - The first graph Gradle plugin slice, KSP/Gradle functional verification, plugin/processor version synchronization, and external consumer version alignment are implemented. The remaining graph-tooling concerns are multi-variant/multi-module aggregation and eventual graph API/module-boundary decisions before broad external adoption.
 - A case-oriented DSL usability pass is in progress. New public event-branch helpers let examples use `case(label, condition = ...) { updateContext(...); transitionTo(...) }`, direct `updateContext(...)`, event-aware `updateContext { context, event -> ... }`, and `effect(label) { ... }`. Public examples should now treat `transitionTo` as phase change only and avoid `stay`/`otherwise` usage in the graphable DSL.
+- Public topology transition metadata now uses `conditionLabel`, matching the DSL's `condition = { ... }` vocabulary. The earlier `guardLabel` name is superseded before release.
 
 ## Core Architecture Position
 

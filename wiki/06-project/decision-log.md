@@ -967,3 +967,24 @@ Consequences:
   should be considered removal/deprecation candidates before public API freeze.
 - Graph generation still comes from the executable DSL because each case records
   its transition target and labels at build time.
+
+## [2026-05-21] Use condition terminology in public topology
+
+Decision: Rename public topology branch metadata from `guardLabel` to
+`conditionLabel`, and keep public DSL parameters as `condition`.
+
+Rationale:
+
+- Android developers first meet the API through `case(label, condition = ...)`;
+  generated topology should use the same word.
+- `guard` is valid statechart vocabulary, but it adds one more concept for
+  beginners while the DSL already exposes ordinary Kotlin boolean conditions.
+- This is pre-release public API, and the user explicitly allowed breaking
+  changes to improve usability.
+
+Consequences:
+
+- `AfsmTopologyTransition.conditionLabel` is the current public field.
+- `ignore` and `invalid` use `condition = { ... }` for optional matching.
+- Historical wiki notes may still mention guard vocabulary as superseded
+  design history, but current public docs and examples should not.

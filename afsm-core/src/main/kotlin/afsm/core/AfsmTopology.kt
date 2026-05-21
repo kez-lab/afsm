@@ -28,7 +28,7 @@ public data class AfsmTopologyTransition(
     public val from: String,
     public val event: String,
     public val to: String,
-    public val guardLabel: String? = null,
+    public val conditionLabel: String? = null,
     public val commandLabels: List<String> = emptyList(),
     public val effectLabels: List<String> = emptyList(),
     public val kind: AfsmTopologyTransitionKind = AfsmTopologyTransitionKind.External,
@@ -119,7 +119,7 @@ private fun AfsmTopologyTransition.shouldRender(options: AfsmMmdOptions): Boolea
 
 private fun AfsmTopologyTransition.mmdLabel(): String {
     val parts = mutableListOf(event)
-    guardLabel?.let { label ->
+    conditionLabel?.let { label ->
         parts += "[$label]"
     }
     if (commandLabels.isNotEmpty()) {

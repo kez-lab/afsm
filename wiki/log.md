@@ -481,3 +481,14 @@
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-21] implementation | Public condition terminology cleanup
+
+- Source: follow-up review of the case-oriented DSL public API vocabulary.
+- Action: Renamed public topology metadata from `guardLabel` to
+  `conditionLabel`, aligned `ignore`/`invalid` optional predicates with
+  `condition = { ... }`, and updated canonical docs/wiki wording.
+- Updated: `afsm-core/`, `sample-shop/`, `docs/`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

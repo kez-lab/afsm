@@ -79,7 +79,7 @@ Resolved:
 - The first `afsm-graph-ksp` slice now works for two real graphable state machines: `AuthStateMachine` and `ProductEditorStateMachine`.
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
-- `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; guard labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
+- `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; condition labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
 - Use `AfsmReducer<S, E, C, F>` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature boundaries, and `AfsmPhaseMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
 - Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.

@@ -281,10 +281,10 @@ public final class afsm/core/AfsmTopologyTransition {
 	public static synthetic fun copy$default (Lafsm/core/AfsmTopologyTransition;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lafsm/core/AfsmTopologyTransitionKind;ZILjava/lang/Object;)Lafsm/core/AfsmTopologyTransition;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCommandLabels ()Ljava/util/List;
+	public final fun getConditionLabel ()Ljava/lang/String;
 	public final fun getEffectLabels ()Ljava/util/List;
 	public final fun getEvent ()Ljava/lang/String;
 	public final fun getFrom ()Ljava/lang/String;
-	public final fun getGuardLabel ()Ljava/lang/String;
 	public final fun getKind ()Lafsm/core/AfsmTopologyTransitionKind;
 	public final fun getTo ()Ljava/lang/String;
 	public fun hashCode ()I
