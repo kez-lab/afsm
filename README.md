@@ -195,6 +195,7 @@ sealed interface DraftPhase {
 
 data class DraftContext(
     val title: String = "",
+    val errorMessage: String? = null,
 )
 
 typealias DraftState = AfsmState<DraftPhase, DraftContext>
@@ -223,12 +224,27 @@ private fun draftMachine(): DraftMachine = afsmMachine {
     state(DraftPhase.Editing) {
         on<DraftEvent.TitleChanged> {
             updateContext { context, event ->
-                context.copy(title = event.value)
+                context.copy(
+                    title = event.value,
+                    errorMessage = null,
+                )
             }
         }
 
         on<DraftEvent.SaveClicked> {
-            transitionTo(DraftPhase.Saving)
+            case(
+                label = "valid title",
+                condition = { context.title.isNotBlank() },
+            ) {
+                transitionTo(DraftPhase.Saving)
+            }
+
+            case(
+                label = "missing title",
+                condition = { context.title.isBlank() },
+            ) {
+                updateContext { copy(errorMessage = "Title is required.") }
+            }
         }
     }
 
@@ -246,12 +262,16 @@ private fun draftMachine(): DraftMachine = afsmMachine {
 }
 ```
 
-`transitionTo(...)` changes phase. If an event only updates context or emits an output, handle it with `updateContext(...)` or `effect(...)` without calling `transitionTo(...)`.
+`case(...)` branches are checked in declaration order. The first branch whose
+`condition` returns `true` handles the event; if none match, the event is
+invalid for the current phase. `transitionTo(...)` changes phase. If an event
+only updates context or emits an output, handle it with `updateContext(...)` or
+`effect(...)` without calling `transitionTo(...)`.
 
 Phase-changing transitions run:
 
 ```text
-onExit -> case actions -> onEnter
+onExit -> case actions -> target phase factory -> onEnter
 ```
 
 Initial state construction does not run `onEnter`. Trigger startup work with an explicit event such as `ScreenEntered`.

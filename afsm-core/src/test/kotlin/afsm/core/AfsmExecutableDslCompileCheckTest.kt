@@ -113,8 +113,9 @@ class AfsmExecutableDslCompileCheckTest {
         assertTrue(
             AfsmTopologyTransition(
                 from = "EditingDraft",
-                event = "SubmitClicked [invalid draft]",
+                event = "SubmitClicked",
                 to = "EditingDraft",
+                conditionLabel = "invalid draft",
                 kind = AfsmTopologyTransitionKind.Internal,
             ) in transitions,
         )
@@ -181,6 +182,56 @@ class AfsmExecutableDslCompileCheckTest {
         )
 
         assertEquals("exit;transition;enter;", result.state.context)
+    }
+
+    @Test
+    fun `payload phase factory observes context after exit and case actions`() {
+        val machine = afsmMachine<
+            DslProductEditorPhase,
+            String,
+            DslProductEditorEvent,
+            DslProductEditorCommand,
+            DslProductEditorEffect,
+            > {
+            initial(
+                phase = DslProductEditorPhase.EditingDraft,
+                context = "",
+            )
+
+            state(DslProductEditorPhase.EditingDraft) {
+                onExit {
+                    updateContext { this + "exit;" }
+                }
+
+                on<DslProductEditorEvent.ImageUploadSucceeded> {
+                    case {
+                        updateContext { this + "case;" }
+                        transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
+                            DslProductEditorPhase.ReviewSubmissionInProgress(
+                                uploadToken = context,
+                            )
+                        }
+                    }
+                }
+            }
+
+            state<DslProductEditorPhase.ReviewSubmissionInProgress> {
+                onEnter {
+                    updateContext { this + "enter:${phase.uploadToken};" }
+                }
+            }
+        }
+
+        val result = machine.transition(
+            state = machine.initialState,
+            event = DslProductEditorEvent.ImageUploadSucceeded(uploadToken = "ignored"),
+        )
+
+        assertEquals(
+            DslProductEditorPhase.ReviewSubmissionInProgress(uploadToken = "exit;case;"),
+            result.state.phase,
+        )
+        assertEquals("exit;case;enter:exit;case;;", result.state.context)
     }
 
     @Test
@@ -333,8 +384,9 @@ class AfsmExecutableDslCompileCheckTest {
                 ),
                 AfsmTopologyTransition(
                     from = "EditingDraft",
-                    event = "SubmitClicked [invalid draft]",
+                    event = "SubmitClicked",
                     to = "EditingDraft",
+                    conditionLabel = "invalid draft",
                     kind = AfsmTopologyTransitionKind.Internal,
                 ),
                 AfsmTopologyTransition(
@@ -349,7 +401,7 @@ class AfsmExecutableDslCompileCheckTest {
                 ),
                 AfsmTopologyTransition(
                     from = "Published",
-                    event = "DoneClicked [CloseEditor]",
+                    event = "DoneClicked",
                     to = "Published",
                     effectLabels = listOf("CloseEditor"),
                     kind = AfsmTopologyTransitionKind.Internal,

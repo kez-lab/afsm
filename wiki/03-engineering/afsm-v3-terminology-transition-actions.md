@@ -5,6 +5,12 @@ updated: 2026-05-09
 
 # Afsm v3 Terminology and Transition Actions
 
+> Current status: this page is historical terminology context. The canonical
+> current DSL is [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]]. Current
+> source examples should use `case(label, condition = ...)`, `command(...)`,
+> `conditionLabel`, and phase-only `transitionTo(...)`; older `guard`/`action`
+> snippets below are superseded design history.
+
 This document clarifies the `State` / `Event` / `Command` / `Effect` model after the ProductEditor discussion.
 
 The main clarification is:

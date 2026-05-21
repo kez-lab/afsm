@@ -1365,3 +1365,32 @@ Conclusion:
 
 - The DSL examples now avoid recreating `otherwise` through an unconditional
   final case in validation flows.
+
+## [2026-05-21] Payload factory ordering and graph visibility hardening
+
+Change:
+
+- Changed DSL execution so payload phase factories run after `onExit` and case
+  actions instead of before them.
+- Added a regression test proving `transitionTo<PayloadPhase> { context }`
+  observes context after exit and case updates.
+- Updated Checkout missing-product branches to use explicit conditions and
+  added no-command/no-effect stayed-branch tests.
+- Updated Flow `.mmd` rendering so named no-transition condition cases remain
+  visible.
+- Fixed public docs that still showed old `transitionTo(...) { ... }` block
+  syntax or duplicate command emission.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-core:compileTestKotlin :sample-shop:compileDebugKotlin :sample-shop:compileDebugUnitTestKotlin --no-daemon
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+./gradlew :afsm-core:apiCheck --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The DSL now follows the order users read in source code, and generated flow
+  diagrams include meaningful no-transition branch labels.

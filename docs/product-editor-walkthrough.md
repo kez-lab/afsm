@@ -29,13 +29,15 @@ stateDiagram-v2
   EditingDraft --> SavingDraft: SaveDraftClicked
   SavingDraft --> DraftSaved: DraftSaved
   EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]
+  EditingDraft --> EditingDraft: SubmitClicked [invalid draft]
   ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded
   ReviewSubmissionInProgress --> Rejected: ReviewRejected
   Rejected --> ImageUploadInProgress: ResubmitClicked [valid draft]
+  Rejected --> Rejected: ResubmitClicked [invalid draft]
   ReviewSubmissionInProgress --> Approved: ReviewApproved
   Approved --> PublishInProgress: PublishClicked
   PublishInProgress --> Published: PublishSucceeded
-  Published --> Published: DoneClicked
+  Published --> Published: DoneClicked ! CloseEditor
 ```
 
 Generated file:
@@ -149,12 +151,15 @@ This keeps transition branches focused on phase movement and context updates.
 For a phase-changing branch, Afsm runs:
 
 ```text
-source onExit -> case actions -> target onEnter
+source onExit -> case actions -> target phase factory -> target onEnter
 ```
 
-If a source phase has no `onExit`, Afsm skips that step. In the payload-phase
-overload, `phase = { ... }` creates the next phase value, while the trailing
-block is the edge logic that updates context or emits commands/effects.
+If a source phase has no `onExit`, Afsm skips that step. For payload phases,
+call `transitionTo<PayloadPhase> { ... }` inside a `case` to create the next
+phase value. Keep context updates, commands, and effects as separate statements
+in that case so `transitionTo` keeps one meaning: phase change.
+The payload phase factory runs after the case actions, so it sees context
+updates made earlier in the same case.
 
 That order matters when the target `onEnter` command reads updated context.
 For example, image upload success increments `reviewAttempt` in the transition
@@ -163,19 +168,18 @@ block, then `ReviewSubmissionInProgress.onEnter` submits the updated draft:
 ```kotlin
 state(ProductEditorPhase.ImageUploadInProgress) {
     on<ProductEditorEvent.ImageUploadSucceeded> {
-        transitionTo<ProductEditorPhase.ReviewSubmissionInProgress>(
-            phase = {
-                ProductEditorPhase.ReviewSubmissionInProgress(
-                    uploadToken = event.uploadToken,
-                )
-            },
-        ) {
+        case {
             updateContext {
                 copy(
                     draft = draft.copy(
                         reviewAttempt = draft.reviewAttempt + 1,
                     ),
                     errorMessage = null,
+                )
+            }
+            transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+                ProductEditorPhase.ReviewSubmissionInProgress(
+                    uploadToken = event.uploadToken,
                 )
             }
         }

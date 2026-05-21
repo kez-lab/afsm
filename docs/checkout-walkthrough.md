@@ -160,6 +160,31 @@ ignore(
 This is the reference pattern for async work that can complete after retry or
 screen movement.
 
+## Missing Context Branches
+
+When a phase requires context data, model the negative branch explicitly instead
+of relying on an unconditional fallback case:
+
+```kotlin
+case(
+    label = "product loaded",
+    condition = { context.product != null },
+) {
+    transitionTo<CheckoutPhase.PaymentInProgress> {
+        CheckoutPhase.PaymentInProgress(requestId = context.nextPaymentRequestId + 1)
+    }
+}
+
+case(
+    label = "missing product",
+    condition = { context.product == null },
+) {
+    updateContext { copy(errorMessage = "Product is required before payment.") }
+}
+```
+
+This keeps source code and generated `.mmd` labels aligned.
+
 ## Durable Completion Plus Optional Effect
 
 Payment completion is modeled as state:

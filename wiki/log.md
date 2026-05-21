@@ -505,3 +505,18 @@
   `wiki/03-engineering/sample-shop-reference-app.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-21] implementation | Payload factory ordering and graph visibility hardening
+
+- Source: six-agent Android developer usability review of the case-oriented
+  DSL.
+- Action: Moved payload phase factory execution after exit/case actions, made
+  named no-transition condition cases visible in Flow `.mmd`, fixed Checkout
+  missing-product conditions/tests, and corrected public docs.
+- Updated: `afsm-core/`, `sample-shop/`, `README.md`, `docs/`,
+  `wiki/index.md`,
+  `wiki/00-context/current-state.md`, `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/03-engineering/afsm-v3-terminology-transition-actions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-05-21-afsm-6-agent-dsl-usability-review.md`,
+  `wiki/log.md`.

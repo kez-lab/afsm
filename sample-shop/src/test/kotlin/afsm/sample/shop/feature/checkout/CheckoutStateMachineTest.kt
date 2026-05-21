@@ -81,6 +81,26 @@ class CheckoutStateMachineTest {
     }
 
     @Test
+    fun `pay clicked without product stays ready and records error`() {
+        val state = checkoutState(
+            productId = product.id,
+            phase = CheckoutPhase.ProductReady,
+            context = CheckoutContext(
+                productId = product.id,
+                product = null,
+            ),
+        )
+
+        val result = machine.transition(state, CheckoutEvent.PayClicked)
+
+        assertIs<AfsmDecision.Stayed>(result.decision)
+        assertEquals(CheckoutPhase.ProductReady, result.state.phase)
+        assertEquals("Product is required before payment.", result.state.context.errorMessage)
+        assertEquals(emptyList(), result.commands)
+        assertEquals(emptyList(), result.effects)
+    }
+
+    @Test
     fun `payment failure enters failure phase and retry can emit payment command`() {
         val failed = machine.transition(
             state = checkoutState(
@@ -114,6 +134,27 @@ class CheckoutStateMachineTest {
             ),
             retry.commands,
         )
+    }
+
+    @Test
+    fun `retry clicked without product stays failed and records error`() {
+        val state = checkoutState(
+            productId = product.id,
+            phase = CheckoutPhase.PaymentFailed,
+            context = CheckoutContext(
+                productId = product.id,
+                product = null,
+                errorMessage = "Previous failure.",
+            ),
+        )
+
+        val result = machine.transition(state, CheckoutEvent.RetryClicked)
+
+        assertIs<AfsmDecision.Stayed>(result.decision)
+        assertEquals(CheckoutPhase.PaymentFailed, result.state.phase)
+        assertEquals("Product is required before payment.", result.state.context.errorMessage)
+        assertEquals(emptyList(), result.commands)
+        assertEquals(emptyList(), result.effects)
     }
 
     @Test
@@ -234,6 +275,7 @@ class CheckoutStateMachineTest {
 
         assertTrue("Idle --> ProductLoading: ScreenEntered" in mmd)
         assertTrue("ProductReady --> PaymentInProgress: PayClicked [product loaded]" in mmd)
+        assertTrue("ProductReady --> ProductReady: PayClicked [missing product]" in mmd)
         assertTrue("PaymentInProgress --> Completed: PaymentSucceeded [matching request]" in mmd)
     }
 }

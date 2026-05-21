@@ -85,6 +85,8 @@ The current direction is:
 - A case-oriented DSL usability pass is in progress. New public event-branch helpers let examples use `case(label, condition = ...) { updateContext(...); transitionTo(...) }`, direct `updateContext(...)`, event-aware `updateContext { context, event -> ... }`, and `effect(label) { ... }`. Public examples should now treat `transitionTo` as phase change only and avoid `stay`/`otherwise` usage in the graphable DSL.
 - Public topology transition metadata now uses `conditionLabel`, matching the DSL's `condition = { ... }` vocabulary. The earlier `guardLabel` name is superseded before release.
 - ProductEditor and Auth examples now make validation failure branches explicit with named `case(..., condition = ...)` blocks instead of relying on a final unconditional fallback case.
+- Payload phase factories now run after source `onExit` and accepted case actions, so `transitionTo<PayloadPhase> { ... }` observes context updates declared earlier in the same case.
+- Flow `.mmd` output now includes named no-transition condition cases such as validation failures and missing-context branches, while still hiding unlabeled context-only self-loops.
 
 ## Core Architecture Position
 

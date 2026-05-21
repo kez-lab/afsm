@@ -45,7 +45,8 @@ public data class AfsmMmdOptions(
     public companion object {
         /**
          * Flow-oriented diagram for README/docs/reviews. Text-field self-loops
-         * are hidden unless they are fallback, command, or effect branches.
+         * are hidden unless they are named condition, fallback, command, or
+         * effect branches.
          */
         public val Flow: AfsmMmdOptions = AfsmMmdOptions()
 
@@ -107,6 +108,9 @@ private fun AfsmTopologyTransition.shouldRender(options: AfsmMmdOptions): Boolea
     }
     if (isFallback) {
         return options.includeFallbackTransitions
+    }
+    if (conditionLabel != null) {
+        return true
     }
     if (commandLabels.isNotEmpty()) {
         return options.includeCommandOnlyInternalTransitions

@@ -86,7 +86,8 @@ if that is the only place the completed order is represented.
 Good:
 
 ```kotlin
-transitionTo(CheckoutPhase.Completed(orderId)) {
+case {
+    transitionTo(CheckoutPhase.Completed(orderId))
     effect(CheckoutEffect.NavigateToReceipt(orderId))
 }
 ```

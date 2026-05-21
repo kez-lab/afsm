@@ -271,11 +271,11 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     /**
      * Runs when this phase is exited by a phase-changing transition.
      *
-     * [handler] runs before the accepted case actions and target phase `onEnter`
-     * handler. The execution order is:
+     * [handler] runs before the accepted case actions, target payload phase
+     * factory, and target phase `onEnter` handler. The execution order is:
      *
      * ```text
-     * source onExit -> case actions -> target onEnter
+     * source onExit -> case actions -> target phase factory -> target onEnter
      * ```
      *
      * Use `onExit` for cleanup work that logically belongs to leaving a phase,
@@ -415,13 +415,8 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         val builtCase = builder.buildCase()
         addBranch(
             targetLabel = builtCase.targetLabel ?: stateLabel,
-            eventLabelOverride = if (builtCase.targetLabel == null && label != null) {
-                "$eventLabel [$label]"
-            } else {
-                eventLabel
-            },
-            targetFactory = builtCase.targetFactory ?: { null },
-            conditionLabel = if (builtCase.targetLabel != null) label else null,
+            targetFactory = builtCase.targetFactory,
+            conditionLabel = label,
             commandLabels = builtCase.commandLabels,
             effectLabels = builtCase.effectLabels,
             kind = if (builtCase.targetLabel != null) {
@@ -489,7 +484,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         label: String? = null,
         effect: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> F,
     ) {
-        case(label = label) {
+        case {
             effect(label = label, effect = effect)
         }
     }
@@ -586,7 +581,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     private fun addBranch(
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
-        targetFactory: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?,
+        targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)?,
         conditionLabel: String?,
         commandLabels: List<String>,
         effectLabels: List<String>,
@@ -618,10 +613,10 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
                 return@AfsmEventBranch AfsmBranchResult.Unmatched
             }
 
-            val targetPhase = scope.targetFactory()
-
             AfsmBranchResult.Matched(
-                targetPhase = targetPhase,
+                targetFactory = targetFactory?.let { factory ->
+                    { scope.factory() }
+                },
                 decision = null,
                 execute = {
                     scope.block()
@@ -648,7 +643,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
             }
 
             AfsmBranchResult.Matched(
-                targetPhase = null,
+                targetFactory = null,
                 decision = decision,
                 execute = {},
             )
@@ -690,7 +685,9 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
      * Changes to a payload phase created from runtime data.
      *
      * Use this when the target phase carries event or context data, such as an
-     * upload token or order id.
+     * upload token or order id. The [phase] factory runs after source `onExit`
+     * and accepted case actions, so it observes context updates made earlier in
+     * the case.
      */
     public inline fun <reified TP : P> transitionTo(
         noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
@@ -981,7 +978,7 @@ internal sealed interface AfsmBranchResult<out P : Any> {
     data object Unmatched : AfsmBranchResult<Nothing>
 
     data class Matched<P : Any>(
-        val targetPhase: P?,
+        val targetFactory: (() -> P?)?,
         val decision: AfsmDecision?,
         val execute: () -> Unit,
     ) : AfsmBranchResult<P>
@@ -1049,8 +1046,8 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
             reason = "No branch matched the current phase and event.",
         )
 
-        val targetPhase = branchResult.targetPhase
-        if (targetPhase != null) {
+        val targetFactory = branchResult.targetFactory
+        if (targetFactory != null) {
             applyExitHandlers(
                 sourceDefinition = stateDefinition,
                 sourcePhase = state.phase,
@@ -1060,6 +1057,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
 
         branchResult.execute()
 
+        val targetPhase = targetFactory?.invoke()
         if (targetPhase != null) {
             applyEntryHandlers(
                 targetPhase = targetPhase,

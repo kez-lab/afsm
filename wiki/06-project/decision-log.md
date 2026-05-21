@@ -1011,3 +1011,28 @@ Consequences:
   and invalid cases with explicit conditions.
 - Truly unconditional event handling still uses direct helpers such as
   `transitionTo(...)`, `updateContext(...)`, or `effect(...)`.
+
+## [2026-05-21] Align payload phase factory order with DSL reading order
+
+Decision: A payload phase factory declared by `transitionTo<PayloadPhase> { ... }`
+runs after source `onExit` and accepted case actions, and before target
+`onEnter`.
+
+Rationale:
+
+- Android developers read a `case` block top to bottom. If `updateContext` appears
+  before `transitionTo<PayloadPhase> { context... }`, the payload phase factory
+  should observe that updated context.
+- Running the target factory before case actions made Checkout duplicate request
+  id calculations and created a hidden execution-order concept.
+- The documented execution order now matches runtime behavior:
+  `onExit -> case actions -> target phase factory -> onEnter`.
+
+Consequences:
+
+- Payload phase factories may use context updates made in `onExit` or earlier
+  case actions.
+- Target `onEnter` observes both the updated context and the created payload
+  phase.
+- Flow `.mmd` output includes named no-transition condition branches so
+  validation and missing-context cases remain visible in generated diagrams.

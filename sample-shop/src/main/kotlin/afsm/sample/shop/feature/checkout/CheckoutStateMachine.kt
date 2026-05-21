@@ -95,12 +95,15 @@ private fun checkoutMachine(): CheckoutMachine {
                     }
                     transitionTo<CheckoutPhase.PaymentInProgress> {
                         CheckoutPhase.PaymentInProgress(
-                            requestId = context.nextPaymentRequestId + 1,
+                            requestId = context.nextPaymentRequestId,
                         )
                     }
                 }
 
-                case(label = "missing product") {
+                case(
+                    label = "missing product",
+                    condition = { context.product == null },
+                ) {
                     updateContext {
                         copy(errorMessage = "Product is required before payment.")
                     }
@@ -194,12 +197,15 @@ private fun checkoutMachine(): CheckoutMachine {
                     }
                     transitionTo<CheckoutPhase.PaymentInProgress> {
                         CheckoutPhase.PaymentInProgress(
-                            requestId = context.nextPaymentRequestId + 1,
+                            requestId = context.nextPaymentRequestId,
                         )
                     }
                 }
 
-                case(label = "missing product") {
+                case(
+                    label = "missing product",
+                    condition = { context.product == null },
+                ) {
                     updateContext {
                         copy(errorMessage = "Product is required before payment.")
                     }

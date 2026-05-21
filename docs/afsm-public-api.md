@@ -71,6 +71,8 @@ Afsm.invalid(state, reason)
 
 The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
+For graphable `afsmMachine { ... }` code, do not call `Afsm.stay(...)`.
+Handling a DSL case without `transitionTo(...)` produces a `Stayed` decision.
 
 ### AfsmDecision
 
@@ -147,7 +149,6 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
                 condition = { context.form.isValid() },
             ) {
                 updateContext { copy(errorMessage = null) }
-                command(label = "Submit") { Command.Submit(context.form) }
                 transitionTo(Phase.Submitting)
             }
 
@@ -167,6 +168,10 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
     }
 }
 ```
+
+Emit long-running work either from the accepted `case` or from the target
+phase's `onEnter`, not both. Prefer `onEnter` when the work starts because the
+machine entered a work phase such as `Submitting`.
 
 | API | Meaning |
 |---|---|
@@ -191,6 +196,11 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
 | `onEnter(commandLabels = ...) { ... }` | Runs after entering a phase |
 | `onExit(commandLabels = ...) { ... }` | Runs before leaving a phase |
 
+`case(...)` branches are evaluated in declaration order. The first branch whose
+`condition` returns `true` handles the event. If no branch matches, the event is
+invalid in the current phase. A named case becomes the generated transition's
+condition label, including no-transition cases such as validation failures.
+
 Use `state(phase)` for singleton/data-object phases. For payload phase classes,
 prefer `state<PayloadPhase>()` or `state<PayloadPhase> { ... }` so the machine
 matches any payload instance rather than one exact value.
@@ -198,7 +208,7 @@ matches any payload instance rather than one exact value.
 Phase-changing transition order:
 
 ```text
-onExit -> case actions -> onEnter
+onExit -> case actions -> target phase factory -> onEnter
 ```
 
 ### Topology and MMD

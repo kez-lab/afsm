@@ -21,7 +21,7 @@ stateDiagram-v2
   Editing --> Submitting: SubmitClicked [login form]
   Editing --> Submitting: SubmitClicked [register form]
   Editing --> Editing: SubmitClicked [invalid form]
-  Submitting --> Authenticated: AuthSucceeded
+  Submitting --> Authenticated: AuthSucceeded ! OpenCatalog
   Submitting --> Editing: AuthFailed
 ```
 
