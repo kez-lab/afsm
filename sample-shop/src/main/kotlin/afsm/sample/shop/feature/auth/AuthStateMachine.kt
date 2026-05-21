@@ -98,7 +98,10 @@ private fun authMachine(): AuthMachine {
                     transitionTo(AuthPhase.Submitting)
                 }
 
-                case(label = "invalid form") {
+                case(
+                    label = "invalid form",
+                    condition = { context.submitError() != null },
+                ) {
                     updateContext {
                         val normalized = normalized()
                         copy(

@@ -219,7 +219,10 @@ on<ProductEditorEvent.SubmitClicked> {
         transitionTo(ProductEditorPhase.ImageUploadInProgress)
     }
 
-    case(label = "invalid draft") {
+    case(
+        label = "invalid draft",
+        condition = { context.draft.form.validationError() != null },
+    ) {
         updateContext { withValidationError() }
     }
 }

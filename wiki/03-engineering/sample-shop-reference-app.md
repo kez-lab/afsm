@@ -134,7 +134,7 @@ The ProductEditor sample now uses the v3 executable DSL:
 - Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
 - Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform context, not hide phase movement.
-- Validation failure uses a no-transition `case(label = "invalid ...")` that updates context; it should not be represented as a second competing `transitionTo`.
+- Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates context; it should not be represented as a second competing `transitionTo`.
 - `onEnter` owns phase-entry command emission.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.

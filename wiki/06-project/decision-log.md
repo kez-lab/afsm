@@ -988,3 +988,26 @@ Consequences:
 - `ignore` and `invalid` use `condition = { ... }` for optional matching.
 - Historical wiki notes may still mention guard vocabulary as superseded
   design history, but current public docs and examples should not.
+
+## [2026-05-21] Prefer explicit negative conditions over fallback-style validation cases
+
+Decision: In onboarding samples, validation failure branches should use named
+`case(label = "...", condition = ...)` blocks instead of a final unconditional
+case that acts like `otherwise`.
+
+Rationale:
+
+- The user specifically called out that hidden predicates such as
+  `context.draft.isValid()` are hard to understand; a branch should state both
+  its business label and its matching condition.
+- Removing `otherwise` is less valuable if examples recreate it as
+  `case(label = "invalid ...")` with no condition.
+- Explicit success and failure predicates make the code easier to review against
+  the generated state diagram.
+
+Consequences:
+
+- ProductEditor submit/resubmit and Auth submit examples now show both valid
+  and invalid cases with explicit conditions.
+- Truly unconditional event handling still uses direct helpers such as
+  `transitionTo(...)`, `updateContext(...)`, or `effect(...)`.

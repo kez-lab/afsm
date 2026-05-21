@@ -151,7 +151,10 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
                 transitionTo(Phase.Submitting)
             }
 
-            case(label = "invalid form") {
+            case(
+                label = "invalid form",
+                condition = { !context.form.isValid() },
+            ) {
                 updateContext { copy(errorMessage = "Invalid form") }
             }
         }

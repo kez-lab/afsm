@@ -84,6 +84,7 @@ The current direction is:
 - The first graph Gradle plugin slice, KSP/Gradle functional verification, plugin/processor version synchronization, and external consumer version alignment are implemented. The remaining graph-tooling concerns are multi-variant/multi-module aggregation and eventual graph API/module-boundary decisions before broad external adoption.
 - A case-oriented DSL usability pass is in progress. New public event-branch helpers let examples use `case(label, condition = ...) { updateContext(...); transitionTo(...) }`, direct `updateContext(...)`, event-aware `updateContext { context, event -> ... }`, and `effect(label) { ... }`. Public examples should now treat `transitionTo` as phase change only and avoid `stay`/`otherwise` usage in the graphable DSL.
 - Public topology transition metadata now uses `conditionLabel`, matching the DSL's `condition = { ... }` vocabulary. The earlier `guardLabel` name is superseded before release.
+- ProductEditor and Auth examples now make validation failure branches explicit with named `case(..., condition = ...)` blocks instead of relying on a final unconditional fallback case.
 
 ## Core Architecture Position
 

@@ -1345,3 +1345,23 @@ Conclusion:
 
 - The current public surface no longer asks Android users to learn both
   `condition` and `guard` for the same idea.
+
+## [2026-05-21] Explicit validation branch conditions
+
+Change:
+
+- Updated ProductEditor and Auth state-machine examples so invalid form/draft
+  branches declare explicit `condition = ...` predicates.
+- Updated public walkthroughs and wiki pages to describe no-transition
+  validation handling as an explicit condition branch, not a fallback branch.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- The DSL examples now avoid recreating `otherwise` through an unconditional
+  final case in validation flows.

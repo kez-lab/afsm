@@ -137,7 +137,7 @@ Policy:
 - Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
 - ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to context transformations so graph-relevant flow remains visible.
-- Validation failure is modeled as a no-transition `case(label = "invalid ...")` that updates context, not as a second competing `transitionTo`.
+- Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates context, not as a second competing `transitionTo`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.

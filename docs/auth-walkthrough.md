@@ -84,7 +84,10 @@ on<AuthEvent.SubmitClicked> {
         transitionTo(AuthPhase.Submitting)
     }
 
-    case(label = "invalid form") {
+    case(
+        label = "invalid form",
+        condition = { context.submitError() != null },
+    ) {
         updateContext { copy(errorMessage = submitError()) }
     }
 }

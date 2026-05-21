@@ -405,7 +405,10 @@ class AfsmExecutableDslCompileCheckTest {
                         transitionTo(DslProductEditorPhase.ImageUploadInProgress)
                     }
 
-                    case(label = "invalid draft") {
+                    case(
+                        label = "invalid draft",
+                        condition = { context.draft.validationMessage() != null },
+                    ) {
                         updateContext {
                             copy(errorMessage = draft.validationMessage())
                         }
