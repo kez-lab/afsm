@@ -59,7 +59,7 @@ private fun authMachine(): AuthMachine {
             on<AuthEvent.SubmitClicked> {
                 case(
                     label = "login form",
-                    condition = { context.canSubmitLogin() },
+                    condition = { context.canSubmitLoginRequest() },
                 ) {
                     updateContext {
                         val normalized = normalized()
@@ -79,7 +79,7 @@ private fun authMachine(): AuthMachine {
 
                 case(
                     label = "register form",
-                    condition = { context.canSubmitRegister() },
+                    condition = { context.canSubmitRegistrationRequest() },
                 ) {
                     updateContext {
                         val normalized = normalized()
@@ -100,7 +100,7 @@ private fun authMachine(): AuthMachine {
 
                 case(
                     label = "invalid form",
-                    condition = { context.submitError() != null },
+                    condition = { context.hasSubmitError() },
                 ) {
                     updateContext {
                         val normalized = normalized()
@@ -148,53 +148,9 @@ private fun authMachine(): AuthMachine {
             on<AuthEvent.SubmitClicked> {
                 ignore(reason = "Duplicate submit while auth command is running.")
             }
-
-            on<AuthEvent.ModeChanged> {
-                ignore(reason = "Form edits are ignored while auth command is running.")
-            }
-
-            on<AuthEvent.NameChanged> {
-                ignore(reason = "Form edits are ignored while auth command is running.")
-            }
-
-            on<AuthEvent.EmailChanged> {
-                ignore(reason = "Form edits are ignored while auth command is running.")
-            }
-
-            on<AuthEvent.PasswordChanged> {
-                ignore(reason = "Form edits are ignored while auth command is running.")
-            }
         }
 
-        state<AuthPhase.Authenticated> {
-            on<AuthEvent.AuthSucceeded> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.AuthFailed> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.SubmitClicked> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.ModeChanged> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.NameChanged> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.EmailChanged> {
-                ignore(reason = "Auth flow already completed.")
-            }
-
-            on<AuthEvent.PasswordChanged> {
-                ignore(reason = "Auth flow already completed.")
-            }
-        }
+        state<AuthPhase.Authenticated>()
     }
 }
 
@@ -207,12 +163,16 @@ private fun AuthContext.normalized(): AuthContext {
     )
 }
 
-private fun AuthContext.canSubmitLogin(): Boolean {
+private fun AuthContext.canSubmitLoginRequest(): Boolean {
     return mode == AuthMode.Login && submitError() == null
 }
 
-private fun AuthContext.canSubmitRegister(): Boolean {
+private fun AuthContext.canSubmitRegistrationRequest(): Boolean {
     return mode == AuthMode.Register && submitError() == null
+}
+
+private fun AuthContext.hasSubmitError(): Boolean {
+    return submitError() != null
 }
 
 private fun AuthContext.submitError(): String? {

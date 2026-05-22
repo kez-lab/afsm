@@ -103,9 +103,9 @@ the product flow, do not model it as effect-only.
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
-Low-level reducers may still use `Afsm.stay(...)`, but graphable DSL examples
-should model no-transition handling by omitting `transitionTo(...)` from the
-accepted case.
+Low-level reducers may still return `AfsmTransition.stayed(...)`, but graphable
+DSL examples should model no-transition handling by omitting `transitionTo(...)`
+from the accepted case.
 
 ## First Reading Order
 

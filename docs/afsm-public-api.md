@@ -64,14 +64,14 @@ constructor.
 
 ```kotlin
 Afsm.transitionTo(state, commands, effects)
-Afsm.stay(state, commands, effects, reason)
 Afsm.ignore(state, reason)
 Afsm.invalid(state, reason)
+AfsmTransition.stayed(state, commands, effects, reason) // low-level reducer escape hatch
 ```
 
 The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
-For graphable `afsmMachine { ... }` code, do not call `Afsm.stay(...)`.
+For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
 Handling a DSL case without `transitionTo(...)` produces a `Stayed` decision.
 
 ### AfsmDecision
@@ -162,8 +162,10 @@ afsmMachine<Phase, Context, Event, Command, Effect> {
     }
 
     state(Phase.Submitting) {
-        onEnter(commandLabels = listOf("Submit")) {
-            command(Command.Submit(context.form))
+        onEnter {
+            command(label = "Submit") {
+                Command.Submit(context.form)
+            }
         }
     }
 }
@@ -193,13 +195,20 @@ machine entered a work phase such as `Submitting`.
 | `invalid(reason)` | Explicit invalid event; no graph edge |
 | `command(label = ...) { ... }` | Host-executed work output from a case |
 | `effect(label = ...) { ... }` | UI-side one-shot output from a case |
-| `onEnter(commandLabels = ...) { ... }` | Runs after entering a phase |
-| `onExit(commandLabels = ...) { ... }` | Runs before leaving a phase |
+| `onEnter { ... }` | Declares actions that run after entering a phase |
+| `onExit { ... }` | Declares actions that run before leaving a phase |
+| `command(label = ...) { ... }` in `onEnter`/`onExit` | Host work plus optional graph label in one statement |
+| `effect(label = ...) { ... }` in `onEnter`/`onExit` | UI one-shot plus optional graph label in one statement |
 
 `case(...)` branches are evaluated in declaration order. The first branch whose
 `condition` returns `true` handles the event. If no branch matches, the event is
 invalid in the current phase. A named case becomes the generated transition's
 condition label, including no-transition cases such as validation failures.
+
+Entry and exit blocks are declaration blocks. `command(label = ...) { ... }`
+and `effect(label = ...) { ... }` record graph labels when the machine is built,
+then run their value factories later with `phase` and `context` from
+`AfsmPhaseActionContext`.
 
 Use `state(phase)` for singleton/data-object phases. For payload phase classes,
 prefer `state<PayloadPhase>()` or `state<PayloadPhase> { ... }` so the machine
@@ -229,8 +238,9 @@ fun AfsmTopology.toMmd(
 condition, command, and effect edges remain visible. Use `AfsmMmdOptions.Full`
 for complete topology.
 
-`AfsmTopologyState` can include entry/exit command/effect labels. These labels
-are metadata only; runtime commands/effects must still be emitted in DSL blocks.
+`AfsmTopologyState` can include entry/exit command/effect labels. In the DSL,
+those labels come from the same `command(label = ...) { ... }` and
+`effect(label = ...) { ... }` statements that emit runtime outputs.
 
 The `io.github.afsm.graph` Gradle plugin is the preferred Android app-module
 entry point for `.mmd` output. It generates the export test internally and

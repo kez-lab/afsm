@@ -120,7 +120,7 @@ private class SignupStateMachine : SignupMachine {
             )
 
             is SignupEvent.EmailChanged,
-            is SignupEvent.PasswordChanged -> Afsm.stay(
+            is SignupEvent.PasswordChanged -> AfsmTransition.stayed(
                 state = state,
                 reason = "input locked while verifying",
             )
@@ -205,7 +205,7 @@ private class LoginStateMachine : LoginMachine {
                     commands = listOf(LoginCommand.ExecuteLogin),
                 )
 
-                LoginEvent.CancelRequested -> Afsm.stay(
+                LoginEvent.CancelRequested -> AfsmTransition.stayed(
                     state = state,
                     reason = "nothing to cancel",
                 )
@@ -221,7 +221,7 @@ private class LoginStateMachine : LoginMachine {
                     state = LoginState.Submitted,
                 )
 
-                LoginEvent.CancelRequested -> Afsm.stay(
+                LoginEvent.CancelRequested -> AfsmTransition.stayed(
                     state = state,
                     commands = listOf(LoginCommand.CancelLogin),
                     reason = "cancel accepted with cleanup",

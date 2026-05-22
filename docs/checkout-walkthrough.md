@@ -101,21 +101,22 @@ Commands are emitted when entering work phases:
 
 ```kotlin
 state(CheckoutPhase.ProductLoading) {
-    onEnter(commandLabels = listOf("LoadProduct")) {
-        command(CheckoutCommand.LoadProduct(context.productId))
+    onEnter {
+        command(label = "LoadProduct") {
+            CheckoutCommand.LoadProduct(context.productId)
+        }
     }
 }
 ```
 
 ```kotlin
 state<CheckoutPhase.PaymentInProgress> {
-    onEnter(commandLabels = listOf("SubmitPayment")) {
-        context.product?.let { product ->
-            command(
-                CheckoutCommand.SubmitPayment(
-                    requestId = phase.requestId,
-                    product = product,
-                ),
+    onEnter {
+        command(label = "SubmitPayment") {
+            val product = requireNotNull(context.product)
+            CheckoutCommand.SubmitPayment(
+                requestId = phase.requestId,
+                product = product,
             )
         }
     }

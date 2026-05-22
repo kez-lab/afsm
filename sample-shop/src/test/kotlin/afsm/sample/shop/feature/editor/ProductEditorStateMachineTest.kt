@@ -19,7 +19,7 @@ class ProductEditorStateMachineTest {
     )
 
     @Test
-    fun `title change re-enters editing phase and updates draft in context`() {
+    fun `title change updates draft context without changing editing phase`() {
         val state = productEditorState()
 
         val result = machine.transition(
@@ -87,7 +87,7 @@ class ProductEditorStateMachineTest {
     }
 
     @Test
-    fun `invalid draft re-enters editing phase with validation error in context`() {
+    fun `invalid draft keeps editing phase with review submission error in context`() {
         val state = productEditorState(
             context = ProductEditorContext(
                 draft = validDraft.copy(

@@ -542,3 +542,16 @@
   `docs/product-editor-walkthrough.md`, `wiki/00-context/current-state.md`,
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-23] implementation | Entry command label usability cleanup
+
+- Source: user review that Afsm still does not feel natural for Android
+  developers and that separate `commandLabels` metadata is hard to justify.
+- Action: Changed entry/exit DSL actions so graph labels are declared on the
+  actual `command(label = ...) { ... }` / `effect(label = ...) { ... }`
+  statements, removed beginner-facing `Afsm.stay(...)`, simplified Auth no-op
+  enumeration, and renamed sample condition helpers toward domain intent.
+- Updated: `afsm-core/`, `sample-shop/`, `README.md`, `docs/`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.

@@ -217,7 +217,9 @@ class AfsmExecutableDslCompileCheckTest {
 
             state<DslProductEditorPhase.ReviewSubmissionInProgress> {
                 onEnter {
-                    updateContext { this + "enter:${phase.uploadToken};" }
+                    updateContext { context, phase ->
+                        context + "enter:${phase.uploadToken};"
+                    }
                 }
             }
         }
@@ -470,7 +472,9 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.SavingDraft) {
                 onEnter {
-                    command(DslProductEditorCommand.SaveDraft(context.draft))
+                    command(label = "SaveDraft") {
+                        DslProductEditorCommand.SaveDraft(context.draft)
+                    }
                 }
 
                 on<DslProductEditorEvent.DraftSaveCompleted> {
@@ -482,7 +486,9 @@ class AfsmExecutableDslCompileCheckTest {
 
             state(DslProductEditorPhase.ImageUploadInProgress) {
                 onEnter {
-                    command(DslProductEditorCommand.StartImageUpload(context.draft))
+                    command(label = "StartImageUpload") {
+                        DslProductEditorCommand.StartImageUpload(context.draft)
+                    }
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
@@ -504,12 +510,12 @@ class AfsmExecutableDslCompileCheckTest {
 
             state<DslProductEditorPhase.ReviewSubmissionInProgress> {
                 onEnter {
-                    command(
+                    command(label = "StartReviewSubmission") {
                         DslProductEditorCommand.StartReviewSubmission(
                             draft = context.draft,
                             uploadToken = phase.uploadToken,
-                        ),
-                    )
+                        )
+                    }
                 }
             }
 

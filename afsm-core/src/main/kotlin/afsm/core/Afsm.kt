@@ -13,20 +13,6 @@ public object Afsm {
         )
     }
 
-    public fun <S : Any, C : Any, F : Any> stay(
-        state: S,
-        commands: List<C> = emptyList(),
-        effects: List<F> = emptyList(),
-        reason: String? = null,
-    ): AfsmTransition<S, C, F> {
-        return AfsmTransition.stayed(
-            state = state,
-            commands = commands,
-            effects = effects,
-            reason = reason,
-        )
-    }
-
     public fun <S : Any, C : Any, F : Any> ignore(
         state: S,
         reason: String? = null,

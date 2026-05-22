@@ -1057,3 +1057,28 @@ Consequences:
   topology without editing build files.
 - `afsmGraph { mmdOptions.set("Full") }` can make Full output the module
   default.
+
+## [2026-05-23] Keep entry and exit output labels with the runtime output declaration
+
+Decision: Public DSL entry/exit actions should no longer accept separate
+`commandLabels` or `effectLabels` parameters. Entry/exit outputs should be
+declared as `command(label = "...") { ... }` or `effect(label = "...") { ... }`.
+
+Rationale:
+
+- Android developers should not have to write one statement for the state
+  diagram and another nearby statement for runtime behavior.
+- Separate metadata parameters create drift risk: a diagram can claim a command
+  exists while the handler emits a different command or no command at all.
+- The case DSL already uses `command(label = ...) { ... }`; entry/exit actions
+  should follow the same shape.
+
+Consequences:
+
+- Generated entry/exit command/effect notes still exist, but labels come from
+  the same command/effect declaration that emits the runtime output.
+- `onEnter { command(label = "LoadProduct") { ... } }` is the recommended
+  onboarding style.
+- `Afsm.stay(...)` is removed from the beginner-facing helper object; graphable
+  DSL code stays in the current phase by handling an event without
+  `transitionTo(...)`. Low-level reducers can use `AfsmTransition.stayed(...)`.

@@ -4,8 +4,6 @@ public final class afsm/core/Afsm {
 	public static synthetic fun ignore$default (Lafsm/core/Afsm;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
 	public final fun invalid (Ljava/lang/Object;Ljava/lang/String;)Lafsm/core/AfsmTransition;
 	public static synthetic fun invalid$default (Lafsm/core/Afsm;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
-	public final fun stay (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ljava/lang/String;)Lafsm/core/AfsmTransition;
-	public static synthetic fun stay$default (Lafsm/core/Afsm;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
 	public final fun transitionTo (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;)Lafsm/core/AfsmTransition;
 	public static synthetic fun transitionTo$default (Lafsm/core/Afsm;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
 }
@@ -67,11 +65,12 @@ public abstract interface annotation class afsm/core/AfsmDslMarker : java/lang/a
 }
 
 public final class afsm/core/AfsmEntryScope {
-	public final fun command (Ljava/lang/Object;)V
-	public final fun effect (Ljava/lang/Object;)V
-	public final fun getContext ()Ljava/lang/Object;
-	public final fun getPhase ()Ljava/lang/Object;
+	public final fun command (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun command$default (Lafsm/core/AfsmEntryScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun effect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun effect$default (Lafsm/core/AfsmEntryScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun updateContext (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Lkotlin/jvm/functions/Function2;)V
 }
 
 public final class afsm/core/AfsmEventBranchScope {
@@ -103,11 +102,12 @@ public final class afsm/core/AfsmEventCaseScope {
 }
 
 public final class afsm/core/AfsmExitScope {
-	public final fun command (Ljava/lang/Object;)V
-	public final fun effect (Ljava/lang/Object;)V
-	public final fun getContext ()Ljava/lang/Object;
-	public final fun getPhase ()Ljava/lang/Object;
+	public final fun command (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun command$default (Lafsm/core/AfsmExitScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun effect (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun effect$default (Lafsm/core/AfsmExitScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public final fun updateContext (Lkotlin/jvm/functions/Function1;)V
+	public final fun updateContext (Lkotlin/jvm/functions/Function2;)V
 }
 
 public abstract interface annotation class afsm/core/AfsmGraph : java/lang/annotation/Annotation {
@@ -190,6 +190,11 @@ public final class afsm/core/AfsmMmdWriter {
 public abstract interface class afsm/core/AfsmNoEffect {
 }
 
+public final class afsm/core/AfsmPhaseActionContext {
+	public final fun getContext ()Ljava/lang/Object;
+	public final fun getPhase ()Ljava/lang/Object;
+}
+
 public abstract interface class afsm/core/AfsmPhaseMachine : afsm/core/AfsmMachine {
 	public abstract fun getInitialState ()Lafsm/core/AfsmState;
 	public abstract fun getTopology ()Lafsm/core/AfsmTopology;
@@ -215,10 +220,8 @@ public final class afsm/core/AfsmState {
 
 public final class afsm/core/AfsmStateBuilder {
 	public final fun on (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
-	public final fun onEnter (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun onEnter$default (Lafsm/core/AfsmStateBuilder;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
-	public final fun onExit (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun onExit$default (Lafsm/core/AfsmStateBuilder;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun onEnter (Lkotlin/jvm/functions/Function1;)V
+	public final fun onExit (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class afsm/core/AfsmTopology {

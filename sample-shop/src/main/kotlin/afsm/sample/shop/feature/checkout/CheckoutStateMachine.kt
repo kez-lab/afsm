@@ -39,9 +39,11 @@ private fun checkoutMachine(): CheckoutMachine {
         }
 
         state(CheckoutPhase.ProductLoading) {
-            onEnter(commandLabels = listOf("LoadProduct")) {
+            onEnter {
                 updateContext { copy(errorMessage = null) }
-                command(CheckoutCommand.LoadProduct(context.productId))
+                command(label = "LoadProduct") {
+                    CheckoutCommand.LoadProduct(context.productId)
+                }
             }
 
             on<CheckoutEvent.ScreenEntered> {
@@ -85,7 +87,7 @@ private fun checkoutMachine(): CheckoutMachine {
             on<CheckoutEvent.PayClicked> {
                 case(
                     label = "product loaded",
-                    condition = { context.product != null },
+                    condition = { context.hasLoadedProduct() },
                 ) {
                     updateContext {
                         copy(
@@ -102,7 +104,7 @@ private fun checkoutMachine(): CheckoutMachine {
 
                 case(
                     label = "missing product",
-                    condition = { context.product == null },
+                    condition = { context.isMissingProduct() },
                 ) {
                     updateContext {
                         copy(errorMessage = "Product is required before payment.")
@@ -124,13 +126,14 @@ private fun checkoutMachine(): CheckoutMachine {
         }
 
         state<CheckoutPhase.PaymentInProgress> {
-            onEnter(commandLabels = listOf("SubmitPayment")) {
-                context.product?.let { product ->
-                    command(
-                        CheckoutCommand.SubmitPayment(
-                            requestId = phase.requestId,
-                            product = product,
-                        ),
+            onEnter {
+                command(label = "SubmitPayment") {
+                    val product = requireNotNull(context.product) {
+                        "PaymentInProgress requires a loaded product."
+                    }
+                    CheckoutCommand.SubmitPayment(
+                        requestId = phase.requestId,
+                        product = product,
                     )
                 }
             }
@@ -187,7 +190,7 @@ private fun checkoutMachine(): CheckoutMachine {
             on<CheckoutEvent.RetryClicked> {
                 case(
                     label = "product loaded",
-                    condition = { context.product != null },
+                    condition = { context.hasLoadedProduct() },
                 ) {
                     updateContext {
                         copy(
@@ -204,7 +207,7 @@ private fun checkoutMachine(): CheckoutMachine {
 
                 case(
                     label = "missing product",
-                    condition = { context.product == null },
+                    condition = { context.isMissingProduct() },
                 ) {
                     updateContext {
                         copy(errorMessage = "Product is required before payment.")
@@ -257,4 +260,12 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
     }
+}
+
+private fun CheckoutContext.hasLoadedProduct(): Boolean {
+    return product != null
+}
+
+private fun CheckoutContext.isMissingProduct(): Boolean {
+    return product == null
 }

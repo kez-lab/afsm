@@ -61,7 +61,9 @@ private fun smokeMachine(): SmokeMachine {
 
         state(SmokePhase.Saving) {
             onEnter {
-                command(SmokeCommand.SaveTitle(context.title))
+                command(label = "SaveTitle") {
+                    SmokeCommand.SaveTitle(context.title)
+                }
             }
 
             on<SmokeEvent.Saved> {

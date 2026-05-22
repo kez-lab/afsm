@@ -1439,3 +1439,32 @@ Conclusion:
 
 - ProductEditor now follows the documented naming rule: phases describe current
   business condition, while result events describe what happened.
+
+## [2026-05-23] Entry and exit action label cleanup
+
+Change:
+
+- Changed entry/exit DSL actions from separate `commandLabels` /
+  `effectLabels` parameters to labeled runtime outputs:
+  `command(label = "...") { ... }` and `effect(label = "...") { ... }`.
+- Removed `Afsm.stay(...)` from the `Afsm` helper object; low-level reducers can
+  still use `AfsmTransition.stayed(...)`.
+- Updated Auth, Checkout, ProductEditor, core DSL tests, README, public API
+  docs, graph docs, and walkthroughs.
+- Simplified Auth terminal-state no-op declarations and renamed sample
+  condition helpers toward domain intent.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-core:compileTestKotlin :sample-shop:compileDebugKotlin :sample-shop:compileDebugUnitTestKotlin --no-daemon
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+./gradlew :afsm-core:apiDump :afsm-core:apiCheck --no-daemon
+./gradlew :afsm-runtime:compileTestKotlin :afsm-runtime:test --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- Entry/exit graph labels now stay closer to runtime behavior, and first-use
+  examples expose fewer Afsm-only concepts.

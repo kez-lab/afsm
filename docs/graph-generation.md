@@ -174,6 +174,7 @@ turned into graph-generation runs.
   processor manually.
 - No `.mmd` files: run the module's `generateAfsmMmd` task and check that the
   annotated machine is constructible as an `object` or no-required-arg class.
-- Diagram labels appear but no command runs: labels such as `commandLabels` and
-  `effectLabels` are metadata only. Runtime work still requires `command(...)`
-  or `effect(...)` in the machine DSL.
+- Diagram labels appear but no command runs: in current DSL code, entry/exit
+  labels should come from `command(label = ...) { ... }` or
+  `effect(label = ...) { ... }`. If a label appears without runtime work, check
+  for stale generated files or hand-written topology metadata.

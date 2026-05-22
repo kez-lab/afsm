@@ -125,21 +125,23 @@ Long-running work is phase-owned:
 
 ```kotlin
 state(ProductEditorPhase.ImageUploadInProgress) {
-    onEnter(commandLabels = listOf("StartImageUpload")) {
-        command(ProductEditorCommand.StartImageUpload(context.draft))
+    onEnter {
+        command(label = "StartImageUpload") {
+            ProductEditorCommand.StartImageUpload(context.draft)
+        }
     }
 }
 ```
 
 ```kotlin
 state<ProductEditorPhase.ReviewSubmissionInProgress> {
-    onEnter(commandLabels = listOf("StartReviewSubmission")) {
-        command(
+    onEnter {
+        command(label = "StartReviewSubmission") {
             ProductEditorCommand.StartReviewSubmission(
                 draft = context.draft,
                 uploadToken = phase.uploadToken,
-            ),
-        )
+            )
+        }
     }
 }
 ```
@@ -187,13 +189,13 @@ state(ProductEditorPhase.ImageUploadInProgress) {
 }
 
 state<ProductEditorPhase.ReviewSubmissionInProgress> {
-    onEnter(commandLabels = listOf("StartReviewSubmission")) {
-        command(
+    onEnter {
+        command(label = "StartReviewSubmission") {
             ProductEditorCommand.StartReviewSubmission(
                 draft = context.draft,
                 uploadToken = phase.uploadToken,
-            ),
-        )
+            )
+        }
     }
 }
 ```
@@ -217,7 +219,7 @@ with context error state:
 on<ProductEditorEvent.SubmitClicked> {
     case(
         label = "valid draft",
-        condition = { context.draft.form.validationError() == null },
+        condition = { context.canStartReviewSubmission() },
     ) {
         updateContext { normalizeDraftForSubmit() }
         transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -225,9 +227,9 @@ on<ProductEditorEvent.SubmitClicked> {
 
     case(
         label = "invalid draft",
-        condition = { context.draft.form.validationError() != null },
+        condition = { context.hasReviewSubmissionError() },
     ) {
-        updateContext { withValidationError() }
+        updateContext { withReviewSubmissionError() }
     }
 }
 ```
@@ -240,7 +242,7 @@ Read `ProductEditorStateMachineTest` in this order:
 
 1. `save draft transitions to saving phase and phase entry emits save command`
 2. `submit from editing transitions only by phase and starts image upload from context draft`
-3. `invalid draft re-enters editing phase with validation error in context`
+3. `invalid draft keeps editing phase with review submission error in context`
 4. `image upload success increments review attempt in context and submits review command`
 5. `rejected draft can be resubmitted through upload again without passing draft through phase`
 6. `approved draft publishes product through phase entry command`

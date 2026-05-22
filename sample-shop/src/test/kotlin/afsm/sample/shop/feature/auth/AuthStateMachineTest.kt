@@ -120,7 +120,7 @@ class AuthStateMachineTest {
     }
 
     @Test
-    fun `form changes are self transitions inside editing phase`() {
+    fun `form changes update context inside editing phase`() {
         val state = authState(
             context = AuthContext(
                 mode = AuthMode.Login,

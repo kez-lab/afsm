@@ -122,8 +122,12 @@ Accepted direction:
 - Public topology metadata uses `conditionLabel`; the earlier `guardLabel`
   name is superseded because the user-facing DSL says `condition`.
 - Remove DSL-level `stay(...)` and `otherwise(...)` from the public source
-  surface. The low-level `Afsm.stay(...)` reducer helper may remain for custom
-  reducers, but graphable `afsmMachine { ... }` users should not need it.
+  surface. Low-level reducers can still return `AfsmTransition.stayed(...)`,
+  but graphable `afsmMachine { ... }` users should not need a `stay` verb.
+- Entry/exit command and effect labels must be declared in the same statement
+  as the runtime output, for example `command(label = "SaveDraft") { ... }`.
+  Do not use separate `commandLabels` / `effectLabels` parameters in public
+  examples.
 
 Revised event shape:
 
@@ -141,7 +145,7 @@ state(ProductEditorPhase.EditingDraft) {
     on<ProductEditorEvent.SubmitClicked> {
         case(
             label = "valid draft",
-            condition = { context.draft.validationMessage() == null },
+            condition = { context.canStartReviewSubmission() },
         ) {
             updateContext {
                 copy(
@@ -154,7 +158,7 @@ state(ProductEditorPhase.EditingDraft) {
 
         case(
             label = "invalid draft",
-            condition = { context.draft.validationMessage() != null },
+            condition = { context.hasReviewSubmissionError() },
         ) {
             updateContext {
                 copy(errorMessage = draft.validationMessage())
@@ -346,7 +350,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         on<ProductEditorEvent.SubmitClicked> {
             case(
                 label = "valid draft",
-                condition = { context.draft.form.validationError() == null },
+                condition = { context.canStartReviewSubmission() },
             ) {
                 updateContext { normalizeDraftForSubmit() }
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -354,16 +358,18 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
             case(
                 label = "invalid draft",
-                condition = { context.draft.form.validationError() != null },
+                condition = { context.hasReviewSubmissionError() },
             ) {
-                updateContext { withValidationError() }
+                updateContext { withReviewSubmissionError() }
             }
         }
     }
 
     state(ProductEditorPhase.SavingDraft) {
         onEnter {
-            command(ProductEditorCommand.SaveDraft(context.draft))
+            command(label = "SaveDraft") {
+                ProductEditorCommand.SaveDraft(context.draft)
+            }
         }
 
         on<ProductEditorEvent.DraftSaveCompleted> {

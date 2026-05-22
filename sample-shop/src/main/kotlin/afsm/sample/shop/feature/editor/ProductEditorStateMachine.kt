@@ -40,7 +40,7 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.draft.form.validationError() == null },
+                    condition = { context.canStartReviewSubmission() },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -48,17 +48,19 @@ private fun productEditorMachine(): ProductEditorMachine {
 
                 case(
                     label = "invalid draft",
-                    condition = { context.draft.form.validationError() != null },
+                    condition = { context.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withValidationError() }
+                    updateContext { withReviewSubmissionError() }
                 }
             }
         }
 
         state(ProductEditorPhase.SavingDraft) {
-            onEnter(commandLabels = listOf("SaveDraft")) {
+            onEnter {
                 updateContext { copy(errorMessage = null) }
-                command(ProductEditorCommand.SaveDraft(context.draft))
+                command(label = "SaveDraft") {
+                    ProductEditorCommand.SaveDraft(context.draft)
+                }
             }
 
             on<ProductEditorEvent.DraftSaveCompleted> {
@@ -78,7 +80,7 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.draft.form.validationError() == null },
+                    condition = { context.canStartReviewSubmission() },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -86,9 +88,9 @@ private fun productEditorMachine(): ProductEditorMachine {
 
                 case(
                     label = "invalid draft",
-                    condition = { context.draft.form.validationError() != null },
+                    condition = { context.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withValidationError() }
+                    updateContext { withReviewSubmissionError() }
                 }
             }
 
@@ -115,8 +117,10 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state(ProductEditorPhase.ImageUploadInProgress) {
-            onEnter(commandLabels = listOf("StartImageUpload")) {
-                command(ProductEditorCommand.StartImageUpload(context.draft))
+            onEnter {
+                command(label = "StartImageUpload") {
+                    ProductEditorCommand.StartImageUpload(context.draft)
+                }
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
@@ -148,13 +152,13 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state<ProductEditorPhase.ReviewSubmissionInProgress> {
-            onEnter(commandLabels = listOf("StartReviewSubmission")) {
-                command(
+            onEnter {
+                command(label = "StartReviewSubmission") {
                     ProductEditorCommand.StartReviewSubmission(
                         draft = context.draft,
                         uploadToken = phase.uploadToken,
-                    ),
-                )
+                    )
+                }
             }
 
             on<ProductEditorEvent.ReviewApproved> {
@@ -192,7 +196,7 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.ResubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.draft.form.validationError() == null },
+                    condition = { context.canStartReviewSubmission() },
                 ) {
                     updateContext { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -200,9 +204,9 @@ private fun productEditorMachine(): ProductEditorMachine {
 
                 case(
                     label = "invalid draft",
-                    condition = { context.draft.form.validationError() != null },
+                    condition = { context.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withValidationError() }
+                    updateContext { withReviewSubmissionError() }
                 }
             }
 
@@ -222,9 +226,11 @@ private fun productEditorMachine(): ProductEditorMachine {
         }
 
         state(ProductEditorPhase.PublishInProgress) {
-            onEnter(commandLabels = listOf("StartProductPublish")) {
+            onEnter {
                 updateContext { copy(errorMessage = null) }
-                command(ProductEditorCommand.StartProductPublish(context.draft))
+                command(label = "StartProductPublish") {
+                    ProductEditorCommand.StartProductPublish(context.draft)
+                }
             }
 
             on<ProductEditorEvent.PublishSucceeded> {
@@ -273,8 +279,16 @@ private fun ProductEditorContext.normalizeDraftForSubmit(): ProductEditorContext
     )
 }
 
-private fun ProductEditorContext.withValidationError(): ProductEditorContext {
+private fun ProductEditorContext.withReviewSubmissionError(): ProductEditorContext {
     return copy(errorMessage = draft.form.validationError())
+}
+
+private fun ProductEditorContext.canStartReviewSubmission(): Boolean {
+    return draft.form.validationError() == null
+}
+
+private fun ProductEditorContext.hasReviewSubmissionError(): Boolean {
+    return !canStartReviewSubmission()
 }
 
 private fun ProductDraft.updateForm(

@@ -4,6 +4,7 @@ import afsm.core.Afsm
 import afsm.core.AfsmDecision
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
+import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
@@ -319,7 +320,7 @@ class AfsmHostTest {
             initialState = NoEffectState.Submitting,
             reducer = AfsmReducer { state: NoEffectState, event: NoEffectEvent ->
                 when (event) {
-                    NoEffectEvent.CancelRequested -> Afsm.stay(
+                    NoEffectEvent.CancelRequested -> AfsmTransition.stayed(
                         state = state,
                         commands = listOf(NoEffectCommand.CancelRequest),
                         reason = "cancel accepted while request is in flight",

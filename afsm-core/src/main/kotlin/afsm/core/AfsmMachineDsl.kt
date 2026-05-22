@@ -235,71 +235,61 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     private val eventDefinitions = mutableListOf<AfsmEventDefinition<P, X, E, C, F>>()
 
     /**
-     * Runs when this phase is entered through an event branch transition.
+     * Declares actions that run when this phase is entered through a phase change.
      *
-     * [handler] runs after the matching case actions have executed and only
-     * for phase-changing branches such as [AfsmEventBranchScope.transitionTo].
-     * It does not run for no-transition cases, [AfsmEventBranchScope.ignore],
-     * or [AfsmEventBranchScope.invalid].
+     * The [handler] block is declaration code: calls such as
+     * `command(label = "Load") { ... }` record both graph metadata and runtime
+     * work in one place. The command/effect factory lambdas run later, when the
+     * transition is accepted and real [AfsmPhaseActionContext.context] is
+     * available.
      *
-     * Use `onEnter` for work that logically starts because a phase was entered:
-     * emitting a command, clearing an error, or initializing phase-specific
-     * context. It is not run when the machine's [AfsmPhaseMachine.initialState] is
-     * created.
-     *
-     * [commandLabels] and [effectLabels] are topology metadata for generated
-     * diagrams. Runtime commands/effects must still be emitted from [handler].
+     * Entry actions run after the accepted case actions and only for
+     * phase-changing branches such as [AfsmEventBranchScope.transitionTo]. They
+     * do not run for no-transition cases, [AfsmEventBranchScope.ignore], or
+     * [AfsmEventBranchScope.invalid]. Initial state construction also does not
+     * run `onEnter`; trigger startup work with an explicit event such as
+     * `ScreenEntered`.
      */
     public fun onEnter(
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
         handler: AfsmEntryScope<P, X, C, F, PS>.() -> Unit,
     ) {
-        entryCommandLabels += commandLabels
-        entryEffectLabels += effectLabels
-        entryHandlers += { phase, execution ->
-            val typedPhase = matcher(phase)
-            if (typedPhase != null) {
-                AfsmEntryScope<P, X, C, F, PS>(
-                    phase = typedPhase,
-                    execution = execution,
-                ).handler()
-            }
-        }
+        val scope = AfsmEntryScope<P, X, C, F, PS>(
+            phaseMatcher = matcher,
+        )
+        scope.handler()
+        val builtHandler = scope.buildHandler()
+
+        entryCommandLabels += builtHandler.commandLabels
+        entryEffectLabels += builtHandler.effectLabels
+        entryHandlers += builtHandler.handler
     }
 
     /**
-     * Runs when this phase is exited by a phase-changing transition.
+     * Declares actions that run when this phase is exited by a phase change.
      *
-     * [handler] runs before the accepted case actions, target payload phase
+     * The [handler] block is declaration code: calls such as
+     * `command(label = "CancelUpload") { ... }` record both graph metadata and
+     * runtime work in one place.
+     *
+     * Exit actions run before the accepted case actions, target payload phase
      * factory, and target phase `onEnter` handler. The execution order is:
      *
      * ```text
      * source onExit -> case actions -> target phase factory -> target onEnter
      * ```
-     *
-     * Use `onExit` for cleanup work that logically belongs to leaving a phase,
-     * such as emitting a cancel command or clearing phase-local context.
-     *
-     * [commandLabels] and [effectLabels] are topology metadata for generated
-     * diagrams. Runtime commands/effects must still be emitted from [handler].
      */
     public fun onExit(
-        commandLabels: List<String> = emptyList(),
-        effectLabels: List<String> = emptyList(),
         handler: AfsmExitScope<P, X, C, F, PS>.() -> Unit,
     ) {
-        exitCommandLabels += commandLabels
-        exitEffectLabels += effectLabels
-        exitHandlers += { phase, execution ->
-            val typedPhase = matcher(phase)
-            if (typedPhase != null) {
-                AfsmExitScope<P, X, C, F, PS>(
-                    phase = typedPhase,
-                    execution = execution,
-                ).handler()
-            }
-        }
+        val scope = AfsmExitScope<P, X, C, F, PS>(
+            phaseMatcher = matcher,
+        )
+        scope.handler()
+        val builtHandler = scope.buildHandler()
+
+        exitCommandLabels += builtHandler.commandLabels
+        exitEffectLabels += builtHandler.effectLabels
+        exitHandlers += builtHandler.handler
     }
 
     /**
@@ -791,105 +781,203 @@ internal data class AfsmBuiltEventCase<P : Any, X : Any, E : Any, C : Any, F : A
 )
 
 /**
- * Runtime scope for a phase `onEnter` handler.
+ * Runtime context available to deferred entry and exit action factories.
  *
- * [phase] is the target phase instance being entered. For payload phases
+ * [phase] is the phase instance being entered or exited. For payload phases
  * declared with `state<PayloadPhase>`, it is typed as that payload phase.
+ * [context] is the latest extended context at the moment the deferred action
+ * factory runs.
+ */
+@AfsmDslMarker
+public class AfsmPhaseActionContext<P : Any, X : Any, PS : P> internal constructor(
+    public val phase: PS,
+    private val readContext: () -> X,
+) {
+    public val context: X
+        get() = readContext()
+}
+
+/**
+ * Declaration scope for actions that run when a phase is entered.
+ *
+ * This block is evaluated when the machine is built. `command(label = ...)`
+ * and `effect(label = ...)` record topology labels immediately and defer their
+ * value factory until runtime, so diagram metadata and runtime behavior stay
+ * declared in the same statement.
  */
 @AfsmDslMarker
 public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
-    public val phase: PS,
-    private val execution: AfsmDslExecution<P, X, C, F>,
+    private val phaseMatcher: (P) -> PS?,
 ) {
-    /**
-     * Current extended context after source `onExit` and case actions
-     * have run.
-     */
-    public val context: X
-        get() = execution.context
+    private val actions = mutableListOf<(PS, AfsmDslExecution<P, X, C, F>) -> Unit>()
+    private val commandLabels = mutableListOf<String>()
+    private val effectLabels = mutableListOf<String>()
 
     /**
-     * Replaces the current context with an immutable copy.
+     * Replaces context when the phase is entered.
      *
-     * The [update] receiver is the current context. Return the next context
-     * value. The final state will contain the latest context after all transition
-     * and entry handlers complete.
+     * The [update] receiver is the runtime context after source `onExit` and
+     * accepted case actions have run.
      */
     public fun updateContext(update: X.() -> X) {
-        execution.context = execution.context.update()
+        actions += { _, execution ->
+            execution.context = execution.context.update()
+        }
     }
 
     /**
-     * Emits host-executed work, such as a repository call or timer start.
-     *
-     * [command] is appended to the transition output. The runtime does not
-     * execute it inside the pure machine; `AfsmHost` passes it to the configured
-     * command handler after state/effects are published.
+     * Replaces context with access to the runtime phase payload.
      */
-    public fun command(command: C) {
-        execution.commands += command
+    public fun updateContext(update: (X, PS) -> X) {
+        actions += { phase, execution ->
+            execution.context = update(execution.context, phase)
+        }
     }
 
     /**
-     * Emits a UI-side one-shot effect.
+     * Emits host-executed work when the phase is entered.
      *
-     * [effect] is appended to the transition output. Prefer durable state for
-     * behavior that must survive recreation; effects are best-effort one-shot
-     * outputs.
+     * [label] is optional topology metadata and should usually match the
+     * command's business name. The [command] factory runs at runtime with access
+     * to the entered [AfsmPhaseActionContext.phase] and latest
+     * [AfsmPhaseActionContext.context].
      */
-    public fun effect(effect: F) {
-        execution.effects += effect
+    public fun command(
+        label: String? = null,
+        command: AfsmPhaseActionContext<P, X, PS>.() -> C,
+    ) {
+        label?.let { commandLabels += it }
+        actions += { phase, execution ->
+            val context = AfsmPhaseActionContext<P, X, PS>(
+                phase = phase,
+                readContext = { execution.context },
+            )
+            execution.commands += context.command()
+        }
+    }
+
+    /**
+     * Emits a UI-side one-shot effect when the phase is entered.
+     *
+     * [label] is optional topology metadata. Prefer durable state for behavior
+     * that must survive recreation.
+     */
+    public fun effect(
+        label: String? = null,
+        effect: AfsmPhaseActionContext<P, X, PS>.() -> F,
+    ) {
+        label?.let { effectLabels += it }
+        actions += { phase, execution ->
+            val context = AfsmPhaseActionContext<P, X, PS>(
+                phase = phase,
+                readContext = { execution.context },
+            )
+            execution.effects += context.effect()
+        }
+    }
+
+    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, X, C, F> {
+        return AfsmBuiltPhaseHandler(
+            commandLabels = commandLabels.toList(),
+            effectLabels = effectLabels.toList(),
+            handler = { phase, execution ->
+                val typedPhase = phaseMatcher(phase)
+                if (typedPhase != null) {
+                    actions.forEach { action ->
+                        action(typedPhase, execution)
+                    }
+                }
+            },
+        )
     }
 }
 
 /**
- * Runtime scope for a phase `onExit` handler.
+ * Declaration scope for actions that run when a phase is exited.
  *
- * [phase] is the source phase instance being exited. For payload phases
- * declared with `state<PayloadPhase>`, it is typed as that payload phase.
+ * This block follows the same deferred factory model as [AfsmEntryScope].
  */
 @AfsmDslMarker
 public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
-    public val phase: PS,
-    private val execution: AfsmDslExecution<P, X, C, F>,
+    private val phaseMatcher: (P) -> PS?,
 ) {
-    /**
-     * Current extended context before case actions and target entry
-     * handlers run.
-     */
-    public val context: X
-        get() = execution.context
+    private val actions = mutableListOf<(PS, AfsmDslExecution<P, X, C, F>) -> Unit>()
+    private val commandLabels = mutableListOf<String>()
+    private val effectLabels = mutableListOf<String>()
 
     /**
-     * Replaces the current context with an immutable copy.
-     *
-     * The [update] receiver is the current context. Return the next context
-     * value that should be visible to the accepted case actions.
+     * Replaces context before the accepted event case runs.
      */
     public fun updateContext(update: X.() -> X) {
-        execution.context = execution.context.update()
+        actions += { _, execution ->
+            execution.context = execution.context.update()
+        }
     }
 
     /**
-     * Emits host-executed work, such as canceling a running request or timer.
-     *
-     * [command] is appended to the transition output and will be handled by the
-     * host after the transition is accepted.
+     * Replaces context with access to the runtime phase payload.
      */
-    public fun command(command: C) {
-        execution.commands += command
+    public fun updateContext(update: (X, PS) -> X) {
+        actions += { phase, execution ->
+            execution.context = update(execution.context, phase)
+        }
     }
 
     /**
-     * Emits a UI-side one-shot effect.
-     *
-     * [effect] is appended to the transition output. Use sparingly for UI
-     * behavior that should not be represented as durable state.
+     * Emits host-executed cleanup work when this phase is left.
      */
-    public fun effect(effect: F) {
-        execution.effects += effect
+    public fun command(
+        label: String? = null,
+        command: AfsmPhaseActionContext<P, X, PS>.() -> C,
+    ) {
+        label?.let { commandLabels += it }
+        actions += { phase, execution ->
+            val context = AfsmPhaseActionContext<P, X, PS>(
+                phase = phase,
+                readContext = { execution.context },
+            )
+            execution.commands += context.command()
+        }
+    }
+
+    /**
+     * Emits a UI-side one-shot effect when this phase is left.
+     */
+    public fun effect(
+        label: String? = null,
+        effect: AfsmPhaseActionContext<P, X, PS>.() -> F,
+    ) {
+        label?.let { effectLabels += it }
+        actions += { phase, execution ->
+            val context = AfsmPhaseActionContext<P, X, PS>(
+                phase = phase,
+                readContext = { execution.context },
+            )
+            execution.effects += context.effect()
+        }
+    }
+
+    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, X, C, F> {
+        return AfsmBuiltPhaseHandler(
+            commandLabels = commandLabels.toList(),
+            effectLabels = effectLabels.toList(),
+            handler = { phase, execution ->
+                val typedPhase = phaseMatcher(phase)
+                if (typedPhase != null) {
+                    actions.forEach { action ->
+                        action(typedPhase, execution)
+                    }
+                }
+            },
+        )
     }
 }
+
+internal data class AfsmBuiltPhaseHandler<P : Any, X : Any, C : Any, F : Any>(
+    val commandLabels: List<String>,
+    val effectLabels: List<String>,
+    val handler: AfsmEntryHandler<P, X, C, F>,
+)
 
 /**
  * Runtime scope for a branch declared inside `on<Event>`.

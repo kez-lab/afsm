@@ -250,7 +250,9 @@ private fun draftMachine(): DraftMachine = afsmMachine {
 
     state(DraftPhase.Saving) {
         onEnter {
-            command(DraftCommand.SaveDraft(context.title))
+            command(label = "SaveDraft") {
+                DraftCommand.SaveDraft(context.title)
+            }
         }
 
         on<DraftEvent.DraftSaveCompleted> {
@@ -422,9 +424,9 @@ private typealias DraftMachineType =
 object DraftStateMachine : DraftMachineType by draftMachine()
 ```
 
-Add `commandLabels` or `effectLabels` only when you want those labels to appear
-in generated diagrams. They are documentation metadata; runtime commands and
-effects still come from `command(...)` and `effect(...)`.
+Pass `label = ...` to `command(...)` or `effect(...)` only when you want that
+output to appear in generated diagrams. The label and runtime output stay in the
+same statement so the diagram is less likely to drift from behavior.
 
 Apply the plugin:
 

@@ -89,6 +89,9 @@ The current direction is:
 - Flow `.mmd` output now includes named no-transition condition cases such as validation failures and missing-context branches, while still hiding unlabeled context-only self-loops.
 - The graph Gradle plugin now supports `afsmGraph { mmdOptions.set("Flow"|"Full") }` and `-PafsmMmdOptions=Full`, so Android modules can choose between review-friendly and complete topology output.
 - ProductEditor now uses `DraftSaveCompleted` for the save-result event while keeping `DraftSaved` as the phase name, matching the naming rule that events describe what happened and phases describe the current condition.
+- Entry/exit command and effect graph labels are now declared in the same statement as runtime outputs, for example `command(label = "SaveDraft") { ... }`; public examples should not use separate `commandLabels` / `effectLabels` parameters.
+- The public `Afsm` helper no longer exposes `stay(...)`; graphable DSL code stays in phase by handling an event without `transitionTo(...)`, while low-level reducers can use `AfsmTransition.stayed(...)` when they intentionally need a stayed transition output.
+- Auth and ProductEditor samples now use domain-named condition helpers such as `canSubmitLoginRequest()` and `canStartReviewSubmission()` so event branches read closer to product rules than raw validation predicates.
 
 ## Core Architecture Position
 

@@ -60,7 +60,7 @@ Resolved:
 
 - `AfsmTransition<S, C, F>` is acceptable if feature-local typealiases are documented as the standard convention.
 - Pre-release compatibility aliases were removed before public documentation, so only current API names should be used in new source and docs.
-- `Ignored` is overloaded; the API should add `AfsmDecision.Stayed` and `Afsm.stay(...)` before implementation.
+- `Ignored` is overloaded; the API added `AfsmDecision.Stayed`, but the beginner-facing `Afsm.stay(...)` helper was later removed. Low-level reducers can return `AfsmTransition.stayed(...)`; graphable DSL code stays by omitting `transitionTo(...)`.
 - Use `Afsm` as public type prefix because the product name is Android State Machine.
 - Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
 - Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.

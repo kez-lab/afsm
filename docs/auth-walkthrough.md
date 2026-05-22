@@ -70,7 +70,7 @@ screen data.
 on<AuthEvent.SubmitClicked> {
     case(
         label = "login form",
-        condition = { context.canSubmitLogin() },
+        condition = { context.canSubmitLoginRequest() },
     ) {
         command(label = "Login") { AuthCommand.Login(...) }
         transitionTo(AuthPhase.Submitting)
@@ -78,7 +78,7 @@ on<AuthEvent.SubmitClicked> {
 
     case(
         label = "register form",
-        condition = { context.canSubmitRegister() },
+        condition = { context.canSubmitRegistrationRequest() },
     ) {
         command(label = "Register") { AuthCommand.Register(...) }
         transitionTo(AuthPhase.Submitting)
@@ -86,7 +86,7 @@ on<AuthEvent.SubmitClicked> {
 
     case(
         label = "invalid form",
-        condition = { context.submitError() != null },
+        condition = { context.hasSubmitError() },
     ) {
         updateContext { copy(errorMessage = submitError()) }
     }
@@ -132,4 +132,4 @@ Read `AuthStateMachineTest` in this order:
 2. `submit with invalid password stays and does not emit command`
 3. `auth success moves from submitting to authenticated and emits catalog effect`
 4. `auth command result without loading is invalid`
-5. `form changes are self transitions inside editing phase`
+5. `form changes update context inside editing phase`
