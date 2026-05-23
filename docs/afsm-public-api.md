@@ -40,6 +40,17 @@ Start with `afsmMachine { ... }`, `AfsmState<Phase, Data>`, and
 `AfsmDecision` as advanced reference concepts unless you are writing a custom
 reducer or library integration.
 
+Everyday DSL choices:
+
+| Situation | Use |
+|---|---|
+| The business step changes | `transitionTo(Phase.X)` |
+| The same step only updates form/error data | `updateData { ... }` |
+| An event has named alternatives | `case(label, condition = ...) { ... }` |
+| Repository, database, timer, or SDK work must run | `command(label) { ... }`, often in `onEnter` |
+| Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
+| An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
+
 ## Coordinates
 
 Required dependencies:
@@ -164,7 +175,7 @@ afsmMachine<Phase, Data, Event, Command, Effect> {
         on<Event.SubmitClicked> {
             case(
                 label = "valid form",
-                condition = { data.form.isValid() },
+                condition = { data.canSubmitForm() },
             ) {
                 updateData { copy(errorMessage = null) }
                 transitionTo(Phase.Submitting)
@@ -172,7 +183,7 @@ afsmMachine<Phase, Data, Event, Command, Effect> {
 
             case(
                 label = "invalid form",
-                condition = { !data.form.isValid() },
+                condition = { data.hasSubmitError() },
             ) {
                 updateData { copy(errorMessage = "Invalid form") }
             }
@@ -222,6 +233,11 @@ machine entered a work phase such as `Submitting`.
 `condition` returns `true` handles the event. If no branch matches, the event is
 invalid in the current phase. A named case becomes the generated transition's
 condition label, including no-transition cases such as validation failures.
+
+Conditions run with a read-only scope containing typed `phase`, typed `event`,
+and current `data`. They cannot update data or emit outputs. Payload phase
+factories in `transitionTo<PayloadPhase> { ... }` are also read-only and should
+only create the target phase.
 
 Entry and exit blocks are declaration blocks. `command(label = ...) { ... }`
 and `effect(label = ...) { ... }` record graph labels when the machine is built,

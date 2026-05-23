@@ -22,97 +22,144 @@ Use these words in this order:
 `Data` is not `android.content.Context`. It is normal immutable screen data,
 such as form fields, loaded product, request id, or validation message.
 
-## Build A New Machine
+Use phase constructor payload only for a value that identifies that exact phase
+instance, such as `requestId`, `uploadToken`, or `orderId`. Keep durable form,
+loaded product, retry count, and error data in `Data` so it survives phase
+changes without being copied through every phase.
+
+## The Everyday API Choices
+
+| Situation | Use |
+|---|---|
+| The business step changes | `transitionTo(Phase.X)` |
+| The same step only updates form/error data | `updateData { ... }` |
+| An event has named alternatives | `case(label, condition = ...) { ... }` |
+| Repository, database, timer, or SDK work must run | `command(label) { ... }`, often in `onEnter` |
+| Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
+| An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
+
+`case(...)` is a graphable `if` branch. Branches are checked top-to-bottom; the
+first matching branch handles the event. If no branch matches, the event is
+invalid for the current phase.
+
+## Build A Small Machine
+
+Start with a simple Draft flow:
+
+```text
+Editing -- SaveClicked --> Saving -- DraftSaveCompleted --> Saved
+```
 
 1. Write the phase list first.
 
 ```kotlin
-sealed interface CheckoutPhase {
-    data object Idle : CheckoutPhase
-    data object ProductLoading : CheckoutPhase
-    data object ProductReady : CheckoutPhase
-    data class PaymentInProgress(val requestId: Long) : CheckoutPhase
-    data object PaymentFailed : CheckoutPhase
-    data class Completed(val orderId: Long) : CheckoutPhase
+sealed interface DraftPhase {
+    data object Editing : DraftPhase
+    data object Saving : DraftPhase
+    data object Saved : DraftPhase
 }
 ```
 
 2. Put durable screen data in `Data`.
 
 ```kotlin
-data class CheckoutData(
-    val productId: Long,
-    val product: Product? = null,
-    val nextPaymentRequestId: Long = 0,
+data class DraftData(
+    val title: String = "",
     val errorMessage: String? = null,
 )
 
-typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutData>
+typealias DraftState = AfsmState<DraftPhase, DraftData>
 ```
 
 3. Model user input and async results as events.
 
 ```kotlin
-sealed interface CheckoutEvent {
-    data object ScreenEntered : CheckoutEvent
-    data class ProductLoaded(val product: Product) : CheckoutEvent
-    data object PayClicked : CheckoutEvent
-    data class PaymentSucceeded(val requestId: Long, val receipt: OrderReceipt) : CheckoutEvent
-    data class PaymentFailed(val requestId: Long, val message: String) : CheckoutEvent
+sealed interface DraftEvent {
+    data class TitleChanged(val value: String) : DraftEvent
+    data object SaveClicked : DraftEvent
+    data object DraftSaveCompleted : DraftEvent
 }
 ```
 
-4. Model repository or timer work as commands.
+4. Model repository work as commands.
 
 ```kotlin
-sealed interface CheckoutCommand {
-    data class LoadProduct(val productId: Long) : CheckoutCommand
-    data class SubmitPayment(val requestId: Long, val product: Product) : CheckoutCommand
+sealed interface DraftCommand {
+    data class SaveDraft(val title: String) : DraftCommand
 }
 ```
 
-5. Write the machine in phase order.
+5. Name the machine type.
 
 ```kotlin
-private fun checkoutMachine(): CheckoutMachine = afsmMachine {
+typealias DraftMachine =
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
+
+object DraftStateMachine : DraftMachine by draftMachine()
+```
+
+6. Write the machine in phase order.
+
+```kotlin
+private fun draftMachine(): DraftMachine = afsmMachine {
     initial(
-        phase = CheckoutPhase.Idle,
-        data = CheckoutData(productId = 0),
+        phase = DraftPhase.Editing,
+        data = DraftData(),
     )
 
-    phase(CheckoutPhase.Idle) {
-        on<CheckoutEvent.ScreenEntered> {
-            transitionTo(CheckoutPhase.ProductLoading)
+    phase(DraftPhase.Editing) {
+        on<DraftEvent.TitleChanged> {
+            updateData { data, event ->
+                data.copy(
+                    title = event.value,
+                    errorMessage = null,
+                )
+            }
+        }
+
+        on<DraftEvent.SaveClicked> {
+            case(
+                label = "valid title",
+                condition = { data.title.isNotBlank() },
+            ) {
+                transitionTo(DraftPhase.Saving)
+            }
+
+            case(
+                label = "missing title",
+                condition = { data.title.isBlank() },
+            ) {
+                updateData { copy(errorMessage = "Title is required.") }
+            }
         }
     }
 
-    phase(CheckoutPhase.ProductLoading) {
+    phase(DraftPhase.Saving) {
         onEnter {
-            command(label = "LoadProduct") {
-                CheckoutCommand.LoadProduct(data.productId)
+            command(label = "SaveDraft") {
+                DraftCommand.SaveDraft(data.title)
             }
         }
 
-        on<CheckoutEvent.ProductLoaded> {
-            case {
-                updateData { data, event ->
-                    data.copy(product = event.product, errorMessage = null)
-                }
-                transitionTo(CheckoutPhase.ProductReady)
-            }
+        on<DraftEvent.DraftSaveCompleted> {
+            transitionTo(DraftPhase.Saved)
         }
     }
+
+    phase(DraftPhase.Saved)
 }
 ```
 
-Read an event block top to bottom:
+Read one command-backed flow like this:
 
 ```text
-on<Event>
--> first matching case
--> updateData / command / effect
--> optional transitionTo
--> target onEnter if phase changed
+SaveClicked
+-> Editing accepts the event
+-> transitionTo(Saving)
+-> Saving.onEnter emits SaveDraft
+-> ViewModel command handler calls repository
+-> command handler dispatches DraftSaveCompleted
+-> Saving transitions to Saved
 ```
 
 If a case does not call `transitionTo(...)`, it handles the event without a
@@ -125,17 +172,12 @@ commands and dispatches result events back into the machine.
 
 ```kotlin
 private val host = afsmHost(
-    machine = CheckoutStateMachine,
-    initialState = checkoutState(productId = productId),
+    machine = DraftStateMachine,
     commandHandler = AfsmCommandHandler { command, dispatch ->
         when (command) {
-            is CheckoutCommand.LoadProduct -> {
-                val product = repository.find(command.productId)
-                dispatch(CheckoutEvent.ProductLoaded(product))
-            }
-            is CheckoutCommand.SubmitPayment -> {
-                val receipt = paymentRepository.pay(command.product)
-                dispatch(CheckoutEvent.PaymentSucceeded(command.requestId, receipt))
+            is DraftCommand.SaveDraft -> {
+                repository.save(command.title)
+                dispatch(DraftEvent.DraftSaveCompleted)
             }
         }
     },
@@ -145,10 +187,21 @@ private val host = afsmHost(
 Expose `host.state` as `StateFlow<State>`, expose `host.effects` only when the
 feature has one-shot UI effects, and forward UI input to `host.dispatch(event)`.
 
+If the starting state comes from navigation arguments, a deep link, repository
+restoration, or `SavedStateHandle`, pass an explicit initial state:
+
+```kotlin
+private val host = afsmHost(
+    machine = CheckoutStateMachine,
+    initialState = checkoutState(productId = productId),
+    commandHandler = checkoutCommandHandler,
+)
+```
+
 ## What To Read Next
 
 1. [modeling-rules.md](modeling-rules.md) for when to use Afsm.
-2. [auth-walkthrough.md](auth-walkthrough.md) for a small form.
+2. [auth-walkthrough.md](auth-walkthrough.md) for a small Android form.
 3. [checkout-walkthrough.md](checkout-walkthrough.md) for retry and stale results.
 4. [product-editor-walkthrough.md](product-editor-walkthrough.md) for a large transaction flow.
 5. [graph-generation.md](graph-generation.md) only after the machine is useful.

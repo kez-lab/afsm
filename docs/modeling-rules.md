@@ -44,6 +44,12 @@ If removing a value would change which events are valid, it is probably phase
 or payload phase data. If it is merely data the current phase renders, it is
 probably data.
 
+Payload phase data should be minimal. Good payloads identify a specific phase
+instance, for example `PaymentInProgress(requestId)`,
+`ReviewSubmissionInProgress(uploadToken)`, or `Completed(orderId)`. Do not put
+ordinary form fields, loaded product records, validation messages, or retry
+counts in every phase constructor; keep them in `Data`.
+
 ## DSL Machine vs Reducer
 
 Prefer `afsmMachine { ... }` for graphable complex flows. This gives you:
@@ -106,6 +112,11 @@ invalid by default. Add `ignore` only when the event is expected and harmless.
 Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.
+
+Use `case(label, condition = ...)` like a graphable `if` branch. The label
+should describe the business condition, not the Kotlin expression. Prefer
+`label = "valid draft"` with `condition = { data.canSubmitDraft() }` over
+`label = "draft.form.validationError() == null"`.
 
 ## First Reading Order
 

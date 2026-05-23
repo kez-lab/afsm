@@ -6,6 +6,8 @@ import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 class ProductEditorViewModel(
     private val productRepository: ProductRepository,
@@ -57,8 +59,8 @@ class ProductEditorViewModel(
         },
     )
 
-    val state = host.state
-    val effects = host.effects
+    val state: StateFlow<ProductEditorState> = host.state
+    val effects: Flow<ProductEditorEffect> = host.effects
 
     fun onEvent(event: ProductEditorEvent) {
         host.dispatch(event)

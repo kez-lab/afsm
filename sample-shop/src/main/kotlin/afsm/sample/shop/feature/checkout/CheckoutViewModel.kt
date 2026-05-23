@@ -6,6 +6,8 @@ import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 class CheckoutViewModel(
     productId: Long,
@@ -64,8 +66,8 @@ class CheckoutViewModel(
         },
     )
 
-    val state = host.state
-    val effects = host.effects
+    val state: StateFlow<CheckoutState> = host.state
+    val effects: Flow<CheckoutEffect> = host.effects
 
     init {
         host.dispatch(CheckoutEvent.ScreenEntered)

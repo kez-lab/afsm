@@ -12,7 +12,7 @@ data screens heavier. The examples are ordered from smallest to most persuasive.
 | Minimal Draft | You want the smallest possible machine | `Phase`, `Data`, `Event`, `Command`, `onEnter`, `ViewModel.afsmHost` | [README.md](../README.md) | README-only copy-paste example |
 | Auth | You need login/register form submission | form data, validation guards, command result events, navigation effect | [auth-walkthrough.md](auth-walkthrough.md) | [AuthStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt), [AuthViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthViewModel.kt), [AuthStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt) |
 | Checkout | You need async loading, payment, retry, stale results, and durable completion | graphable payment flow, request ids, state plus optional effect, render mapping | [checkout-walkthrough.md](checkout-walkthrough.md) | [CheckoutStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt), [CheckoutViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt), [CheckoutStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt) |
-| ProductEditor | You need a high-branching transaction flow | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) | [ProductEditorStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt), [ProductEditorViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt), [ProductEditorStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt) |
+| ProductEditor | You need an advanced graph stress test | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) | [ProductEditorStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt), [ProductEditorViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt), [ProductEditorStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt) |
 | Catalog/Product/Reviews | You need to know when not to use Afsm | ordinary `ViewModel + Flow` for data screens | This page | [CatalogViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/catalog/CatalogViewModel.kt), [ProductDetailViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/product/ProductDetailViewModel.kt) |
 
 ## Adoption Decision Examples
@@ -69,7 +69,7 @@ sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
 
 ### Checkout
 
-Checkout is the best mid-size example for Android teams.
+Checkout is the best production-style mid-size example for Android teams.
 
 It proves:
 
@@ -88,7 +88,7 @@ sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 
 ### ProductEditor
 
-ProductEditor is the complex-flow reference.
+ProductEditor is the advanced graph stress test.
 
 It proves:
 

@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-05-21
+updated: 2026-05-23
 ---
 
 # Afsm v3 Executable DSL
@@ -172,6 +172,28 @@ This shape keeps the graphable statechart structure while reducing the surprise
 that `stay` and `otherwise` created for Android developers. A no-transition
 case is simply an accepted event that updates data, emits outputs, or both.
 
+## 2026-05-23 Readability Revision
+
+The second first-use review kept the DSL direction but tightened the division
+between read-only decisions and mutating transition work.
+
+Accepted direction:
+
+- `case(condition = ...)`, conditional `updateData(...)`, `ignore(...)`, and
+  `invalid(...)` use a read-only condition scope. Conditions can inspect
+  `phase`, `event`, and `data`; they cannot update data or emit outputs.
+- `transitionTo<PayloadPhase> { ... }` uses a read-only payload phase factory
+  scope. It can inspect the latest data and create the target phase, but it
+  cannot mutate the transition.
+- `transitionTo(...)` remains phase change only. Data updates, commands, and
+  effects are still separate statements.
+- Public onboarding starts with a minimal Draft flow. Checkout is the
+  production-style mid-size example. ProductEditor is the advanced graph stress
+  test.
+- Phase payloads should be minimal phase-instance identifiers such as
+  `requestId`, `uploadToken`, or `orderId`. Durable form/product/error data
+  belongs in `Data`.
+
 ## Current Naming Decision
 
 The API should avoid making `AfsmReducer` and the executable DSL object sound like the same thing.
@@ -243,7 +265,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         on<ProductEditorEvent.SubmitClicked> {
             case(
                 label = "valid draft",
-                condition = { data.draft.validationMessage() == null },
+                condition = { data.canStartReviewSubmission() },
             ) {
                 updateData { copy(draft = draft.normalized(), errorMessage = null) }
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
@@ -251,7 +273,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
             case(
                 label = "invalid draft",
-                condition = { data.draft.validationMessage() != null },
+                condition = { data.hasReviewSubmissionError() },
             ) {
                 updateData {
                     copy(errorMessage = draft.validationMessage())

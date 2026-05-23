@@ -278,7 +278,7 @@ class AfsmExecutableDslCompileCheckTest {
         }
 
         assertTrue("Initial phase EditingDraft" in missingInitial.message.orEmpty())
-        assertTrue("targets an undeclared state" in unknownTarget.message.orEmpty())
+        assertTrue("targets an undeclared phase" in unknownTarget.message.orEmpty())
     }
 
     @Test

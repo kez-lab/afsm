@@ -570,3 +570,17 @@
   `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-23-afsm-6-agent-first-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-23] implementation | Second first-use usability hardening
+
+- Source: follow-up six-agent review from first-time Android developer,
+  architecture, Kotlin API, sample POC, docs, and CTO/adoption perspectives.
+- Action: Made DSL branch predicates and payload phase factories read-only,
+  moved getting-started to a minimal Draft-first flow, clarified API choice and
+  phase payload rules, reduced Checkout `ignore(...)` enumeration, and made
+  sample ViewModel state/effect types explicit.
+- Updated: `afsm-core/`, `sample-shop/`, `README.md`, `docs/`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`,
+  `wiki/index.md`, `wiki/log.md`.

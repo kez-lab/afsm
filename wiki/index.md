@@ -64,6 +64,7 @@ updated: 2026-05-23
 - [[08-meetings/2026-05-19-afsm-6-agent-usability-loop|Afsm 6-Agent Usability Loop]] - Two-round usability review covering first-use onboarding, render-state sample boundaries, ProductEditor explanation, graph generation, and beta adoption contract.
 - [[08-meetings/2026-05-21-afsm-6-agent-dsl-usability-review|Afsm 6-Agent DSL Usability Review]] - Review of the case-oriented DSL, payload phase factory order, no-transition graph visibility, and documentation drift.
 - [[08-meetings/2026-05-23-afsm-6-agent-first-use-review|Afsm 6-Agent First-Use Review]] - First-time Android developer review that drove the phase/data/handled terminology cleanup and Android-first onboarding page.
+- [[08-meetings/2026-05-23-afsm-6-agent-second-first-use-review|Afsm 6-Agent Second First-Use Review]] - Follow-up review that moved onboarding to Draft-first docs, made DSL predicates read-only, reduced Checkout ignore usage, and clarified phase payload rules.
 
 ## Raw Sources
 

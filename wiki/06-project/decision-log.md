@@ -1112,3 +1112,33 @@ Consequences:
   graphable machine type at feature boundaries.
 - API dumps must be regenerated because the change intentionally breaks the
   pre-release public surface.
+
+## [2026-05-23] Make first-use DSL predicates read-only and Draft-first
+
+Decision: Keep the public DSL as the primary authoring model, but separate
+read-only decision scopes from mutating transition scopes and teach the API
+through a minimal Draft flow before Checkout or ProductEditor.
+
+Rationale:
+
+- A second six-agent first-use review found that remaining confusion came from
+  too much domain complexity too early, plus receiver scopes that implied
+  predicates and payload phase factories could mutate transition output.
+- `case(condition = ...)` should behave like a graphable `if` branch. It should
+  inspect typed `phase`, typed `event`, and current `data`, not change the
+  machine.
+- `transitionTo<PayloadPhase> { ... }` should create only the target phase.
+  Data updates, commands, and effects remain separate statements so
+  `transitionTo` keeps one meaning: phase change.
+- Checkout should demonstrate production policies, but the first learning
+  example should be a small Draft machine.
+
+Consequences:
+
+- `AfsmConditionScope` and `AfsmPhaseFactoryScope` are public read-only DSL
+  receiver types.
+- The `afsm-core` API dump changes intentionally before public release.
+- `docs/getting-started.md` is Draft-first; Checkout is the mid-size production
+  sample; ProductEditor is the advanced graph stress test.
+- `ignore(...)` remains available only for expected harmless no-ops. Omitted
+  event handlers remain invalid by default.

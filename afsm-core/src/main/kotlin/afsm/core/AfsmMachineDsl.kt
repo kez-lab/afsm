@@ -178,18 +178,18 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
         val errors = mutableListOf<String>()
 
         if (states.isEmpty()) {
-            errors += "At least one state must be declared."
+            errors += "At least one phase must be declared."
         }
 
         states.groupBy { it.label }
             .filterValues { it.size > 1 }
             .keys
             .forEach { label ->
-                errors += "Duplicate state declaration: $label."
+                errors += "Duplicate phase declaration: $label."
             }
 
         if (states.none { it.matcher(initial.phase) != null }) {
-            errors += "Initial phase ${afsmLabelForValue(initial.phase)} has no matching state declaration."
+            errors += "Initial phase ${afsmLabelForValue(initial.phase)} has no matching phase declaration."
         }
 
         val stateLabels = states.map { it.label }.toSet()
@@ -206,7 +206,7 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
                 .flatMap { it.transitions }
                 .filter { transition -> transition.to !in stateLabels }
                 .forEach { transition ->
-                    errors += "Transition ${transition.from} -- ${transition.event} --> ${transition.to} targets an undeclared state."
+                    errors += "Transition ${transition.from} -- ${transition.event} --> ${transition.to} targets an undeclared phase."
                 }
         }
 
@@ -386,8 +386,10 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * rendered as part of the internal transition label.
      *
      * [condition] is evaluated at runtime with typed [phase], [event], and
-     * [AfsmTransitionScope.data]. If it returns `false`, Afsm tries the next
-     * declared case in this `on<Event>` block.
+     * [AfsmConditionScope.data]. Conditions are read-only: they can inspect the
+     * current phase, event, and data, but cannot update data or emit outputs.
+     * If [condition] returns `false`, Afsm tries the next declared case in this
+     * `on<Event>` block.
      *
      * [build] declares what the accepted case does. Calling
      * [AfsmEventCaseScope.transitionTo] changes phase. If no transition target is
@@ -397,7 +399,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun case(
         label: String? = null,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
         build: AfsmEventCaseScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
         val builder = AfsmEventCaseScope<P, D, E, C, F, PS, EV>()
@@ -433,7 +435,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun updateData(
         label: String? = null,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
         update: D.() -> D,
     ) {
         case(
@@ -453,7 +455,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun updateData(
         label: String? = null,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
         update: (D, EV) -> D,
     ) {
         case(
@@ -499,7 +501,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * named condition, data update, command, or effect, use [case].
      */
     public inline fun <reified TP : P> transitionTo(
-        noinline phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
+        noinline phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
     ) {
         transitionTo(
             phaseType = TP::class,
@@ -513,7 +515,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,
-        phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
+        phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
     ) {
         case {
             transitionTo(
@@ -524,20 +526,22 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
     }
 
     /**
-     * Declares a handled event that should be ignored without changing state or graph topology.
+     * Declares an expected no-op event without changing state or graph topology.
      *
-     * Use `ignore` when the event is expected in this phase but intentionally
-     * does nothing, such as a duplicate submit while already submitting.
+     * Use `ignore` sparingly for events that can legitimately arrive in this
+     * phase and are harmless, such as a duplicate submit while already
+     * submitting or a stale async result after retry. Do not enumerate every
+     * impossible event with `ignore`; omitted handlers are invalid by default.
      *
      * [reason] is diagnostic text surfaced through [AfsmDecision.Ignored].
      * [condition] optionally limits when the ignored decision applies.
      *
-     * Ignored branches produce no topology edge and any state/command/effect
-     * output is dropped by the runtime.
+     * Ignored branches produce no topology edge and any state, command, or
+     * effect output is dropped by the runtime.
      */
     public fun ignore(
         reason: String? = null,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Ignored(reason),
@@ -546,7 +550,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
     }
 
     /**
-     * Declares a handled event that represents an invalid transition without changing graph topology.
+     * Declares an invalid transition without changing graph topology.
      *
      * Use `invalid` when receiving this event in the current phase is a flow
      * error that should be reported according to the host's invalid-transition
@@ -560,7 +564,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun invalid(
         reason: String? = null,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Invalid(reason),
@@ -571,13 +575,13 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
     private fun addBranch(
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
-        targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)?,
+        targetFactory: (AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> P?)?,
         conditionLabel: String?,
         commandLabels: List<String>,
         effectLabels: List<String>,
         kind: AfsmTopologyTransitionKind,
         isFallback: Boolean,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean,
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean,
         block: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
         transitions += AfsmTopologyTransition(
@@ -598,14 +602,26 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
                 event = typedEvent,
                 execution = execution,
             )
+            val conditionScope = AfsmConditionScope<P, D, E, PS, EV>(
+                phase = typedPhase,
+                event = typedEvent,
+                readData = { execution.data },
+            )
 
-            if (!scope.condition()) {
+            if (!conditionScope.condition()) {
                 return@AfsmEventBranch AfsmBranchResult.Unmatched
             }
 
             AfsmBranchResult.Matched(
                 targetFactory = targetFactory?.let { factory ->
-                    { scope.factory() }
+                    {
+                        val phaseFactoryScope = AfsmPhaseFactoryScope<P, D, E, PS, EV>(
+                            phase = typedPhase,
+                            event = typedEvent,
+                            readData = { execution.data },
+                        )
+                        phaseFactoryScope.factory()
+                    }
                 },
                 decision = null,
                 execute = {
@@ -617,18 +633,18 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
 
     internal fun addDecisionBranch(
         decision: AfsmDecision,
-        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean,
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean,
     ) {
         branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
             val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
             val typedEvent = eventMatcher(currentEvent) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
-            val scope = AfsmTransitionScope<P, D, E, C, F, PS, EV>(
+            val conditionScope = AfsmConditionScope<P, D, E, PS, EV>(
                 phase = typedPhase,
                 event = typedEvent,
-                execution = execution,
+                readData = { execution.data },
             )
 
-            if (!scope.condition()) {
+            if (!conditionScope.condition()) {
                 return@AfsmEventBranch AfsmBranchResult.Unmatched
             }
 
@@ -653,7 +669,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
 @AfsmDslMarker
 public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor() {
     internal var targetLabel: String? = null
-    internal var targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)? = null
+    internal var targetFactory: (AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> P?)? = null
     internal val actions = mutableListOf<AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit>()
     internal val commandLabels = mutableListOf<String>()
     internal val effectLabels = mutableListOf<String>()
@@ -680,7 +696,7 @@ public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS 
      * the case.
      */
     public inline fun <reified TP : P> transitionTo(
-        noinline phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
+        noinline phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
     ) {
         transitionTo(
             phaseType = TP::class,
@@ -693,7 +709,7 @@ public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS 
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,
-        phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
+        phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
     ) {
         setTarget(
             label = afsmLabelForClass(phaseType),
@@ -762,7 +778,7 @@ public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS 
 
     private fun setTarget(
         label: String,
-        factory: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P,
+        factory: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> P,
     ) {
         check(targetLabel == null) {
             "Only one transition target can be declared in one Afsm case."
@@ -774,11 +790,45 @@ public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS 
 
 internal data class AfsmBuiltEventCase<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E>(
     val targetLabel: String?,
-    val targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)?,
+    val targetFactory: (AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> P?)?,
     val actions: List<AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit>,
     val commandLabels: List<String>,
     val effectLabels: List<String>,
 )
+
+/**
+ * Read-only runtime data available to a `case(condition = ...)` predicate.
+ *
+ * Conditions should decide whether a branch is eligible. They can inspect the
+ * typed source [phase], typed [event], and latest [data], but cannot update
+ * data or emit commands/effects.
+ */
+@AfsmDslMarker
+public class AfsmConditionScope<P : Any, D : Any, E : Any, PS : P, EV : E> internal constructor(
+    public val phase: PS,
+    public val event: EV,
+    private val readData: () -> D,
+) {
+    public val data: D
+        get() = readData()
+}
+
+/**
+ * Read-only runtime data available to `transitionTo<PayloadPhase> { ... }`.
+ *
+ * The factory should only create the target phase. It observes data after
+ * source `onExit` and accepted case actions have run, but it cannot mutate the
+ * transition.
+ */
+@AfsmDslMarker
+public class AfsmPhaseFactoryScope<P : Any, D : Any, E : Any, PS : P, EV : E> internal constructor(
+    public val phase: PS,
+    public val event: EV,
+    private val readData: () -> D,
+) {
+    public val data: D
+        get() = readData()
+}
 
 /**
  * Runtime data available to deferred entry and exit action factories.
@@ -1110,7 +1160,7 @@ private class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
             definition.matcher(state.phase) != null
         } ?: return Afsm.invalid(
             state = state,
-            reason = "No state definition matched the current phase.",
+            reason = "No phase declaration matched the current phase.",
         )
 
         val eventDefinition = stateDefinition.eventDefinitions.firstOrNull { definition ->

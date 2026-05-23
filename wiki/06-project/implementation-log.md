@@ -1448,7 +1448,7 @@ Change:
   `effectLabels` parameters to labeled runtime outputs:
   `command(label = "...") { ... }` and `effect(label = "...") { ... }`.
 - Removed `Afsm.stay(...)` from the `Afsm` helper object; low-level reducers can
-  still use `AfsmTransition.stayed(...)`.
+  still use `AfsmTransition.handled(...)`.
 - Updated Auth, Checkout, ProductEditor, core DSL tests, README, public API
   docs, graph docs, and walkthroughs.
 - Simplified Auth terminal-state no-op declarations and renamed sample
@@ -1503,3 +1503,38 @@ Conclusion:
 - The public model now reads as `Phase + Data + Event + Command`, which reduces
   Android-specific naming collisions and removes a beginner-facing `stay`
   concept from the graphable DSL.
+
+## [2026-05-23] Second first-use usability hardening
+
+Change:
+
+- Added read-only DSL receiver scopes for branch conditions and payload phase
+  factories: `AfsmConditionScope` and `AfsmPhaseFactoryScope`.
+- Changed `case`, conditional `updateData`, `ignore`, `invalid`, and payload
+  `transitionTo` overloads to use those read-only scopes instead of the mutable
+  transition scope.
+- Rewrote `docs/getting-started.md` around the minimal Draft flow before
+  Checkout.
+- Added everyday API choice tables and phase payload rules to public docs.
+- Reduced Checkout `ignore(...)` usage so the sample omits ordinary invalid
+  event/phase combinations.
+- Added explicit `StateFlow<State>` and `Flow<Effect>` types to sample
+  ViewModels.
+- Recorded the follow-up six-agent review in
+  `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-core:compileTestKotlin :afsm-core:apiCheck --no-daemon
+./gradlew :afsm-core:apiDump --no-daemon
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :afsm-core:apiCheck :sample-shop:generateAfsmMmd --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use path now separates graph decisions from mutation, and the docs
+  teach a small statechart before asking Android developers to read the
+  Checkout or ProductEditor domains.

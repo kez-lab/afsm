@@ -124,3 +124,6 @@ Resolved:
 - Standard extended state is now called `Data` and exposed as `AfsmState.data`, not `Context`, to avoid collision with `android.content.Context`.
 - `AfsmDecision.Stayed` and `AfsmTransition.stayed(...)` were renamed to `Handled` / `handled(...)`; graphable DSL users stay in phase by handling an event without `transitionTo(...)`.
 - `AfsmPhaseMachine` was removed from the public surface; the DSL returns ordinary `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>`.
+- `case(condition = ...)` and payload phase factories are read-only scopes, so predicates and phase constructors cannot accidentally update data or emit commands/effects.
+- First-use onboarding should start with the minimal Draft flow; Checkout is the production-style mid-size sample and ProductEditor is the advanced graph stress test.
+- Public docs should explain phase payloads as minimal phase-instance identifiers, while durable screen data stays in `Data`.

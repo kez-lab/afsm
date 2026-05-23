@@ -1,9 +1,11 @@
 # ProductEditor Walkthrough
 
-ProductEditor is the complex-flow reference example.
+ProductEditor is the advanced graph stress-test example.
 
 Read it after Auth and Checkout. It is intentionally larger because it proves
 Afsm can keep a high-branching Android screen reviewable.
+Do not use it as the first copy-paste sample; use the README Draft flow or
+Auth first, then read ProductEditor when you want to see how the DSL scales.
 
 ## Files
 
@@ -121,7 +123,8 @@ that phase, such as `uploadToken`, rejection reason, or published product id.
 
 ## Entry Commands
 
-Long-running work is phase-owned:
+Long-running work is phase-owned. Transition branches say where the flow moves;
+the target phase `onEnter` starts the command:
 
 ```kotlin
 phase(ProductEditorPhase.ImageUploadInProgress) {

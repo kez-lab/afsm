@@ -6,18 +6,14 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
-Afsm is an Android-focused finite state machine toolkit for complex `ViewModel` flows.
+Afsm is an Android-focused finite state machine toolkit for complex `ViewModel`
+flows. It keeps `ViewModel` as the Android lifecycle adapter and moves screen
+flow rules into a plain Kotlin machine.
 
-Use Afsm when a screen has meaningful phases, retries, async results, invalid transitions, or multi-step behavior. Do not force it onto simple product lists, detail pages, likes, review lists, or basic loading/content/error screens where ordinary `ViewModel + StateFlow` is clearer.
-
-## Current Status
-
-Afsm is in private internal beta. The local release gate is green, Maven Local
-evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
-flows. Stable OSS/Maven Central publishing is intentionally blocked until
-license, final coordinates, SCM metadata, signing, and release ownership are
-decided. Internal pilot rules are documented in
-[docs/release-readiness.md](docs/release-readiness.md).
+Use Afsm when a screen has meaningful phases, retries, async results, invalid
+transitions, or multi-step behavior. Do not force it onto simple product lists,
+detail pages, likes, review lists, or basic loading/content/error screens where
+ordinary `ViewModel + StateFlow` is clearer.
 
 ## First Use Path
 
@@ -33,78 +29,9 @@ The short version:
 5. Start repository work from `command(...)`, usually in `onEnter`.
 6. Host the machine from a `ViewModel` with `afsmHost(...)`.
 
-Use [docs/examples.md](docs/examples.md) to choose a real sample, then read
+Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
 screen.
-
-## Install
-
-Repository-local development:
-
-```kotlin
-dependencies {
-    implementation(project(":afsm-core"))
-    implementation(project(":afsm-runtime"))
-    implementation(project(":afsm-viewmodel"))
-    implementation(project(":afsm-compose")) // optional
-    ksp(project(":afsm-graph-ksp")) // optional graph registry
-}
-```
-
-Maven Local evaluation:
-
-```bash
-./gradlew publishToMavenLocal
-./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # only needed for optional graph plugin
-```
-
-```kotlin
-repositories {
-    google()
-    mavenCentral()
-    mavenLocal()
-}
-
-dependencies {
-    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-}
-```
-
-Optional Compose and graph tooling:
-
-For Maven Local graph plugin resolution, include `mavenLocal()` in
-`pluginManagement.repositories` in `settings.gradle.kts`.
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp")
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
-}
-
-dependencies {
-    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-}
-```
-
-The graph plugin adds `afsm-graph-ksp` to the app module by default and
-registers `generateAfsmMmd`.
-
-The full local consumer check publishes the plugin and verifies graph generation
-from an external Android build:
-
-```bash
-./scripts/verify-consumer-smoke.sh --warning-mode all
-```
-
-Android consumers must enable AndroidX:
-
-```properties
-android.useAndroidX=true
-```
-
-`io.github.afsm` is the current pre-release group id. Final Maven Central coordinates still need product approval.
 
 ## Minimal Machine
 
@@ -118,6 +45,17 @@ The core mental model:
 | `Event` | User input or command result |
 | `Command` | Host-executed work, such as repository calls or timers |
 | `Effect` | Optional UI one-shot output |
+
+Daily choices:
+
+| Situation | Use |
+|---|---|
+| The business step changes | `transitionTo(Phase.X)` |
+| The same step only updates form/error data | `updateData { ... }` |
+| An event has named alternatives | `case(label, condition = ...) { ... }` |
+| Repository, database, timer, or SDK work must run | `command(label) { ... }`, often in `onEnter` |
+| Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
+| An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
 
 Define a small machine first. Do not start with graph/KSP.
 
@@ -258,6 +196,85 @@ private val host = afsmHost(
     commandHandler = draftCommandHandler,
 )
 ```
+
+## Install
+
+Repository-local development:
+
+```kotlin
+dependencies {
+    implementation(project(":afsm-core"))
+    implementation(project(":afsm-runtime"))
+    implementation(project(":afsm-viewmodel"))
+    implementation(project(":afsm-compose")) // optional
+    ksp(project(":afsm-graph-ksp")) // optional graph registry
+}
+```
+
+Maven Local evaluation:
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # only needed for optional graph plugin
+```
+
+```kotlin
+repositories {
+    google()
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+}
+```
+
+Optional Compose and graph tooling:
+
+For Maven Local graph plugin resolution, include `mavenLocal()` in
+`pluginManagement.repositories` in `settings.gradle.kts`.
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
+}
+
+dependencies {
+    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+}
+```
+
+The graph plugin adds `afsm-graph-ksp` to the app module by default and
+registers `generateAfsmMmd`.
+
+The full local consumer check publishes the plugin and verifies graph generation
+from an external Android build:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all
+```
+
+Android consumers must enable AndroidX:
+
+```properties
+android.useAndroidX=true
+```
+
+`io.github.afsm` is the current pre-release group id. Final Maven Central
+coordinates still need product approval.
+
+## Current Status
+
+Afsm is in private internal beta. The local release gate is green, Maven Local
+evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
+flows. Stable OSS/Maven Central publishing is intentionally blocked until
+license, final coordinates, SCM metadata, signing, and release ownership are
+decided. Internal pilot rules are documented in
+[docs/release-readiness.md](docs/release-readiness.md).
 
 If you intentionally use a custom non-graphable `AfsmReducer`, name it as a
 reducer at the call site:

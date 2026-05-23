@@ -8,6 +8,12 @@ public final class afsm/core/Afsm {
 	public static synthetic fun transitioned$default (Lafsm/core/Afsm;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lafsm/core/AfsmTransition;
 }
 
+public final class afsm/core/AfsmConditionScope {
+	public final fun getData ()Ljava/lang/Object;
+	public final fun getEvent ()Ljava/lang/Object;
+	public final fun getPhase ()Ljava/lang/Object;
+}
+
 public abstract interface class afsm/core/AfsmDecision {
 }
 
@@ -199,6 +205,12 @@ public final class afsm/core/AfsmPhaseBuilder {
 	public final fun on (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
 	public final fun onEnter (Lkotlin/jvm/functions/Function1;)V
 	public final fun onExit (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class afsm/core/AfsmPhaseFactoryScope {
+	public final fun getData ()Ljava/lang/Object;
+	public final fun getEvent ()Ljava/lang/Object;
+	public final fun getPhase ()Ljava/lang/Object;
 }
 
 public abstract interface class afsm/core/AfsmReducer {

@@ -93,6 +93,10 @@ The current direction is:
 - Entry/exit command and effect graph labels are now declared in the same statement as runtime outputs, for example `command(label = "SaveDraft") { ... }`; public examples should not use separate `commandLabels` / `effectLabels` parameters.
 - The public `Afsm` helper no longer exposes `stay(...)`; graphable DSL code stays in phase by handling an event without `transitionTo(...)`, while low-level reducers can use `AfsmTransition.handled(...)` when they intentionally need a handled transition output.
 - Auth and ProductEditor samples now use domain-named condition helpers such as `canSubmitLoginRequest()` and `canStartReviewSubmission()` so event branches read closer to product rules than raw validation predicates.
+- A follow-up six-agent first-use review tightened the remaining onboarding costs: `docs/getting-started.md` now teaches a minimal Draft flow before Checkout, public docs include an everyday API choice table, `case(...)` is explained as a graphable `if` branch, and ProductEditor is labeled as an advanced graph stress test.
+- DSL predicates and payload phase factories are now read-only scopes. `case(condition = ...)` can inspect `phase`, `event`, and `data` but cannot update data or emit outputs; `transitionTo<PayloadPhase> { ... }` can create the target phase but cannot mutate the transition.
+- Checkout now omits ordinary invalid event/phase combinations and uses `ignore(...)` only for expected harmless duplicates, stale async results, and terminal duplicate actions.
+- Sample ViewModels now expose explicit `StateFlow<State>` and `Flow<Effect>` types so Android integration remains visible to first-time readers.
 
 ## Core Architecture Position
 

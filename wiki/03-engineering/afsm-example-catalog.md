@@ -16,7 +16,7 @@ The public docs version is [docs/examples.md](../../docs/examples.md).
 | 1 | README minimal Draft | Smallest mental model: phase, data, event, command, `onEnter` |
 | 2 | [Auth](../../docs/auth-walkthrough.md) | Smallest real Android screen: validation, command result events, navigation effect |
 | 3 | [Checkout](../../docs/checkout-walkthrough.md) | Mid-size Android lifecycle flow: navigation argument initial state, loading, payment, retry, stale results, durable completion |
-| 4 | [ProductEditor](../../docs/product-editor-walkthrough.md) | Complex transaction flow: draft, upload, review rejection/resubmission, approval, publishing |
+| 4 | [ProductEditor](../../docs/product-editor-walkthrough.md) | Advanced graph stress test: draft, upload, review rejection/resubmission, approval, publishing |
 | Anti-example | Catalog/Product/Reviews | Screens that should remain ordinary `ViewModel + Flow` |
 
 ## Why Checkout Was Promoted
@@ -57,5 +57,5 @@ this order:
 2. Checkout.
 3. ProductEditor.
 
-ProductEditor is stronger, but Checkout is easier to finish reading and shows
-Android lifecycle concerns more directly.
+ProductEditor is stronger as a graph stress test, but Checkout is easier to
+finish reading and shows Android lifecycle concerns more directly.

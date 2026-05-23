@@ -74,13 +74,6 @@ private fun checkoutMachine(): CheckoutMachine {
                 }
             }
 
-            on<CheckoutEvent.PayClicked> {
-                ignore(reason = "Cannot pay before product load finishes.")
-            }
-
-            on<CheckoutEvent.RetryClicked> {
-                ignore(reason = "Cannot retry before product load finishes.")
-            }
         }
 
         phase(CheckoutPhase.ProductReady) {
@@ -112,17 +105,6 @@ private fun checkoutMachine(): CheckoutMachine {
                 }
             }
 
-            on<CheckoutEvent.RetryClicked> {
-                ignore(reason = "Retry is only valid after a payment failure.")
-            }
-
-            on<CheckoutEvent.PaymentSucceeded> {
-                ignore(reason = "Payment result arrived without an active request.")
-            }
-
-            on<CheckoutEvent.PaymentFailed> {
-                ignore(reason = "Payment result arrived without an active request.")
-            }
         }
 
         phase<CheckoutPhase.PaymentInProgress> {
@@ -215,32 +197,9 @@ private fun checkoutMachine(): CheckoutMachine {
                 }
             }
 
-            on<CheckoutEvent.PayClicked> {
-                ignore(reason = "Use retry after payment failure.")
-            }
-
-            on<CheckoutEvent.PaymentSucceeded> {
-                ignore(reason = "Payment result arrived without an active request.")
-            }
-
-            on<CheckoutEvent.PaymentFailed> {
-                ignore(reason = "Payment result arrived without an active request.")
-            }
         }
 
-        phase(CheckoutPhase.ProductUnavailable) {
-            on<CheckoutEvent.ScreenEntered> {
-                ignore(reason = "Product is unavailable.")
-            }
-
-            on<CheckoutEvent.PayClicked> {
-                ignore(reason = "Cannot pay for an unavailable product.")
-            }
-
-            on<CheckoutEvent.RetryClicked> {
-                ignore(reason = "Cannot retry payment for an unavailable product.")
-            }
-        }
+        phase(CheckoutPhase.ProductUnavailable)
 
         phase<CheckoutPhase.Completed> {
             on<CheckoutEvent.PayClicked> {
