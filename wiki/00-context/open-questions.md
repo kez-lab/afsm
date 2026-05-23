@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-21
+updated: 2026-05-23
 ---
 
 # Open Questions
@@ -60,7 +60,7 @@ Resolved:
 
 - `AfsmTransition<S, C, F>` is acceptable if feature-local typealiases are documented as the standard convention.
 - Pre-release compatibility aliases were removed before public documentation, so only current API names should be used in new source and docs.
-- `Ignored` is overloaded; the API added `AfsmDecision.Stayed`, but the beginner-facing `Afsm.stay(...)` helper was later removed. Low-level reducers can return `AfsmTransition.stayed(...)`; graphable DSL code stays by omitting `transitionTo(...)`.
+- `Ignored` is overloaded; the API added `AfsmDecision.Handled`, but the beginner-facing `Afsm.stay(...)` helper was later removed. Low-level reducers can return `AfsmTransition.handled(...)`; graphable DSL code stays by omitting `transitionTo(...)`.
 - Use `Afsm` as public type prefix because the product name is Android State Machine.
 - Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
 - Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.
@@ -80,10 +80,10 @@ Resolved:
 - The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
 - A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
 - `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; condition labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
-- Use `AfsmReducer<S, E, C, F>` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature boundaries, and `AfsmPhaseMachine<P, X, E, C, F>` for the executable phase/context DSL machine.
+- Use `AfsmReducer<S, E, C, F>` for the low-level host contract and `AfsmMachine<S, E, C, F>` for graphable feature boundaries. The executable DSL builder `afsmMachine<P, D, E, C, F> { ... }` returns `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
 - Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
 - Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
-- `AfsmState<Phase, Context>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
+- `AfsmState<Phase, Data>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
 - The DSL includes flat `onExit`; transition execution order is `onExit -> case actions -> onEnter` for phase-changing transitions.
 - Initial state construction does not run `onEnter`; startup work should be triggered by an explicit event such as `ScreenEntered` or by a future dedicated `initialTransition` API if needed.
 - `AfsmHost` command-handler exceptions use `AfsmCommandFailurePolicy`: `Throw` by default for programmer errors, `Record` when a resilient host should log and continue. `CancellationException` is always rethrown.
@@ -91,12 +91,12 @@ Resolved:
 - `ignore(...)` is intentional handled no-op behavior. Ordinary unhandled event/phase combinations should be omitted and become invalid decisions.
 - Real `sample-shop` ProductEditor has been migrated from the phased helper to the executable DSL and has focused unit coverage plus topology assertions.
 - The phased-state API was removed from `afsm-core` after the executable DSL migration; it remains only as historical learning.
-- In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as context-only flags just to reduce state count.
-- Context-only updates should be reserved for actual data updates; ProductEditor's current public style is executable DSL branches plus `updateContext`, not entry-policy-driven reducers.
+- In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as data-only flags just to reduce state count.
+- Data-only updates should be reserved for actual data updates; ProductEditor's current public style is executable DSL branches plus `updateData`, not entry-policy-driven reducers.
 - The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.
 - `AfsmChartState` has been removed before public API stabilization; use `AfsmState`.
 - Same-named factory functions conflict with Kotlin typealias constructors, so features should use lowercase factories such as `productEditorState()` when they need default initial state values.
-- Do not add a shared `AfsmStateFactory` API yet; the spike showed it needs explicit `<Phase, Context>` type arguments for singleton phase hierarchies and does not justify the extra public concept.
+- Do not add a shared `AfsmStateFactory` API yet; the spike showed it needs explicit `<Phase, Data>` type arguments for singleton phase hierarchies and does not justify the extra public concept.
 - Invalid transitions should throw by default for public runtime use so flow bugs are visible during development. Resilient production hosts can opt into `AfsmInvalidTransitionPolicy.Record` with a logger.
 - Command execution remains sequential, but it no longer blocks later event reduction; commands run through a separate command processor and dispatch results back into the event queue.
 - Ten-agent POC review confirmed that Afsm should target complex transaction/flow screens, not simple data-display ViewModels.
@@ -119,4 +119,8 @@ Resolved:
 - The graph Gradle plugin default `afsm-graph-ksp` processor dependency is generated from the shared Afsm version and covered by a plugin functional test.
 - `consumer-smoke` consumes the root `afsmVersion` through `-PafsmVersion=...`, so version bumps verify the current Maven Local artifacts instead of stale coordinates.
 - Command-result event overflow now fails fast with `AfsmEventQueueOverflowException` when a full bounded event queue rejects a command result event. Closed-host command results are dropped and logged as lifecycle completion.
-- Public DSL onboarding should now prefer named `case(...)` blocks, direct context updates, and `transitionTo` as phase change only. DSL-level `stay(...)` and `otherwise(...)` were removed from source; remaining historical docs should be treated as superseded context.
+- Public DSL onboarding should now prefer named `case(...)` blocks, direct data updates, and `transitionTo` as phase change only. DSL-level `stay(...)` and `otherwise(...)` were removed from source; remaining historical docs should be treated as superseded context.
+- Public DSL `state(...)` was renamed to `phase(...)` because first-time Android developers read it as full UI state, not a finite graph node.
+- Standard extended state is now called `Data` and exposed as `AfsmState.data`, not `Context`, to avoid collision with `android.content.Context`.
+- `AfsmDecision.Stayed` and `AfsmTransition.stayed(...)` were renamed to `Handled` / `handled(...)`; graphable DSL users stay in phase by handling an event without `transitionTo(...)`.
+- `AfsmPhaseMachine` was removed from the public surface; the DSL returns ordinary `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>`.

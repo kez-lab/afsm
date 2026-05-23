@@ -1,7 +1,7 @@
 package afsm.core
 
 public object Afsm {
-    public fun <S : Any, C : Any, F : Any> transitionTo(
+    public fun <S : Any, C : Any, F : Any> transitioned(
         state: S,
         commands: List<C> = emptyList(),
         effects: List<F> = emptyList(),

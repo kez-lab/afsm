@@ -65,15 +65,15 @@ private class SignupStateMachine : SignupMachine {
         event: SignupEvent,
     ): SignupTransition {
         return when (event) {
-            is SignupEvent.EmailChanged -> Afsm.transitionTo(
+            is SignupEvent.EmailChanged -> Afsm.transitioned(
                 state = state.copy(email = event.value),
             )
 
-            is SignupEvent.PasswordChanged -> Afsm.transitionTo(
+            is SignupEvent.PasswordChanged -> Afsm.transitioned(
                 state = state.copy(password = event.value),
             )
 
-            SignupEvent.SubmitRequested -> Afsm.transitionTo(
+            SignupEvent.SubmitRequested -> Afsm.transitioned(
                 state = SignupState.VerifyingIdentity(
                     email = state.email,
                     password = state.password,
@@ -101,12 +101,12 @@ private class SignupStateMachine : SignupMachine {
         event: SignupEvent,
     ): SignupTransition {
         return when (event) {
-            SignupEvent.VerificationSucceeded -> Afsm.transitionTo(
+            SignupEvent.VerificationSucceeded -> Afsm.transitioned(
                 state = SignupState.Completed,
                 effects = listOf(SignupEffect.NavigateToHome),
             )
 
-            is SignupEvent.VerificationFailed -> Afsm.transitionTo(
+            is SignupEvent.VerificationFailed -> Afsm.transitioned(
                 state = SignupState.Failed(
                     email = state.email,
                     password = state.password,
@@ -120,7 +120,7 @@ private class SignupStateMachine : SignupMachine {
             )
 
             is SignupEvent.EmailChanged,
-            is SignupEvent.PasswordChanged -> AfsmTransition.stayed(
+            is SignupEvent.PasswordChanged -> AfsmTransition.handled(
                 state = state,
                 reason = "input locked while verifying",
             )
@@ -132,7 +132,7 @@ private class SignupStateMachine : SignupMachine {
         event: SignupEvent,
     ): SignupTransition {
         return when (event) {
-            SignupEvent.SubmitRequested -> Afsm.transitionTo(
+            SignupEvent.SubmitRequested -> Afsm.transitioned(
                 state = SignupState.VerifyingIdentity(
                     email = state.email,
                     password = state.password,
@@ -147,14 +147,14 @@ private class SignupStateMachine : SignupMachine {
                 ),
             )
 
-            is SignupEvent.EmailChanged -> Afsm.transitionTo(
+            is SignupEvent.EmailChanged -> Afsm.transitioned(
                 state = SignupState.Editing(
                     email = event.value,
                     password = state.password,
                 ),
             )
 
-            is SignupEvent.PasswordChanged -> Afsm.transitionTo(
+            is SignupEvent.PasswordChanged -> Afsm.transitioned(
                 state = SignupState.Editing(
                     email = state.email,
                     password = event.value,
@@ -200,12 +200,12 @@ private class LoginStateMachine : LoginMachine {
     ): LoginTransition {
         return when (state) {
             LoginState.Editing -> when (event) {
-                LoginEvent.SubmitRequested -> Afsm.transitionTo(
+                LoginEvent.SubmitRequested -> Afsm.transitioned(
                     state = LoginState.Submitting,
                     commands = listOf(LoginCommand.ExecuteLogin),
                 )
 
-                LoginEvent.CancelRequested -> AfsmTransition.stayed(
+                LoginEvent.CancelRequested -> AfsmTransition.handled(
                     state = state,
                     reason = "nothing to cancel",
                 )
@@ -217,11 +217,11 @@ private class LoginStateMachine : LoginMachine {
             }
 
             LoginState.Submitting -> when (event) {
-                LoginEvent.SubmitSucceeded -> Afsm.transitionTo(
+                LoginEvent.SubmitSucceeded -> Afsm.transitioned(
                     state = LoginState.Submitted,
                 )
 
-                LoginEvent.CancelRequested -> AfsmTransition.stayed(
+                LoginEvent.CancelRequested -> AfsmTransition.handled(
                     state = state,
                     commands = listOf(LoginCommand.CancelLogin),
                     reason = "cancel accepted with cleanup",

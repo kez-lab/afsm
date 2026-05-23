@@ -1,6 +1,6 @@
 ---
 title: Afsm Example Catalog
-updated: 2026-05-14
+updated: 2026-05-23
 ---
 
 # Afsm Example Catalog
@@ -13,7 +13,7 @@ The public docs version is [docs/examples.md](../../docs/examples.md).
 
 | Level | Example | Purpose |
 |---|---|---|
-| 1 | README minimal Draft | Smallest mental model: phase, context, event, command, `onEnter` |
+| 1 | README minimal Draft | Smallest mental model: phase, data, event, command, `onEnter` |
 | 2 | [Auth](../../docs/auth-walkthrough.md) | Smallest real Android screen: validation, command result events, navigation effect |
 | 3 | [Checkout](../../docs/checkout-walkthrough.md) | Mid-size Android lifecycle flow: navigation argument initial state, loading, payment, retry, stale results, durable completion |
 | 4 | [ProductEditor](../../docs/product-editor-walkthrough.md) | Complex transaction flow: draft, upload, review rejection/resubmission, approval, publishing |
@@ -28,7 +28,7 @@ The promotion matters because Checkout demonstrates the exact concerns Android
 teams ask about:
 
 - dynamic initial state from navigation `productId`,
-- phase/context separation,
+- phase/data separation,
 - command emission from `onEnter`,
 - request-id stale result handling,
 - durable completion state plus optional navigation effect,

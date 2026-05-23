@@ -17,32 +17,32 @@ private fun checkoutMachine(): CheckoutMachine {
     return afsmMachine {
         initial(
             phase = CheckoutPhase.Idle,
-            context = CheckoutContext(productId = 0),
+            data = CheckoutData(productId = 0),
         )
 
-        state(CheckoutPhase.Idle) {
+        phase(CheckoutPhase.Idle) {
             on<CheckoutEvent.ScreenEntered> {
                 transitionTo(CheckoutPhase.ProductLoading)
             }
 
             on<CheckoutEvent.PayClicked> {
-                updateContext {
+                updateData {
                     copy(errorMessage = "Product is required before payment.")
                 }
             }
 
             on<CheckoutEvent.RetryClicked> {
-                updateContext {
+                updateData {
                     copy(errorMessage = "Product is required before payment.")
                 }
             }
         }
 
-        state(CheckoutPhase.ProductLoading) {
+        phase(CheckoutPhase.ProductLoading) {
             onEnter {
-                updateContext { copy(errorMessage = null) }
+                updateData { copy(errorMessage = null) }
                 command(label = "LoadProduct") {
-                    CheckoutCommand.LoadProduct(context.productId)
+                    CheckoutCommand.LoadProduct(data.productId)
                 }
             }
 
@@ -52,8 +52,8 @@ private fun checkoutMachine(): CheckoutMachine {
 
             on<CheckoutEvent.ProductLoaded> {
                 case {
-                    updateContext { context, event ->
-                        context.copy(
+                    updateData { data, event ->
+                        data.copy(
                             product = event.product,
                             errorMessage = null,
                         )
@@ -64,7 +64,7 @@ private fun checkoutMachine(): CheckoutMachine {
 
             on<CheckoutEvent.ProductUnavailable> {
                 case {
-                    updateContext {
+                    updateData {
                         copy(
                             product = null,
                             errorMessage = "Product is no longer available.",
@@ -83,13 +83,13 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
 
-        state(CheckoutPhase.ProductReady) {
+        phase(CheckoutPhase.ProductReady) {
             on<CheckoutEvent.PayClicked> {
                 case(
                     label = "product loaded",
-                    condition = { context.hasLoadedProduct() },
+                    condition = { data.hasLoadedProduct() },
                 ) {
-                    updateContext {
+                    updateData {
                         copy(
                             nextPaymentRequestId = nextPaymentRequestId + 1,
                             errorMessage = null,
@@ -97,16 +97,16 @@ private fun checkoutMachine(): CheckoutMachine {
                     }
                     transitionTo<CheckoutPhase.PaymentInProgress> {
                         CheckoutPhase.PaymentInProgress(
-                            requestId = context.nextPaymentRequestId,
+                            requestId = data.nextPaymentRequestId,
                         )
                     }
                 }
 
                 case(
                     label = "missing product",
-                    condition = { context.isMissingProduct() },
+                    condition = { data.isMissingProduct() },
                 ) {
-                    updateContext {
+                    updateData {
                         copy(errorMessage = "Product is required before payment.")
                     }
                 }
@@ -125,10 +125,10 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
 
-        state<CheckoutPhase.PaymentInProgress> {
+        phase<CheckoutPhase.PaymentInProgress> {
             onEnter {
                 command(label = "SubmitPayment") {
-                    val product = requireNotNull(context.product) {
+                    val product = requireNotNull(data.product) {
                         "PaymentInProgress requires a loaded product."
                     }
                     CheckoutCommand.SubmitPayment(
@@ -151,7 +151,7 @@ private fun checkoutMachine(): CheckoutMachine {
                     label = "matching request",
                     condition = { phase.requestId == event.requestId },
                 ) {
-                    updateContext { copy(errorMessage = null) }
+                    updateData { copy(errorMessage = null) }
                     effect(label = "PaymentCompleted") {
                         CheckoutEffect.PaymentCompleted(event.receipt.orderId)
                     }
@@ -173,8 +173,8 @@ private fun checkoutMachine(): CheckoutMachine {
                     label = "matching request",
                     condition = { phase.requestId == event.requestId },
                 ) {
-                    updateContext { context, event ->
-                        context.copy(errorMessage = event.message)
+                    updateData { data, event ->
+                        data.copy(errorMessage = event.message)
                     }
                     transitionTo(CheckoutPhase.PaymentFailed)
                 }
@@ -186,13 +186,13 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
 
-        state(CheckoutPhase.PaymentFailed) {
+        phase(CheckoutPhase.PaymentFailed) {
             on<CheckoutEvent.RetryClicked> {
                 case(
                     label = "product loaded",
-                    condition = { context.hasLoadedProduct() },
+                    condition = { data.hasLoadedProduct() },
                 ) {
-                    updateContext {
+                    updateData {
                         copy(
                             nextPaymentRequestId = nextPaymentRequestId + 1,
                             errorMessage = null,
@@ -200,16 +200,16 @@ private fun checkoutMachine(): CheckoutMachine {
                     }
                     transitionTo<CheckoutPhase.PaymentInProgress> {
                         CheckoutPhase.PaymentInProgress(
-                            requestId = context.nextPaymentRequestId,
+                            requestId = data.nextPaymentRequestId,
                         )
                     }
                 }
 
                 case(
                     label = "missing product",
-                    condition = { context.isMissingProduct() },
+                    condition = { data.isMissingProduct() },
                 ) {
-                    updateContext {
+                    updateData {
                         copy(errorMessage = "Product is required before payment.")
                     }
                 }
@@ -228,7 +228,7 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
 
-        state(CheckoutPhase.ProductUnavailable) {
+        phase(CheckoutPhase.ProductUnavailable) {
             on<CheckoutEvent.ScreenEntered> {
                 ignore(reason = "Product is unavailable.")
             }
@@ -242,7 +242,7 @@ private fun checkoutMachine(): CheckoutMachine {
             }
         }
 
-        state<CheckoutPhase.Completed> {
+        phase<CheckoutPhase.Completed> {
             on<CheckoutEvent.PayClicked> {
                 ignore(reason = "Checkout is already complete.")
             }
@@ -262,10 +262,10 @@ private fun checkoutMachine(): CheckoutMachine {
     }
 }
 
-private fun CheckoutContext.hasLoadedProduct(): Boolean {
+private fun CheckoutData.hasLoadedProduct(): Boolean {
     return product != null
 }
 
-private fun CheckoutContext.isMissingProduct(): Boolean {
+private fun CheckoutData.isMissingProduct(): Boolean {
     return product == null
 }

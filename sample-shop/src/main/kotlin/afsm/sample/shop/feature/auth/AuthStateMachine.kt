@@ -16,13 +16,13 @@ private fun authMachine(): AuthMachine {
     return afsmMachine {
         initial(
             phase = AuthPhase.Editing,
-            context = AuthContext(),
+            data = AuthData(),
         )
 
-        state(AuthPhase.Editing) {
+        phase(AuthPhase.Editing) {
             on<AuthEvent.ModeChanged> {
-                updateContext { context, event ->
-                    context.copy(
+                updateData { data, event ->
+                    data.copy(
                         mode = event.mode,
                         errorMessage = null,
                     )
@@ -30,27 +30,27 @@ private fun authMachine(): AuthMachine {
             }
 
             on<AuthEvent.NameChanged> {
-                updateContext { context, event ->
-                    context.copy(
-                        form = context.form.copy(name = event.value),
+                updateData { data, event ->
+                    data.copy(
+                        form = data.form.copy(name = event.value),
                         errorMessage = null,
                     )
                 }
             }
 
             on<AuthEvent.EmailChanged> {
-                updateContext { context, event ->
-                    context.copy(
-                        form = context.form.copy(email = event.value),
+                updateData { data, event ->
+                    data.copy(
+                        form = data.form.copy(email = event.value),
                         errorMessage = null,
                     )
                 }
             }
 
             on<AuthEvent.PasswordChanged> {
-                updateContext { context, event ->
-                    context.copy(
-                        form = context.form.copy(password = event.value),
+                updateData { data, event ->
+                    data.copy(
+                        form = data.form.copy(password = event.value),
                         errorMessage = null,
                     )
                 }
@@ -59,19 +59,18 @@ private fun authMachine(): AuthMachine {
             on<AuthEvent.SubmitClicked> {
                 case(
                     label = "login form",
-                    condition = { context.canSubmitLoginRequest() },
+                    condition = { data.canSubmitLoginRequest() },
                 ) {
-                    updateContext {
+                    updateData {
                         val normalized = normalized()
                         normalized.copy(
                             errorMessage = null,
                         )
                     }
                     command(label = "Login") {
-                        val normalized = context.normalized()
                         AuthCommand.Login(
-                            email = normalized.form.email,
-                            password = normalized.form.password,
+                            email = data.form.email,
+                            password = data.form.password,
                         )
                     }
                     transitionTo(AuthPhase.Submitting)
@@ -79,20 +78,19 @@ private fun authMachine(): AuthMachine {
 
                 case(
                     label = "register form",
-                    condition = { context.canSubmitRegistrationRequest() },
+                    condition = { data.canSubmitRegistrationRequest() },
                 ) {
-                    updateContext {
+                    updateData {
                         val normalized = normalized()
                         normalized.copy(
                             errorMessage = null,
                         )
                     }
                     command(label = "Register") {
-                        val normalized = context.normalized()
                         AuthCommand.Register(
-                            name = normalized.form.name,
-                            email = normalized.form.email,
-                            password = normalized.form.password,
+                            name = data.form.name,
+                            email = data.form.email,
+                            password = data.form.password,
                         )
                     }
                     transitionTo(AuthPhase.Submitting)
@@ -100,9 +98,9 @@ private fun authMachine(): AuthMachine {
 
                 case(
                     label = "invalid form",
-                    condition = { context.hasSubmitError() },
+                    condition = { data.hasSubmitError() },
                 ) {
-                    updateContext {
+                    updateData {
                         val normalized = normalized()
                         copy(
                             form = normalized.form,
@@ -121,11 +119,11 @@ private fun authMachine(): AuthMachine {
             }
         }
 
-        state(AuthPhase.Submitting) {
+        phase(AuthPhase.Submitting) {
             on<AuthEvent.AuthSucceeded> {
                 case {
-                    updateContext {
-                        AuthContext()
+                    updateData {
+                        AuthData()
                     }
                     effect(label = "OpenCatalog") { AuthEffect.OpenCatalog }
                     transitionTo<AuthPhase.Authenticated> {
@@ -138,8 +136,8 @@ private fun authMachine(): AuthMachine {
 
             on<AuthEvent.AuthFailed> {
                 case {
-                    updateContext { context, event ->
-                        context.copy(errorMessage = event.message)
+                    updateData { data, event ->
+                        data.copy(errorMessage = event.message)
                     }
                     transitionTo(AuthPhase.Editing)
                 }
@@ -150,11 +148,11 @@ private fun authMachine(): AuthMachine {
             }
         }
 
-        state<AuthPhase.Authenticated>()
+        phase<AuthPhase.Authenticated>()
     }
 }
 
-private fun AuthContext.normalized(): AuthContext {
+private fun AuthData.normalized(): AuthData {
     return copy(
         form = form.copy(
             name = form.name.trim(),
@@ -163,19 +161,19 @@ private fun AuthContext.normalized(): AuthContext {
     )
 }
 
-private fun AuthContext.canSubmitLoginRequest(): Boolean {
+private fun AuthData.canSubmitLoginRequest(): Boolean {
     return mode == AuthMode.Login && submitError() == null
 }
 
-private fun AuthContext.canSubmitRegistrationRequest(): Boolean {
+private fun AuthData.canSubmitRegistrationRequest(): Boolean {
     return mode == AuthMode.Register && submitError() == null
 }
 
-private fun AuthContext.hasSubmitError(): Boolean {
+private fun AuthData.hasSubmitError(): Boolean {
     return submitError() != null
 }
 
-private fun AuthContext.submitError(): String? {
+private fun AuthData.submitError(): String? {
     val normalized = normalized()
     return when {
         normalized.form.email.isBlank() -> "Email is required."

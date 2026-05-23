@@ -34,16 +34,16 @@ class AfsmHostTest {
             initialState = TraceState(),
             reducer = AfsmReducer { state: TraceState, event: TraceEvent ->
                 when (event) {
-                    TraceEvent.A -> Afsm.transitionTo(
+                    TraceEvent.A -> Afsm.transitioned(
                         state = state.record("A"),
                         commands = listOf(TraceCommand.DispatchC),
                     )
 
-                    TraceEvent.B -> Afsm.transitionTo(
+                    TraceEvent.B -> Afsm.transitioned(
                         state = state.record("B"),
                     )
 
-                    TraceEvent.C -> Afsm.transitionTo(
+                    TraceEvent.C -> Afsm.transitioned(
                         state = state.record("C"),
                     )
                 }
@@ -74,13 +74,13 @@ class AfsmHostTest {
             initialState = EffectState.Idle,
             reducer = AfsmReducer { state: EffectState, event: EffectEvent ->
                 when (event) {
-                    EffectEvent.Start -> Afsm.transitionTo(
+                    EffectEvent.Start -> Afsm.transitioned(
                         state = EffectState.Started,
                         commands = listOf(EffectCommand.Complete),
                         effects = listOf(EffectOutput.ShowStarted),
                     )
 
-                    EffectEvent.Completed -> Afsm.transitionTo(
+                    EffectEvent.Completed -> Afsm.transitioned(
                         state = EffectState.Completed,
                     )
                 }
@@ -124,16 +124,16 @@ class AfsmHostTest {
             initialState = ResponsiveState.Idle,
             reducer = AfsmReducer { _: ResponsiveState, event: ResponsiveEvent ->
                 when (event) {
-                    ResponsiveEvent.Start -> Afsm.transitionTo(
+                    ResponsiveEvent.Start -> Afsm.transitioned(
                         state = ResponsiveState.Working,
                         commands = listOf(ResponsiveCommand.LongRunning),
                     )
 
-                    ResponsiveEvent.Edit -> Afsm.transitionTo(
+                    ResponsiveEvent.Edit -> Afsm.transitioned(
                         state = ResponsiveState.EditedWhileWorking,
                     )
 
-                    ResponsiveEvent.Done -> Afsm.transitionTo(
+                    ResponsiveEvent.Done -> Afsm.transitioned(
                         state = ResponsiveState.Done,
                     )
                 }
@@ -177,7 +177,7 @@ class AfsmHostTest {
         val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
             initialState = PressureState.Idle,
             reducer = AfsmReducer { _: PressureState, _: PressureEvent ->
-                Afsm.transitionTo(
+                Afsm.transitioned(
                     state = PressureState.Queued,
                     commands = listOf(
                         PressureCommand.First,
@@ -213,20 +213,20 @@ class AfsmHostTest {
             initialState = PressureState.Idle,
             reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
                 when (event) {
-                    PressureEvent.Start -> Afsm.transitionTo(
+                    PressureEvent.Start -> Afsm.transitioned(
                         state = PressureState.Queued,
                         commands = listOf(PressureCommand.First),
                     )
 
-                    PressureEvent.ResultOne -> Afsm.transitionTo(
+                    PressureEvent.ResultOne -> Afsm.transitioned(
                         state = state,
                     )
 
-                    PressureEvent.ResultTwo -> Afsm.transitionTo(
+                    PressureEvent.ResultTwo -> Afsm.transitioned(
                         state = state,
                     )
 
-                    PressureEvent.ResultThree -> Afsm.transitionTo(
+                    PressureEvent.ResultThree -> Afsm.transitioned(
                         state = state,
                     )
                 }
@@ -266,14 +266,14 @@ class AfsmHostTest {
             initialState = PressureState.Idle,
             reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
                 when (event) {
-                    PressureEvent.Start -> Afsm.transitionTo(
+                    PressureEvent.Start -> Afsm.transitioned(
                         state = PressureState.Queued,
                         commands = listOf(PressureCommand.First),
                     )
 
                     PressureEvent.ResultOne,
                     PressureEvent.ResultTwo,
-                    PressureEvent.ResultThree -> Afsm.transitionTo(
+                    PressureEvent.ResultThree -> Afsm.transitioned(
                         state = state,
                     )
                 }
@@ -313,14 +313,14 @@ class AfsmHostTest {
     }
 
     @Test
-    fun `Stayed keeps same state but may execute cleanup commands`() = runTest {
+    fun `Handled transition keeps current state but may execute cleanup commands`() = runTest {
         val hostScope = newHostScope()
         val handledCommands = mutableListOf<NoEffectCommand>()
         val host: AfsmHost<NoEffectState, NoEffectEvent, NoEffectCommand, AfsmNoEffect> = AfsmHost(
             initialState = NoEffectState.Submitting,
             reducer = AfsmReducer { state: NoEffectState, event: NoEffectEvent ->
                 when (event) {
-                    NoEffectEvent.CancelRequested -> AfsmTransition.stayed(
+                    NoEffectEvent.CancelRequested -> AfsmTransition.handled(
                         state = state,
                         commands = listOf(NoEffectCommand.CancelRequest),
                         reason = "cancel accepted while request is in flight",
@@ -348,12 +348,12 @@ class AfsmHostTest {
             initialState = EffectState.Idle,
             reducer = AfsmReducer { _: EffectState, event: EffectEvent ->
                 when (event) {
-                    EffectEvent.Start -> Afsm.transitionTo(
+                    EffectEvent.Start -> Afsm.transitioned(
                         state = EffectState.Started,
                         effects = listOf(EffectOutput.ShowStarted),
                     )
 
-                    EffectEvent.Completed -> Afsm.transitionTo(
+                    EffectEvent.Completed -> Afsm.transitioned(
                         state = EffectState.Completed,
                     )
                 }
@@ -496,12 +496,12 @@ class AfsmHostTest {
             initialState = DecisionState("current"),
             reducer = AfsmReducer { state: DecisionState, _: DecisionEvent ->
                 if (state.value == "current") {
-                    Afsm.transitionTo(
+                    Afsm.transitioned(
                         state = DecisionState("afterFirst"),
                         commands = listOf(DecisionCommand.ShouldNotRun),
                     )
                 } else {
-                    Afsm.transitionTo(
+                    Afsm.transitioned(
                         state = DecisionState("afterSecond"),
                     )
                 }
@@ -539,7 +539,7 @@ class AfsmHostTest {
         val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
-                Afsm.transitionTo(
+                Afsm.transitioned(
                     state = DecisionState("afterFailure"),
                     commands = listOf(DecisionCommand.ShouldNotRun),
                 )

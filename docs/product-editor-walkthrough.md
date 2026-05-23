@@ -83,13 +83,13 @@ This is the recommended Android boundary: the state machine owns phase and
 transition correctness, while Compose receives a stable render model that can
 survive internal phase refactors.
 
-## Phase And Context
+## Phase And Data
 
 ProductEditor uses:
 
 ```kotlin
 typealias ProductEditorState =
-    AfsmState<ProductEditorPhase, ProductEditorContext>
+    AfsmState<ProductEditorPhase, ProductEditorData>
 ```
 
 Phases describe the business condition:
@@ -106,17 +106,17 @@ PublishInProgress
 Published(productId, title)
 ```
 
-Context carries draft data:
+Data carries draft data:
 
 ```kotlin
-data class ProductEditorContext(
+data class ProductEditorData(
     val draft: ProductDraft = ProductDraft(),
     val errorMessage: String? = null,
 )
 ```
 
 The important modeling choice: `ProductDraft` is not passed through every phase.
-It lives in context. Payload phases carry only data that belongs specifically to
+It lives in data. Payload phases carry only data that belongs specifically to
 that phase, such as `uploadToken`, rejection reason, or published product id.
 
 ## Entry Commands
@@ -124,21 +124,21 @@ that phase, such as `uploadToken`, rejection reason, or published product id.
 Long-running work is phase-owned:
 
 ```kotlin
-state(ProductEditorPhase.ImageUploadInProgress) {
+phase(ProductEditorPhase.ImageUploadInProgress) {
     onEnter {
         command(label = "StartImageUpload") {
-            ProductEditorCommand.StartImageUpload(context.draft)
+            ProductEditorCommand.StartImageUpload(data.draft)
         }
     }
 }
 ```
 
 ```kotlin
-state<ProductEditorPhase.ReviewSubmissionInProgress> {
+phase<ProductEditorPhase.ReviewSubmissionInProgress> {
     onEnter {
         command(label = "StartReviewSubmission") {
             ProductEditorCommand.StartReviewSubmission(
-                draft = context.draft,
+                draft = data.draft,
                 uploadToken = phase.uploadToken,
             )
         }
@@ -146,7 +146,7 @@ state<ProductEditorPhase.ReviewSubmissionInProgress> {
 }
 ```
 
-This keeps transition branches focused on phase movement and context updates.
+This keeps transition branches focused on phase movement and data updates.
 
 ## Transition Execution Order
 
@@ -158,20 +158,20 @@ source onExit -> case actions -> target phase factory -> target onEnter
 
 If a source phase has no `onExit`, Afsm skips that step. For payload phases,
 call `transitionTo<PayloadPhase> { ... }` inside a `case` to create the next
-phase value. Keep context updates, commands, and effects as separate statements
+phase value. Keep data updates, commands, and effects as separate statements
 in that case so `transitionTo` keeps one meaning: phase change.
-The payload phase factory runs after the case actions, so it sees context
+The payload phase factory runs after the case actions, so it sees data
 updates made earlier in the same case.
 
-That order matters when the target `onEnter` command reads updated context.
+That order matters when the target `onEnter` command reads updated data.
 For example, image upload success increments `reviewAttempt` in the transition
 block, then `ReviewSubmissionInProgress.onEnter` submits the updated draft:
 
 ```kotlin
-state(ProductEditorPhase.ImageUploadInProgress) {
+phase(ProductEditorPhase.ImageUploadInProgress) {
     on<ProductEditorEvent.ImageUploadSucceeded> {
         case {
-            updateContext {
+            updateData {
                 copy(
                     draft = draft.copy(
                         reviewAttempt = draft.reviewAttempt + 1,
@@ -188,11 +188,11 @@ state(ProductEditorPhase.ImageUploadInProgress) {
     }
 }
 
-state<ProductEditorPhase.ReviewSubmissionInProgress> {
+phase<ProductEditorPhase.ReviewSubmissionInProgress> {
     onEnter {
         command(label = "StartReviewSubmission") {
             ProductEditorCommand.StartReviewSubmission(
-                draft = context.draft,
+                draft = data.draft,
                 uploadToken = phase.uploadToken,
             )
         }
@@ -205,7 +205,7 @@ Read this as one edge:
 ```text
 ImageUploadInProgress
 -> ImageUploadSucceeded
--> update context
+-> update data
 -> enter ReviewSubmissionInProgress
 -> emit StartReviewSubmission
 ```
@@ -213,37 +213,43 @@ ImageUploadInProgress
 ## Validation
 
 Invalid submit does not fake a phase transition. It stays in the current phase
-with context error state:
+with data error state:
 
 ```kotlin
 on<ProductEditorEvent.SubmitClicked> {
     case(
         label = "valid draft",
-        condition = { context.canStartReviewSubmission() },
+        condition = { data.canStartReviewSubmission() },
     ) {
-        updateContext { normalizeDraftForSubmit() }
+        updateData { normalizeDraftForSubmit() }
         transitionTo(ProductEditorPhase.ImageUploadInProgress)
     }
 
     case(
         label = "invalid draft",
-        condition = { context.hasReviewSubmissionError() },
+        condition = { data.hasReviewSubmissionError() },
     ) {
-        updateContext { withReviewSubmissionError() }
+        updateData { withReviewSubmissionError() }
     }
 }
 ```
 
 This is the recommended shape for validation failures.
 
+The valid/invalid submit branches are repeated in `EditingDraft`, `DraftSaved`,
+and `Rejected` on purpose. A helper could hide the repetition, but it would also
+hide the graph-relevant fact that each source phase accepts the event. In Afsm
+examples, prefer keeping phase movement visible and helperizing only pure data
+transformations such as `normalizeDraftForSubmit()`.
+
 ## Tests To Read
 
 Read `ProductEditorStateMachineTest` in this order:
 
 1. `save draft transitions to saving phase and phase entry emits save command`
-2. `submit from editing transitions only by phase and starts image upload from context draft`
-3. `invalid draft keeps editing phase with review submission error in context`
-4. `image upload success increments review attempt in context and submits review command`
+2. `submit from editing transitions only by phase and starts image upload from data draft`
+3. `invalid draft keeps editing phase with review submission error in data`
+4. `image upload success increments review attempt in data and submits review command`
 5. `rejected draft can be resubmitted through upload again without passing draft through phase`
 6. `approved draft publishes product through phase entry command`
 7. `render state hides internal phase details from product editor ui`

@@ -67,16 +67,16 @@ The `when + transitionTo(Phase) + PhaseEntryPolicy` spike proved a useful concep
 - Graph generation depends on source-code inference.
 - The current phase/event scope is not structurally declared.
 - Entry policy hides behavior that users expect to see near the state.
-- Context update, condition checks, command emission, and transition are still split across files.
+- Data update, condition checks, command emission, and transition are still split across files.
 - Users must follow conventions precisely or graph extraction and runtime behavior drift apart.
 
 A scoped executable DSL makes the structure explicit:
 
 ```text
-state scope
+phase scope
 -> event handler
 -> condition
--> update context
+-> update data
 -> emit command
 -> transition target
 ```
@@ -89,14 +89,14 @@ This matches standard statechart vocabulary while keeping Android execution in `
 |---|---|---|
 | `State` | Full UI state exposed to Android | `StateFlow<S>` |
 | `Phase` | Finite statechart node | Renderable business phase |
-| `Context` | Extended state carried across phases | Form data, ids, retry count, validation error |
+| `Data` | Extended state carried across phases | Form data, ids, retry count, validation error |
 | `Event` | Something that happened | User input or command result |
 | `Condition` | Named boolean decision before a case is accepted | Validation, retry allowance, auth requirement |
-| `updateContext` | Explicit context update | Immutable state data update |
+| `updateData` | Explicit data update | Immutable state data update |
 | `Command` | Host-executed work emitted by transition or entry | Repository/use case call, timer, local DB write |
 | `Effect` | UI-side one-shot output | Close screen, launch permission, optional navigation signal |
 | `Entry` | Work when entering a phase | Start async command, clear error |
-| `Exit` | Work when leaving a phase | Cancel timer, clear transient context |
+| `Exit` | Work when leaving a phase | Cancel timer, clear transient data |
 
 Current v3 APIs use the word `Command` consistently for host-executed transition outputs.
 
@@ -109,11 +109,11 @@ Accepted direction:
 
 - Use `case(label, condition = ...) { ... }` for named alternatives inside an
   `on<Event>` block.
-- Treat `transitionTo(phase)` as phase change only. Do not hide context updates,
+- Treat `transitionTo(phase)` as phase change only. Do not hide data updates,
   commands, or effects inside the `transitionTo` call in public examples.
-- Treat context-only handling as `updateContext { ... }`; if no transition is
+- Treat data-only handling as `updateData { ... }`; if no transition is
   declared, the machine stays in the current phase.
-- Use `updateContext { context, event -> ... }` when the context update needs
+- Use `updateData { data, event -> ... }` when the data update needs
   the typed event payload. This avoids a second update verb while making event
   payload usage visible.
 - Prefer named cases such as `case("valid draft", condition = { ... })` over
@@ -122,7 +122,7 @@ Accepted direction:
 - Public topology metadata uses `conditionLabel`; the earlier `guardLabel`
   name is superseded because the user-facing DSL says `condition`.
 - Remove DSL-level `stay(...)` and `otherwise(...)` from the public source
-  surface. Low-level reducers can still return `AfsmTransition.stayed(...)`,
+  surface. Low-level reducers can still return `AfsmTransition.handled(...)`,
   but graphable `afsmMachine { ... }` users should not need a `stay` verb.
 - Entry/exit command and effect labels must be declared in the same statement
   as the runtime output, for example `command(label = "SaveDraft") { ... }`.
@@ -132,11 +132,11 @@ Accepted direction:
 Revised event shape:
 
 ```kotlin
-state(ProductEditorPhase.EditingDraft) {
+phase(ProductEditorPhase.EditingDraft) {
     on<ProductEditorEvent.TitleChanged> {
-        updateContext { context, event ->
-            context.copy(
-                draft = context.draft.withTitle(event.value),
+        updateData { data, event ->
+            data.copy(
+                draft = data.draft.withTitle(event.value),
                 errorMessage = null,
             )
         }
@@ -145,9 +145,9 @@ state(ProductEditorPhase.EditingDraft) {
     on<ProductEditorEvent.SubmitClicked> {
         case(
             label = "valid draft",
-            condition = { context.canStartReviewSubmission() },
+            condition = { data.canStartReviewSubmission() },
         ) {
-            updateContext {
+            updateData {
                 copy(
                     draft = draft.normalized(),
                     errorMessage = null,
@@ -158,9 +158,9 @@ state(ProductEditorPhase.EditingDraft) {
 
         case(
             label = "invalid draft",
-            condition = { context.hasReviewSubmissionError() },
+            condition = { data.hasReviewSubmissionError() },
         ) {
-            updateContext {
+            updateData {
                 copy(errorMessage = draft.validationMessage())
             }
         }
@@ -170,7 +170,7 @@ state(ProductEditorPhase.EditingDraft) {
 
 This shape keeps the graphable statechart structure while reducing the surprise
 that `stay` and `otherwise` created for Android developers. A no-transition
-case is simply an accepted event that updates context, emits outputs, or both.
+case is simply an accepted event that updates data, emits outputs, or both.
 
 ## Current Naming Decision
 
@@ -181,19 +181,19 @@ Current naming:
 | Type | Role |
 |---|---|
 | `AfsmReducer<S, E, C, F>` | Host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration. It receives the full screen state `S`. |
-| `AfsmState<P, X>` | Standard Afsm state value: finite `phase` plus extended `context`. |
-| `AfsmMachine<S, E, C, F>` | Graphable feature-boundary reducer with an initial state and topology metadata. Use this once `State = AfsmState<Phase, Context>` has been named. |
-| `AfsmPhaseMachine<P, X, E, C, F>` | Executable machine definition built by the DSL. It implements `AfsmMachine<AfsmState<P, X>, E, C, F>`. |
+| `AfsmState<P, D>` | Standard Afsm state value: finite `phase` plus durable `data`. |
+| `AfsmMachine<S, E, C, F>` | Graphable feature-boundary reducer with an initial state and topology metadata. Use this once `State = AfsmState<Phase, Data>` has been named. |
+| `afsmMachine<P, D, E, C, F> { ... }` | Executable DSL builder. It returns `AfsmMachine<AfsmState<P, D>, E, C, F>`. |
 
 This means Android developers use the standard Afsm state directly:
 
 ```kotlin
-typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>
 
 fun productEditorState(
     phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    context: ProductEditorContext = ProductEditorContext(),
-): ProductEditorState = AfsmState(phase = phase, context = context)
+    data: ProductEditorData = ProductEditorData(),
+): ProductEditorState = AfsmState(phase = phase, data = data)
 ```
 
 Custom sealed UI states are still possible through a feature-owned `AfsmReducer`, but the core API no longer ships an adapter base because it creates a second state model and mapping boilerplate.
@@ -223,14 +223,14 @@ private typealias ProductEditorMachine =
 private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
     initial(
         phase = ProductEditorPhase.EditingDraft,
-        context = ProductEditorContext(),
+        data = ProductEditorData(),
     )
 
-    state(ProductEditorPhase.EditingDraft) {
+    phase(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            updateContext { context, event ->
-                context.copy(
-                    draft = context.draft.withTitle(event.value),
+            updateData { data, event ->
+                data.copy(
+                    draft = data.draft.withTitle(event.value),
                     errorMessage = null,
                 )
             }
@@ -243,26 +243,26 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         on<ProductEditorEvent.SubmitClicked> {
             case(
                 label = "valid draft",
-                condition = { context.draft.validationMessage() == null },
+                condition = { data.draft.validationMessage() == null },
             ) {
-                updateContext { copy(draft = draft.normalized(), errorMessage = null) }
+                updateData { copy(draft = draft.normalized(), errorMessage = null) }
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
 
             case(
                 label = "invalid draft",
-                condition = { context.draft.validationMessage() != null },
+                condition = { data.draft.validationMessage() != null },
             ) {
-                updateContext {
+                updateData {
                     copy(errorMessage = draft.validationMessage())
                 }
             }
         }
     }
 
-    state(ProductEditorPhase.SavingDraft) {
+    phase(ProductEditorPhase.SavingDraft) {
         onEnter {
-            command(ProductEditorCommand.SaveDraft(context.draft))
+            command(ProductEditorCommand.SaveDraft(data.draft))
         }
 
         on<ProductEditorEvent.DraftSaveCompleted> {
@@ -274,15 +274,15 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 
 Important properties:
 
-- `state(Phase)` creates a structural state scope.
+- `phase(Phase)` creates a structural state scope.
 - `on<Event>` creates a structural event scope.
 - `AfsmEventBranchScope` is the receiver behind `on<Event> { ... }`; its job is only to declare ordered graphable branches for that event.
 - `case(...)` creates a named graphable branch inside the event scope.
 - `transitionTo(...)` and `transitionTo<PayloadPhase> { ... }` change phase inside a case.
-- `updateContext(...)`, `command(...)`, and `effect(...)` are explicit case actions.
+- `updateData(...)`, `command(...)`, and `effect(...)` are explicit case actions.
 - `ignore(...)` and `invalid(...)` handle events without adding state-diagram edges.
 - `onEnter` and `onExit` are state-local and visible.
-- `updateContext` updates context immutably.
+- `updateData` updates data immutably.
 - `command` emits host-executed work.
 - `effect` emits UI-side one-shot output.
 - `transitionTo` changes phase; omitting `transitionTo` means the event is handled in the current phase.
@@ -318,7 +318,7 @@ sealed interface ProductEditorPhase {
     ) : ProductEditorPhase
 }
 
-data class ProductEditorContext(
+data class ProductEditorData(
     val draft: ProductDraft = ProductDraft(),
     val errorMessage: String? = null,
 )
@@ -331,13 +331,13 @@ private typealias ProductEditorMachine =
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 
 private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
-    initial(ProductEditorPhase.EditingDraft, ProductEditorContext())
+    initial(ProductEditorPhase.EditingDraft, ProductEditorData())
 
-    state(ProductEditorPhase.EditingDraft) {
+    phase(ProductEditorPhase.EditingDraft) {
         on<ProductEditorEvent.TitleChanged> {
-            updateContext { context, event ->
-                context.copy(
-                    draft = context.draft.withTitle(event.value),
+            updateData { data, event ->
+                data.copy(
+                    draft = data.draft.withTitle(event.value),
                     errorMessage = null,
                 )
             }
@@ -350,25 +350,25 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         on<ProductEditorEvent.SubmitClicked> {
             case(
                 label = "valid draft",
-                condition = { context.canStartReviewSubmission() },
+                condition = { data.canStartReviewSubmission() },
             ) {
-                updateContext { normalizeDraftForSubmit() }
+                updateData { normalizeDraftForSubmit() }
                 transitionTo(ProductEditorPhase.ImageUploadInProgress)
             }
 
             case(
                 label = "invalid draft",
-                condition = { context.hasReviewSubmissionError() },
+                condition = { data.hasReviewSubmissionError() },
             ) {
-                updateContext { withReviewSubmissionError() }
+                updateData { withReviewSubmissionError() }
             }
         }
     }
 
-    state(ProductEditorPhase.SavingDraft) {
+    phase(ProductEditorPhase.SavingDraft) {
         onEnter {
             command(label = "SaveDraft") {
-                ProductEditorCommand.SaveDraft(context.draft)
+                ProductEditorCommand.SaveDraft(data.draft)
             }
         }
 
@@ -377,14 +377,14 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         }
     }
 
-    state(ProductEditorPhase.ImageUploadInProgress) {
+    phase(ProductEditorPhase.ImageUploadInProgress) {
         onEnter {
-            command(ProductEditorCommand.StartImageUpload(context.draft))
+            command(ProductEditorCommand.StartImageUpload(data.draft))
         }
 
         on<ProductEditorEvent.ImageUploadSucceeded> {
             case {
-                updateContext {
+                updateData {
                     copy(
                         draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
                         errorMessage = null,
@@ -399,18 +399,18 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
         }
     }
 
-    state<ProductEditorPhase.ReviewSubmissionInProgress> {
+    phase<ProductEditorPhase.ReviewSubmissionInProgress> {
         onEnter {
             command(
                 ProductEditorCommand.StartReviewSubmission(
-                    draft = context.draft,
+                    draft = data.draft,
                     uploadToken = phase.uploadToken,
                 ),
             )
         }
     }
 
-    state<ProductEditorPhase.Published> {
+    phase<ProductEditorPhase.Published> {
         on<ProductEditorEvent.DoneClicked> {
             effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
         }
@@ -418,7 +418,7 @@ private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
 }
 ```
 
-This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `state(phase)`, `state<PayloadPhase>`, `on<Event>`, `case`, `transitionTo`, `transitionTo<PayloadPhase>`, `updateContext`, `onEnter`, `onExit`, `command`, `ignore`, `invalid`, and `effect`.
+This started as pseudo-code. The current `afsm-core` spike now validates the graphable core shape in executable Kotlin test code for `initial`, `phase(phase)`, `phase<PayloadPhase>`, `on<Event>`, `case`, `transitionTo`, `transitionTo<PayloadPhase>`, `updateData`, `onEnter`, `onExit`, `command`, `ignore`, `invalid`, and `effect`.
 
 ## MMD Output
 
@@ -443,7 +443,7 @@ stateDiagram-v2
   PublishInProgress --> Approved: PublishFailed
 ```
 
-Context-only `updateContext` operations are not separate graph files; they are runtime behavior attached to named graphable `case(...)` branches. If a case does not call `transitionTo(...)`, it is handled in the current phase.
+Data-only `updateData` operations are not separate graph files; they are runtime behavior attached to named graphable `case(...)` branches. If a case does not call `transitionTo(...)`, it is handled in the current phase.
 
 Current sample generation:
 
@@ -465,42 +465,41 @@ The follow-up KSP design is [[afsm-ksp-mmd-generation|Afsm KSP MMD Generation]].
 
 ## Runtime Semantics
 
-The v3 DSL compiles into an `AfsmPhaseMachine` definition.
+The v3 DSL compiles into an `AfsmMachine` definition.
 
 Execution contract:
 
 ```kotlin
-interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmMachine<AfsmState<P, X>, E, C, F> {
-    val initialState: AfsmState<P, X>
+interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> {
+    val initialState: S
     val topology: AfsmTopology
 
     fun transition(
-        state: AfsmState<P, X>,
+        state: S,
         event: E,
-): AfsmTransition<AfsmState<P, X>, C, F>
+    ): AfsmTransition<S, C, F>
 }
 
-data class AfsmState<P : Any, X : Any>(
+data class AfsmState<P : Any, D : Any>(
     val phase: P,
-    val context: X,
+    val data: D,
 )
 ```
 
-For the normal phase/context screen shape, features can alias `AfsmState` and delegate the machine directly:
+For the normal phase/data screen shape, features can alias `AfsmState` and delegate the machine directly:
 
 ```kotlin
-typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>
 
 fun productEditorState(
     phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    context: ProductEditorContext = ProductEditorContext(),
-): ProductEditorState = AfsmState(phase = phase, context = context)
+    data: ProductEditorData = ProductEditorData(),
+): ProductEditorState = AfsmState(phase = phase, data = data)
 
 object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
 ```
 
-If a feature needs a custom Android-facing sealed state, it can implement a feature-owned `AfsmReducer`; public examples should prefer `AfsmState<Phase, Context>` so topology, runtime state, and ViewModel state remain one model.
+If a feature needs a custom Android-facing sealed state, it can implement a feature-owned `AfsmReducer`; public examples should prefer `AfsmState<Phase, Data>` so topology, runtime state, and ViewModel state remain one model.
 
 `AfsmHost` can stay conceptually the same:
 
@@ -558,7 +557,7 @@ The UI should still receive immutable state and callbacks. Do not pass the `View
 4. The machine definition must expose enough topology metadata for graph generation.
 5. Guards must be visible where branch decisions happen.
 6. Entry commands must be state-local and testable.
-7. Context updates must use explicit `updateContext`.
+7. Data updates must use explicit `updateData`.
 8. Async work must be emitted as commands, not launched from the DSL itself.
 9. Effects should be rare and reserved for UI-side one-shot behavior.
 10. Simple screens should keep ordinary ViewModel state instead of adopting Afsm ceremony.
@@ -572,10 +571,10 @@ Add a new isolated core test file or small internal package that validates the D
 Target surface:
 
 ```kotlin
-afsmMachine<P, X, E, C, F> { ... }
-initial(phase, context)
-state(phase) { ... }
-state<PSubtype> { ... }
+afsmMachine<P, D, E, C, F> { ... }
+initial(phase, data)
+phase(phase) { ... }
+phase<PSubtype> { ... }
 on<EventSubtype> { ... }
 onEnter { ... }
 case(label = "valid branch", condition = { ... }) { ... }
@@ -583,8 +582,8 @@ transitionTo(phase)
 transitionTo<PayloadPhase> { ... }
 ignore(reason = "...")
 invalid(reason = "...")
-updateContext { ... }
-updateContext { context, event -> ... }
+updateData { ... }
+updateData { data, event -> ... }
 command(command)
 effect(effect)
 ```
@@ -598,9 +597,9 @@ Success criteria:
 
 Result on 2026-05-09:
 
-- Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines, and `AfsmPhaseMachine<P, X, E, C, F>` for the DSL-built phase/context machine.
-- Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, X>` as the standard phase/context state value. It was removed before public API stabilization.
-- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `state`, `on`, `onEnter`, `case`, `transitionTo`, `updateContext`, `command`, and `effect`.
+- Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines, and `afsmMachine<P, D, E, C, F> { ... }` for the DSL builder that returns `AfsmMachine<AfsmState<P, D>, E, C, F>`.
+- Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, D>` as the standard phase/data state value. It was removed before public API stabilization.
+- Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `phase`, `on`, `onEnter`, `case`, `transitionTo`, `updateData`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, named condition branches, entry command emission, and effect-only no-transition cases work in compiled Kotlin tests.
 - Superseded by the follow-up graphability spike and 2026-05-21 usability pass: branch targets now need to be declared through `case { transitionTo(...) }` or direct unconditional `transitionTo(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
@@ -612,14 +611,14 @@ Implement enough interpreter behavior to execute one event:
 - find current state definition,
 - find matching event handler,
 - evaluate conditions in declaration order,
-- apply `updateContext` operations in order,
+- apply `updateData` operations in order,
 - apply one transition target,
 - run exit/transition/entry outputs in deterministic order,
-- return `AfsmTransition<AfsmState<P, X>, C, F>`.
+- return `AfsmTransition<AfsmState<P, D>, C, F>`.
 
 Current spike status:
 
-- Implemented current state lookup, event handler lookup, ordered case matching, ordered `onExit -> case actions -> target phase factory -> onEnter`, ordered `updateContext`, command collection, effect collection, and `Stayed` versus `Transitioned` decisions.
+- Implemented current phase lookup, event handler lookup, ordered case matching, ordered `onExit -> case actions -> target phase factory -> onEnter`, ordered `updateData`, command collection, effect collection, and `Handled` versus `Transitioned` decisions.
 - Build-time validation now rejects missing initial state declarations, duplicate state declarations, duplicate event handlers in a state, and transition targets that have no declared state.
 - `ignore(...)` and `invalid(...)` now preserve `AfsmDecision.Ignored` / `AfsmDecision.Invalid` for handled non-graph transitions.
 
@@ -655,7 +654,7 @@ Success criteria:
 Result on 2026-05-09:
 
 - Migrated real `sample-shop` ProductEditor away from `AfsmPhasedStateMachine` and `ProductEditorPhaseEntryPolicy`.
-- Kept `ProductEditorState` conceptually as `ProductEditorPhase + ProductEditorContext`; this was later made explicit with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
+- Kept `ProductEditorState` conceptually as `ProductEditorPhase + ProductEditorData`; this was later made explicit with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>`.
 - Wrapped the DSL machine in `ProductEditorStateMachine` so existing `AfsmHost`/`ViewModel` integration still works through `AfsmReducer<ProductEditorState, ...>`.
 - Added `AfsmMachineAdapter` during the spike to hide topology forwarding and state adaptation, then removed it before public API stabilization because it encouraged two state models.
 - Added a ProductEditor unit test that verifies topology export without sample events.
@@ -663,10 +662,10 @@ Result on 2026-05-09:
 
 Update on 2026-05-10:
 
-- Added `AfsmState<P, X>` as the standard state value in `afsm-core`.
-- `AfsmPhaseMachine` now implements `AfsmMachine<AfsmState<P, X>, E, C, F>` directly.
-- ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>`.
-- ProductEditor no longer needs phase/context adapter mapping; `ProductEditorStateMachine` delegates to the machine.
+- Added `AfsmState<P, D>` as the standard state value in `afsm-core`.
+- `afsmMachine` now returns `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
+- ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>`.
+- ProductEditor no longer needs phase/data adapter mapping; `ProductEditorStateMachine` delegates to the machine.
 - Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.
 
 ### Step 5: Public API Decision
@@ -683,7 +682,7 @@ Decide naming before public release:
 The previous v3 direction was:
 
 ```text
-State = Phase + Context
+State = Phase + Data
 + transitionTo(Phase)
 + hidden PhaseEntryPolicy
 ```

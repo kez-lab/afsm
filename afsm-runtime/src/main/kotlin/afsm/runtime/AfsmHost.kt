@@ -107,7 +107,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
 
         when (transition.decision) {
             AfsmDecision.Transitioned,
-            is AfsmDecision.Stayed -> applyAcceptedTransition(
+            is AfsmDecision.Handled -> applyAcceptedTransition(
                 event = event,
                 transition = transition,
             )

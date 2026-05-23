@@ -48,7 +48,7 @@ The generated file also includes entry command notes:
 Checkout uses the standard graphable state shape:
 
 ```kotlin
-typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutContext>
+typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutData>
 ```
 
 `CheckoutPhase` is the finite graph:
@@ -65,10 +65,10 @@ sealed interface CheckoutPhase {
 }
 ```
 
-`CheckoutContext` carries durable data that should survive phase changes:
+`CheckoutData` carries durable data that should survive phase changes:
 
 ```kotlin
-data class CheckoutContext(
+data class CheckoutData(
     val productId: Long,
     val product: Product? = null,
     val nextPaymentRequestId: Long = 0,
@@ -100,20 +100,20 @@ deep links, or `SavedStateHandle` restoration.
 Commands are emitted when entering work phases:
 
 ```kotlin
-state(CheckoutPhase.ProductLoading) {
+phase(CheckoutPhase.ProductLoading) {
     onEnter {
         command(label = "LoadProduct") {
-            CheckoutCommand.LoadProduct(context.productId)
+            CheckoutCommand.LoadProduct(data.productId)
         }
     }
 }
 ```
 
 ```kotlin
-state<CheckoutPhase.PaymentInProgress> {
+phase<CheckoutPhase.PaymentInProgress> {
     onEnter {
         command(label = "SubmitPayment") {
-            val product = requireNotNull(context.product)
+            val product = requireNotNull(data.product)
             CheckoutCommand.SubmitPayment(
                 requestId = phase.requestId,
                 product = product,
@@ -161,30 +161,39 @@ ignore(
 This is the reference pattern for async work that can complete after retry or
 screen movement.
 
-## Missing Context Branches
+## Missing Data Branches
 
-When a phase requires context data, model the negative branch explicitly instead
+When a phase requires data that might be absent, model the negative branch explicitly instead
 of relying on an unconditional fallback case:
 
 ```kotlin
 case(
     label = "product loaded",
-    condition = { context.product != null },
+    condition = { data.product != null },
 ) {
     transitionTo<CheckoutPhase.PaymentInProgress> {
-        CheckoutPhase.PaymentInProgress(requestId = context.nextPaymentRequestId + 1)
+        CheckoutPhase.PaymentInProgress(requestId = data.nextPaymentRequestId + 1)
     }
 }
 
 case(
     label = "missing product",
-    condition = { context.product == null },
+    condition = { data.product == null },
 ) {
-    updateContext { copy(errorMessage = "Product is required before payment.") }
+    updateData { copy(errorMessage = "Product is required before payment.") }
 }
 ```
 
 This keeps source code and generated `.mmd` labels aligned.
+
+## Ignore Is Optional
+
+You do not need to list every impossible event in every phase. If an event is
+not valid and not expected, omit it and let Afsm report an invalid transition.
+
+Checkout uses `ignore(...)` only for expected harmless events, such as duplicate
+screen entry while loading or stale payment results after retry. That keeps
+diagnostics useful without teaching users to enumerate a full event matrix.
 
 ## Durable Completion Plus Optional Effect
 
@@ -206,7 +215,7 @@ state. This is the recommended Android policy for required product progress.
 ## Render State
 
 The UI does not need to know every internal phase. `CheckoutState.toRenderState`
-maps phase/context to a screen model:
+maps phase/data to a screen model:
 
 ```kotlin
 val state by viewModel.state.collectAsStateWithLifecycle()

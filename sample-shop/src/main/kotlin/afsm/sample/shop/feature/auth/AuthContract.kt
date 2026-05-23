@@ -14,15 +14,15 @@ data class AuthForm(
     val password: String = "",
 )
 
-typealias AuthState = AfsmState<AuthPhase, AuthContext>
+typealias AuthState = AfsmState<AuthPhase, AuthData>
 
 fun authState(
     phase: AuthPhase = AuthPhase.Editing,
-    context: AuthContext = AuthContext(),
+    data: AuthData = AuthData(),
 ): AuthState {
     return AfsmState(
         phase = phase,
-        context = context,
+        data = data,
     )
 }
 
@@ -45,7 +45,7 @@ data class AuthRenderState(
     val errorMessage: String? = null,
 )
 
-data class AuthContext(
+data class AuthData(
     val mode: AuthMode = AuthMode.Login,
     val form: AuthForm = AuthForm(),
     val errorMessage: String? = null,
@@ -87,15 +87,15 @@ sealed interface AuthEffect {
 fun AuthState.toRenderState(): AuthRenderState {
     return when (val currentPhase = phase) {
         AuthPhase.Editing -> AuthRenderState(
-            mode = context.mode,
-            form = context.form,
+            mode = data.mode,
+            form = data.form,
             isLoading = false,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         AuthPhase.Submitting -> AuthRenderState(
-            mode = context.mode,
-            form = context.form,
+            mode = data.mode,
+            form = data.form,
             isLoading = true,
         )
 

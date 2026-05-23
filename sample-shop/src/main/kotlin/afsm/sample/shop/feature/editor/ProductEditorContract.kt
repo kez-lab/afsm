@@ -14,20 +14,20 @@ data class ProductDraft(
     val reviewAttempt: Int = 0,
 )
 
-data class ProductEditorContext(
+data class ProductEditorData(
     val draft: ProductDraft = ProductDraft(),
     val errorMessage: String? = null,
 )
 
-typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>
+typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>
 
 fun productEditorState(
     phase: ProductEditorPhase = ProductEditorPhase.EditingDraft,
-    context: ProductEditorContext = ProductEditorContext(),
+    data: ProductEditorData = ProductEditorData(),
 ): ProductEditorState {
     return AfsmState(
         phase = phase,
-        context = context,
+        data = data,
     )
 }
 
@@ -140,7 +140,7 @@ typealias ProductEditorTransition =
 fun ProductEditorState.draftOrNull(): ProductDraft? {
     return when (phase) {
         is ProductEditorPhase.Published -> null
-        else -> context.draft
+        else -> data.draft
     }
 }
 
@@ -156,7 +156,7 @@ fun ProductEditorState.toRenderState(): ProductEditorRenderState {
             isProcessing = false,
             primaryAction = ProductEditorPrimaryAction.SubmitForReview,
             secondaryAction = ProductEditorSecondaryAction.SaveDraft,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         ProductEditorPhase.SavingDraft -> ProductEditorRenderState(
@@ -173,7 +173,7 @@ fun ProductEditorState.toRenderState(): ProductEditorRenderState {
             isProcessing = false,
             primaryAction = ProductEditorPrimaryAction.SubmitForReview,
             secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         ProductEditorPhase.ImageUploadInProgress -> ProductEditorRenderState(
@@ -198,7 +198,7 @@ fun ProductEditorState.toRenderState(): ProductEditorRenderState {
             primaryAction = ProductEditorPrimaryAction.ResubmitForReview,
             secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
             reviewNote = currentPhase.reason,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         ProductEditorPhase.Approved -> ProductEditorRenderState(
@@ -208,7 +208,7 @@ fun ProductEditorState.toRenderState(): ProductEditorRenderState {
             isProcessing = false,
             primaryAction = ProductEditorPrimaryAction.Publish,
             secondaryAction = ProductEditorSecondaryAction.ContinueEditing,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         ProductEditorPhase.PublishInProgress -> ProductEditorRenderState(

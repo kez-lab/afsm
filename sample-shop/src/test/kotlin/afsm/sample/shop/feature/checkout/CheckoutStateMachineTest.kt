@@ -40,7 +40,7 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `product loaded enters ready phase with product context`() {
+    fun `product loaded enters ready phase with product data`() {
         val result = machine.transition(
             state = checkoutState(
                 productId = product.id,
@@ -50,8 +50,8 @@ class CheckoutStateMachineTest {
         )
 
         assertEquals(CheckoutPhase.ProductReady, result.state.phase)
-        assertEquals(product, result.state.context.product)
-        assertEquals(null, result.state.context.errorMessage)
+        assertEquals(product, result.state.data.product)
+        assertEquals(null, result.state.data.errorMessage)
     }
 
     @Test
@@ -59,7 +59,7 @@ class CheckoutStateMachineTest {
         val state = checkoutState(
             productId = product.id,
             phase = CheckoutPhase.ProductReady,
-            context = CheckoutContext(
+            data = CheckoutData(
                 productId = product.id,
                 product = product,
             ),
@@ -68,7 +68,7 @@ class CheckoutStateMachineTest {
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
         assertEquals(CheckoutPhase.PaymentInProgress(requestId = 1), result.state.phase)
-        assertEquals(1, result.state.context.nextPaymentRequestId)
+        assertEquals(1, result.state.data.nextPaymentRequestId)
         assertEquals(
             listOf(
                 CheckoutCommand.SubmitPayment(
@@ -81,11 +81,11 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `pay clicked without product stays ready and records error`() {
+    fun `pay clicked without product handles without phase change ready and records error`() {
         val state = checkoutState(
             productId = product.id,
             phase = CheckoutPhase.ProductReady,
-            context = CheckoutContext(
+            data = CheckoutData(
                 productId = product.id,
                 product = null,
             ),
@@ -93,9 +93,9 @@ class CheckoutStateMachineTest {
 
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
-        assertIs<AfsmDecision.Stayed>(result.decision)
+        assertIs<AfsmDecision.Handled>(result.decision)
         assertEquals(CheckoutPhase.ProductReady, result.state.phase)
-        assertEquals("Product is required before payment.", result.state.context.errorMessage)
+        assertEquals("Product is required before payment.", result.state.data.errorMessage)
         assertEquals(emptyList(), result.commands)
         assertEquals(emptyList(), result.effects)
     }
@@ -106,7 +106,7 @@ class CheckoutStateMachineTest {
             state = checkoutState(
                 productId = product.id,
                 phase = CheckoutPhase.PaymentInProgress(requestId = 1),
-                context = CheckoutContext(
+                data = CheckoutData(
                     productId = product.id,
                     product = product,
                     nextPaymentRequestId = 1,
@@ -119,12 +119,12 @@ class CheckoutStateMachineTest {
         )
 
         assertEquals(CheckoutPhase.PaymentFailed, failed.state.phase)
-        assertEquals("Mock payment declined.", failed.state.context.errorMessage)
+        assertEquals("Mock payment declined.", failed.state.data.errorMessage)
 
         val retry = machine.transition(failed.state, CheckoutEvent.RetryClicked)
 
         assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), retry.state.phase)
-        assertEquals(2, retry.state.context.nextPaymentRequestId)
+        assertEquals(2, retry.state.data.nextPaymentRequestId)
         assertEquals(
             listOf(
                 CheckoutCommand.SubmitPayment(
@@ -137,11 +137,11 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `retry clicked without product stays failed and records error`() {
+    fun `retry clicked without product handles without phase change failed and records error`() {
         val state = checkoutState(
             productId = product.id,
             phase = CheckoutPhase.PaymentFailed,
-            context = CheckoutContext(
+            data = CheckoutData(
                 productId = product.id,
                 product = null,
                 errorMessage = "Previous failure.",
@@ -150,9 +150,9 @@ class CheckoutStateMachineTest {
 
         val result = machine.transition(state, CheckoutEvent.RetryClicked)
 
-        assertIs<AfsmDecision.Stayed>(result.decision)
+        assertIs<AfsmDecision.Handled>(result.decision)
         assertEquals(CheckoutPhase.PaymentFailed, result.state.phase)
-        assertEquals("Product is required before payment.", result.state.context.errorMessage)
+        assertEquals("Product is required before payment.", result.state.data.errorMessage)
         assertEquals(emptyList(), result.commands)
         assertEquals(emptyList(), result.effects)
     }
@@ -169,7 +169,7 @@ class CheckoutStateMachineTest {
             state = checkoutState(
                 productId = product.id,
                 phase = CheckoutPhase.PaymentInProgress(requestId = 1),
-                context = CheckoutContext(
+                data = CheckoutData(
                     productId = product.id,
                     product = product,
                     nextPaymentRequestId = 1,
@@ -197,7 +197,7 @@ class CheckoutStateMachineTest {
             state = checkoutState(
                 productId = product.id,
                 phase = CheckoutPhase.PaymentInProgress(requestId = 2),
-                context = CheckoutContext(
+                data = CheckoutData(
                     productId = product.id,
                     product = product,
                     nextPaymentRequestId = 2,
@@ -225,7 +225,7 @@ class CheckoutStateMachineTest {
             state = checkoutState(
                 productId = product.id,
                 phase = CheckoutPhase.PaymentInProgress(requestId = 2),
-                context = CheckoutContext(
+                data = CheckoutData(
                     productId = product.id,
                     product = product,
                     nextPaymentRequestId = 2,

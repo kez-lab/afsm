@@ -26,7 +26,7 @@ Good restored state:
 ```kotlin
 AfsmState(
     phase = CheckoutPhase.Completed(orderId = orderId),
-    context = CheckoutContext(cartId = cartId),
+    data = CheckoutData(cartId = cartId),
 )
 ```
 
@@ -35,7 +35,7 @@ Risky restored state:
 ```kotlin
 AfsmState(
     phase = CheckoutPhase.PaymentInProgress(requestId = oldRequestId),
-    context = CheckoutContext(...),
+    data = CheckoutData(...),
 )
 ```
 
@@ -101,18 +101,18 @@ If a snackbar, dialog, or navigation must survive a lifecycle gap, model it as
 state and clear it with an acknowledgement event.
 
 ```kotlin
-data class FormContext(
+data class FormData(
     val pendingMessage: String? = null,
 )
 
 on<FormEvent.SubmitFailed> {
-    updateContext {
+    updateData {
         copy(pendingMessage = "Submit failed")
     }
 }
 
 on<FormEvent.PendingMessageShown> {
-    updateContext {
+    updateData {
         copy(pendingMessage = null)
     }
 }

@@ -943,8 +943,8 @@ Consequences:
 
 Decision: Keep the public executable DSL as the primary authoring model, but
 shift beginner-facing event handlers from `stay`/`otherwise` and
-`transitionTo { updateContext(...) }` toward named `case(...)` blocks plus
-direct `updateContext` actions.
+`transitionTo { updateData(...) }` toward named `case(...)` blocks plus
+direct `updateData` actions.
 
 Rationale:
 
@@ -954,14 +954,14 @@ Rationale:
 - A no-transition event does not need a `stay` verb; if no phase transition is
   declared, the current phase remains active.
 - Named cases make conditions visible in both source code and generated `.mmd`
-  graphs, avoiding anonymous predicates such as `context.draft.isValid()` that
+  graphs, avoiding anonymous predicates such as `data.draft.isValid()` that
   are hard for new users to understand.
 
 Consequences:
 
 - Public examples should prefer `case(label, condition = ...) { ... }`.
-- Context changes should be separate actions through `updateContext`, using the
-  `updateContext { context, event -> ... }` overload when the typed event
+- Data changes should be separate actions through `updateData`, using the
+  `updateData { data, event -> ... }` overload when the typed event
   payload is needed.
 - `stay(...)` and `otherwise(...)` are no longer recommended for onboarding and
   should be considered removal/deprecation candidates before public API freeze.
@@ -998,7 +998,7 @@ case that acts like `otherwise`.
 Rationale:
 
 - The user specifically called out that hidden predicates such as
-  `context.draft.isValid()` are hard to understand; a branch should state both
+  `data.draft.isValid()` are hard to understand; a branch should state both
   its business label and its matching condition.
 - Removing `otherwise` is less valuable if examples recreate it as
   `case(label = "invalid ...")` with no condition.
@@ -1010,7 +1010,7 @@ Consequences:
 - ProductEditor submit/resubmit and Auth submit examples now show both valid
   and invalid cases with explicit conditions.
 - Truly unconditional event handling still uses direct helpers such as
-  `transitionTo(...)`, `updateContext(...)`, or `effect(...)`.
+  `transitionTo(...)`, `updateData(...)`, or `effect(...)`.
 
 ## [2026-05-21] Align payload phase factory order with DSL reading order
 
@@ -1020,9 +1020,9 @@ runs after source `onExit` and accepted case actions, and before target
 
 Rationale:
 
-- Android developers read a `case` block top to bottom. If `updateContext` appears
-  before `transitionTo<PayloadPhase> { context... }`, the payload phase factory
-  should observe that updated context.
+- Android developers read a `case` block top to bottom. If `updateData` appears
+  before `transitionTo<PayloadPhase> { data... }`, the payload phase factory
+  should observe that updated data.
 - Running the target factory before case actions made Checkout duplicate request
   id calculations and created a hidden execution-order concept.
 - The documented execution order now matches runtime behavior:
@@ -1030,12 +1030,12 @@ Rationale:
 
 Consequences:
 
-- Payload phase factories may use context updates made in `onExit` or earlier
+- Payload phase factories may use data updates made in `onExit` or earlier
   case actions.
-- Target `onEnter` observes both the updated context and the created payload
+- Target `onEnter` observes both the updated data and the created payload
   phase.
 - Flow `.mmd` output includes named no-transition condition branches so
-  validation and missing-context cases remain visible in generated diagrams.
+  validation and missing-data cases remain visible in generated diagrams.
 
 ## [2026-05-21] Expose Flow and Full graph modes through the Gradle plugin
 
@@ -1081,4 +1081,34 @@ Consequences:
   onboarding style.
 - `Afsm.stay(...)` is removed from the beginner-facing helper object; graphable
   DSL code stays in the current phase by handling an event without
-  `transitionTo(...)`. Low-level reducers can use `AfsmTransition.stayed(...)`.
+  `transitionTo(...)`. Low-level reducers can use `AfsmTransition.handled(...)`.
+
+## [2026-05-23] Rename first-use DSL vocabulary to phase/data/handled
+
+Decision: Apply a breaking first-use terminology cleanup before public API
+freeze: DSL scopes are `phase(...)`, the standard extended state field is
+`AfsmState.data`, the no-phase-change low-level decision is `Handled`, and the
+DSL builder returns ordinary `AfsmMachine<AfsmState<Phase, Data>, Event,
+Command, Effect>` without a public `AfsmPhaseMachine` type.
+
+Rationale:
+
+- Six first-time Android developer reviews converged on the same issue: users
+  were not blocked by runtime behavior, but by API words that overloaded Android
+  mental models.
+- `state(...)` sounded like full UI state, while the DSL scope is actually the
+  finite graph node. `phase(...)` says that more directly.
+- `context` collided with `android.content.Context`; `data` reads as ordinary
+  immutable screen data carried across phases.
+- `stay`/`Stayed` made users think they needed to explicitly say "do not
+  transition" for every handled event. In the DSL, omitting `transitionTo(...)`
+  is the natural no-phase-change form.
+
+Consequences:
+
+- README and public docs now start with `docs/getting-started.md` and the
+  `Phase + Data + Event + Command` model.
+- `AfsmPhaseMachine` is removed from the public source surface; users see one
+  graphable machine type at feature boundaries.
+- API dumps must be regenerated because the change intentionally breaks the
+  pre-release public surface.

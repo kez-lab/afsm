@@ -12,6 +12,34 @@ For complete Android examples, read [examples.md](examples.md),
 [product-editor-walkthrough.md](product-editor-walkthrough.md). For `.mmd`
 setup, read [graph-generation.md](graph-generation.md).
 
+## Android-First Path
+
+Most Android feature code only needs three public types:
+
+```kotlin
+typealias ScreenState = AfsmState<ScreenPhase, ScreenData>
+typealias ScreenMachine = AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect>
+
+object ScreenStateMachine : ScreenMachine by screenMachine()
+```
+
+The ViewModel hosts that machine:
+
+```kotlin
+private val host = afsmHost(
+    machine = ScreenStateMachine,
+    commandHandler = AfsmCommandHandler { command, dispatch ->
+        // repository/use-case work
+        // dispatch(result event)
+    },
+)
+```
+
+Start with `afsmMachine { ... }`, `AfsmState<Phase, Data>`, and
+`ViewModel.afsmHost(...)`. Treat `AfsmReducer`, `AfsmTransition`, and
+`AfsmDecision` as advanced reference concepts unless you are writing a custom
+reducer or library integration.
+
 ## Coordinates
 
 Required dependencies:
@@ -63,23 +91,23 @@ through `Afsm` helpers or `AfsmTransition` factory functions, not a raw public
 constructor.
 
 ```kotlin
-Afsm.transitionTo(state, commands, effects)
+Afsm.transitioned(state, commands, effects)
 Afsm.ignore(state, reason)
 Afsm.invalid(state, reason)
-AfsmTransition.stayed(state, commands, effects, reason) // low-level reducer escape hatch
+AfsmTransition.handled(state, commands, effects, reason) // low-level reducer escape hatch
 ```
 
 The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
 For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
-Handling a DSL case without `transitionTo(...)` produces a `Stayed` decision.
+Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
 
 ### AfsmDecision
 
 | Decision | Meaning | Runtime behavior |
 |---|---|---|
 | `Transitioned` | State transition accepted | Publish state, emit effects, execute commands |
-| `Stayed` | Event handled without phase change | Publish state, emit effects, execute commands |
+| `Handled` | Event handled without phase change | Publish state, emit effects, execute commands |
 | `Ignored` | Event expected but intentionally no-op | Drop state/outputs and optionally log accidental outputs |
 | `Invalid` | Event invalid in current state | Record or throw according to `AfsmInvalidTransitionPolicy` |
 
@@ -108,63 +136,53 @@ Use this at feature boundaries once the state type has been named.
 
 ```kotlin
 typealias ProductEditorState =
-    AfsmState<ProductEditorPhase, ProductEditorContext>
+    AfsmState<ProductEditorPhase, ProductEditorData>
 
 private typealias ProductEditorMachine =
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
 ```
 
-### AfsmPhaseMachine
-
-```kotlin
-interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmMachine<AfsmState<P, X>, E, C, F>
-```
-
-`afsmMachine { ... }` builds this type. Most app code should expose it through
-a feature-local `AfsmMachine<State, Event, Command, Effect>` alias.
-
 ### AfsmState
 
 ```kotlin
-data class AfsmState<P : Any, X : Any>(
+data class AfsmState<P : Any, D : Any>(
     val phase: P,
-    val context: X,
+    val data: D,
 )
 ```
 
-`phase` is the finite graph state. `context` is extended state data, not
-`android.content.Context`.
+`phase` is the finite graph state. `data` is durable screen data carried across
+phases. It is not `android.content.Context`.
 
 ### DSL
 
 ```kotlin
-afsmMachine<Phase, Context, Event, Command, Effect> {
-    initial(phase = Phase.Editing, context = Context())
+afsmMachine<Phase, Data, Event, Command, Effect> {
+    initial(phase = Phase.Editing, data = FormData())
 
-    state(Phase.Editing) {
+    phase(Phase.Editing) {
         on<Event.SubmitClicked> {
             case(
                 label = "valid form",
-                condition = { context.form.isValid() },
+                condition = { data.form.isValid() },
             ) {
-                updateContext { copy(errorMessage = null) }
+                updateData { copy(errorMessage = null) }
                 transitionTo(Phase.Submitting)
             }
 
             case(
                 label = "invalid form",
-                condition = { !context.form.isValid() },
+                condition = { !data.form.isValid() },
             ) {
-                updateContext { copy(errorMessage = "Invalid form") }
+                updateData { copy(errorMessage = "Invalid form") }
             }
         }
     }
 
-    state(Phase.Submitting) {
+    phase(Phase.Submitting) {
         onEnter {
             command(label = "Submit") {
-                Command.Submit(context.form)
+                Command.Submit(data.form)
             }
         }
     }
@@ -177,20 +195,20 @@ machine entered a work phase such as `Submitting`.
 
 | API | Meaning |
 |---|---|
-| `initial(phase, context)` | Initial state value; does not run `onEnter` |
-| `state(phase) { ... }` | Exact phase scope |
-| `state(phase)` | Exact phase declaration with no handlers, useful for terminal states |
-| `state<PayloadPhase> { ... }` | Payload phase scope |
-| `state<PayloadPhase>()` | Payload phase declaration with no handlers |
-| `state(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
+| `initial(phase, data)` | Initial state value; does not run `onEnter` |
+| `phase(phase) { ... }` | Exact phase scope |
+| `phase(phase)` | Exact phase declaration with no handlers, useful for terminal states |
+| `phase<PayloadPhase> { ... }` | Payload phase scope |
+| `phase<PayloadPhase>()` | Payload phase declaration with no handlers |
+| `phase(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
 | `on<Event>()` | Event-specific branch scope |
 | `on(eventType = Event::class)` | Non-inline event-specific branch scope |
 | `case(label, condition = ...) { ... }` | Named branch for a domain condition |
 | `transitionTo(phase)` | Phase change only |
 | `transitionTo<PayloadPhase> { ... }` | Phase change to payload phase |
 | `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload phase change |
-| `updateContext { ... }` | Handles event by immutably updating context |
-| `updateContext { context, event -> ... }` | Context update that uses the typed event payload |
+| `updateData { ... }` | Handles event by immutably updating data |
+| `updateData { data, event -> ... }` | Data update that uses the typed event payload |
 | `ignore(reason)` | Expected no-op event; no graph edge |
 | `invalid(reason)` | Explicit invalid event; no graph edge |
 | `command(label = ...) { ... }` | Host-executed work output from a case |
@@ -207,11 +225,11 @@ condition label, including no-transition cases such as validation failures.
 
 Entry and exit blocks are declaration blocks. `command(label = ...) { ... }`
 and `effect(label = ...) { ... }` record graph labels when the machine is built,
-then run their value factories later with `phase` and `context` from
-`AfsmPhaseActionContext`.
+then run their value factories later with `phase` and `data` from
+`AfsmPhaseActionScope`.
 
-Use `state(phase)` for singleton/data-object phases. For payload phase classes,
-prefer `state<PayloadPhase>()` or `state<PayloadPhase> { ... }` so the machine
+Use `phase(phase)` for singleton/data-object phases. For payload phase classes,
+prefer `phase<PayloadPhase>()` or `phase<PayloadPhase> { ... }` so the machine
 matches any payload instance rather than one exact value.
 
 Phase-changing transition order:
@@ -379,9 +397,16 @@ MVP constructor policy:
 
 ## Removed Pre-Release Names
 
+- `Afsm.transitionTo(...)` -> use `Afsm.transitioned(...)`
+- `AfsmDecision.Stayed` -> use `AfsmDecision.Handled`
+- `AfsmTransition.stayed(...)` -> use `AfsmTransition.handled(...)`
+- DSL `state(...)` -> use `phase(...)`
+- DSL `updateContext(...)` -> use `updateData(...)`
+- `AfsmState.context` -> use `AfsmState.data`
+- `AfsmPhaseMachine` -> use the returned `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>`
 - `AfsmStateMachine` -> use `AfsmReducer`
-- `AfsmStateChart` -> use `AfsmPhaseMachine` / `afsmMachine`
+- `AfsmStateChart` -> use `AfsmMachine` / `afsmMachine`
 - `afsmStateChart` -> use `afsmMachine`
-- `AfsmStateChartMachine` -> use `AfsmPhaseMachine`
+- `AfsmStateChartMachine` -> use `AfsmMachine`
 - `AfsmChartState` -> use `AfsmState`
 - `AfsmGraphReducer` -> use `AfsmMachine<State, Event, Command, Effect>`

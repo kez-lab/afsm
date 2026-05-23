@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-05-14
+updated: 2026-05-23
 ---
 
 # Wiki Index
@@ -63,6 +63,7 @@ updated: 2026-05-14
 - [[08-meetings/2026-05-14-afsm-10-agent-cto-review|Afsm 10-Agent CTO Review]] - Follow-up Android developer review and CTO synthesis that sets the internal-beta verdict and hardening order.
 - [[08-meetings/2026-05-19-afsm-6-agent-usability-loop|Afsm 6-Agent Usability Loop]] - Two-round usability review covering first-use onboarding, render-state sample boundaries, ProductEditor explanation, graph generation, and beta adoption contract.
 - [[08-meetings/2026-05-21-afsm-6-agent-dsl-usability-review|Afsm 6-Agent DSL Usability Review]] - Review of the case-oriented DSL, payload phase factory order, no-transition graph visibility, and documentation drift.
+- [[08-meetings/2026-05-23-afsm-6-agent-first-use-review|Afsm 6-Agent First-Use Review]] - First-time Android developer review that drove the phase/data/handled terminology cleanup and Android-first onboarding page.
 
 ## Raw Sources
 

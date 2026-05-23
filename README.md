@@ -21,11 +21,17 @@ decided. Internal pilot rules are documented in
 
 ## First Use Path
 
-1. Add the dependencies below.
-2. Paste the minimal Draft machine.
-3. Host it from a `ViewModel`.
-4. Add the first JVM transition test.
-5. Add graph generation only after the machine is useful.
+Start with [docs/getting-started.md](docs/getting-started.md) if this is your
+first Afsm screen.
+
+The short version:
+
+1. Draw the phases first.
+2. Put durable screen data in `Data`, not in every phase constructor.
+3. Handle UI/repository results as `Event`.
+4. Move between phases with `transitionTo(...)`.
+5. Start repository work from `command(...)`, usually in `onEnter`.
+6. Host the machine from a `ViewModel` with `afsmHost(...)`.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample, then read
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
@@ -100,72 +106,6 @@ android.useAndroidX=true
 
 `io.github.afsm` is the current pre-release group id. Final Maven Central coordinates still need product approval.
 
-### Maven Local Pilot Setup
-
-For a separate Android app that consumes the local snapshot, mirror the
-`consumer-smoke` setup.
-
-`settings.gradle.kts`:
-
-```kotlin
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-    }
-}
-```
-
-Root `build.gradle.kts`:
-
-```kotlin
-plugins {
-    id("com.android.application") version "8.10.1" apply false
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT" apply false
-    kotlin("android") version "2.0.21" apply false
-}
-```
-
-App module:
-
-```kotlin
-plugins {
-    id("com.android.application")
-    id("com.google.devtools.ksp")
-    id("io.github.afsm.graph")
-    kotlin("android")
-}
-
-dependencies {
-    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-}
-```
-
-`gradle.properties`:
-
-```properties
-android.useAndroidX=true
-```
-
-The graph plugin automatically adds the matching
-`io.github.afsm:afsm-graph-ksp` processor for its own version. Override
-`afsmGraph.processorDependency` only when testing a custom processor build.
-
 ## Minimal Machine
 
 The core mental model:
@@ -173,8 +113,8 @@ The core mental model:
 | Concept | Meaning |
 |---|---|
 | `Phase` | Finite state diagram node, such as `Editing` or `Saving` |
-| `Context` | Extended state data carried across phases, not `android.content.Context` |
-| `State` | Android-facing snapshot, normally `AfsmState<Phase, Context>` |
+| `Data` | Extended state data carried across phases, not `android.content.Context` |
+| `State` | Android-facing snapshot, normally `AfsmState<Phase, Data>` |
 | `Event` | User input or command result |
 | `Command` | Host-executed work, such as repository calls or timers |
 | `Effect` | Optional UI one-shot output |
@@ -193,12 +133,12 @@ sealed interface DraftPhase {
     data object Saved : DraftPhase
 }
 
-data class DraftContext(
+data class DraftData(
     val title: String = "",
     val errorMessage: String? = null,
 )
 
-typealias DraftState = AfsmState<DraftPhase, DraftContext>
+typealias DraftState = AfsmState<DraftPhase, DraftData>
 
 sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
@@ -218,13 +158,13 @@ object DraftStateMachine : DraftMachine by draftMachine()
 private fun draftMachine(): DraftMachine = afsmMachine {
     initial(
         phase = DraftPhase.Editing,
-        context = DraftContext(),
+        data = DraftData(),
     )
 
-    state(DraftPhase.Editing) {
+    phase(DraftPhase.Editing) {
         on<DraftEvent.TitleChanged> {
-            updateContext { context, event ->
-                context.copy(
+            updateData { data, event ->
+                data.copy(
                     title = event.value,
                     errorMessage = null,
                 )
@@ -234,24 +174,24 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.SaveClicked> {
             case(
                 label = "valid title",
-                condition = { context.title.isNotBlank() },
+                condition = { data.title.isNotBlank() },
             ) {
                 transitionTo(DraftPhase.Saving)
             }
 
             case(
                 label = "missing title",
-                condition = { context.title.isBlank() },
+                condition = { data.title.isBlank() },
             ) {
-                updateContext { copy(errorMessage = "Title is required.") }
+                updateData { copy(errorMessage = "Title is required.") }
             }
         }
     }
 
-    state(DraftPhase.Saving) {
+    phase(DraftPhase.Saving) {
         onEnter {
             command(label = "SaveDraft") {
-                DraftCommand.SaveDraft(context.title)
+                DraftCommand.SaveDraft(data.title)
             }
         }
 
@@ -260,14 +200,14 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         }
     }
 
-    state(DraftPhase.Saved)
+    phase(DraftPhase.Saved)
 }
 ```
 
 `case(...)` branches are checked in declaration order. The first branch whose
 `condition` returns `true` handles the event; if none match, the event is
 invalid for the current phase. `transitionTo(...)` changes phase. If an event
-only updates context or emits an output, handle it with `updateContext(...)` or
+only updates data or emits an output, handle it with `updateData(...)` or
 `effect(...)` without calling `transitionTo(...)`.
 
 Phase-changing transitions run:
@@ -340,7 +280,7 @@ fun `SaveClicked enters Saving and emits SaveDraft`() {
     val result = DraftStateMachine.transition(
         state = DraftState(
             phase = DraftPhase.Editing,
-            context = DraftContext(title = "Plan"),
+            data = DraftData(title = "Plan"),
         ),
         event = DraftEvent.SaveClicked,
     )

@@ -6,41 +6,41 @@ import kotlin.reflect.KClass
  * Builds an executable Afsm machine definition.
  *
  * This DSL is intentionally plain Kotlin and Android-free. Android ViewModels
- * should host the returned [AfsmPhaseMachine] through an [AfsmMachine] or
- * [AfsmReducer] reference.
+ * should host the returned [AfsmMachine] or [AfsmReducer] reference from a
+ * ViewModel.
  *
  * Type parameters:
  *
  * - [P]: finite phase type. This is the node type that appears in generated
  *   state diagrams.
- * - [X]: extended context type. This is immutable data carried across phases.
+ * - [D]: extended data type. This is immutable data carried across phases.
  * - [E]: event type. Events are user intents or command results.
  * - [C]: command type. Commands are host-executed work emitted by transitions
  *   or entry/exit handlers.
  * - [F]: effect type. Effects are optional UI-side one-shot outputs.
  *
  * The [build] block declares the initial state, phase scopes, event branches,
- * entry/exit handlers, and graph metadata. The returned [AfsmPhaseMachine] is
- * both executable transition logic and an [AfsmGraphSource].
+ * entry/exit handlers, and graph metadata. The returned [AfsmMachine] is both
+ * executable transition logic and an [AfsmGraphSource].
  */
-public fun <P : Any, X : Any, E : Any, C : Any, F : Any> afsmMachine(
-    build: AfsmMachineBuilder<P, X, E, C, F>.() -> Unit,
-): AfsmPhaseMachine<P, X, E, C, F> {
-    val builder = AfsmMachineBuilder<P, X, E, C, F>()
+public fun <P : Any, D : Any, E : Any, C : Any, F : Any> afsmMachine(
+    build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
+): AfsmMachine<AfsmState<P, D>, E, C, F> {
+    val builder = AfsmMachineBuilder<P, D, E, C, F>()
     builder.build()
     return builder.buildMachine()
 }
 
 @AfsmDslMarker
-public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
-    private var initialState: AfsmState<P, X>? = null
-    private val states = mutableListOf<AfsmStateDefinition<P, X, E, C, F>>()
+public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
+    private var initialState: AfsmState<P, D>? = null
+    private val states = mutableListOf<AfsmStateDefinition<P, D, E, C, F>>()
 
     /**
-     * Sets the initial finite phase and extended context for the machine.
+     * Sets the initial finite phase and extended data for the machine.
      *
-     * [phase] is the first graph state exposed through [AfsmPhaseMachine.initialState].
-     * [context] is the initial extended data associated with that phase.
+     * [phase] is the first graph state exposed through [AfsmMachine.initialState].
+     * [data] is the initial extended data associated with that phase.
      *
      * Calling [initial] does not run the target phase's `onEnter` handler.
      * Startup work should be triggered by an explicit event such as
@@ -48,11 +48,11 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      */
     public fun initial(
         phase: P,
-        context: X,
+        data: D,
     ) {
         initialState = AfsmState(
             phase = phase,
-            context = context,
+            data = data,
         )
     }
 
@@ -66,9 +66,9 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      * The [build] block declares entry/exit handlers and event handlers that
      * apply only when the machine's current phase equals [phase].
      */
-    public fun state(
+    public fun phase(
         phase: P,
-        build: AfsmStateBuilder<P, X, E, C, F, P>.() -> Unit,
+        build: AfsmPhaseBuilder<P, D, E, C, F, P>.() -> Unit,
     ) {
         addState(
             label = afsmLabelForValue(phase),
@@ -84,10 +84,10 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      *
      * This is useful for terminal or marker phases that only need to appear in
      * topology validation and generated diagrams. It is equivalent to
-     * `state(phase) { }`, but reads better in first-use examples.
+     * `phase(phase) { }`, but reads better in first-use examples.
      */
-    public fun state(phase: P) {
-        state(phase = phase) {
+    public fun phase(phase: P) {
+        phase(phase = phase) {
         }
     }
 
@@ -101,10 +101,10 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      *
      * The generated topology uses the [PS] class name as the state label.
      */
-    public inline fun <reified PS : P> state(
-        noinline build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
+    public inline fun <reified PS : P> phase(
+        noinline build: AfsmPhaseBuilder<P, D, E, C, F, PS>.() -> Unit,
     ) {
-        state(
+        phase(
             phaseType = PS::class,
             build = build,
         )
@@ -116,8 +116,8 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
      * Use this for terminal payload phase classes that should be valid targets
      * in topology and generated diagrams but do not handle further events.
      */
-    public inline fun <reified PS : P> state() {
-        state(
+    public inline fun <reified PS : P> phase() {
+        phase(
             phaseType = PS::class,
             build = {},
         )
@@ -126,13 +126,13 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     /**
      * Declares behavior for any phase instance of [phaseType].
      *
-     * Prefer the reified `state<Phase> { ... }` overload in ordinary Kotlin
+     * Prefer the reified `phase<Phase> { ... }` overload in ordinary Kotlin
      * feature code. Use this overload when the phase class is only available as
      * a [KClass], for example from shared tooling or generated code.
      */
-    public fun <PS : P> state(
+    public fun <PS : P> phase(
         phaseType: KClass<PS>,
-        build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
+        build: AfsmPhaseBuilder<P, D, E, C, F, PS>.() -> Unit,
     ) {
         addState(
             label = afsmLabelForClass(phaseType),
@@ -144,9 +144,9 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     private fun <PS : P> addState(
         label: String,
         matcher: (P) -> PS?,
-        build: AfsmStateBuilder<P, X, E, C, F, PS>.() -> Unit,
+        build: AfsmPhaseBuilder<P, D, E, C, F, PS>.() -> Unit,
     ) {
-        val builder = AfsmStateBuilder<P, X, E, C, F, PS>(
+        val builder = AfsmPhaseBuilder<P, D, E, C, F, PS>(
             stateLabel = label,
             matcher = matcher,
         )
@@ -154,9 +154,9 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
         states += builder.buildDefinition()
     }
 
-    internal fun buildMachine(): AfsmPhaseMachine<P, X, E, C, F> {
+    internal fun buildMachine(): AfsmMachine<AfsmState<P, D>, E, C, F> {
         val initial = requireNotNull(initialState) {
-            "Afsm machine requires an initial phase and context."
+            "Afsm machine requires an initial phase and data."
         }
         val builtStates = states.toList()
 
@@ -172,8 +172,8 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
     }
 
     private fun validateDefinitions(
-        initial: AfsmState<P, X>,
-        states: List<AfsmStateDefinition<P, X, E, C, F>>,
+        initial: AfsmState<P, D>,
+        states: List<AfsmStateDefinition<P, D, E, C, F>>,
     ) {
         val errors = mutableListOf<String>()
 
@@ -222,17 +222,17 @@ public class AfsmMachineBuilder<P : Any, X : Any, E : Any, C : Any, F : Any> {
 }
 
 @AfsmDslMarker
-public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P> internal constructor(
+public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P> internal constructor(
     private val stateLabel: String,
     private val matcher: (P) -> PS?,
 ) {
-    private val entryHandlers = mutableListOf<AfsmEntryHandler<P, X, C, F>>()
-    private val exitHandlers = mutableListOf<AfsmExitHandler<P, X, C, F>>()
+    private val entryHandlers = mutableListOf<AfsmEntryHandler<P, D, C, F>>()
+    private val exitHandlers = mutableListOf<AfsmExitHandler<P, D, C, F>>()
     private val entryCommandLabels = mutableListOf<String>()
     private val entryEffectLabels = mutableListOf<String>()
     private val exitCommandLabels = mutableListOf<String>()
     private val exitEffectLabels = mutableListOf<String>()
-    private val eventDefinitions = mutableListOf<AfsmEventDefinition<P, X, E, C, F>>()
+    private val eventDefinitions = mutableListOf<AfsmEventDefinition<P, D, E, C, F>>()
 
     /**
      * Declares actions that run when this phase is entered through a phase change.
@@ -240,7 +240,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      * The [handler] block is declaration code: calls such as
      * `command(label = "Load") { ... }` record both graph metadata and runtime
      * work in one place. The command/effect factory lambdas run later, when the
-     * transition is accepted and real [AfsmPhaseActionContext.context] is
+     * transition is accepted and real [AfsmPhaseActionScope.data] is
      * available.
      *
      * Entry actions run after the accepted case actions and only for
@@ -251,9 +251,9 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      * `ScreenEntered`.
      */
     public fun onEnter(
-        handler: AfsmEntryScope<P, X, C, F, PS>.() -> Unit,
+        handler: AfsmEntryScope<P, D, C, F, PS>.() -> Unit,
     ) {
-        val scope = AfsmEntryScope<P, X, C, F, PS>(
+        val scope = AfsmEntryScope<P, D, C, F, PS>(
             phaseMatcher = matcher,
         )
         scope.handler()
@@ -279,9 +279,9 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      * ```
      */
     public fun onExit(
-        handler: AfsmExitScope<P, X, C, F, PS>.() -> Unit,
+        handler: AfsmExitScope<P, D, C, F, PS>.() -> Unit,
     ) {
-        val scope = AfsmExitScope<P, X, C, F, PS>(
+        val scope = AfsmExitScope<P, D, C, F, PS>(
             phaseMatcher = matcher,
         )
         scope.handler()
@@ -308,7 +308,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      * state-machine branches.
      */
     public inline fun <reified EV : E> on(
-        noinline build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
+        noinline build: AfsmEventBranchScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
         on(
             eventType = EV::class,
@@ -325,7 +325,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
      */
     public fun <EV : E> on(
         eventType: KClass<EV>,
-        build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
+        build: AfsmEventBranchScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
         addEventDefinition(
             eventLabel = afsmLabelForClass(eventType),
@@ -337,9 +337,9 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
     private fun <EV : E> addEventDefinition(
         eventLabel: String,
         eventMatcher: (E) -> EV?,
-        build: AfsmEventBranchScope<P, X, E, C, F, PS, EV>.() -> Unit,
+        build: AfsmEventBranchScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
-        val builder = AfsmEventBranchScope<P, X, E, C, F, PS, EV>(
+        val builder = AfsmEventBranchScope<P, D, E, C, F, PS, EV>(
             stateLabel = stateLabel,
             eventLabel = eventLabel,
             phaseMatcher = matcher,
@@ -349,7 +349,7 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
         eventDefinitions += builder.buildDefinition()
     }
 
-    internal fun buildDefinition(): AfsmStateDefinition<P, X, E, C, F> {
+    internal fun buildDefinition(): AfsmStateDefinition<P, D, E, C, F> {
         return AfsmStateDefinition(
             label = stateLabel,
             matcher = matcher,
@@ -365,13 +365,13 @@ public class AfsmStateBuilder<P : Any, X : Any, E : Any, C : Any, F : Any, PS : 
 }
 
 @AfsmDslMarker
-public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
+public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
     private val stateLabel: String,
     private val eventLabel: String,
     private val phaseMatcher: (P) -> PS?,
     private val eventMatcher: (E) -> EV?,
 ) {
-    private val branches = mutableListOf<AfsmEventBranch<P, X, E, C, F>>()
+    private val branches = mutableListOf<AfsmEventBranch<P, D, E, C, F>>()
     private val transitions = mutableListOf<AfsmTopologyTransition>()
 
     /**
@@ -386,21 +386,21 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * rendered as part of the internal transition label.
      *
      * [condition] is evaluated at runtime with typed [phase], [event], and
-     * [AfsmTransitionScope.context]. If it returns `false`, Afsm tries the next
+     * [AfsmTransitionScope.data]. If it returns `false`, Afsm tries the next
      * declared case in this `on<Event>` block.
      *
      * [build] declares what the accepted case does. Calling
      * [AfsmEventCaseScope.transitionTo] changes phase. If no transition target is
-     * declared, the case handles the event in the current phase. Context updates,
+     * declared, the case handles the event in the current phase. Data updates,
      * commands, and effects are declared as separate statements so
      * `transitionTo(...)` keeps one meaning: phase change.
      */
     public fun case(
         label: String? = null,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        build: AfsmEventCaseScope<P, X, E, C, F, PS, EV>.() -> Unit,
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        build: AfsmEventCaseScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
-        val builder = AfsmEventCaseScope<P, X, E, C, F, PS, EV>()
+        val builder = AfsmEventCaseScope<P, D, E, C, F, PS, EV>()
         builder.build()
         val builtCase = builder.buildCase()
         addBranch(
@@ -425,42 +425,42 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     }
 
     /**
-     * Handles this event by updating context without changing phase.
+     * Handles this event by updating data without changing phase.
      *
      * Use this when the event only changes extended state such as form fields
      * or errors. Because no phase target is declared, the machine remains in
      * the current phase.
      */
-    public fun updateContext(
+    public fun updateData(
         label: String? = null,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        update: X.() -> X,
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        update: D.() -> D,
     ) {
         case(
             label = label,
             condition = condition,
         ) {
-            updateContext(update)
+            updateData(update)
         }
     }
 
     /**
-     * Handles this event by updating context with access to the typed event.
+     * Handles this event by updating data with access to the typed event.
      *
-     * Use this overload for input events whose payload changes context. The
-     * first lambda parameter is the current context; the second is the typed
+     * Use this overload for input events whose payload changes data. The
+     * first lambda parameter is the current data; the second is the typed
      * event payload.
      */
-    public fun updateContext(
+    public fun updateData(
         label: String? = null,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
-        update: (X, EV) -> X,
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
+        update: (D, EV) -> D,
     ) {
         case(
             label = label,
             condition = condition,
         ) {
-            updateContext(update)
+            updateData(update)
         }
     }
 
@@ -472,7 +472,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      */
     public fun effect(
         label: String? = null,
-        effect: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> F,
+        effect: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> F,
     ) {
         case {
             effect(label = label, effect = effect)
@@ -483,7 +483,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * Handles this event by changing to [phase].
      *
      * This convenience is for unconditional phase changes. If the event needs a
-     * named condition, context update, command, or effect, use [case] and call
+     * named condition, data update, command, or effect, use [case] and call
      * [AfsmEventCaseScope.transitionTo] inside that case.
      */
     public fun transitionTo(phase: P) {
@@ -496,10 +496,10 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      * Handles this event by changing to a payload phase created from runtime data.
      *
      * This convenience is for unconditional phase changes. If the event needs a
-     * named condition, context update, command, or effect, use [case].
+     * named condition, data update, command, or effect, use [case].
      */
     public inline fun <reified TP : P> transitionTo(
-        noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+        noinline phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
     ) {
         transitionTo(
             phaseType = TP::class,
@@ -513,7 +513,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,
-        phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+        phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
     ) {
         case {
             transitionTo(
@@ -537,7 +537,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      */
     public fun ignore(
         reason: String? = null,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Ignored(reason),
@@ -560,7 +560,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
      */
     public fun invalid(
         reason: String? = null,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean = { true },
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean = { true },
     ) {
         addDecisionBranch(
             decision = AfsmDecision.Invalid(reason),
@@ -571,14 +571,14 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
     private fun addBranch(
         targetLabel: String,
         eventLabelOverride: String = eventLabel,
-        targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)?,
+        targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)?,
         conditionLabel: String?,
         commandLabels: List<String>,
         effectLabels: List<String>,
         kind: AfsmTopologyTransitionKind,
         isFallback: Boolean,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
-        block: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit,
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean,
+        block: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
         transitions += AfsmTopologyTransition(
             from = stateLabel,
@@ -593,7 +593,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
             val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
             val typedEvent = eventMatcher(currentEvent) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
-            val scope = AfsmTransitionScope<P, X, E, C, F, PS, EV>(
+            val scope = AfsmTransitionScope<P, D, E, C, F, PS, EV>(
                 phase = typedPhase,
                 event = typedEvent,
                 execution = execution,
@@ -617,12 +617,12 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 
     internal fun addDecisionBranch(
         decision: AfsmDecision,
-        condition: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Boolean,
+        condition: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Boolean,
     ) {
         branches += AfsmEventBranch { currentPhase, currentEvent, execution ->
             val typedPhase = phaseMatcher(currentPhase) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
             val typedEvent = eventMatcher(currentEvent) ?: return@AfsmEventBranch AfsmBranchResult.Unmatched
-            val scope = AfsmTransitionScope<P, X, E, C, F, PS, EV>(
+            val scope = AfsmTransitionScope<P, D, E, C, F, PS, EV>(
                 phase = typedPhase,
                 event = typedEvent,
                 execution = execution,
@@ -640,7 +640,7 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
         }
     }
 
-    internal fun buildDefinition(): AfsmEventDefinition<P, X, E, C, F> {
+    internal fun buildDefinition(): AfsmEventDefinition<P, D, E, C, F> {
         return AfsmEventDefinition(
             eventLabel = eventLabel,
             eventMatcher = { event -> eventMatcher(event) != null },
@@ -651,17 +651,17 @@ public class AfsmEventBranchScope<P : Any, X : Any, E : Any, C : Any, F : Any, P
 }
 
 @AfsmDslMarker
-public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor() {
+public class AfsmEventCaseScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor() {
     internal var targetLabel: String? = null
-    internal var targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)? = null
-    internal val actions = mutableListOf<AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit>()
+    internal var targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)? = null
+    internal val actions = mutableListOf<AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit>()
     internal val commandLabels = mutableListOf<String>()
     internal val effectLabels = mutableListOf<String>()
 
     /**
      * Changes the finite phase for this accepted case.
      *
-     * `transitionTo` only records the target phase. Put context updates,
+     * `transitionTo` only records the target phase. Put data updates,
      * commands, and effects in separate statements in the same case.
      */
     public fun transitionTo(phase: P) {
@@ -674,13 +674,13 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
     /**
      * Changes to a payload phase created from runtime data.
      *
-     * Use this when the target phase carries event or context data, such as an
+     * Use this when the target phase carries event or existing state data, such as an
      * upload token or order id. The [phase] factory runs after source `onExit`
-     * and accepted case actions, so it observes context updates made earlier in
+     * and accepted case actions, so it observes data updates made earlier in
      * the case.
      */
     public inline fun <reified TP : P> transitionTo(
-        noinline phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+        noinline phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
     ) {
         transitionTo(
             phaseType = TP::class,
@@ -693,7 +693,7 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
      */
     public fun <TP : P> transitionTo(
         phaseType: KClass<TP>,
-        phase: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> TP,
+        phase: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> TP,
     ) {
         setTarget(
             label = afsmLabelForClass(phaseType),
@@ -702,21 +702,21 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
     }
 
     /**
-     * Replaces context without changing phase by itself.
+     * Replaces data without changing phase by itself.
      */
-    public fun updateContext(update: X.() -> X) {
+    public fun updateData(update: D.() -> D) {
         actions += {
-            updateContext(update)
+            updateData(update)
         }
     }
 
     /**
-     * Replaces context with access to the typed event payload.
+     * Replaces data with access to the typed event payload.
      */
-    public fun updateContext(update: (X, EV) -> X) {
+    public fun updateData(update: (D, EV) -> D) {
         actions += {
-            val nextContext = update(context, event)
-            updateContext { nextContext }
+            val nextData = update(data, event)
+            updateData { nextData }
         }
     }
 
@@ -727,7 +727,7 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
      */
     public fun command(
         label: String? = null,
-        command: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> C,
+        command: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> C,
     ) {
         label?.let { commandLabels += it }
         actions += {
@@ -742,7 +742,7 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
      */
     public fun effect(
         label: String? = null,
-        effect: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> F,
+        effect: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> F,
     ) {
         label?.let { effectLabels += it }
         actions += {
@@ -750,7 +750,7 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
         }
     }
 
-    internal fun buildCase(): AfsmBuiltEventCase<P, X, E, C, F, PS, EV> {
+    internal fun buildCase(): AfsmBuiltEventCase<P, D, E, C, F, PS, EV> {
         return AfsmBuiltEventCase(
             targetLabel = targetLabel,
             targetFactory = targetFactory,
@@ -762,7 +762,7 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
 
     private fun setTarget(
         label: String,
-        factory: AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P,
+        factory: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P,
     ) {
         check(targetLabel == null) {
             "Only one transition target can be declared in one Afsm case."
@@ -772,29 +772,29 @@ public class AfsmEventCaseScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS 
     }
 }
 
-internal data class AfsmBuiltEventCase<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E>(
+internal data class AfsmBuiltEventCase<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E>(
     val targetLabel: String?,
-    val targetFactory: (AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> P?)?,
-    val actions: List<AfsmTransitionScope<P, X, E, C, F, PS, EV>.() -> Unit>,
+    val targetFactory: (AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> P?)?,
+    val actions: List<AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> Unit>,
     val commandLabels: List<String>,
     val effectLabels: List<String>,
 )
 
 /**
- * Runtime context available to deferred entry and exit action factories.
+ * Runtime data available to deferred entry and exit action factories.
  *
  * [phase] is the phase instance being entered or exited. For payload phases
- * declared with `state<PayloadPhase>`, it is typed as that payload phase.
- * [context] is the latest extended context at the moment the deferred action
+ * declared with `phase<PayloadPhase>`, it is typed as that payload phase.
+ * [data] is the latest extended data at the moment the deferred action
  * factory runs.
  */
 @AfsmDslMarker
-public class AfsmPhaseActionContext<P : Any, X : Any, PS : P> internal constructor(
+public class AfsmPhaseActionScope<P : Any, D : Any, PS : P> internal constructor(
     public val phase: PS,
-    private val readContext: () -> X,
+    private val readData: () -> D,
 ) {
-    public val context: X
-        get() = readContext()
+    public val data: D
+        get() = readData()
 }
 
 /**
@@ -806,31 +806,31 @@ public class AfsmPhaseActionContext<P : Any, X : Any, PS : P> internal construct
  * declared in the same statement.
  */
 @AfsmDslMarker
-public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
+public class AfsmEntryScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal constructor(
     private val phaseMatcher: (P) -> PS?,
 ) {
-    private val actions = mutableListOf<(PS, AfsmDslExecution<P, X, C, F>) -> Unit>()
+    private val actions = mutableListOf<(PS, AfsmDslExecution<P, D, C, F>) -> Unit>()
     private val commandLabels = mutableListOf<String>()
     private val effectLabels = mutableListOf<String>()
 
     /**
-     * Replaces context when the phase is entered.
+     * Replaces data when the phase is entered.
      *
-     * The [update] receiver is the runtime context after source `onExit` and
+     * The [update] receiver is the runtime data after source `onExit` and
      * accepted case actions have run.
      */
-    public fun updateContext(update: X.() -> X) {
+    public fun updateData(update: D.() -> D) {
         actions += { _, execution ->
-            execution.context = execution.context.update()
+            execution.data = execution.data.update()
         }
     }
 
     /**
-     * Replaces context with access to the runtime phase payload.
+     * Replaces data with access to the runtime phase payload.
      */
-    public fun updateContext(update: (X, PS) -> X) {
+    public fun updateData(update: (D, PS) -> D) {
         actions += { phase, execution ->
-            execution.context = update(execution.context, phase)
+            execution.data = update(execution.data, phase)
         }
     }
 
@@ -839,20 +839,20 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
      *
      * [label] is optional topology metadata and should usually match the
      * command's business name. The [command] factory runs at runtime with access
-     * to the entered [AfsmPhaseActionContext.phase] and latest
-     * [AfsmPhaseActionContext.context].
+     * to the entered [AfsmPhaseActionScope.phase] and latest
+     * [AfsmPhaseActionScope.data].
      */
     public fun command(
         label: String? = null,
-        command: AfsmPhaseActionContext<P, X, PS>.() -> C,
+        command: AfsmPhaseActionScope<P, D, PS>.() -> C,
     ) {
         label?.let { commandLabels += it }
         actions += { phase, execution ->
-            val context = AfsmPhaseActionContext<P, X, PS>(
+            val data = AfsmPhaseActionScope<P, D, PS>(
                 phase = phase,
-                readContext = { execution.context },
+                readData = { execution.data },
             )
-            execution.commands += context.command()
+            execution.commands += data.command()
         }
     }
 
@@ -864,19 +864,19 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
      */
     public fun effect(
         label: String? = null,
-        effect: AfsmPhaseActionContext<P, X, PS>.() -> F,
+        effect: AfsmPhaseActionScope<P, D, PS>.() -> F,
     ) {
         label?.let { effectLabels += it }
         actions += { phase, execution ->
-            val context = AfsmPhaseActionContext<P, X, PS>(
+            val data = AfsmPhaseActionScope<P, D, PS>(
                 phase = phase,
-                readContext = { execution.context },
+                readData = { execution.data },
             )
-            execution.effects += context.effect()
+            execution.effects += data.effect()
         }
     }
 
-    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, X, C, F> {
+    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, D, C, F> {
         return AfsmBuiltPhaseHandler(
             commandLabels = commandLabels.toList(),
             effectLabels = effectLabels.toList(),
@@ -898,28 +898,28 @@ public class AfsmEntryScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal
  * This block follows the same deferred factory model as [AfsmEntryScope].
  */
 @AfsmDslMarker
-public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal constructor(
+public class AfsmExitScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal constructor(
     private val phaseMatcher: (P) -> PS?,
 ) {
-    private val actions = mutableListOf<(PS, AfsmDslExecution<P, X, C, F>) -> Unit>()
+    private val actions = mutableListOf<(PS, AfsmDslExecution<P, D, C, F>) -> Unit>()
     private val commandLabels = mutableListOf<String>()
     private val effectLabels = mutableListOf<String>()
 
     /**
-     * Replaces context before the accepted event case runs.
+     * Replaces data before the accepted event case runs.
      */
-    public fun updateContext(update: X.() -> X) {
+    public fun updateData(update: D.() -> D) {
         actions += { _, execution ->
-            execution.context = execution.context.update()
+            execution.data = execution.data.update()
         }
     }
 
     /**
-     * Replaces context with access to the runtime phase payload.
+     * Replaces data with access to the runtime phase payload.
      */
-    public fun updateContext(update: (X, PS) -> X) {
+    public fun updateData(update: (D, PS) -> D) {
         actions += { phase, execution ->
-            execution.context = update(execution.context, phase)
+            execution.data = update(execution.data, phase)
         }
     }
 
@@ -928,15 +928,15 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
      */
     public fun command(
         label: String? = null,
-        command: AfsmPhaseActionContext<P, X, PS>.() -> C,
+        command: AfsmPhaseActionScope<P, D, PS>.() -> C,
     ) {
         label?.let { commandLabels += it }
         actions += { phase, execution ->
-            val context = AfsmPhaseActionContext<P, X, PS>(
+            val data = AfsmPhaseActionScope<P, D, PS>(
                 phase = phase,
-                readContext = { execution.context },
+                readData = { execution.data },
             )
-            execution.commands += context.command()
+            execution.commands += data.command()
         }
     }
 
@@ -945,19 +945,19 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
      */
     public fun effect(
         label: String? = null,
-        effect: AfsmPhaseActionContext<P, X, PS>.() -> F,
+        effect: AfsmPhaseActionScope<P, D, PS>.() -> F,
     ) {
         label?.let { effectLabels += it }
         actions += { phase, execution ->
-            val context = AfsmPhaseActionContext<P, X, PS>(
+            val data = AfsmPhaseActionScope<P, D, PS>(
                 phase = phase,
-                readContext = { execution.context },
+                readData = { execution.data },
             )
-            execution.effects += context.effect()
+            execution.effects += data.effect()
         }
     }
 
-    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, X, C, F> {
+    internal fun buildHandler(): AfsmBuiltPhaseHandler<P, D, C, F> {
         return AfsmBuiltPhaseHandler(
             commandLabels = commandLabels.toList(),
             effectLabels = effectLabels.toList(),
@@ -973,10 +973,10 @@ public class AfsmExitScope<P : Any, X : Any, C : Any, F : Any, PS : P> internal 
     }
 }
 
-internal data class AfsmBuiltPhaseHandler<P : Any, X : Any, C : Any, F : Any>(
+internal data class AfsmBuiltPhaseHandler<P : Any, D : Any, C : Any, F : Any>(
     val commandLabels: List<String>,
     val effectLabels: List<String>,
-    val handler: AfsmEntryHandler<P, X, C, F>,
+    val handler: AfsmEntryHandler<P, D, C, F>,
 )
 
 /**
@@ -986,30 +986,30 @@ internal data class AfsmBuiltPhaseHandler<P : Any, X : Any, C : Any, F : Any>(
  * is the incoming event, typed as the enclosing event scope.
  */
 @AfsmDslMarker
-public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
+public class AfsmTransitionScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS : P, EV : E> internal constructor(
     public val phase: PS,
     public val event: EV,
-    private val execution: AfsmDslExecution<P, X, C, F>,
+    private val execution: AfsmDslExecution<P, D, C, F>,
 ) {
     /**
-     * Current extended context after earlier context updates in this transition
+     * Current extended data after earlier data updates in this transition
      * pipeline.
      *
      * For a phase-changing transition this is after source `onExit` has run.
-     * For a no-transition case this starts as the current state's context.
+     * For a no-transition case this starts as the current state's data.
      */
-    public val context: X
-        get() = execution.context
+    public val data: D
+        get() = execution.data
 
     /**
-     * Replaces the current context with an immutable copy.
+     * Replaces the current data with an immutable copy.
      *
-     * The [update] receiver is the current context. Return the next context
+     * The [update] receiver is the current data. Return the next data
      * value. Subsequent commands, effects, or entry handlers observe the updated
-     * context through [context].
+     * data through [data].
      */
-    public fun updateContext(update: X.() -> X) {
-        execution.context = execution.context.update()
+    public fun updateData(update: D.() -> D) {
+        execution.data = execution.data.update()
     }
 
     /**
@@ -1035,30 +1035,30 @@ public class AfsmTransitionScope<P : Any, X : Any, E : Any, C : Any, F : Any, PS
     }
 }
 
-internal data class AfsmStateDefinition<P : Any, X : Any, E : Any, C : Any, F : Any>(
+internal data class AfsmStateDefinition<P : Any, D : Any, E : Any, C : Any, F : Any>(
     val label: String,
     val matcher: (P) -> Any?,
-    val entryHandlers: List<AfsmEntryHandler<P, X, C, F>>,
-    val exitHandlers: List<AfsmExitHandler<P, X, C, F>>,
+    val entryHandlers: List<AfsmEntryHandler<P, D, C, F>>,
+    val exitHandlers: List<AfsmExitHandler<P, D, C, F>>,
     val entryCommandLabels: List<String>,
     val entryEffectLabels: List<String>,
     val exitCommandLabels: List<String>,
     val exitEffectLabels: List<String>,
-    val eventDefinitions: List<AfsmEventDefinition<P, X, E, C, F>>,
+    val eventDefinitions: List<AfsmEventDefinition<P, D, E, C, F>>,
 )
 
-internal data class AfsmEventDefinition<P : Any, X : Any, E : Any, C : Any, F : Any>(
+internal data class AfsmEventDefinition<P : Any, D : Any, E : Any, C : Any, F : Any>(
     val eventLabel: String,
     val eventMatcher: (E) -> Boolean,
-    val branches: List<AfsmEventBranch<P, X, E, C, F>>,
+    val branches: List<AfsmEventBranch<P, D, E, C, F>>,
     val transitions: List<AfsmTopologyTransition>,
 )
 
-internal fun interface AfsmEventBranch<P : Any, X : Any, E : Any, C : Any, F : Any> {
+internal fun interface AfsmEventBranch<P : Any, D : Any, E : Any, C : Any, F : Any> {
     fun tryHandle(
         phase: P,
         event: E,
-        execution: AfsmDslExecution<P, X, C, F>,
+        execution: AfsmDslExecution<P, D, C, F>,
     ): AfsmBranchResult<P>
 }
 
@@ -1072,16 +1072,16 @@ internal sealed interface AfsmBranchResult<out P : Any> {
     ) : AfsmBranchResult<P>
 }
 
-internal typealias AfsmEntryHandler<P, X, C, F> =
-    (phase: P, execution: AfsmDslExecution<P, X, C, F>) -> Unit
+internal typealias AfsmEntryHandler<P, D, C, F> =
+    (phase: P, execution: AfsmDslExecution<P, D, C, F>) -> Unit
 
-internal typealias AfsmExitHandler<P, X, C, F> =
-    (phase: P, execution: AfsmDslExecution<P, X, C, F>) -> Unit
+internal typealias AfsmExitHandler<P, D, C, F> =
+    (phase: P, execution: AfsmDslExecution<P, D, C, F>) -> Unit
 
-private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
-    override val initialState: AfsmState<P, X>,
-    private val states: List<AfsmStateDefinition<P, X, E, C, F>>,
-) : AfsmPhaseMachine<P, X, E, C, F> {
+private class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
+    override val initialState: AfsmState<P, D>,
+    private val states: List<AfsmStateDefinition<P, D, E, C, F>>,
+) : AfsmMachine<AfsmState<P, D>, E, C, F> {
     override val topology: AfsmTopology = AfsmTopology(
         states = states.map { state ->
             AfsmTopologyState(
@@ -1103,9 +1103,9 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
     )
 
     override fun transition(
-        state: AfsmState<P, X>,
+        state: AfsmState<P, D>,
         event: E,
-    ): AfsmTransition<AfsmState<P, X>, C, F> {
+    ): AfsmTransition<AfsmState<P, D>, C, F> {
         val stateDefinition = states.firstOrNull { definition ->
             definition.matcher(state.phase) != null
         } ?: return Afsm.invalid(
@@ -1120,8 +1120,8 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
             reason = "No event handler matched the current phase and event.",
         )
 
-        val execution = AfsmDslExecution<P, X, C, F>(
-            context = state.context,
+        val execution = AfsmDslExecution<P, D, C, F>(
+            data = state.data,
         )
 
         val branchResult = eventDefinition.branches.firstNotNullOfOrNull { branch ->
@@ -1155,7 +1155,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
 
         val nextState = AfsmState(
             phase = targetPhase ?: state.phase,
-            context = execution.context,
+            data = execution.data,
         )
 
         return when (val decision = branchResult.decision) {
@@ -1167,7 +1167,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
                         effects = execution.effects.toList(),
                     )
                 } else {
-                    AfsmTransition.stayed(
+                    AfsmTransition.handled(
                         state = nextState,
                         commands = execution.commands.toList(),
                         effects = execution.effects.toList(),
@@ -1185,7 +1185,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
                 reason = decision.reason,
             )
 
-            is AfsmDecision.Stayed -> AfsmTransition.stayed(
+            is AfsmDecision.Handled -> AfsmTransition.handled(
                 state = nextState,
                 reason = decision.reason,
             )
@@ -1199,9 +1199,9 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
     }
 
     private fun applyExitHandlers(
-        sourceDefinition: AfsmStateDefinition<P, X, E, C, F>,
+        sourceDefinition: AfsmStateDefinition<P, D, E, C, F>,
         sourcePhase: P,
-        execution: AfsmDslExecution<P, X, C, F>,
+        execution: AfsmDslExecution<P, D, C, F>,
     ) {
         sourceDefinition.exitHandlers.forEach { handler ->
             handler(sourcePhase, execution)
@@ -1210,7 +1210,7 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
 
     private fun applyEntryHandlers(
         targetPhase: P,
-        execution: AfsmDslExecution<P, X, C, F>,
+        execution: AfsmDslExecution<P, D, C, F>,
     ) {
         val targetState = states.firstOrNull { definition ->
             definition.matcher(targetPhase) != null
@@ -1222,8 +1222,8 @@ private class AfsmDslMachine<P : Any, X : Any, E : Any, C : Any, F : Any>(
     }
 }
 
-internal class AfsmDslExecution<P : Any, X : Any, C : Any, F : Any>(
-    var context: X,
+internal class AfsmDslExecution<P : Any, D : Any, C : Any, F : Any>(
+    var data: D,
     val commands: MutableList<C> = mutableListOf(),
     val effects: MutableList<F> = mutableListOf(),
 )

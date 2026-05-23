@@ -1,6 +1,6 @@
 ---
 title: Sample Shop Reference App
-updated: 2026-05-14
+updated: 2026-05-23
 ---
 
 # Sample Shop Reference App
@@ -61,7 +61,7 @@ Auth files:
 
 Current implementation:
 
-- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthContext>`.
+- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthData>`.
 - `AuthStateMachine` directly delegates to the executable DSL machine.
 - `AuthStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
 - `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
@@ -129,19 +129,19 @@ This flow is now the stronger sample for explaining why Afsm exists.
 
 The ProductEditor sample now uses the v3 executable DSL:
 
-- `ProductEditorState` is a typealias to `AfsmState<ProductEditorPhase, ProductEditorContext>`.
-- `ProductDraft` and validation errors live in `ProductEditorContext`.
-- Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as context flags.
+- `ProductEditorState` is a typealias to `AfsmState<ProductEditorPhase, ProductEditorData>`.
+- `ProductDraft` and validation errors live in `ProductEditorData`.
+- Flow phases remain explicit phase values; `SavingDraft` and `DraftSaved` are not hidden as data flags.
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
-- Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform context, not hide phase movement.
-- Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates context; it should not be represented as a second competing `transitionTo`.
+- Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform data, not hide phase movement.
+- Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data; it should not be represented as a second competing `transitionTo`.
 - `onEnter` owns phase-entry command emission.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - MMD output now includes the initial node, meaningful guard labels, command/effect labels, and entry-command notes.
 
-Text edits are stayed branches inside editable phases, while submit/review/publish actions move between explicit phases.
+Text edits are handled branches inside editable phases, while submit/review/publish actions move between explicit phases.
 
 Transition action naming:
 
@@ -189,7 +189,7 @@ events after completion are ignored.
 
 Checkout is now a graphable DSL machine:
 
-- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutContext>`.
+- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
 - `CheckoutStateMachine` is an `@AfsmGraph` singleton `AfsmMachine`.
 - `CheckoutViewModel` uses `afsmHost(machine = CheckoutStateMachine, initialState = checkoutState(productId))`.
 - `ProductLoading` emits `LoadProduct` from `onEnter`.
@@ -207,8 +207,8 @@ Current feedback from the sample:
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.
 - `ViewModel.afsmHost(machine = ..., initialState = ...)` is the preferred API when navigation arguments affect the first state.
-- The standard `AfsmState<Phase, Context>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
-- Auth now confirms the same direct `AfsmState<Phase, Context>` approach works for simpler flows too.
+- The standard `AfsmState<Phase, Data>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
+- Auth now confirms the same direct `AfsmState<Phase, Data>` approach works for simpler flows too.
 - `CollectAfsmEffects(...)` removes repeated lifecycle-effect collection wiring from Compose routes.
 - Checkout is the mid-size public example for dynamic initial state, retry, request ids, durable completion, and render-state mapping.
 

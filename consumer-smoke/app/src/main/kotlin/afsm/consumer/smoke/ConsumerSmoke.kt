@@ -16,7 +16,7 @@ internal sealed interface SmokePhase {
     data object Saved : SmokePhase
 }
 
-internal data class SmokeContext(
+internal data class SmokeData(
     val title: String = "",
 )
 
@@ -30,7 +30,7 @@ internal sealed interface SmokeCommand {
     data class SaveTitle(val value: String) : SmokeCommand
 }
 
-internal typealias SmokeState = AfsmState<SmokePhase, SmokeContext>
+internal typealias SmokeState = AfsmState<SmokePhase, SmokeData>
 
 private typealias SmokeMachine = AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect>
 
@@ -44,13 +44,13 @@ private fun smokeMachine(): SmokeMachine {
     return afsmMachine {
         initial(
             phase = SmokePhase.Editing,
-            context = SmokeContext(),
+            data = SmokeData(),
         )
 
-        state(SmokePhase.Editing) {
+        phase(SmokePhase.Editing) {
             on<SmokeEvent.TitleChanged> {
-                updateContext { context, event ->
-                    context.copy(title = event.value)
+                updateData { data, event ->
+                    data.copy(title = event.value)
                 }
             }
 
@@ -59,10 +59,10 @@ private fun smokeMachine(): SmokeMachine {
             }
         }
 
-        state(SmokePhase.Saving) {
+        phase(SmokePhase.Saving) {
             onEnter {
                 command(label = "SaveTitle") {
-                    SmokeCommand.SaveTitle(context.title)
+                    SmokeCommand.SaveTitle(data.title)
                 }
             }
 
@@ -71,7 +71,7 @@ private fun smokeMachine(): SmokeMachine {
             }
         }
 
-        state(SmokePhase.Saved) {
+        phase(SmokePhase.Saved) {
         }
     }
 }

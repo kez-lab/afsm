@@ -555,3 +555,18 @@
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-05-23] implementation | First-use API terminology cleanup
+
+- Source: six-agent review from the perspective of Android developers seeing
+  Afsm for the first time.
+- Action: Renamed first-use public vocabulary to `phase`, `data`, and
+  `handled`; removed public `AfsmPhaseMachine`; added an Android-first getting
+  started guide; updated samples, tests, docs, and canonical wiki pages.
+- Updated: `afsm-core/`, `afsm-runtime/`, `afsm-viewmodel/`,
+  `afsm-graph-ksp/`, `sample-shop/`, `consumer-smoke/`, `README.md`, `docs/`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/03-engineering/`, `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-05-23-afsm-6-agent-first-use-review.md`,
+  `wiki/index.md`, `wiki/log.md`.

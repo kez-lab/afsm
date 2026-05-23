@@ -1,6 +1,6 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-05-11
+updated: 2026-05-23
 ---
 
 # Android FSM Library Strategy
@@ -75,7 +75,9 @@ The first usable library version should include:
 
 - `AfsmReducer<S, E, C, F>`
 - `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines
-- `AfsmPhaseMachine<P, X, E, C, F>` for graphable phase/context machines
+- `afsmMachine<P, D, E, C, F> { ... }` for graphable phase/data machines that
+  return `AfsmMachine<AfsmState<P, D>, E, C, F>`
+- `AfsmState<P, D>` as the standard `phase + data` state value
 - `AfsmTransition<S, C, F>`
 - invalid transition policy
 - command handling abstraction

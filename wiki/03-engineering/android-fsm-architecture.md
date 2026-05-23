@@ -1,6 +1,6 @@
 ---
 title: Android FSM Architecture
-updated: 2026-05-11
+updated: 2026-05-23
 ---
 
 # Android FSM Architecture
@@ -39,19 +39,22 @@ fun interface AfsmReducer<S, E, C, F> {
 }
 ```
 
-For graphable phase/context flows, use `AfsmPhaseMachine<P, X, E, C, F>`:
+For graphable phase/data flows, use `afsmMachine { ... }` and expose it at the
+feature boundary as `AfsmMachine<State, Event, Command, Effect>`:
 
 ```kotlin
-data class AfsmState<P : Any, X : Any>(
+data class AfsmState<P : Any, D : Any>(
     val phase: P,
-    val context: X,
+    val data: D,
 )
 
-interface AfsmPhaseMachine<P : Any, X : Any, E : Any, C : Any, F : Any> :
-    AfsmMachine<AfsmState<P, X>, E, C, F>
+typealias LoginState = AfsmState<LoginPhase, LoginData>
+
+object LoginStateMachine :
+    AfsmMachine<LoginState, LoginEvent, LoginCommand, LoginEffect> by loginMachine()
 ```
 
-At feature boundaries, collapse `Phase + Context` into a feature state type and
+At feature boundaries, collapse `Phase + Data` into a feature state type and
 refer to graphable machines through `AfsmMachine<State, Event, Command, Effect>`.
 
 ## Screen File Layout

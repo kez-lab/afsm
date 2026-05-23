@@ -5,23 +5,23 @@ import afsm.core.AfsmTransition
 import afsm.sample.shop.core.model.OrderReceipt
 import afsm.sample.shop.core.model.Product
 
-data class CheckoutContext(
+data class CheckoutData(
     val productId: Long,
     val product: Product? = null,
     val nextPaymentRequestId: Long = 0,
     val errorMessage: String? = null,
 )
 
-typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutContext>
+typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutData>
 
 fun checkoutState(
     productId: Long,
     phase: CheckoutPhase = CheckoutPhase.Idle,
-    context: CheckoutContext = CheckoutContext(productId = productId),
+    data: CheckoutData = CheckoutData(productId = productId),
 ): CheckoutState {
     return AfsmState(
         phase = phase,
-        context = context,
+        data = data,
     )
 }
 
@@ -100,16 +100,16 @@ typealias CheckoutTransition = AfsmTransition<CheckoutState, CheckoutCommand, Ch
 fun CheckoutState.toRenderState(): CheckoutRenderState {
     return when (val currentPhase = phase) {
         CheckoutPhase.Idle -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = false,
             isPaying = false,
             isComplete = false,
             orderId = null,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         CheckoutPhase.ProductLoading -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = true,
             isPaying = false,
             isComplete = false,
@@ -117,33 +117,33 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
         )
 
         CheckoutPhase.ProductReady -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = false,
             isPaying = false,
             isComplete = false,
             orderId = null,
             primaryAction = CheckoutPrimaryAction.Pay,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         is CheckoutPhase.PaymentInProgress -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = false,
             isPaying = true,
             isComplete = false,
             orderId = null,
             primaryAction = CheckoutPrimaryAction.Pay,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         CheckoutPhase.PaymentFailed -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = false,
             isPaying = false,
             isComplete = false,
             orderId = null,
             primaryAction = CheckoutPrimaryAction.RetryPayment,
-            errorMessage = context.errorMessage,
+            errorMessage = data.errorMessage,
         )
 
         CheckoutPhase.ProductUnavailable -> CheckoutRenderState(
@@ -152,11 +152,11 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
             isPaying = false,
             isComplete = false,
             orderId = null,
-            errorMessage = context.errorMessage ?: "Product is no longer available.",
+            errorMessage = data.errorMessage ?: "Product is no longer available.",
         )
 
         is CheckoutPhase.Completed -> CheckoutRenderState(
-            product = context.product,
+            product = data.product,
             isLoadingProduct = false,
             isPaying = false,
             isComplete = true,

@@ -31,18 +31,18 @@ Before adding Afsm, answer these checks:
 
 If most answers are no, start with ordinary `ViewModel + StateFlow`.
 
-## Phase vs Context
+## Phase vs Data
 
 | Put it in | Use for | Example |
 |---|---|---|
 | `Phase` | finite node in the flow diagram | `EditingDraft`, `ImageUploadInProgress`, `Published` |
-| `Context` | durable data carried across phases | form fields, selected ids, retry count, validation message |
+| `Data` | durable data carried across phases | form fields, selected ids, retry count, validation message |
 | payload phase | data required only while that phase exists | `ReviewSubmissionInProgress(uploadToken)` |
 | UI local state | rendering mechanics not part of business flow | focus, scroll, sheet animation, snackbar host |
 
 If removing a value would change which events are valid, it is probably phase
 or payload phase data. If it is merely data the current phase renders, it is
-probably context.
+probably data.
 
 ## DSL Machine vs Reducer
 
@@ -51,7 +51,7 @@ Prefer `afsmMachine { ... }` for graphable complex flows. This gives you:
 - executable transition rules,
 - generated topology,
 - `.mmd` diagrams,
-- a consistent Android-facing `AfsmState<Phase, Context>` snapshot.
+- a consistent Android-facing `AfsmState<Phase, Data>` snapshot.
 
 Use `AfsmReducer` directly only when the state shape is intentionally custom
 or the screen is not graph-worthy. A direct reducer should be treated as an
@@ -95,15 +95,15 @@ the product flow, do not model it as effect-only.
 | API | Meaning |
 |---|---|
 | `transitionTo` | accepted phase change |
-| `case { updateContext(...) }` | accepted event with no phase change |
-| `updateContext { ... }` | shorthand for context-only event handling |
+| `case { updateData(...) }` | accepted event with no phase change |
+| `updateData { ... }` | shorthand for data-only event handling |
 | `ignore` | expected no-op event, such as duplicate submit while already submitting |
 | omitted handler | invalid by default because the event is not valid in that phase |
 | `invalid(reason)` | explicit invalid branch when a clearer diagnostic is worth writing |
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
-Low-level reducers may still return `AfsmTransition.stayed(...)`, but graphable
+Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.
 
@@ -124,6 +124,6 @@ from the accepted case.
   `StartImageUpload`, not `ImageUploadInProgress`.
 - Event names should describe what happened:
   prefer `DraftSaveCompleted` over reusing the phase name `DraftSaved`.
-- Keep `AfsmPhaseMachine` out of feature code unless writing library-level
-  reference docs. Feature code should expose `AfsmMachine<State, Event,
-  Command, Effect>`.
+- Keep low-level `AfsmReducer` out of feature code unless you intentionally need
+  a custom state shape. Graphable feature code should expose
+  `AfsmMachine<State, Event, Command, Effect>`.

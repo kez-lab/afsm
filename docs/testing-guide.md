@@ -87,7 +87,7 @@ fun `stale payment failure is ignored`() {
         state = checkoutState(
             productId = 7,
             phase = CheckoutPhase.PaymentInProgress(requestId = 2),
-            context = CheckoutContext(
+            data = CheckoutData(
                 productId = 7,
                 nextPaymentRequestId = 2,
             ),

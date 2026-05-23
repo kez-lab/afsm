@@ -19,7 +19,7 @@ class ProductEditorStateMachineTest {
     )
 
     @Test
-    fun `title change updates draft context without changing editing phase`() {
+    fun `title change updates draft data without changing editing phase`() {
         val state = productEditorState()
 
         val result = machine.transition(
@@ -28,19 +28,19 @@ class ProductEditorStateMachineTest {
         )
 
         assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
-        assertEquals("Travel Mug", result.state.context.draft.form.title)
+        assertEquals("Travel Mug", result.state.data.draft.form.title)
     }
 
     @Test
     fun `save draft transitions to saving phase and phase entry emits save command`() {
         val state = productEditorState(
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(state, ProductEditorEvent.SaveDraftClicked)
 
         assertEquals(ProductEditorPhase.SavingDraft, result.state.phase)
-        assertEquals(validDraft, result.state.context.draft)
+        assertEquals(validDraft, result.state.data.draft)
         assertEquals(listOf(ProductEditorCommand.SaveDraft(validDraft)), result.commands)
     }
 
@@ -48,20 +48,20 @@ class ProductEditorStateMachineTest {
     fun `draft saved result transitions to draft saved phase without carrying draft in phase`() {
         val state = productEditorState(
             phase = ProductEditorPhase.SavingDraft,
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(state, ProductEditorEvent.DraftSaveCompleted)
 
         assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
-        assertEquals(validDraft, result.state.context.draft)
+        assertEquals(validDraft, result.state.data.draft)
     }
 
     @Test
-    fun `editing after draft saved returns to editing phase and updates context draft`() {
+    fun `editing after draft saved returns to editing phase and updates data draft`() {
         val state = productEditorState(
             phase = ProductEditorPhase.DraftSaved,
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(
@@ -70,26 +70,26 @@ class ProductEditorStateMachineTest {
         )
 
         assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
-        assertEquals("25.00", result.state.context.draft.form.priceText)
+        assertEquals("25.00", result.state.data.draft.form.priceText)
     }
 
     @Test
-    fun `submit from editing transitions only by phase and starts image upload from context draft`() {
+    fun `submit from editing transitions only by phase and starts image upload from data draft`() {
         val state = productEditorState(
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
 
         assertEquals(ProductEditorPhase.ImageUploadInProgress, result.state.phase)
-        assertEquals(validDraft, result.state.context.draft)
+        assertEquals(validDraft, result.state.data.draft)
         assertEquals(listOf(ProductEditorCommand.StartImageUpload(validDraft)), result.commands)
     }
 
     @Test
-    fun `invalid draft keeps editing phase with review submission error in context`() {
+    fun `invalid draft keeps editing phase with review submission error in data`() {
         val state = productEditorState(
-            context = ProductEditorContext(
+            data = ProductEditorData(
                 draft = validDraft.copy(
                     form = validDraft.form.copy(description = "short"),
                 ),
@@ -101,16 +101,16 @@ class ProductEditorStateMachineTest {
         assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
         assertEquals(
             "Description must be at least 10 characters.",
-            result.state.context.errorMessage,
+            result.state.data.errorMessage,
         )
         assertEquals(emptyList(), result.commands)
     }
 
     @Test
-    fun `invalid submit from saved draft stays saved and records validation error`() {
+    fun `invalid submit from saved draft handles without phase change saved and records validation error`() {
         val state = productEditorState(
             phase = ProductEditorPhase.DraftSaved,
-            context = ProductEditorContext(
+            data = ProductEditorData(
                 draft = validDraft.copy(
                     form = validDraft.form.copy(description = "short"),
                 ),
@@ -122,16 +122,16 @@ class ProductEditorStateMachineTest {
         assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
         assertEquals(
             "Description must be at least 10 characters.",
-            result.state.context.errorMessage,
+            result.state.data.errorMessage,
         )
         assertEquals(emptyList(), result.commands)
     }
 
     @Test
-    fun `image upload failure returns to editing phase with error in context`() {
+    fun `image upload failure returns to editing phase with error in data`() {
         val state = productEditorState(
             phase = ProductEditorPhase.ImageUploadInProgress,
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(
@@ -140,15 +140,15 @@ class ProductEditorStateMachineTest {
         )
 
         assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
-        assertEquals("Upload failed.", result.state.context.errorMessage)
-        assertEquals(validDraft, result.state.context.draft)
+        assertEquals("Upload failed.", result.state.data.errorMessage)
+        assertEquals(validDraft, result.state.data.draft)
     }
 
     @Test
-    fun `image upload success increments review attempt in context and submits review command`() {
+    fun `image upload success increments review attempt in data and submits review command`() {
         val state = productEditorState(
             phase = ProductEditorPhase.ImageUploadInProgress,
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(
@@ -161,7 +161,7 @@ class ProductEditorStateMachineTest {
             ProductEditorPhase.ReviewSubmissionInProgress(uploadToken = "upload-1"),
             result.state.phase,
         )
-        assertEquals(reviewedDraft, result.state.context.draft)
+        assertEquals(reviewedDraft, result.state.data.draft)
         assertEquals(
             listOf(
                 ProductEditorCommand.StartReviewSubmission(
@@ -174,12 +174,12 @@ class ProductEditorStateMachineTest {
     }
 
     @Test
-    fun `rejected draft edit stays rejected and updates context draft`() {
+    fun `rejected draft edit handles without phase change rejected and updates data draft`() {
         val state = productEditorState(
             phase = ProductEditorPhase.Rejected(
                 reason = "Mock reviewer asks for one resubmission.",
             ),
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val result = machine.transition(
@@ -188,7 +188,7 @@ class ProductEditorStateMachineTest {
         )
 
         assertEquals(state.phase, result.state.phase)
-        assertEquals("Updated description.", result.state.context.draft.form.description)
+        assertEquals("Updated description.", result.state.data.draft.form.description)
     }
 
     @Test
@@ -198,13 +198,13 @@ class ProductEditorStateMachineTest {
             phase = ProductEditorPhase.Rejected(
                 reason = "Mock reviewer asks for one resubmission.",
             ),
-            context = ProductEditorContext(draft = reviewedDraft),
+            data = ProductEditorData(draft = reviewedDraft),
         )
 
         val result = machine.transition(state, ProductEditorEvent.ResubmitClicked)
 
         assertEquals(ProductEditorPhase.ImageUploadInProgress, result.state.phase)
-        assertEquals(reviewedDraft, result.state.context.draft)
+        assertEquals(reviewedDraft, result.state.data.draft)
         assertEquals(listOf(ProductEditorCommand.StartImageUpload(reviewedDraft)), result.commands)
     }
 
@@ -213,13 +213,13 @@ class ProductEditorStateMachineTest {
         val reviewedDraft = validDraft.copy(reviewAttempt = 2)
         val state = productEditorState(
             phase = ProductEditorPhase.Approved,
-            context = ProductEditorContext(draft = reviewedDraft),
+            data = ProductEditorData(draft = reviewedDraft),
         )
 
         val result = machine.transition(state, ProductEditorEvent.PublishClicked)
 
         assertEquals(ProductEditorPhase.PublishInProgress, result.state.phase)
-        assertEquals(reviewedDraft, result.state.context.draft)
+        assertEquals(reviewedDraft, result.state.data.draft)
         assertEquals(
             listOf(ProductEditorCommand.StartProductPublish(reviewedDraft)),
             result.commands,
@@ -237,7 +237,7 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.DoneClicked)
 
-        assertIs<AfsmDecision.Stayed>(result.decision)
+        assertIs<AfsmDecision.Handled>(result.decision)
         assertEquals(listOf(ProductEditorEffect.CloseEditor), result.effects)
     }
 
@@ -247,7 +247,7 @@ class ProductEditorStateMachineTest {
             phase = ProductEditorPhase.Rejected(
                 reason = "Mock reviewer asks for one resubmission.",
             ),
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val renderState = state.toRenderState()
@@ -269,7 +269,7 @@ class ProductEditorStateMachineTest {
                 productId = 100,
                 title = "Travel Mug",
             ),
-            context = ProductEditorContext(draft = validDraft),
+            data = ProductEditorData(draft = validDraft),
         )
 
         val renderState = state.toRenderState()
@@ -294,7 +294,7 @@ class ProductEditorStateMachineTest {
         processingPhases.forEach { phase ->
             val renderState = productEditorState(
                 phase = phase,
-                context = ProductEditorContext(draft = validDraft),
+                data = ProductEditorData(draft = validDraft),
             ).toRenderState()
 
             assertEquals(true, renderState.showDraftFields)

@@ -1468,3 +1468,38 @@ Conclusion:
 
 - Entry/exit graph labels now stay closer to runtime behavior, and first-use
   examples expose fewer Afsm-only concepts.
+
+## [2026-05-23] First-use API terminology cleanup
+
+Change:
+
+- Renamed public DSL scopes from `state(...)` to `phase(...)`.
+- Renamed standard extended state from `context` to `data`.
+- Renamed low-level no-phase-change output from `Stayed` /
+  `AfsmTransition.stayed(...)` to `Handled` /
+  `AfsmTransition.handled(...)`.
+- Removed public `AfsmPhaseMachine`; `afsmMachine` now returns
+  `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>` directly.
+- Added `docs/getting-started.md` and updated README/public docs/sample docs to
+  teach the Android-first path before install and graph details.
+- Recorded the six-agent first-use review in
+  `wiki/08-meetings/2026-05-23-afsm-6-agent-first-use-review.md`.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin :afsm-core:compileTestKotlin --no-daemon
+./gradlew :afsm-runtime:compileTestKotlin :afsm-viewmodel:compileDebugUnitTestKotlin :sample-shop:compileDebugKotlin :sample-shop:compileDebugUnitTestKotlin --no-daemon
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :afsm-graph-ksp:test --no-daemon
+./gradlew :afsm-core:apiDump --no-daemon
+./gradlew :afsm-core:apiCheck --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The public model now reads as `Phase + Data + Event + Command`, which reduces
+  Android-specific naming collisions and removes a beginner-facing `stay`
+  concept from the graphable DSL.

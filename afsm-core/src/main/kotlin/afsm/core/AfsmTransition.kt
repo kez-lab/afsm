@@ -28,7 +28,7 @@ public class AfsmTransition<out S : Any, out C : Any, out F : Any> private const
             )
         }
 
-        public fun <S : Any, C : Any, F : Any> stayed(
+        public fun <S : Any, C : Any, F : Any> handled(
             state: S,
             commands: List<C> = emptyList(),
             effects: List<F> = emptyList(),
@@ -38,7 +38,7 @@ public class AfsmTransition<out S : Any, out C : Any, out F : Any> private const
                 state = state,
                 commands = commands,
                 effects = effects,
-                decision = AfsmDecision.Stayed(reason),
+                decision = AfsmDecision.Handled(reason),
             )
         }
 

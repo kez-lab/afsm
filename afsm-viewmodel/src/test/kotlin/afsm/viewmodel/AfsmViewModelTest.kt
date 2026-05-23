@@ -148,17 +148,17 @@ class AfsmViewModelTest {
         ): AfsmTransition<CounterState, CounterCommand, CounterEffect> = when (event) {
             CounterEvent.IncrementClicked -> {
                 val nextCount = state.count + 1
-                Afsm.transitionTo(
+                Afsm.transitioned(
                     state = state.copy(count = nextCount),
                     commands = listOf(CounterCommand.PersistCount(nextCount)),
                 )
             }
 
-            CounterEvent.CountPersisted -> Afsm.transitionTo(
+            CounterEvent.CountPersisted -> Afsm.transitioned(
                 state = state.copy(persisted = true),
             )
 
-            CounterEvent.DoneClicked -> Afsm.transitionTo(
+            CounterEvent.DoneClicked -> Afsm.transitioned(
                 state = state.copy(done = true),
                 effects = listOf(CounterEffect.NavigateDone),
             )
@@ -190,7 +190,7 @@ class AfsmViewModelTest {
         private val host = afsmHost<CounterState, CounterEvent, CounterCommand, AfsmNoEffect>(
             initialState = CounterState(),
             reducer = AfsmReducer { state: CounterState, _: CounterEvent ->
-                Afsm.transitionTo(state = state)
+                Afsm.transitioned(state = state)
             },
         )
 

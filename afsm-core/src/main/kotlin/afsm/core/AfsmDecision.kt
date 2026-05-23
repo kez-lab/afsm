@@ -3,7 +3,7 @@ package afsm.core
 public sealed interface AfsmDecision {
     public data object Transitioned : AfsmDecision
 
-    public data class Stayed(
+    public data class Handled(
         public val reason: String? = null,
     ) : AfsmDecision
 

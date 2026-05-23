@@ -36,7 +36,7 @@ sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
 Auth uses the standard graphable shape:
 
 ```kotlin
-typealias AuthState = AfsmState<AuthPhase, AuthContext>
+typealias AuthState = AfsmState<AuthPhase, AuthData>
 ```
 
 Phases are small:
@@ -49,18 +49,37 @@ sealed interface AuthPhase {
 }
 ```
 
-Context carries form data:
+Data carries form data:
 
 ```kotlin
-data class AuthContext(
+data class AuthData(
     val mode: AuthMode = AuthMode.Login,
     val form: AuthForm = AuthForm(),
     val errorMessage: String? = null,
 )
 ```
 
-This is the basic Afsm split: phase describes where the flow is, context carries
+This is the basic Afsm split: phase describes where the flow is, data carries
 screen data.
+
+## Submit Flow
+
+Read `SubmitClicked` as one ordered branch:
+
+```text
+AuthScreen
+-> AuthViewModel.onEvent(SubmitClicked)
+-> AuthStateMachine validates the current data
+-> updateData normalizes the form
+-> command(Login/Register) is emitted
+-> transitionTo(Submitting)
+-> ViewModel command handler calls the repository
+-> AuthSucceeded/AuthFailed is dispatched back into the machine
+```
+
+The `command(...)` block observes data after earlier `updateData(...)`
+statements in the same accepted case. That is why the real sample can normalize
+the form once, then build the login/register command from `data.form`.
 
 ## Validation Branches
 
@@ -70,7 +89,7 @@ screen data.
 on<AuthEvent.SubmitClicked> {
     case(
         label = "login form",
-        condition = { context.canSubmitLoginRequest() },
+        condition = { data.canSubmitLoginRequest() },
     ) {
         command(label = "Login") { AuthCommand.Login(...) }
         transitionTo(AuthPhase.Submitting)
@@ -78,7 +97,7 @@ on<AuthEvent.SubmitClicked> {
 
     case(
         label = "register form",
-        condition = { context.canSubmitRegistrationRequest() },
+        condition = { data.canSubmitRegistrationRequest() },
     ) {
         command(label = "Register") { AuthCommand.Register(...) }
         transitionTo(AuthPhase.Submitting)
@@ -86,15 +105,15 @@ on<AuthEvent.SubmitClicked> {
 
     case(
         label = "invalid form",
-        condition = { context.hasSubmitError() },
+        condition = { data.hasSubmitError() },
     ) {
-        updateContext { copy(errorMessage = submitError()) }
+        updateData { copy(errorMessage = submitError()) }
     }
 }
 ```
 
 This is the recommended pattern for forms: valid paths move phase and emit
-commands, invalid input stays in the current phase with context error state.
+commands, invalid input stays in the current phase with data error state.
 
 ## ViewModel Wiring
 
@@ -129,7 +148,7 @@ the business result; the effect is only UI behavior.
 Read `AuthStateMachineTest` in this order:
 
 1. `register submit trims inputs enters loading and emits register command`
-2. `submit with invalid password stays and does not emit command`
+2. `submit with invalid password handles without phase change and does not emit command`
 3. `auth success moves from submitting to authenticated and emits catalog effect`
 4. `auth command result without loading is invalid`
-5. `form changes update context inside editing phase`
+5. `form changes update data inside editing phase`

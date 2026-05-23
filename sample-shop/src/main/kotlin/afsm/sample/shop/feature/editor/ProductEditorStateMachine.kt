@@ -17,20 +17,20 @@ private fun productEditorMachine(): ProductEditorMachine {
     return afsmMachine {
         initial(
             phase = ProductEditorPhase.EditingDraft,
-            context = ProductEditorContext(),
+            data = ProductEditorData(),
         )
 
-        state(ProductEditorPhase.EditingDraft) {
+        phase(ProductEditorPhase.EditingDraft) {
             on<ProductEditorEvent.TitleChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.SaveDraftClicked> {
@@ -40,26 +40,26 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.canStartReviewSubmission() },
+                    condition = { data.canStartReviewSubmission() },
                 ) {
-                    updateContext { normalizeDraftForSubmit() }
+                    updateData { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
                 case(
                     label = "invalid draft",
-                    condition = { context.hasReviewSubmissionError() },
+                    condition = { data.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withReviewSubmissionError() }
+                    updateData { withReviewSubmissionError() }
                 }
             }
         }
 
-        state(ProductEditorPhase.SavingDraft) {
+        phase(ProductEditorPhase.SavingDraft) {
             onEnter {
-                updateContext { copy(errorMessage = null) }
+                updateData { copy(errorMessage = null) }
                 command(label = "SaveDraft") {
-                    ProductEditorCommand.SaveDraft(context.draft)
+                    ProductEditorCommand.SaveDraft(data.draft)
                 }
             }
 
@@ -68,9 +68,9 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
         }
 
-        state(ProductEditorPhase.DraftSaved) {
+        phase(ProductEditorPhase.DraftSaved) {
             onEnter {
-                updateContext { copy(errorMessage = null) }
+                updateData { copy(errorMessage = null) }
             }
 
             on<ProductEditorEvent.ContinueEditingClicked> {
@@ -80,52 +80,52 @@ private fun productEditorMachine(): ProductEditorMachine {
             on<ProductEditorEvent.SubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.canStartReviewSubmission() },
+                    condition = { data.canStartReviewSubmission() },
                 ) {
-                    updateContext { normalizeDraftForSubmit() }
+                    updateData { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
                 case(
                     label = "invalid draft",
-                    condition = { context.hasReviewSubmissionError() },
+                    condition = { data.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withReviewSubmissionError() }
+                    updateData { withReviewSubmissionError() }
                 }
             }
 
             on<ProductEditorEvent.TitleChanged> {
                 case {
-                    updateContext { context, event -> context.updateDraft(event) }
+                    updateData { data, event -> data.updateDraft(event) }
                     transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
                 case {
-                    updateContext { context, event -> context.updateDraft(event) }
+                    updateData { data, event -> data.updateDraft(event) }
                     transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
 
             on<ProductEditorEvent.PriceChanged> {
                 case {
-                    updateContext { context, event -> context.updateDraft(event) }
+                    updateData { data, event -> data.updateDraft(event) }
                     transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
         }
 
-        state(ProductEditorPhase.ImageUploadInProgress) {
+        phase(ProductEditorPhase.ImageUploadInProgress) {
             onEnter {
                 command(label = "StartImageUpload") {
-                    ProductEditorCommand.StartImageUpload(context.draft)
+                    ProductEditorCommand.StartImageUpload(data.draft)
                 }
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
                 case {
-                    updateContext {
+                    updateData {
                         copy(
                             draft = draft.copy(
                                 reviewAttempt = draft.reviewAttempt + 1,
@@ -143,19 +143,19 @@ private fun productEditorMachine(): ProductEditorMachine {
 
             on<ProductEditorEvent.ImageUploadFailed> {
                 case {
-                    updateContext { context, event ->
-                        context.copy(errorMessage = event.message)
+                    updateData { data, event ->
+                        data.copy(errorMessage = event.message)
                     }
                     transitionTo(ProductEditorPhase.EditingDraft)
                 }
             }
         }
 
-        state<ProductEditorPhase.ReviewSubmissionInProgress> {
+        phase<ProductEditorPhase.ReviewSubmissionInProgress> {
             onEnter {
                 command(label = "StartReviewSubmission") {
                     ProductEditorCommand.StartReviewSubmission(
-                        draft = context.draft,
+                        draft = data.draft,
                         uploadToken = phase.uploadToken,
                     )
                 }
@@ -163,14 +163,14 @@ private fun productEditorMachine(): ProductEditorMachine {
 
             on<ProductEditorEvent.ReviewApproved> {
                 case {
-                    updateContext { copy(errorMessage = null) }
+                    updateData { copy(errorMessage = null) }
                     transitionTo(ProductEditorPhase.Approved)
                 }
             }
 
             on<ProductEditorEvent.ReviewRejected> {
                 case {
-                    updateContext { copy(errorMessage = null) }
+                    updateData { copy(errorMessage = null) }
                     transitionTo<ProductEditorPhase.Rejected> {
                         ProductEditorPhase.Rejected(
                             reason = event.reason,
@@ -180,33 +180,33 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
         }
 
-        state<ProductEditorPhase.Rejected> {
+        phase<ProductEditorPhase.Rejected> {
             on<ProductEditorEvent.TitleChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                updateContext { context, event -> context.updateDraft(event) }
+                updateData { data, event -> data.updateDraft(event) }
             }
 
             on<ProductEditorEvent.ResubmitClicked> {
                 case(
                     label = "valid draft",
-                    condition = { context.canStartReviewSubmission() },
+                    condition = { data.canStartReviewSubmission() },
                 ) {
-                    updateContext { normalizeDraftForSubmit() }
+                    updateData { normalizeDraftForSubmit() }
                     transitionTo(ProductEditorPhase.ImageUploadInProgress)
                 }
 
                 case(
                     label = "invalid draft",
-                    condition = { context.hasReviewSubmissionError() },
+                    condition = { data.hasReviewSubmissionError() },
                 ) {
-                    updateContext { withReviewSubmissionError() }
+                    updateData { withReviewSubmissionError() }
                 }
             }
 
@@ -215,7 +215,7 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
         }
 
-        state(ProductEditorPhase.Approved) {
+        phase(ProductEditorPhase.Approved) {
             on<ProductEditorEvent.PublishClicked> {
                 transitionTo(ProductEditorPhase.PublishInProgress)
             }
@@ -225,21 +225,21 @@ private fun productEditorMachine(): ProductEditorMachine {
             }
         }
 
-        state(ProductEditorPhase.PublishInProgress) {
+        phase(ProductEditorPhase.PublishInProgress) {
             onEnter {
-                updateContext { copy(errorMessage = null) }
+                updateData { copy(errorMessage = null) }
                 command(label = "StartProductPublish") {
-                    ProductEditorCommand.StartProductPublish(context.draft)
+                    ProductEditorCommand.StartProductPublish(data.draft)
                 }
             }
 
             on<ProductEditorEvent.PublishSucceeded> {
                 case {
-                    updateContext { copy(errorMessage = null) }
+                    updateData { copy(errorMessage = null) }
                     transitionTo<ProductEditorPhase.Published> {
                         ProductEditorPhase.Published(
                             productId = event.productId,
-                            title = context.draft.form.title.trim(),
+                            title = data.draft.form.title.trim(),
                         )
                     }
                 }
@@ -247,15 +247,15 @@ private fun productEditorMachine(): ProductEditorMachine {
 
             on<ProductEditorEvent.PublishFailed> {
                 case {
-                    updateContext { context, event ->
-                        context.copy(errorMessage = event.message)
+                    updateData { data, event ->
+                        data.copy(errorMessage = event.message)
                     }
                     transitionTo(ProductEditorPhase.Approved)
                 }
             }
         }
 
-        state<ProductEditorPhase.Published> {
+        phase<ProductEditorPhase.Published> {
             on<ProductEditorEvent.DoneClicked> {
                 effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
             }
@@ -263,31 +263,31 @@ private fun productEditorMachine(): ProductEditorMachine {
     }
 }
 
-private fun ProductEditorContext.updateDraft(
+private fun ProductEditorData.updateDraft(
     event: ProductEditorEvent,
-): ProductEditorContext {
+): ProductEditorData {
     return copy(
         draft = draft.updateForm(event),
         errorMessage = null,
     )
 }
 
-private fun ProductEditorContext.normalizeDraftForSubmit(): ProductEditorContext {
+private fun ProductEditorData.normalizeDraftForSubmit(): ProductEditorData {
     return copy(
         draft = draft.normalized(),
         errorMessage = null,
     )
 }
 
-private fun ProductEditorContext.withReviewSubmissionError(): ProductEditorContext {
+private fun ProductEditorData.withReviewSubmissionError(): ProductEditorData {
     return copy(errorMessage = draft.form.validationError())
 }
 
-private fun ProductEditorContext.canStartReviewSubmission(): Boolean {
+private fun ProductEditorData.canStartReviewSubmission(): Boolean {
     return draft.form.validationError() == null
 }
 
-private fun ProductEditorContext.hasReviewSubmissionError(): Boolean {
+private fun ProductEditorData.hasReviewSubmissionError(): Boolean {
     return !canStartReviewSubmission()
 }
 

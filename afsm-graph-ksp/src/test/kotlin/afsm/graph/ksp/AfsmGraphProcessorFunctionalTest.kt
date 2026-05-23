@@ -110,7 +110,7 @@ class AfsmGraphProcessorFunctionalTest {
                     state: String,
                     event: TestEvent,
                 ): AfsmTransition<String, TestCommand, AfsmNoEffect> {
-                    return AfsmTransition.stayed(state)
+                    return AfsmTransition.handled(state)
                 }
             }
             """.trimIndent(),
@@ -316,7 +316,7 @@ class AfsmGraphProcessorFunctionalTest {
                         state: String,
                         event: TestEvent,
                     ): AfsmTransition<String, TestCommand, AfsmNoEffect> {
-                        return AfsmTransition.stayed(state)
+                        return AfsmTransition.handled(state)
                     }
                 }
             }

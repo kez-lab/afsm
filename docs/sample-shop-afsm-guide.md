@@ -12,6 +12,7 @@ The point is not to force every screen into a finite state machine. The app uses
 - Manual DI: `sample-shop/src/main/kotlin/afsm/sample/shop/app/ShopAppContainer.kt`
 - Database: `sample-shop/src/main/kotlin/afsm/sample/shop/core/database/ShopDatabase.kt`
 - Example catalog: [examples.md](examples.md)
+- Getting started: [getting-started.md](getting-started.md)
 - Modeling rules: [modeling-rules.md](modeling-rules.md)
 - Restoration/effect/command policy: [restoration-effect-command-policy.md](restoration-effect-command-policy.md)
 - Graph generation: [graph-generation.md](graph-generation.md)
@@ -76,10 +77,10 @@ TextField/Button interaction
 
 Contract:
 
-- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthContext>`.
+- `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthData>`.
 - `AuthPhase` contains the finite graph states: `Editing`, `Submitting`, and `Authenticated`.
-- `AuthContext` keeps mode, form, and error data outside the finite phase; the terminal `Authenticated` phase carries its `UserSession` payload.
-- `AuthStateMachine` uses the executable DSL directly with `AuthPhase + AuthContext`.
+- `AuthData` keeps mode, form, and error data outside the finite phase; the terminal `Authenticated` phase carries its `UserSession` payload.
+- `AuthStateMachine` uses the executable DSL directly with `AuthPhase + AuthData`.
 - `AuthStateMachine` is annotated with `@AfsmGraph`; KSP discovers it and a Gradle export task writes `AuthStateMachine.mmd` through the generated registry.
 - `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
@@ -131,19 +132,19 @@ EditingDraft
 
 Policy:
 
-- ProductEditor uses the executable DSL with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorContext>` at the state-machine boundary.
+- ProductEditor uses the executable DSL with `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>` at the state-machine boundary.
 - `ProductEditorState.toRenderState()` maps internal phases to ordinary Compose render data so `ProductEditorScreen` does not branch on `ProductEditorPhase`.
 - Flow phases stay explicit: `SavingDraft`, `DraftSaved`, `ImageUploadInProgress`, `ReviewSubmissionInProgress`, `Rejected`, `Approved`, `PublishInProgress`, and `Published`.
-- Actual draft data lives in `ProductEditorContext`, not in every phase constructor.
+- Actual draft data lives in `ProductEditorData`, not in every phase constructor.
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
-- ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to context transformations so graph-relevant flow remains visible.
-- Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates context, not as a second competing `transitionTo`.
+- ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to data transformations so graph-relevant flow remains visible.
+- Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data, not as a second competing `transitionTo`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
 - `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - The `io.github.afsm.graph` Gradle plugin generates the export test and registers `./gradlew :sample-shop:generateAfsmMmd`.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
-- Text changes inside `EditingDraft` and `Rejected` are no-transition handlers that update context with `updateContext { context, event -> ... }`.
+- Text changes inside `EditingDraft` and `Rejected` are no-transition handlers that update data with `updateData { data, event -> ... }`.
 - Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.
@@ -182,7 +183,7 @@ Policy:
 
 - Checkout is now a graphable `AfsmMachine<CheckoutState, CheckoutEvent,
   CheckoutCommand, CheckoutEffect>` built with the executable DSL.
-- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutContext>`.
+- `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
 - Product loading and payment commands are emitted from phase `onEnter`
   handlers and serialized by `AfsmHost`.
 - Duplicate enter/pay events are ignored while work is already running.
@@ -232,15 +233,19 @@ The current sample suggests:
   usable for navigation-argument screens like Checkout.
 - `Command` is easier to explain than making transition functions suspend.
 - `Effect` should stay rare and focused on UI-side one-shot work.
-- Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as context flags made the state machine less readable and less graphable.
-- `ProductDraft` belongs in context; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
+- Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as data flags made the state machine less readable and less graphable.
+- `ProductDraft` belongs in data; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
-- `AfsmReducer` is the host-facing contract. The executable DSL builds an `AfsmMachine`, and machines now operate directly on the standard `AfsmState<Phase, Context>` data class.
-- `AfsmMachine<State, Event, Command, Effect>` is the feature-boundary alias shape for graphable machines, so sample code avoids repeating all five `AfsmPhaseMachine<Phase, Context, Event, Command, Effect>` parameters.
-- The standard `AfsmState<Phase, Context>` model now removes Auth/ProductEditor adapter boilerplate while keeping state diagrams focused on phases.
+- `AfsmReducer` is the host-facing contract. The executable DSL builds an `AfsmMachine`, and machines now operate directly on the standard `AfsmState<Phase, Data>` data class.
+- `AfsmMachine<State, Event, Command, Effect>` is the feature-boundary alias
+  shape for graphable machines, so sample code keeps the internal `Phase/Data`
+  split behind a named state type.
+- The standard `AfsmState<Phase, Data>` model now removes Auth/ProductEditor adapter boilerplate while keeping state diagrams focused on phases.
 - Custom sealed UI states require an explicit feature-owned `AfsmReducer`; the core API no longer ships an adapter base.
 - Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.
-- A shared `AfsmStateFactory` was spiked but rejected for now because singleton phase inference requires explicit `<Phase, Context>` arguments and the extra public API is heavier than a small feature-local factory function.
+- A shared `AfsmStateFactory` was spiked but rejected for now because singleton
+  phase inference requires explicit `<Phase, Data>` arguments and the extra
+  public API is heavier than a small feature-local factory function.
 - Simple data screens should not be forced into Afsm, but product registration became a better reference after being expanded into review/publish phases.
 - Checkout is now the mid-size reference for Android lifecycle, retry, request
   id, durable completion, and render-state mapping policy.
