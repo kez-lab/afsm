@@ -2468,3 +2468,29 @@ Conclusion:
 
 - Readers who start at README now see the same machine-test to ViewModel-test
   loop as readers who start in `docs/getting-started.md`.
+
+## [2026-05-25] Command failure boundary consumer test
+
+Change:
+
+- Added an external-consumer Draft command failure policy test that hosts
+  `DraftStateMachine` with `AfsmCommandFailurePolicy.Record`.
+- Verified that an unexpected thrown `SaveDraft` handler exception records an
+  `AfsmDiagnostic` and does not synthesize `DraftSaveFailed`.
+- Updated getting-started, testing, restoration/effect/command policy,
+  release-readiness, and consumer-smoke docs to keep the boundary visible:
+  expected repository failures are typed result events, while unexpected handler
+  exceptions are runtime policy cases.
+
+Verification:
+
+```bash
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --tests 'afsm.consumer.smoke.DraftCommandFailurePolicyTest' --no-daemon
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time Android users now see and execute the difference between normal
+  command result events and defensive command handler exception policy.

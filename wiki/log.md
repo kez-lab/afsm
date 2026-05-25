@@ -987,3 +987,16 @@
   testing guide and executable `consumer-smoke` Draft ViewModel test.
 - Updated: `README.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | Command failure boundary consumer test
+
+- Source: First-use command failure boundary review.
+- Action: Added a consumer-smoke test for unexpected command handler exceptions
+  using `AfsmCommandFailurePolicy.Record` and documented that expected
+  repository failures should remain typed result events.
+- Updated:
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftCommandFailurePolicyTest.kt`,
+  `consumer-smoke/README.md`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/restoration-effect-command-policy.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

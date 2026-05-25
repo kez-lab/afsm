@@ -113,6 +113,9 @@ proves the output exists; the route remains responsible for collecting
 
 Expected domain failures should return to the machine as typed events from the
 command handler. Test the resulting state transition like any other event.
+Do not simulate an expected repository failure by making the command handler
+throw; thrown handler exceptions exercise `AfsmCommandFailurePolicy`, not the
+feature's failure branch.
 
 ```kotlin
 @Test
@@ -136,6 +139,13 @@ fun `save failure returns to Editing with message`() {
         )
 }
 ```
+
+The external `consumer-smoke` fixture also has
+`DraftCommandFailurePolicyTest`, which proves that an unexpected thrown
+`SaveDraft` handler error is recorded as an `AfsmDiagnostic` when
+`AfsmCommandFailurePolicy.Record` is configured. It does not synthesize
+`DraftSaveFailed`; feature code should dispatch that event only for expected
+domain failures.
 
 ### Stale command result
 

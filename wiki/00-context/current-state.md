@@ -207,6 +207,11 @@ The current direction is:
 - Public testing docs now distinguish pure-machine `assertInvalid()` coverage
   from hosted runtime behavior, where the default `AfsmInvalidTransitionPolicy`
   throws invalid transitions.
+- `consumer-smoke` now verifies the command failure boundary for first-use
+  docs: expected repository failures dispatch typed result events such as
+  `DraftSaveFailed`, while unexpected thrown command handler exceptions use
+  `AfsmCommandFailurePolicy` diagnostics and do not synthesize domain failure
+  events.
 
 ## Core Architecture Position
 

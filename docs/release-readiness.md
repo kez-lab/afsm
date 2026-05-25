@@ -36,6 +36,9 @@ What this proves:
 - The separate consumer build also runs Draft ViewModel wiring tests with a
   main dispatcher rule so command execution and explicit initial state from
   `SavedStateHandle` are verified outside the root build.
+- The separate consumer build also verifies unexpected command handler
+  exceptions use `AfsmCommandFailurePolicy` diagnostics instead of being
+  modeled as domain failure result events.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.

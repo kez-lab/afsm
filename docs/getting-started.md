@@ -405,6 +405,8 @@ class DraftViewModel(
 ```
 
 Expected domain failures should become result events from the command handler.
+An unexpected thrown exception from the handler is a runtime command failure
+policy case, not a replacement for `DraftSaveFailed`.
 Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.

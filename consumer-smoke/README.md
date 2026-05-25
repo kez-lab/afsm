@@ -29,6 +29,7 @@ The smoke build covers:
 - Draft ViewModel command-handler tests with `kotlinx-coroutines-test`
 - Draft ViewModel main dispatcher rule wiring for `viewModelScope` tests
 - Draft explicit initial state from `SavedStateHandle` tests
+- Draft command failure policy coverage for unexpected handler exceptions
 
 It intentionally stays small. The goal is dependency, plugin, KSP, graph
 generation, quickstart transition and ViewModel wiring behavior, and API
