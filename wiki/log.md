@@ -1050,3 +1050,13 @@
 - Updated: `docs/auth-walkthrough.md`, `docs/examples.md`,
   `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Checkout walkthrough Auth bridge
+
+- Source: First-use review of Checkout as the next example after Auth.
+- Action: Added an Auth-to-Checkout bridge, separated reused Auth concepts from
+  Checkout lifecycle/retry concepts, and corrected the durable completion effect
+  snippet to the current labeled DSL shape.
+- Updated: `docs/checkout-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

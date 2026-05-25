@@ -232,6 +232,10 @@ The current direction is:
   to Auth as the first real Android form screen, separating reused Draft
   concepts from the new Auth concepts: login/register guarded cases, session
   persistence, render state, and the first real route effect.
+- `docs/checkout-walkthrough.md` now explicitly bridges from Auth to Checkout
+  as the first mid-size Android lifecycle and async-result example, calling out
+  dynamic initial state, `ScreenEntered`, `onEnter` commands, retry request ids,
+  stale-result ignores, and durable completion state.
 
 ## Core Architecture Position
 
