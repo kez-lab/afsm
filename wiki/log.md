@@ -906,3 +906,11 @@
   `consumer-smoke/README.md`, `docs/testing-guide.md`,
   `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started ViewModel test link
+
+- Source: Review after adding external-consumer Draft ViewModel tests.
+- Action: Added a getting-started bridge from pure Draft machine tests to the
+  first ViewModel wiring test pattern and its executable consumer-smoke mirror.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

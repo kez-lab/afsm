@@ -181,6 +181,9 @@ The current direction is:
 - `consumer-smoke` now includes Draft ViewModel wiring tests with
   `kotlinx-coroutines-test`, proving command-handler repository calls and
   command-result state updates from Maven Local artifacts.
+- `docs/getting-started.md` now links the first pure machine tests to the first
+  ViewModel wiring test pattern, including the coroutine test dependency and
+  the executable `consumer-smoke` mirror.
 
 ## Core Architecture Position
 

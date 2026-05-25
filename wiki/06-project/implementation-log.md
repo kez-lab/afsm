@@ -2277,3 +2277,24 @@ Conclusion:
 
 - The first-use path now verifies both pure machine behavior and Android
   ViewModel host wiring from an external Maven Local consumer build.
+
+## [2026-05-25] Getting-started ViewModel test link
+
+Change:
+
+- Added `kotlinx-coroutines-test` to the getting-started dependency checklist.
+- Added a short "Add First ViewModel Test" section after the Draft ViewModel
+  host example.
+- Linked first-time readers to the broader testing guide and the executable
+  `consumer-smoke` Draft ViewModel test mirror.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The first-use guide now keeps the test loop continuous from pure machine
+  tests to Android ViewModel host wiring tests.

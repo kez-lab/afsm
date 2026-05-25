@@ -21,6 +21,7 @@ dependencies {
 
     testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
 ```
 
@@ -388,6 +389,19 @@ Expected domain failures should become result events from the command handler.
 Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.
+
+## Add First ViewModel Test
+
+After the machine tests pass, add one ViewModel wiring test. Do not duplicate
+every state-machine branch here. Prove that `onEvent(event)` reaches the hosted
+machine, the command handler calls the repository, and command result events
+update `state.value`.
+
+Use `runTest`, `StandardTestDispatcher`, and `Dispatchers.setMain/resetMain`
+around `viewModelScope` code. The complete Draft example is in
+[testing-guide.md](testing-guide.md#viewmodel-tests), and the same pattern is
+compiled in
+[`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
 
 If the starting state comes from navigation arguments, a deep link, repository
 restoration, or `SavedStateHandle`, pass an explicit initial state:
