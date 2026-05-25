@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-23
+updated: 2026-05-25
 ---
 
 # Current State
@@ -16,7 +16,7 @@ The current direction is:
 - Store durable architecture reasoning in this LLM Wiki so future Codex sessions can continue without rediscovering the same context.
 - Use official Android UI layer, ViewModel, Compose state, coroutine, Flow testing, and saved state guidance as constraints for the FSM design.
 - A minimal Kotlin/JVM `afsm-core` project now exists and compiles with the v2 core API shape.
-- `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
+- `AfsmNoCommand`, `AfsmNoEffect`, and `AfsmTransition<S, C, F>` were validated through compile-time reference usage.
 - A minimal coroutine-based `afsm-runtime` module now exists.
 - `AfsmHost` serializes non-suspending `dispatch(event)` calls through a bounded FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially on a separate command processor so suspended commands do not block later event reduction.
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
@@ -36,6 +36,8 @@ The current direction is:
 - The executable DSL spike passes ProductEditor-like core tests for phase transitions, data updates, `onExit -> transition -> onEnter` ordering, typed payload phases, named conditions, DSL build validation, and UI-side effect emission.
 - The executable DSL now exposes `AfsmMachine.topology` plus `AfsmTopology.toMmd()`; event branches are declared with graphable named `case(...)` blocks and phase-only `transitionTo(...)`.
 - `AfsmState<P, D>` is now the standard phase/data state value. It exposes `phase` and `data`; `Data` intentionally avoids the Android `Context` naming collision.
+- `AfsmNoCommand` mirrors `AfsmNoEffect` as the standard marker for machines
+  that never emit host-executed work.
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - Maven local publishing now works for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the `io.github.afsm.graph` Gradle plugin using `io.github.afsm:*:0.1.0-SNAPSHOT` pre-release coordinates.
 - `consumer-smoke` now exists as a separate Android Gradle build that consumes those Maven Local coordinates, compiles a ViewModel-hosted Afsm machine, applies the graph Gradle plugin, runs the KSP graph processor, and generates `.mmd` output without project-module dependencies.

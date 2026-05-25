@@ -23,6 +23,15 @@ typealias ScreenMachine = AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, S
 object ScreenStateMachine : ScreenMachine by screenMachine()
 ```
 
+Machines that do not emit host-executed work should use `AfsmNoCommand` as
+their `Command` type. Machines that do not emit UI one-shot output should use
+`AfsmNoEffect` as their `Effect` type.
+
+```kotlin
+typealias ToggleMachine =
+    AfsmMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect>
+```
+
 The ViewModel hosts that machine:
 
 ```kotlin

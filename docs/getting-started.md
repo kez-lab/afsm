@@ -19,6 +19,10 @@ Use these words in this order:
 | `Command` | Work the ViewModel host must execute |
 | `Effect` | Optional UI one-shot output |
 
+If a machine never starts repository, database, timer, or SDK work, use
+`AfsmNoCommand` as its `Command` type instead of declaring an empty command
+sealed interface. If it never emits UI one-shot output, use `AfsmNoEffect`.
+
 `Data` is not `android.content.Context`. It is normal immutable screen data,
 such as form fields, loaded product, request id, or validation message.
 

@@ -193,6 +193,9 @@ public final class afsm/core/AfsmMmdWriter {
 	public static synthetic fun writeAll$default (Lafsm/core/AfsmMmdWriter;Lafsm/core/AfsmGraphRegistry;Ljava/io/File;Lafsm/core/AfsmMmdOptions;ILjava/lang/Object;)V
 }
 
+public abstract interface class afsm/core/AfsmNoCommand {
+}
+
 public abstract interface class afsm/core/AfsmNoEffect {
 }
 

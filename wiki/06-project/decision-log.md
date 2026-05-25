@@ -1,9 +1,28 @@
 ---
 title: Decision Log
-updated: 2026-05-11
+updated: 2026-05-25
 ---
 
 # Decision Log
+
+## [2026-05-25] Add AfsmNoCommand marker for no-command machines
+
+Decision: Add `AfsmNoCommand` as the public command marker for machines that
+never emit host-executed work.
+
+Rationale:
+
+- `AfsmNoEffect` already gives no-effect machines a named type argument.
+- Command-free flows otherwise need a fake empty command sealed interface.
+- A marker keeps feature typealiases explicit without adding another DSL or
+  host overload.
+
+Consequences:
+
+- Feature code can use `AfsmMachine<State, Event, AfsmNoCommand, Effect>` when
+  there is no repository, timer, database, or SDK work.
+- `consumer-smoke` must compile this marker from Maven Local artifacts so the
+  public API remains externally usable.
 
 ## [2026-05-01] Use ViewModel-backed FSM for complex Android flows
 

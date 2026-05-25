@@ -29,6 +29,10 @@ What this proves:
 - A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
+- The separate consumer build also compiles a no-command machine using
+  `AfsmNoCommand` and hosts it from a ViewModel without a command handler, so
+  the empty-command marker is verified from published artifacts rather than
+  only from project dependencies.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
 - Binary API dumps are checked for the five API-tracked Afsm library modules.
 

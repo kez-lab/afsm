@@ -584,3 +584,17 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-25] implementation | AfsmNoCommand marker
+
+- Source: API usability review of command-free machines for first-time Android
+  users.
+- Decision: Add `AfsmNoCommand` as the standard command marker for machines
+  that never emit host-executed work.
+- Action: Added the marker type, core compile check, external consumer smoke
+  usage, changelog entry, docs, and wiki decision/update records.
+- Updated: `afsm-core/`, `consumer-smoke/`, `CHANGELOG.md`, `README.md`,
+  `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

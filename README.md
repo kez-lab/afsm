@@ -46,6 +46,9 @@ The core mental model:
 | `Command` | Host-executed work, such as repository calls or timers |
 | `Effect` | Optional UI one-shot output |
 
+Use `AfsmNoCommand` when a machine never emits host-executed work. Use
+`AfsmNoEffect` when it never emits UI one-shot output.
+
 Daily choices:
 
 | Situation | Use |
