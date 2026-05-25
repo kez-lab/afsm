@@ -118,6 +118,11 @@ should describe the business condition, not the Kotlin expression. Prefer
 `label = "valid draft"` with `condition = { data.canSubmitDraft() }` over
 `label = "draft.form.validationError() == null"`.
 
+When one event needs multiple actions, put them in the same `case { ... }`.
+Top-level shorthand calls are complete alternatives, not a list of actions to
+merge. For example, use `case { updateData(...); transitionTo(Phase.X) }` when
+the event both changes data and changes phase.
+
 ## First Reading Order
 
 1. [getting-started.md](getting-started.md) for the compile-checked Draft path.

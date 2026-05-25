@@ -112,6 +112,10 @@ The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
 For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
 Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
+If one accepted event needs multiple actions, keep them in the same
+`case { ... }`. Top-level shorthand calls such as `updateData(...)` and
+`transitionTo(...)` are separate alternatives; they are not merged into one
+transition.
 
 ### AfsmDecision
 

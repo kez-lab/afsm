@@ -747,3 +747,14 @@
   `README.md`, `docs/getting-started.md`, `docs/release-readiness.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Case composition rule
+
+- Source: Follow-up after consumer-smoke tests exposed the sibling
+  `updateData` / `transitionTo` quickstart bug.
+- Action: Documented that multi-action event handling must use one
+  `case { ... }`, and that top-level shorthand calls are separate alternatives.
+- Updated: `afsm-core/`, `docs/getting-started.md`,
+  `docs/modeling-rules.md`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

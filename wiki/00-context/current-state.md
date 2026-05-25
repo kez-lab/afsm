@@ -144,6 +144,9 @@ The current direction is:
 - `consumer-smoke` now runs focused Draft quickstart JVM tests in addition to
   compiling and exporting graphs, so command emission and save failure recovery
   are verified against Maven Local artifacts.
+- Public DSL docs and `updateData(...)` KDoc now state that multi-action event
+  handling must use one `case { ... }`; top-level shorthand calls are separate
+  alternatives and are not merged.
 
 ## Core Architecture Position
 

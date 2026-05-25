@@ -243,6 +243,11 @@ emits the command.
 If a case does not call `transitionTo(...)`, it handles the event without a
 phase change. Use that for form text changes and validation errors.
 
+If one event must update data and change phase, keep both statements inside the
+same `case { ... }`. Sibling calls such as `updateData(...)` followed by
+`transitionTo(...)` are separate alternatives; the first matching alternative
+handles the event.
+
 ## Host From ViewModel
 
 The machine never calls repositories directly. The ViewModel host executes

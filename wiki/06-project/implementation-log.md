@@ -1915,3 +1915,27 @@ Conclusion:
 - The first-use Draft quickstart is now verified as executable behavior in the
   external Maven Local consumer build, not only as compilable code and generated
   graph output.
+
+## [2026-05-25] Case composition rule documentation
+
+Change:
+
+- Added KDoc to `updateData(...)` shorthand overloads explaining that they
+  create complete data-only cases.
+- Updated getting-started, modeling rules, and public API docs to state that
+  events with multiple actions must put those actions in one `case { ... }`.
+- The docs now explicitly warn that sibling shorthand calls are separate
+  alternatives and first match wins.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:compileKotlin --warning-mode all --no-daemon
+git diff --check
+```
+
+Conclusion:
+
+- The quickstart failure-branch bug now has an explicit public rule attached to
+  the DSL, reducing the chance that first-time users write data update and
+  phase change as separate sibling alternatives.
