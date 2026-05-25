@@ -6,8 +6,11 @@ import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
 import afsm.viewmodel.afsmHost
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
+
+const val DraftTitleKey = "draftTitle"
 
 sealed interface DraftPhase {
     data object Editing : DraftPhase
@@ -103,28 +106,39 @@ interface DraftRepository {
     suspend fun save(title: String): Result<Unit>
 }
 
+fun draftStateFromSavedState(savedStateHandle: SavedStateHandle): DraftState {
+    return DraftState(
+        phase = DraftPhase.Editing,
+        data = DraftData(
+            title = savedStateHandle.get<String>(DraftTitleKey).orEmpty(),
+        ),
+    )
+}
+
 class DraftViewModel(
     private val repository: DraftRepository,
+    initialState: DraftState = DraftStateMachine.initialState,
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
-    commandHandler = { command: DraftCommand, dispatch ->
-        when (command) {
-            is DraftCommand.SaveDraft -> repository.save(command.title).fold(
-                onSuccess = {
-                    dispatch(DraftEvent.DraftSaveCompleted)
-                },
-                onFailure = { error ->
-                    dispatch(
-                        DraftEvent.DraftSaveFailed(
-                            error.message ?: "Draft save failed.",
-                        ),
-                    )
-                },
-            )
-        }
-    },
-)
+        initialState = initialState,
+        commandHandler = { command: DraftCommand, dispatch ->
+            when (command) {
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
+            }
+        },
+    )
 
     val state: StateFlow<DraftState> = host.state
 
