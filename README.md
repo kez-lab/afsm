@@ -492,7 +492,8 @@ internal edge:
 - Command results should dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
-- Invalid transitions throw by default so flow bugs are visible during development.
+- Invalid transitions can be asserted in pure machine tests; hosted invalid
+  transitions throw by default so flow bugs are visible during development.
 - `CancellationException` is always rethrown.
 - Effects are best-effort one-shot outputs with no replay by default.
 

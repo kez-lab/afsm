@@ -137,6 +137,9 @@ the product flow, do not model it as effect-only.
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
+In pure machine tests, assert important impossible events with `assertInvalid()`.
+At runtime, the host applies `AfsmInvalidTransitionPolicy`; the default policy
+throws so flow bugs are visible while developing.
 Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.

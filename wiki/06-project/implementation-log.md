@@ -5,6 +5,28 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] invalid transition testing boundary
+
+Change:
+
+- Clarified that `assertInvalid()` belongs in pure machine tests, where
+  `machine.transition(...)` returns an inspectable `Invalid` decision.
+- Documented that hosted invalid transitions follow
+  `AfsmInvalidTransitionPolicy`, with `Throw` as the default runtime behavior.
+- Updated README runtime policy wording and modeling rules to connect invalid
+  tests, ignored events, and host policy.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers are less likely to copy impossible-flow
+  assertions into ViewModel happy-path tests and be surprised by host failures.
+
 ## [2026-05-25] ViewModel main dispatcher test rule
 
 Change:

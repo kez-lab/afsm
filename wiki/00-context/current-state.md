@@ -204,6 +204,9 @@ The current direction is:
 - The consumer-smoke Draft ViewModel tests now use a reusable
   `MainDispatcherRule`, and public testing docs show that pattern instead of
   repeating `Dispatchers.setMain/resetMain` in every test body.
+- Public testing docs now distinguish pure-machine `assertInvalid()` coverage
+  from hosted runtime behavior, where the default `AfsmInvalidTransitionPolicy`
+  throws invalid transitions.
 
 ## Core Architecture Position
 

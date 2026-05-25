@@ -54,6 +54,9 @@ fun `SubmitClicked enters Submitting when form is valid`() {
 
 ### Invalid transition
 
+Assert invalid flow rules at the pure machine level. `machine.transition(...)`
+returns an `Invalid` decision that test helpers can inspect directly:
+
 ```kotlin
 @Test
 fun `SubmitSucceeded before submit is invalid`() {
@@ -65,6 +68,13 @@ fun `SubmitSucceeded before submit is invalid`() {
     result.assertInvalid()
 }
 ```
+
+Do not copy this exact scenario into a ViewModel happy-path test. `AfsmHost`
+applies `AfsmInvalidTransitionPolicy`, and the default runtime policy throws so
+flow bugs are visible during development. If a ViewModel test intentionally
+drives an impossible event, configure the host with `AfsmInvalidTransitionPolicy.Record`
+and assert diagnostics; otherwise keep invalid-flow coverage in plain machine
+tests.
 
 ### Command emission
 
@@ -158,6 +168,8 @@ fun `stale payment failure is ignored`() {
 
 Use `Invalid` for programmer errors and impossible flow results. Use `Ignored`
 for expected late/stale results that can happen in real asynchronous systems.
+This distinction matters because `Ignored` is a safe no-op in the host, while
+`Invalid` follows the configured runtime invalid-transition policy.
 
 ## ViewModel Tests
 

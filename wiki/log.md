@@ -1,5 +1,15 @@
 # Wiki Log
 
+## [2026-05-25] documentation | Invalid transition testing boundary
+
+- Source: First-use invalid transition policy review.
+- Action: Clarified that `assertInvalid()` is pure-machine coverage while
+  hosted invalid transitions use `AfsmInvalidTransitionPolicy` and throw by
+  default.
+- Updated: `README.md`, `docs/testing-guide.md`,
+  `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-25] test+docs | ViewModel main dispatcher test rule
 
 - Source: First-use ViewModel test ergonomics review.
