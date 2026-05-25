@@ -2588,3 +2588,56 @@ Conclusion:
 - First-time readers are less likely to copy diverging README snippets when the
   verified getting-started guide is the source of truth for the first Draft
   implementation.
+
+## [2026-05-26] Auth walkthrough Draft bridge
+
+Change:
+
+- Added an explicit `From Draft To Auth` section to `docs/auth-walkthrough.md`.
+- Clarified that Auth should be read after the minimum Draft path: machine, JVM
+  transition tests, ViewModel host, and one ViewModel wiring test.
+- Separated reused Draft concepts from Auth's new concepts: login/register
+  guarded cases, session persistence in the command handler, render-state
+  mapping, and the first real route effect.
+- Updated the example catalog so Auth is positioned as the first real form
+  screen after Draft rather than another starting point.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from copy-paste Draft
+  onboarding into the smallest real Android form screen before taking on
+  Checkout lifecycle and retry policy.
+
+## [2026-05-26] Checkout walkthrough Auth bridge
+
+Change:
+
+- Added an explicit `From Auth To Checkout` section to
+  `docs/checkout-walkthrough.md`.
+- Clarified that Checkout should be read after Auth, not as the first
+  copy-paste target.
+- Separated reused Auth concepts from Checkout's new concepts: navigation
+  argument initial state, explicit `ScreenEntered`, `onEnter` commands,
+  request ids, stale-result ignores, and durable completion state.
+- Updated the durable completion effect snippet to use the current
+  `effect(label = ...) { ... }` DSL shape.
+- Updated the example catalog so Checkout is positioned as the first mid-size
+  lifecycle and async-result policy example after Auth.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from Auth into the first
+  production-style lifecycle/retry sample before reading the larger
+  ProductEditor graph stress test.
