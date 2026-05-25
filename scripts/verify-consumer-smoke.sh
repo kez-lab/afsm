@@ -26,6 +26,7 @@ fi
   --refresh-dependencies \
   clean \
   :app:compileDebugKotlin \
+  :app:testDebugUnitTest \
   :app:generateAfsmMmd \
   "${GRADLE_ARGS[@]}"
 
