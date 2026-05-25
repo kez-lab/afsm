@@ -260,6 +260,51 @@ same `case { ... }`. Sibling calls such as `updateData(...)` followed by
 `transitionTo(...)` are separate alternatives; the first matching alternative
 handles the event.
 
+## Add First JVM Tests
+
+Test the pure machine before wiring the Android `ViewModel`. These tests are
+mirrored by `consumer-smoke`, so the release gate verifies that the quickstart
+behavior still works from Maven Local artifacts.
+
+```kotlin
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class DraftStateMachineTest {
+    @Test
+    fun saveClickedEntersSavingAndEmitsSaveDraft() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Editing,
+                data = DraftData(title = "Plan"),
+            ),
+            event = DraftEvent.SaveClicked,
+        )
+
+        assertEquals(DraftPhase.Saving, result.state.phase)
+        assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+    }
+
+    @Test
+    fun saveFailureReturnsToEditingWithMessage() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Saving,
+                data = DraftData(title = "Plan"),
+            ),
+            event = DraftEvent.DraftSaveFailed("Network unavailable"),
+        )
+
+        assertEquals(DraftPhase.Editing, result.state.phase)
+        assertEquals("Network unavailable", result.state.data.errorMessage)
+    }
+}
+```
+
+Keep these tests focused on transition behavior: next phase, changed data,
+emitted commands, emitted effects, and ignored or invalid decisions. ViewModel
+tests should verify Android wiring, not duplicate every state-machine branch.
+
 ## Host From ViewModel
 
 The machine never calls repositories directly. The ViewModel host executes
@@ -325,4 +370,5 @@ private val host = afsmHost(
 2. [auth-walkthrough.md](auth-walkthrough.md) for a small Android form.
 3. [checkout-walkthrough.md](checkout-walkthrough.md) for retry and stale results.
 4. [product-editor-walkthrough.md](product-editor-walkthrough.md) for a large transaction flow.
-5. [graph-generation.md](graph-generation.md) only after the machine is useful.
+5. [testing-guide.md](testing-guide.md) for broader transition and ViewModel test coverage.
+6. [graph-generation.md](graph-generation.md) only after the machine is useful.

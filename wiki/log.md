@@ -769,3 +769,13 @@
 - Updated: `README.md`, `docs/getting-started.md`, `docs/afsm-public-api.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | First quickstart JVM tests
+
+- Source: Follow-up API usability review of the first-time Android developer
+  path.
+- Action: Added the first two Draft transition tests to getting-started before
+  ViewModel wiring, matching the consumer-smoke executable quickstart tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

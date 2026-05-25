@@ -1,6 +1,8 @@
 # Afsm Testing Guide
 
 Afsm state machines should be tested as plain Kotlin behavior specs.
+For the first copy-pasteable Draft tests, start with
+[getting-started.md](getting-started.md).
 
 The machine is deterministic:
 

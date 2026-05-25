@@ -1961,3 +1961,25 @@ Conclusion:
 
 - First-time Android developers now get a clearer boundary between durable
   state, optional UI effects, and the optional Compose collection dependency.
+
+## [2026-05-25] Getting-started first JVM tests
+
+Change:
+
+- Added a first-test section to `docs/getting-started.md` before ViewModel
+  wiring.
+- The new section shows the same Draft transition behaviors that
+  `consumer-smoke` verifies: SaveClicked emits `SaveDraft`, and
+  `DraftSaveFailed` returns to Editing with an error message.
+- Linked `docs/testing-guide.md` from the getting-started next-reading list.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now see the intended test loop before Android
+  wiring, making the pure state-machine contract easier to lock down early.

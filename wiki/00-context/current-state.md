@@ -150,6 +150,9 @@ The current direction is:
 - First-use docs now make the effect boundary explicit: start no-effect
   machines with `AfsmNoEffect`, and add `afsm-compose` only when a Compose route
   collects real UI one-shot effects.
+- `docs/getting-started.md` now shows the first two Draft JVM transition tests
+  before ViewModel wiring, matching the external `consumer-smoke` quickstart
+  tests.
 
 ## Core Architecture Position
 
