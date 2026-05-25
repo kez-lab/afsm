@@ -1021,3 +1021,42 @@
   `docs/afsm-public-api.md`, `consumer-smoke/README.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started minimum path stop point
+
+- Source: First-use getting-started structure review.
+- Action: Added a four-step minimum path, moved the first ViewModel wiring test
+  before optional expansion topics, and aligned README/example reading orders.
+- Updated: `docs/getting-started.md`, `README.md`, `docs/examples.md`,
+  `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | README copy-source boundary
+
+- Source: README/getting-started first-use drift review.
+- Action: Clarified that README is a quick map and that
+  `docs/getting-started.md` is the copy-paste source verified by
+  `consumer-smoke`.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Auth walkthrough Draft bridge
+
+- Source: First-use review of Auth as the next example after the minimum Draft
+  path.
+- Action: Added a Draft-to-Auth bridge, separated reused concepts from new Auth
+  concepts, and positioned Auth as the first real form screen in the example
+  catalog.
+- Updated: `docs/auth-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Checkout walkthrough Auth bridge
+
+- Source: First-use review of Checkout as the next example after Auth.
+- Action: Added an Auth-to-Checkout bridge, separated reused Auth concepts from
+  Checkout lifecycle/retry concepts, and corrected the durable completion effect
+  snippet to the current labeled DSL shape.
+- Updated: `docs/checkout-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
