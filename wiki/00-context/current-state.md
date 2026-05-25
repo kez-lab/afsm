@@ -158,6 +158,8 @@ The current direction is:
 - `Afsm` low-level transition helper KDoc now directs ordinary Android feature
   code back to graphable `afsmMachine { ... }` and frames the helpers as custom
   reducer support.
+- `wiki/00-context/open-questions.md` now treats UI one-shot modeling and
+  required navigation durability as resolved policy instead of open questions.
 
 ## Core Architecture Position
 

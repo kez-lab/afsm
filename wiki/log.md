@@ -805,3 +805,12 @@
 - Updated: `afsm-core/src/main/kotlin/afsm/core/Afsm.kt`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] wiki | Effect policy open-question cleanup
+
+- Source: Follow-up stale-question review after first-use effect documentation.
+- Action: Moved UI one-shot modeling and required navigation durability from
+  open questions to resolved policy.
+- Updated: `wiki/00-context/open-questions.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

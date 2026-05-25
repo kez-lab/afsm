@@ -1,13 +1,12 @@
 ---
 title: Open Questions
-updated: 2026-05-23
+updated: 2026-05-25
 ---
 
 # Open Questions
 
 ## Architecture
 
-- Should UI one-shot actions be modeled as `Effect`, as terminal `State`, or through UI state flags depending on the case?
 - Should state machines support hierarchical/nested state machines from the start?
 
 ## Android Integration
@@ -27,6 +26,9 @@ Resolved:
 - The first complex app-level validation is a shopping sample with auth, product, review, like, and checkout retry flows.
 - Public example ladder: README minimal Draft, Auth, Checkout, ProductEditor, and non-Afsm data screens as anti-examples.
 - Checkout is now the mid-size graphable example for dynamic initial state, retry, stale command results, durable completion, and render-state mapping.
+- UI one-shot modeling is policy-based: durable product progress belongs in
+  state, disposable UI behavior can be an `Effect`, and UI behavior that must
+  survive lifecycle gaps should be state plus an acknowledgement event.
 
 ## Product
 
@@ -53,7 +55,6 @@ Resolved:
 - Should graph generation later support multi-variant and multi-module aggregation, or keep module-local `debug` output as the public MVP?
 - Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
 - Should `AfsmMachine` remain graphable by extending `AfsmGraphSource`, or should public API split a plain machine type from a graphable machine type before broad release?
-- Should required navigation in samples react to durable terminal state instead of relying on best-effort effect collectors?
 - What exact restoration policy should be documented for phases whose `onEnter` would normally start non-idempotent work?
 
 Resolved:
@@ -109,6 +110,9 @@ Resolved:
 - Public API/ABI hardening removed `addState`, `addBranch`, `addEventDefinition`, and `afsmLabelForClass` from the API dump.
 - `AfsmTransition` is factory-based; ignored/invalid transitions cannot carry public commands/effects.
 - Checkout completed-payment state is now durable and duplicate pay/retry after completion is ignored.
+- Required navigation should not rely on effect-only output. Checkout models
+  completion as durable state and emits the navigation effect only as a
+  convenience for the active route.
 - `.mmd` graph output file names must be safe relative `.mmd` paths.
 - Command queue overflow now fails fast with `AfsmCommandQueueOverflowException`; machines should emit fewer/coarser commands or increase `commandQueueCapacity`.
 - Default effect delivery has no replay; late collectors do not receive old one-shot effects.

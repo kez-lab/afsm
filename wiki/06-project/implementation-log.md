@@ -2048,3 +2048,27 @@ Conclusion:
 
 - IDE autocomplete now gives first-time users clearer guidance before they pick
   the lower-level reducer escape hatch.
+
+## [2026-05-25] Effect policy open-question cleanup
+
+Change:
+
+- Moved UI one-shot modeling out of open architecture questions and into the
+  resolved list with the current policy: durable progress as state, disposable
+  UI one-shots as effects, and lifecycle-durable UI work as state plus
+  acknowledgement.
+- Moved required navigation durability out of public API open questions because
+  Checkout now models completion as durable state and treats the effect as an
+  active-route convenience.
+- Updated current-state to point at the resolved policy.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The canonical open-questions page no longer contradicts the current effect
+  and navigation guidance shown in public docs.
