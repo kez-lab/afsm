@@ -5,6 +5,32 @@ Auth is the smallest real Android example.
 Use it when you want to understand how Afsm fits a normal form screen without
 the size of Checkout or ProductEditor.
 
+Read Auth after you finish the minimum Draft path in
+[getting-started.md](getting-started.md): build the machine, add JVM transition
+tests, host it from a ViewModel, and add one ViewModel wiring test.
+
+## From Draft To Auth
+
+Keep the same mental model from Draft:
+
+- transition rules stay in a plain Kotlin machine,
+- `ViewModel.afsmHost(...)` owns Android lifecycle, command execution, state,
+  and effects,
+- repository results come back as typed events,
+- pure JVM transition tests are still the first tests to read.
+
+Auth adds only the next small Android-screen concepts:
+
+- two form modes, login and register, handled by guarded `case(...)` branches,
+- session persistence in the command handler after a repository success,
+- a feature-owned render state before Compose rendering,
+- one real route effect, `AuthEffect.OpenCatalog`, while the authenticated
+  session remains durable state.
+
+It still avoids the larger Checkout topics: dynamic initial state, async
+loading, request ids, stale command results, retry policy, and durable
+completion navigation.
+
 ## Files
 
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthContract.kt`
@@ -121,16 +147,79 @@ Auth uses the simplest `afsmHost(machine = ...)` form because its initial state
 is static:
 
 ```kotlin
-private val host = afsmHost(
-    machine = AuthStateMachine,
-    commandHandler = { command: AuthCommand, dispatch ->
-        // repository call -> AuthSucceeded/AuthFailed
-    },
+class AuthViewModel(
+    private val authRepository: AuthRepository,
+    private val sessionRepository: SessionRepository,
+) : ViewModel() {
+    private val host = afsmHost(
+        machine = AuthStateMachine,
+        commandHandler = { command: AuthCommand, dispatch ->
+            when (command) {
+                is AuthCommand.Login -> {
+                    authRepository.login(
+                        email = command.email,
+                        password = command.password,
+                    ).fold(
+                        onSuccess = { session ->
+                            sessionRepository.setSession(session)
+                            dispatch(AuthEvent.AuthSucceeded(session))
+                        },
+                        onFailure = { error ->
+                            dispatch(AuthEvent.AuthFailed(error.message ?: "Login failed."))
+                        },
+                    )
+                }
+
+                is AuthCommand.Register -> {
+                    authRepository.register(
+                        name = command.name,
+                        email = command.email,
+                        password = command.password,
+                    ).fold(
+                        onSuccess = { session ->
+                            sessionRepository.setSession(session)
+                            dispatch(AuthEvent.AuthSucceeded(session))
+                        },
+                        onFailure = { error ->
+                            dispatch(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
+                        },
+                    )
+                }
+            }
+        },
+    )
+
+    val state: StateFlow<AuthState> = host.state
+    val effects: Flow<AuthEffect> = host.effects
+
+    fun onEvent(event: AuthEvent) {
+        host.dispatch(event)
+    }
+}
+```
+
+The command handler owns repository/session work and returns success or failure
+to the machine as typed events.
+
+## Render State Boundary
+
+Auth is small, but it still maps `AuthState` to `AuthRenderState` before
+rendering. This keeps Compose focused on ordinary screen choices such as
+loading state, selected mode, form values, and authenticated email:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+val renderState = state.toRenderState()
+
+AuthScreen(
+    state = renderState,
+    onEvent = viewModel::onEvent,
 )
 ```
 
-The ViewModel exposes `host.state` and `host.effects`, then delegates UI input
-to `host.dispatch(event)`.
+Use this pattern when a screen starts interpreting several phases for UI
+enablement, labels, or terminal display. The first Draft screen can pass
+`DraftState` directly until that mapping earns its own model.
 
 ## Effect Policy
 
