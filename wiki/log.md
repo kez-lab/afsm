@@ -814,3 +814,12 @@
 - Updated: `wiki/00-context/open-questions.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Example reading path test loop
+
+- Source: Follow-up after adding first quickstart JVM tests.
+- Action: Added the quickstart test loop to example and modeling-rule reading
+  orders before larger sample adoption.
+- Updated: `docs/examples.md`, `docs/modeling-rules.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

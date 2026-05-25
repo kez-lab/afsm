@@ -126,11 +126,13 @@ the event both changes data and changes phase.
 ## First Reading Order
 
 1. [getting-started.md](getting-started.md) for the compile-checked Draft path.
-2. [examples.md](examples.md) to choose the right sample.
-3. [auth-walkthrough.md](auth-walkthrough.md) for the smallest real screen.
-4. [checkout-walkthrough.md](checkout-walkthrough.md) for loading, retry, stale results, and durable completion.
-5. Generated `ProductEditorStateMachine.mmd` for the full graph.
-6. `ProductEditorStateMachine.kt` for the implementation.
+2. [testing-guide.md](testing-guide.md) after the first Draft tests, before
+   expanding coverage.
+3. [examples.md](examples.md) to choose the right sample.
+4. [auth-walkthrough.md](auth-walkthrough.md) for the smallest real screen.
+5. [checkout-walkthrough.md](checkout-walkthrough.md) for loading, retry, stale results, and durable completion.
+6. Generated `ProductEditorStateMachine.mmd` for the full graph.
+7. `ProductEditorStateMachine.kt` for the implementation.
 
 ## Naming Rules
 

@@ -29,10 +29,12 @@ review, test, or diagram; it should not be the default for every screen.
 ## Recommended Reading Path
 
 1. Start with [getting-started.md](getting-started.md).
-2. Read [modeling-rules.md](modeling-rules.md).
-3. Read [auth-walkthrough.md](auth-walkthrough.md) for the smallest Android screen.
-4. Read [checkout-walkthrough.md](checkout-walkthrough.md) for lifecycle and retry policy.
-5. Read [product-editor-walkthrough.md](product-editor-walkthrough.md) only after Checkout; it is intentionally larger.
+2. Run the first Draft JVM tests, then use [testing-guide.md](testing-guide.md)
+   when you need broader transition or ViewModel coverage.
+3. Read [modeling-rules.md](modeling-rules.md).
+4. Read [auth-walkthrough.md](auth-walkthrough.md) for the smallest Android screen.
+5. Read [checkout-walkthrough.md](checkout-walkthrough.md) for lifecycle and retry policy.
+6. Read [product-editor-walkthrough.md](product-editor-walkthrough.md) only after Checkout; it is intentionally larger.
 
 ## What Each Example Proves
 

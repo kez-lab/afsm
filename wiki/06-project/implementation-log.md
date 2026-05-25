@@ -2072,3 +2072,24 @@ Conclusion:
 
 - The canonical open-questions page no longer contradicts the current effect
   and navigation guidance shown in public docs.
+
+## [2026-05-25] Example reading path test loop
+
+Change:
+
+- Updated `docs/examples.md` so the recommended reading path includes the first
+  Draft JVM tests and `docs/testing-guide.md` before broader sample adoption.
+- Updated `docs/modeling-rules.md` so its first reading order matches the
+  quickstart test-first onboarding loop.
+- Updated current-state to record the aligned reading order.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers are now routed through executable transition
+  tests before choosing larger samples.

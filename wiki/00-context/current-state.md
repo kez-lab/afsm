@@ -160,6 +160,8 @@ The current direction is:
   reducer support.
 - `wiki/00-context/open-questions.md` now treats UI one-shot modeling and
   required navigation durability as resolved policy instead of open questions.
+- Example and modeling-rule reading orders now include the quickstart JVM test
+  loop before broader sample adoption.
 
 ## Core Architecture Position
 
