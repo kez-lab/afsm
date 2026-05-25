@@ -169,7 +169,9 @@ Good ViewModel tests cover:
 - command handlers call repositories/use cases,
 - command results dispatch follow-up events,
 - state is exposed as `StateFlow`,
-- effects can be collected by the UI layer.
+- effects can be collected by the UI layer,
+- explicit `initialState` values from navigation arguments or `SavedStateHandle`
+  seed state without accidentally starting `onEnter` work.
 
 Use `runTest`, a test main dispatcher, and `Dispatchers.setMain/resetMain`
 around `viewModelScope` code.
@@ -224,6 +226,10 @@ class DraftViewModelTest {
 
 Keep the ViewModel test narrow. It should prove the host bridge and command
 handler wiring, while the machine tests continue to own every transition branch.
+
+For `SavedStateHandle`, construct the handle directly in the test and convert
+small saved values into the feature's explicit initial state. Do not serialize
+the whole screen state into the handle just to make a test easier.
 
 ## Do Not Weaken Spec Tests
 

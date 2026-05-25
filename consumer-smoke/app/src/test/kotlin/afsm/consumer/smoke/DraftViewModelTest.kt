@@ -1,5 +1,6 @@
 package afsm.consumer.smoke
 
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -54,6 +55,33 @@ class DraftViewModelTest {
                 ),
                 viewModel.state.value.data,
             )
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun savedStateHandleTitleSeedsInitialDraftStateWithoutStartingWork() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+        try {
+            val repository = RecordingDraftRepository(Result.success(Unit))
+            val savedStateHandle = SavedStateHandle(
+                mapOf(DraftTitleKey to "Restored plan"),
+            )
+            val viewModel = DraftViewModel(
+                repository = repository,
+                initialState = draftStateFromSavedState(savedStateHandle),
+            )
+
+            mainDispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(DraftPhase.Editing, viewModel.state.value.phase)
+            assertEquals(
+                DraftData(title = "Restored plan"),
+                viewModel.state.value.data,
+            )
+            assertEquals(emptyList<String>(), repository.savedTitles)
         } finally {
             Dispatchers.resetMain()
         }

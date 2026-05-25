@@ -191,6 +191,10 @@ The current direction is:
   feature `Effect` migration path, showing the effect type change, durable
   state plus optional effect emission, ViewModel `Flow<Effect>` exposure, and
   route-level `CollectAfsmEffects(...)` collection.
+- The Draft quickstart ViewModel now accepts an explicit initial state, and
+  `consumer-smoke` verifies a `SavedStateHandle` title key can seed Draft state
+  without starting work; docs now show this as the first navigation/deep-link
+  restoration path before moving to Checkout.
 
 ## Core Architecture Position
 

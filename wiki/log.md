@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-05-25] test+docs | SavedStateHandle initial state quickstart bridge
+
+- Source: First-use dynamic initial-state review.
+- Action: Added a consumer-smoke `SavedStateHandle` to explicit Draft
+  `initialState` test and documented the same path in the getting-started,
+  testing, README, consumer-smoke, and release-readiness docs.
+- Updated: `consumer-smoke/`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/release-readiness.md`, `README.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-25] documentation | First effect onboarding bridge
 
 - Source: First-use effect/Compose onboarding review.

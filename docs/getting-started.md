@@ -33,6 +33,13 @@ machine emits UI one-shot effects and a Compose route needs
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 ```
 
+If a later ViewModel reads `SavedStateHandle` directly, add the AndroidX
+saved-state artifact in that Android module:
+
+```kotlin
+implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0")
+```
+
 For Maven Local snapshots, make sure the consuming build has `mavenLocal()` in
 `settings.gradle.kts`:
 
@@ -356,9 +363,11 @@ interface DraftRepository {
 
 class DraftViewModel(
     private val repository: DraftRepository,
+    initialState: DraftState = DraftStateMachine.initialState,
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
+        initialState = initialState,
         commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
                 is DraftCommand.SaveDraft -> repository.save(command.title).fold(
@@ -482,16 +491,71 @@ around `viewModelScope` code. The complete Draft example is in
 compiled in
 [`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
 
+## Add Initial State From SavedStateHandle Later
+
 If the starting state comes from navigation arguments, a deep link, repository
-restoration, or `SavedStateHandle`, pass an explicit initial state:
+restoration, or `SavedStateHandle`, convert those small inputs into a feature
+state before calling `afsmHost(...)`. Keep the machine graphable by passing the
+same `machine` plus an explicit `initialState`.
+
+For the Draft example, save only the title key:
 
 ```kotlin
-private val host = afsmHost(
-    machine = CheckoutStateMachine,
-    initialState = checkoutState(productId = productId),
-    commandHandler = checkoutCommandHandler,
+import androidx.lifecycle.SavedStateHandle
+
+const val DraftTitleKey = "draftTitle"
+
+fun draftStateFromSavedState(savedStateHandle: SavedStateHandle): DraftState {
+    return DraftState(
+        phase = DraftPhase.Editing,
+        data = DraftData(
+            title = savedStateHandle.get<String>(DraftTitleKey).orEmpty(),
+        ),
+    )
+}
+```
+
+Then pass that state into the ViewModel or factory that owns the host:
+
+```kotlin
+val viewModel = DraftViewModel(
+    repository = repository,
+    initialState = draftStateFromSavedState(savedStateHandle),
 )
 ```
+
+Test this path by constructing `SavedStateHandle` directly. Also assert that
+restored initial state does not start work by itself:
+
+```kotlin
+@Test
+fun savedStateHandleTitleSeedsInitialDraftStateWithoutStartingWork() = runTest {
+    val mainDispatcher = StandardTestDispatcher(testScheduler)
+    Dispatchers.setMain(mainDispatcher)
+    try {
+        val savedStateHandle = SavedStateHandle(
+            mapOf(DraftTitleKey to "Restored plan"),
+        )
+        val repository = RecordingDraftRepository(Result.success(Unit))
+        val viewModel = DraftViewModel(
+            repository = repository,
+            initialState = draftStateFromSavedState(savedStateHandle),
+        )
+
+        mainDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(DraftPhase.Editing, viewModel.state.value.phase)
+        assertEquals(DraftData(title = "Restored plan"), viewModel.state.value.data)
+        assertEquals(emptyList<String>(), repository.savedTitles)
+    } finally {
+        Dispatchers.resetMain()
+    }
+}
+```
+
+This is the same shape Checkout uses for a navigation `productId`; it starts
+work only after an explicit `ScreenEntered` event moves the machine to a
+loading phase.
 
 ## What To Read Next
 

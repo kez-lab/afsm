@@ -220,6 +220,9 @@ private val host = afsmHost(
 )
 ```
 
+For a tested `SavedStateHandle` version of this pattern, see
+[docs/getting-started.md](docs/getting-started.md#add-initial-state-from-savedstatehandle-later).
+
 ## Install
 
 Repository-local development:

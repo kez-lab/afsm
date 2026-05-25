@@ -5,6 +5,37 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] SavedStateHandle initial state quickstart bridge
+
+Change:
+
+- Added an executable `SavedStateHandle` to explicit `DraftState` helper in the
+  external `consumer-smoke` quickstart mirror.
+- Let `DraftViewModel` accept an explicit initial state while keeping
+  `DraftViewModel(repository)` as the default beginner path.
+- Added a consumer-smoke ViewModel test proving a restored title seeds
+  `Editing` state without starting repository work.
+- Updated getting-started, testing, README, consumer-smoke, and release
+  readiness docs to make the dynamic initial-state path concrete.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- First-time Android developers now have a tested bridge from
+  `SavedStateHandle`/navigation inputs to `afsmHost(machine, initialState)`,
+  before they need to study the larger Checkout walkthrough.
+
 ## [2026-05-25] first effect onboarding bridge
 
 Change:

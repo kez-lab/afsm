@@ -34,7 +34,8 @@ What this proves:
   command emission, and save failure recovery against those Maven Local
   artifacts.
 - The separate consumer build also runs Draft ViewModel wiring tests with a
-  test main dispatcher so command execution is verified outside the root build.
+  test main dispatcher so command execution and explicit initial state from
+  `SavedStateHandle` are verified outside the root build.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
@@ -94,8 +95,9 @@ Current compatibility baseline:
 `consumer-smoke` proves that a separate Android Gradle build can resolve and
 compile against the Maven Local artifacts, including the first-use Draft
 quickstart machine and ViewModel. It also runs focused Draft quickstart
-transition tests for validation, command emission, and save failure recovery.
-It does not prove broader sample behavior, runtime
+transition tests for validation, command emission, and save failure recovery,
+plus Draft ViewModel tests for command execution and explicit initial state
+from `SavedStateHandle`. It does not prove broader sample behavior, runtime
 correctness, or binary compatibility by itself; those remain covered by module
 tests, sample tests, graph generation, and `apiCheck` in the local release gate.
 
