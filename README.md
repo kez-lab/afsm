@@ -207,6 +207,7 @@ dependencies {
     implementation(project(":afsm-runtime"))
     implementation(project(":afsm-viewmodel"))
     implementation(project(":afsm-compose")) // optional
+    testImplementation(project(":afsm-test")) // optional
     ksp(project(":afsm-graph-ksp")) // optional graph registry
 }
 ```
@@ -232,7 +233,7 @@ dependencies {
 }
 ```
 
-Optional Compose and graph tooling:
+Optional Compose, test, and graph tooling:
 
 For Maven Local graph plugin resolution, include `mavenLocal()` in
 `pluginManagement.repositories` in `settings.gradle.kts`.
@@ -245,6 +246,7 @@ plugins {
 
 dependencies {
     implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 }
 ```
 
@@ -302,8 +304,10 @@ fun `SaveClicked enters Saving and emits SaveDraft`() {
         event = DraftEvent.SaveClicked,
     )
 
-    assertEquals(DraftPhase.Saving, result.state.phase)
-    assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+    result
+        .assertTransitioned()
+        .assertPhase(DraftPhase.Saving)
+        .assertCommands(DraftCommand.SaveDraft("Plan"))
 }
 ```
 
@@ -446,6 +450,7 @@ internal edge:
 | `afsm-runtime` | Coroutine host, serialized dispatch loop, command execution, effect delivery | No |
 | `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
 | `afsm-compose` | Lifecycle-aware Compose effect collection helper | Yes |
+| `afsm-test` | Kotlin test helpers for transition, phase, command, effect, and decision assertions | No |
 | `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |
 | `sample-shop` | Compose + Room sample app proving real usage | Yes |
 | `consumer-smoke` | Separate Android consumer build that resolves Afsm from Maven Local | Yes |
@@ -456,6 +461,6 @@ internal edge:
 ./scripts/verify-release-local.sh --warning-mode all
 ```
 
-`consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts without project-module shortcuts.
+`consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts, including `afsm-test`, without project-module shortcuts.
 
 See [docs/examples.md](docs/examples.md), [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/graph-generation.md](docs/graph-generation.md), [docs/auth-walkthrough.md](docs/auth-walkthrough.md), [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md), [docs/product-editor-walkthrough.md](docs/product-editor-walkthrough.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -584,3 +584,16 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-25] implementation | afsm-test transition assertion helpers
+
+- Source: API usability review of beginner feature tests repeating low-level
+  `AfsmDecision`, phase, command, and effect assertions.
+- Action: Added the `afsm-test` helper module, dogfooded it in Auth and
+  Checkout sample tests, published/API-tracked it, and extended consumer smoke
+  to resolve and execute it from Maven Local.
+- Updated: `afsm-test/`, `settings.gradle.kts`, `sample-shop/`,
+  `consumer-smoke/`, `scripts/`, `README.md`, `docs/`, `CHANGELOG.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-05-23
+updated: 2026-05-25
 ---
 
 # Open Questions
@@ -18,7 +18,6 @@ updated: 2026-05-23
 ## Scope
 
 - What should the first public API look like before it becomes too framework-like?
-- Should a dedicated `afsm-test` module exist, or should testing stay as documentation and plain Kotlin assertions until repeated helper needs are proven?
 - What sample flows best prove the library's value to external Android teams?
 
 Resolved:
@@ -27,6 +26,7 @@ Resolved:
 - The first complex app-level validation is a shopping sample with auth, product, review, like, and checkout retry flows.
 - Public example ladder: README minimal Draft, Auth, Checkout, ProductEditor, and non-Afsm data screens as anti-examples.
 - Checkout is now the mid-size graphable example for dynamic initial state, retry, stale command results, durable completion, and render-state mapping.
+- A minimal `afsm-test` module is accepted for transition assertion helpers after repeated sample and documentation tests needed the same decision/phase/command/effect checks.
 
 ## Product
 

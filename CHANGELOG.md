@@ -34,6 +34,7 @@ Initial pre-release candidate.
 - Best-effort one-shot effect flow delivery.
 - `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including machine and dynamic initial state overloads.
 - `afsm-compose` with `CollectAfsmEffects(...)`.
+- `afsm-test` with transition assertion helpers for decisions, phase, data, state, commands, and effects.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
 - `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
 - `state(phase)` DSL convenience for terminal or marker phases with no handlers.

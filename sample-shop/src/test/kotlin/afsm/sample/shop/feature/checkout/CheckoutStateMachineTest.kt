@@ -1,13 +1,19 @@
 package afsm.sample.shop.feature.checkout
 
-import afsm.core.AfsmDecision
 import afsm.core.AfsmTopologyTransition
 import afsm.core.toMmd
 import afsm.sample.shop.core.model.OrderReceipt
 import afsm.sample.shop.core.model.Product
+import afsm.test.assertCommands
+import afsm.test.assertEffects
+import afsm.test.assertHandled
+import afsm.test.assertIgnored
+import afsm.test.assertNoEffects
+import afsm.test.assertNoOutputs
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class CheckoutStateMachineTest {
@@ -27,16 +33,17 @@ class CheckoutStateMachineTest {
             event = CheckoutEvent.ScreenEntered,
         )
 
-        assertEquals(AfsmDecision.Transitioned, result.decision)
-        assertEquals(CheckoutPhase.ProductLoading, result.state.phase)
-        assertEquals(listOf(CheckoutCommand.LoadProduct(product.id)), result.commands)
+        result
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.ProductLoading)
+            .assertCommands(CheckoutCommand.LoadProduct(product.id))
 
         val duplicate = machine.transition(
             state = result.state,
             event = CheckoutEvent.ScreenEntered,
         )
 
-        assertIs<AfsmDecision.Ignored>(duplicate.decision)
+        duplicate.assertIgnored()
     }
 
     @Test
@@ -49,7 +56,9 @@ class CheckoutStateMachineTest {
             event = CheckoutEvent.ProductLoaded(product),
         )
 
-        assertEquals(CheckoutPhase.ProductReady, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.ProductReady)
         assertEquals(product, result.state.data.product)
         assertEquals(null, result.state.data.errorMessage)
     }
@@ -67,17 +76,16 @@ class CheckoutStateMachineTest {
 
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
-        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 1), result.state.phase)
-        assertEquals(1, result.state.data.nextPaymentRequestId)
-        assertEquals(
-            listOf(
+        result
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 1))
+            .assertCommands(
                 CheckoutCommand.SubmitPayment(
                     requestId = 1,
                     product = product,
                 ),
-            ),
-            result.commands,
-        )
+            )
+        assertEquals(1, result.state.data.nextPaymentRequestId)
     }
 
     @Test
@@ -93,11 +101,11 @@ class CheckoutStateMachineTest {
 
         val result = machine.transition(state, CheckoutEvent.PayClicked)
 
-        assertIs<AfsmDecision.Handled>(result.decision)
-        assertEquals(CheckoutPhase.ProductReady, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(CheckoutPhase.ProductReady)
+            .assertNoOutputs()
         assertEquals("Product is required before payment.", result.state.data.errorMessage)
-        assertEquals(emptyList(), result.commands)
-        assertEquals(emptyList(), result.effects)
     }
 
     @Test
@@ -118,22 +126,23 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertEquals(CheckoutPhase.PaymentFailed, failed.state.phase)
+        failed
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.PaymentFailed)
         assertEquals("Mock payment declined.", failed.state.data.errorMessage)
 
         val retry = machine.transition(failed.state, CheckoutEvent.RetryClicked)
 
-        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), retry.state.phase)
-        assertEquals(2, retry.state.data.nextPaymentRequestId)
-        assertEquals(
-            listOf(
+        retry
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
+            .assertCommands(
                 CheckoutCommand.SubmitPayment(
                     requestId = 2,
                     product = product,
                 ),
-            ),
-            retry.commands,
-        )
+            )
+        assertEquals(2, retry.state.data.nextPaymentRequestId)
     }
 
     @Test
@@ -150,11 +159,11 @@ class CheckoutStateMachineTest {
 
         val result = machine.transition(state, CheckoutEvent.RetryClicked)
 
-        assertIs<AfsmDecision.Handled>(result.decision)
-        assertEquals(CheckoutPhase.PaymentFailed, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(CheckoutPhase.PaymentFailed)
+            .assertNoOutputs()
         assertEquals("Product is required before payment.", result.state.data.errorMessage)
-        assertEquals(emptyList(), result.commands)
-        assertEquals(emptyList(), result.effects)
     }
 
     @Test
@@ -181,14 +190,16 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertEquals(CheckoutPhase.Completed(orderId = 42), result.state.phase)
-        assertEquals(listOf(CheckoutEffect.PaymentCompleted(orderId = 42)), result.effects)
+        result
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.Completed(orderId = 42))
+            .assertEffects(CheckoutEffect.PaymentCompleted(orderId = 42))
 
         val duplicatePay = machine.transition(result.state, CheckoutEvent.PayClicked)
         val duplicateRetry = machine.transition(result.state, CheckoutEvent.RetryClicked)
 
-        assertIs<AfsmDecision.Ignored>(duplicatePay.decision)
-        assertIs<AfsmDecision.Ignored>(duplicateRetry.decision)
+        duplicatePay.assertIgnored()
+        duplicateRetry.assertIgnored()
     }
 
     @Test
@@ -209,8 +220,9 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertIs<AfsmDecision.Ignored>(result.decision)
-        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
+        result
+            .assertIgnored()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
     }
 
     @Test
@@ -237,9 +249,10 @@ class CheckoutStateMachineTest {
             ),
         )
 
-        assertIs<AfsmDecision.Ignored>(result.decision)
-        assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
-        assertEquals(emptyList(), result.effects)
+        result
+            .assertIgnored()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
+            .assertNoEffects()
     }
 
     @Test

@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-23
+updated: 2026-05-25
 ---
 
 # Current State
@@ -22,6 +22,7 @@ The current direction is:
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
 - A thin AndroidX `afsm-viewmodel` module now exists with `ViewModel.afsmHost(...)`, wiring `AfsmHost` to `viewModelScope`; graphable machines can use `afsmHost(machine = StateMachine, ...)`, while navigation-argument screens can use `afsmHost(machine = StateMachine, initialState = ...)`.
 - A thin `afsm-compose` module now exists with `CollectAfsmEffects(...)` for lifecycle-aware one-shot effect collection in Compose routes.
+- A minimal `afsm-test` module now exists with Kotlin test assertion helpers for transition decisions, phase/data state, commands, and effects; sample Auth and Checkout tests dogfood the helpers.
 - A `:sample-shop` Android app module now exists to validate Afsm in a realistic Compose + Room shopping app.
 - The sample app uses Afsm for auth, product registration review/publish, and checkout retry flows, while keeping product list/detail/likes/reviews on ordinary ViewModel + Flow to avoid unnecessary FSM ceremony.
 - Public sample documentation now lives in `docs/sample-shop-afsm-guide.md`.
@@ -38,10 +39,10 @@ The current direction is:
 - `AfsmState<P, D>` is now the standard phase/data state value. It exposes `phase` and `data`; `Data` intentionally avoids the Android `Context` naming collision.
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - Maven local publishing now works for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the `io.github.afsm.graph` Gradle plugin using `io.github.afsm:*:0.1.0-SNAPSHOT` pre-release coordinates.
-- `consumer-smoke` now exists as a separate Android Gradle build that consumes those Maven Local coordinates, compiles a ViewModel-hosted Afsm machine, applies the graph Gradle plugin, runs the KSP graph processor, and generates `.mmd` output without project-module dependencies.
+- `consumer-smoke` now exists as a separate Android Gradle build that consumes those Maven Local coordinates, compiles a ViewModel-hosted Afsm machine, verifies `afsm-test` from Maven Local in a unit test, applies the graph Gradle plugin, runs the KSP graph processor, and generates `.mmd` output without project-module dependencies.
 - `docs/release-readiness.md` now defines the local release gate, remaining product decisions, engineering gates, and the known Kotlin Gradle plugin POM deprecation warning.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
-- Binary API validation is enabled with API dumps for the five Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
+- Binary API validation is enabled with API dumps for the six Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
 - `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes and documents pre-release alias removal.
 - `CONTRIBUTING.md` now captures the project development flow, test-integrity rules, public API change policy, and local release gate.
 - `scripts/verify-release-local.sh` now runs the full local release gate, including tests, sample graph generation, `apiCheck`, Maven Local publication, and external consumer smoke.

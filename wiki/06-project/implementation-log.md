@@ -1,6 +1,6 @@
 ---
 title: Implementation Log
-updated: 2026-05-10
+updated: 2026-05-25
 ---
 
 # Implementation Log
@@ -1538,3 +1538,33 @@ Conclusion:
 - The first-use path now separates graph decisions from mutation, and the docs
   teach a small statechart before asking Android developers to read the
   Checkout or ProductEditor domains.
+
+## [2026-05-25] afsm-test transition assertion helpers
+
+Change:
+
+- Added `:afsm-test` as a Kotlin/JVM `java-library` module with explicit API,
+  Maven Local publication, sources/javadoc jars, and binary API validation.
+- Added transition assertion helpers for decisions, full state, `AfsmState`
+  phase/data, ordered commands, ordered effects, and no-output checks.
+- Dogfooded the helpers in sample Auth and Checkout state machine tests.
+- Updated README, public API docs, testing guide, release readiness docs,
+  release scripts, consumer-smoke, changelog, and wiki state.
+- Extended `consumer-smoke` so a separate Android Gradle build resolves
+  `afsm-test` from Maven Local and runs a small unit test with the helpers.
+
+Verification:
+
+```bash
+./gradlew :afsm-test:test --no-daemon
+./gradlew :afsm-test:test :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :afsm-test:apiDump --no-daemon
+./gradlew :afsm-test:apiCheck apiCheck --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The beginner testing path now has a published helper artifact and the release
+  gate proves both in-repo sample usage and external Maven Local consumption.

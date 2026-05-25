@@ -10,6 +10,19 @@ current state + event -> next state + commands + effects + decision
 
 That shape is the main reason to keep transition rules outside Android `ViewModel`.
 
+Use `afsm-test` when you want transition tests to read like the machine's
+behavior instead of repeated list and decision assertions:
+
+```kotlin
+dependencies {
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+}
+```
+
+Import the helpers you use from `afsm.test`, for example
+`assertTransitioned`, `assertPhase`, `assertCommands`, `assertIgnored`, and
+`assertInvalid`.
+
 ## First Five Tests
 
 ### Valid transition
@@ -22,8 +35,9 @@ fun `SubmitClicked enters Submitting when form is valid`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(SignupPhase.Submitting, result.state.phase)
-    assertEquals(AfsmDecision.Transitioned, result.decision)
+    result
+        .assertTransitioned()
+        .assertPhase(SignupPhase.Submitting)
 }
 ```
 
@@ -37,7 +51,7 @@ fun `SubmitSucceeded before submit is invalid`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertIs<AfsmDecision.Invalid>(result.decision)
+    result.assertInvalid()
 }
 ```
 
@@ -51,10 +65,7 @@ fun `entering Submitting emits submit command`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(
-        listOf(SignupCommand.Submit(validForm)),
-        result.commands,
-    )
+    result.assertCommands(SignupCommand.Submit(validForm))
 }
 ```
 
@@ -68,10 +79,7 @@ fun `completed signup emits navigation effect`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertEquals(
-        listOf(SignupEffect.OpenHome),
-        result.effects,
-    )
+    result.assertEffects(SignupEffect.OpenHome)
 }
 ```
 
@@ -98,13 +106,26 @@ fun `stale payment failure is ignored`() {
         ),
     )
 
-    assertIs<AfsmDecision.Ignored>(result.decision)
-    assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
+    result
+        .assertIgnored()
+        .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
 }
 ```
 
 Use `Invalid` for programmer errors and impossible flow results. Use `Ignored`
 for expected late/stale results that can happen in real asynchronous systems.
+
+The helpers are ordinary Kotlin test assertions. They return the same
+`AfsmTransition`, so tests can chain the decision, phase, state, command, and
+effect expectations that matter for a scenario:
+
+```kotlin
+machine.transition(editingState(validForm), SignupEvent.SubmitClicked)
+    .assertTransitioned()
+    .assertPhase(SignupPhase.Submitting)
+    .assertCommands(SignupCommand.Submit(validForm))
+    .assertNoEffects()
+```
 
 ## ViewModel Tests
 

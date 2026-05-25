@@ -32,4 +32,7 @@ dependencies {
     implementation("io.github.afsm:afsm-compose:$afsmVersion")
     implementation("io.github.afsm:afsm-runtime:$afsmVersion")
     implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
+
+    testImplementation("io.github.afsm:afsm-test:$afsmVersion")
+    testImplementation(kotlin("test-junit"))
 }

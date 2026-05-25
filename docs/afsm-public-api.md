@@ -61,10 +61,11 @@ implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 ```
 
-Optional Compose and graph tooling:
+Optional Compose, test, and graph tooling:
 
 ```kotlin
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 ```
 
 ```kotlin
@@ -392,6 +393,23 @@ fun <F : Any> CollectAfsmEffects(
 
 Use this in route-level composables for UI one-shot behavior such as navigation
 or snackbar display.
+
+## afsm-test
+
+`afsm-test` provides Kotlin test assertion helpers for the common transition
+checks Android feature tests repeat:
+
+```kotlin
+machine.transition(editingState(validForm), SignupEvent.SubmitClicked)
+    .assertTransitioned()
+    .assertPhase(SignupPhase.Submitting)
+    .assertCommands(SignupCommand.Submit(validForm))
+    .assertNoEffects()
+```
+
+Use these helpers in tests only. They keep beginner-facing specs focused on
+phase, state, command, effect, and decision behavior without requiring every
+test to inspect `AfsmDecision` directly.
 
 ## afsm-graph-ksp
 

@@ -13,6 +13,7 @@ Run:
 What this proves:
 
 - Core transition and executable machine APIs compile and pass unit tests.
+- Test assertion helpers compile and pass unit tests.
 - Runtime dispatch, command execution, effects, invalid transitions, and command failure policies pass unit tests.
 - Android ViewModel helper compiles and passes unit tests.
 - Compose effect helper compiles.
@@ -25,12 +26,12 @@ What this proves:
 - The graph Gradle plugin default processor dependency is generated from the
   shared Afsm version and tested so `io.github.afsm.graph` and
   `afsm-graph-ksp` stay aligned.
-- Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
-- A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
+- Maven Local publishes all six API-tracked library modules plus the Afsm graph Gradle plugin.
+- A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, test helpers, graph Gradle plugin, and KSP processor.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
-- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
-- Binary API dumps are checked for the five API-tracked Afsm library modules.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-test`, and `afsm-graph-ksp`.
+- Binary API dumps are checked for the six API-tracked Afsm library modules.
 
 ## GitHub CI
 
@@ -83,10 +84,11 @@ Current compatibility baseline:
 | compileSdk / targetSdk | 36 |
 | minSdk | 23 |
 
-`consumer-smoke` proves that a separate Android Gradle build can resolve and
-compile against the Maven Local artifacts. It does not prove sample behavior,
-runtime correctness, or binary compatibility by itself; those remain covered by
-the module tests, sample tests, graph generation, and `apiCheck` in the local
+`consumer-smoke` proves that a separate Android Gradle build can resolve,
+compile, run a small unit test against `afsm-test`, and generate graphs from
+the Maven Local artifacts. It does not prove sample behavior, runtime
+correctness, or binary compatibility by itself; those remain covered by the
+module tests, sample tests, graph generation, and `apiCheck` in the local
 release gate.
 
 Before starting a pilot, record:
@@ -107,6 +109,7 @@ implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 ```
 
 ```kotlin
@@ -132,6 +135,7 @@ Current generated POMs contain:
 | `afsm-runtime` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
 | `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
+| `afsm-test` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT`, Kotlin test | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |
 | `afsm-graph-gradle-plugin` | Gradle plugin marker + `jar` | Gradle API | Yes |
 
