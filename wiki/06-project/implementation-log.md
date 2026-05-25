@@ -1679,3 +1679,25 @@ Conclusion:
 - The first guide now covers a common Android startup-work confusion before
   users try to put initial repository loading directly in the initial phase's
   `onEnter`.
+
+## [2026-05-25] Testing guide command failure result
+
+Change:
+
+- Expanded `docs/testing-guide.md` from `First Five Tests` to `First Six Tests`.
+- Added a command failure result test using the Draft quickstart's
+  `DraftSaveFailed("Network unavailable")` path.
+- Added command failure result path to README's feature-test checklist.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time users now see that expected command failures should be tested as
+  ordinary typed event transitions, not as ViewModel-side state mutation or
+  swallowed command handler exceptions.

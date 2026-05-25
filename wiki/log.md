@@ -648,3 +648,13 @@
   startup work should come from an explicit event such as `ScreenEntered`.
 - Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Command failure test guidance
+
+- Source: API usability review of the first machine test path after adding
+  `DraftSaveFailed`.
+- Action: Added command failure result testing to `docs/testing-guide.md` and
+  README's feature-test checklist.
+- Updated: `README.md`, `docs/testing-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

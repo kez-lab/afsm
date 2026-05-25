@@ -116,6 +116,9 @@ The current direction is:
 - `docs/getting-started.md` now calls out that initial state construction does
   not run `onEnter`; startup work should be triggered by an explicit event such
   as `ScreenEntered`.
+- `docs/testing-guide.md` now includes command failure result testing as a
+  first-use test category, using the Draft save failure path as the concrete
+  example.
 
 ## Core Architecture Position
 

@@ -10,7 +10,7 @@ current state + event -> next state + commands + effects + decision
 
 That shape is the main reason to keep transition rules outside Android `ViewModel`.
 
-## First Five Tests
+## First Six Tests
 
 ### Valid transition
 
@@ -72,6 +72,27 @@ fun `completed signup emits navigation effect`() {
         listOf(SignupEffect.OpenHome),
         result.effects,
     )
+}
+```
+
+### Command failure result
+
+Expected domain failures should return to the machine as typed events from the
+command handler. Test the resulting state transition like any other event.
+
+```kotlin
+@Test
+fun `save failure returns to Editing with message`() {
+    val result = DraftStateMachine.transition(
+        state = DraftState(
+            phase = DraftPhase.Saving,
+            data = DraftData(title = "Plan"),
+        ),
+        event = DraftEvent.DraftSaveFailed("Network unavailable"),
+    )
+
+    assertEquals(DraftPhase.Editing, result.state.phase)
+    assertEquals("Network unavailable", result.state.data.errorMessage)
 }
 ```
 

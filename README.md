@@ -333,6 +333,7 @@ Good feature tests usually cover:
 - valid phase transition,
 - invalid transition,
 - command emission,
+- command failure result path,
 - effect emission,
 - stale command result handling.
 
