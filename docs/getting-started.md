@@ -1,6 +1,9 @@
 # Afsm Getting Started
 
 This is the first document to read when adding Afsm to an Android screen.
+The Draft machine and ViewModel in this guide are mirrored by `consumer-smoke`,
+which compiles them against the published Maven Local artifacts during the
+release gate.
 
 Afsm is for complex `ViewModel` flows. If the screen is only loading a list,
 showing a detail page, toggling a like, or submitting a one-step form, ordinary

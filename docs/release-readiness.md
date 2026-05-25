@@ -26,7 +26,9 @@ What this proves:
   shared Afsm version and tested so `io.github.afsm.graph` and
   `afsm-graph-ksp` stay aligned.
 - Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
-- A separate Android Gradle build consumes the published Maven Local artifacts, including the ViewModel AAR, graph Gradle plugin, and KSP processor.
+- A separate Android Gradle build consumes the published Maven Local artifacts,
+  including the ViewModel AAR, graph Gradle plugin, KSP processor, and the Draft
+  quickstart machine/ViewModel mirrored from `docs/getting-started.md`.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
@@ -84,9 +86,10 @@ Current compatibility baseline:
 | minSdk | 23 |
 
 `consumer-smoke` proves that a separate Android Gradle build can resolve and
-compile against the Maven Local artifacts. It does not prove sample behavior,
-runtime correctness, or binary compatibility by itself; those remain covered by
-the module tests, sample tests, graph generation, and `apiCheck` in the local
+compile against the Maven Local artifacts, including the first-use Draft
+quickstart machine and ViewModel. It does not prove sample behavior, runtime
+correctness, or binary compatibility by itself; those remain covered by the
+module tests, sample tests, graph generation, and `apiCheck` in the local
 release gate.
 
 Before starting a pilot, record:

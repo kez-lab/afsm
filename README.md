@@ -252,7 +252,9 @@ The graph plugin adds `afsm-graph-ksp` to the app module by default and
 registers `generateAfsmMmd`.
 
 The full local consumer check publishes the plugin and verifies graph generation
-from an external Android build:
+from an external Android build. It also compiles the Draft quickstart machine
+and ViewModel from [docs/getting-started.md](docs/getting-started.md), so the
+first-use example cannot drift from the published Maven Local artifacts.
 
 ```bash
 ./scripts/verify-consumer-smoke.sh --warning-mode all

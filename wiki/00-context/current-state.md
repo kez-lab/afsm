@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-23
+updated: 2026-05-25
 ---
 
 # Current State
@@ -39,6 +39,9 @@ The current direction is:
 - Root `README.md` and `docs/afsm-public-api.md` now document only the current public API names.
 - Maven local publishing now works for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the `io.github.afsm.graph` Gradle plugin using `io.github.afsm:*:0.1.0-SNAPSHOT` pre-release coordinates.
 - `consumer-smoke` now exists as a separate Android Gradle build that consumes those Maven Local coordinates, compiles a ViewModel-hosted Afsm machine, applies the graph Gradle plugin, runs the KSP graph processor, and generates `.mmd` output without project-module dependencies.
+- The Draft quickstart machine and ViewModel from `docs/getting-started.md`
+  are mirrored in `consumer-smoke`, so the first-use documentation compiles
+  against Maven Local artifacts and exports a graph during release verification.
 - `docs/release-readiness.md` now defines the local release gate, remaining product decisions, engineering gates, and the known Kotlin Gradle plugin POM deprecation warning.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
 - Binary API validation is enabled with API dumps for the five Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.

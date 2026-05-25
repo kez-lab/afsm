@@ -1,6 +1,6 @@
 ---
 title: Implementation Log
-updated: 2026-05-10
+updated: 2026-05-25
 ---
 
 # Implementation Log
@@ -1538,3 +1538,28 @@ Conclusion:
 - The first-use path now separates graph decisions from mutation, and the docs
   teach a small statechart before asking Android developers to read the
   Checkout or ProductEditor domains.
+
+## [2026-05-25] Draft quickstart consumer compile check
+
+Change:
+
+- Added a `consumer-smoke` mirror of the Draft quickstart machine and
+  `DraftViewModel` from `docs/getting-started.md`.
+- Annotated the quickstart machine with `@AfsmGraph` so the external consumer
+  build also exports `DraftQuickstart.mmd`.
+- Extended `verify-consumer-smoke.sh` to assert the quickstart graph contains
+  valid-title, missing-title, and save-completed transitions.
+- Updated README and release readiness docs to say the first-use guide is
+  compiled against Maven Local artifacts.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use Draft example now has an external compile and graph-generation
+  canary, reducing the risk that public onboarding docs drift from the
+  published artifact shape.

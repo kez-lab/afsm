@@ -584,3 +584,16 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-25] implementation | Draft quickstart consumer compile check
+
+- Source: API usability review of whether a first-time Android developer can
+  paste the getting-started Draft machine and ViewModel without hitting API
+  drift.
+- Action: Mirrored the Draft quickstart in `consumer-smoke`, annotated it for
+  graph export, and extended consumer smoke verification to check its `.mmd`
+  output.
+- Updated: `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`, `README.md`,
+  `docs/getting-started.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
