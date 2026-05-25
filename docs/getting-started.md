@@ -9,6 +9,17 @@ Afsm is for complex `ViewModel` flows. If the screen is only loading a list,
 showing a detail page, toggling a like, or submitting a one-step form, ordinary
 `ViewModel + StateFlow` is usually clearer.
 
+The minimum first-use path is:
+
+1. Build the Draft machine.
+2. Add the first JVM transition tests.
+3. Host the machine from a `ViewModel`.
+4. Add one ViewModel wiring test.
+
+Stop there for the first pass. Compose route wiring, render-state mapping,
+effects, custom host config, saved state, and graph generation are later
+additions.
+
 ## Before You Paste Code
 
 Add the three required modules to your Android feature/app module:
@@ -411,27 +422,23 @@ Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.
 
-## When To Change Host Config
+## Add First ViewModel Test
 
-Do not add `AfsmConfig` to the first Draft ViewModel. The defaults are the
-beginner path: invalid hosted transitions throw, unexpected command handler
-exceptions throw, effects are one-shot with no replay, and event/command queues
-are bounded.
+After the machine tests pass, add one ViewModel wiring test. Do not duplicate
+every state-machine branch here. Prove that `onEvent(event)` reaches the hosted
+machine, the command handler calls the repository, and command result events
+update `state.value`.
 
-Reach for host config only when the runtime policy itself is the thing you are
-choosing or testing:
+Use `runTest` with a main dispatcher rule around `viewModelScope` code. The
+rule and fake repository are local test fixtures you copy into your app tests;
+`afsm-test` only supplies plain machine transition assertions. The complete
+Draft example is in [testing-guide.md](testing-guide.md#viewmodel-tests), and
+the same pattern is compiled in
+[`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
 
-| Situation | First choice |
-|---|---|
-| You are only testing transition rules | Keep using pure machine tests; do not configure a host |
-| A ViewModel test intentionally drives an invalid hosted event | Use `AfsmInvalidTransitionPolicy.Record` with a logger and assert diagnostics |
-| A resilient host should log unexpected command handler exceptions | Use `AfsmCommandFailurePolicy.Record` with a logger |
-| A repository returns an expected failure | Dispatch a typed result event such as `DraftSaveFailed`; do not use config |
-| A required UI action must survive lifecycle gaps | Model durable state plus an acknowledgement event before changing effect delivery |
-| A queue overflow exception appears | Emit fewer/coarser commands first; increase capacity only after confirming the burst is expected |
-
-If a screen needs custom host policy, keep it in the ViewModel host setup. Do
-not move Android lifecycle, logging, or repository concerns into the machine.
+At this point the minimum Afsm path is complete: a plain Kotlin machine, pure
+transition tests, a ViewModel host, and one Android wiring test. Continue only
+when the screen needs one of the later additions below.
 
 ## Connect The First Compose Route
 
@@ -605,19 +612,6 @@ For effects that must survive lifecycle gaps, use state plus an acknowledgement
 event instead of `Effect`. See
 [restoration-effect-command-policy.md](restoration-effect-command-policy.md).
 
-## Add First ViewModel Test
-
-After the machine tests pass, add one ViewModel wiring test. Do not duplicate
-every state-machine branch here. Prove that `onEvent(event)` reaches the hosted
-machine, the command handler calls the repository, and command result events
-update `state.value`.
-
-Use `runTest` with a main dispatcher rule around `viewModelScope` code. The
-complete Draft example is in
-[testing-guide.md](testing-guide.md#viewmodel-tests), and the same pattern is
-compiled in
-[`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
-
 ## Add Initial State From SavedStateHandle Later
 
 If the starting state comes from navigation arguments, a deep link, repository
@@ -677,6 +671,28 @@ fun savedStateHandleTitleSeedsInitialDraftStateWithoutStartingWork() = runTest {
 This is the same shape Checkout uses for a navigation `productId`; it starts
 work only after an explicit `ScreenEntered` event moves the machine to a
 loading phase.
+
+## When To Change Host Config
+
+Do not add `AfsmConfig` to the first Draft ViewModel. The defaults are the
+beginner path: invalid hosted transitions throw, unexpected command handler
+exceptions throw, effects are one-shot with no replay, and event/command queues
+are bounded.
+
+Reach for host config only when the runtime policy itself is the thing you are
+choosing or testing:
+
+| Situation | First choice |
+|---|---|
+| You are only testing transition rules | Keep using pure machine tests; do not configure a host |
+| A ViewModel test intentionally drives an invalid hosted event | Use `AfsmInvalidTransitionPolicy.Record` with a logger and assert diagnostics |
+| A resilient host should log unexpected command handler exceptions | Use `AfsmCommandFailurePolicy.Record` with a logger |
+| A repository returns an expected failure | Dispatch a typed result event such as `DraftSaveFailed`; do not use config |
+| A required UI action must survive lifecycle gaps | Model durable state plus an acknowledgement event before changing effect delivery |
+| A queue overflow exception appears | Emit fewer/coarser commands first; increase capacity only after confirming the burst is expected |
+
+If a screen needs custom host policy, keep it in the ViewModel host setup. Do
+not move Android lifecycle, logging, or repository concerns into the machine.
 
 ## What To Read Next
 
