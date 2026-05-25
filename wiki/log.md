@@ -688,3 +688,12 @@
 - Updated: `docs/checkout-walkthrough.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] wiki | ViewModel integration sync
+
+- Source: Stale API check after documenting `AfsmCommandHandler.none()` and
+  direct command handler lambdas.
+- Action: Updated `wiki/03-engineering/afsm-viewmodel-integration.md` to match
+  the current reducer overload order and command-handler default guidance.
+- Updated: `wiki/03-engineering/afsm-viewmodel-integration.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

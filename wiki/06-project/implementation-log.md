@@ -1778,3 +1778,25 @@ Conclusion:
 - The mid-size production sample now demonstrates the actual Android bridge
   needed for navigation-argument state plus startup loading, instead of hiding
   it behind an ellipsis.
+
+## [2026-05-25] ViewModel integration wiki sync
+
+Change:
+
+- Updated `wiki/03-engineering/afsm-viewmodel-integration.md` to match the
+  current `ViewModel.afsmHost(reducer, initialState, ...)` overload order.
+- Added the current command handler guidance: Kotlin callers normally pass a
+  direct SAM lambda, and `AfsmCommandHandler.none()` intentionally ignores
+  commands for no-command machines only.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The internal engineering synthesis no longer points agents or maintainers at
+  a stale reducer overload signature or an underspecified command-handler
+  default.
