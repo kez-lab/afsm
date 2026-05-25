@@ -1,6 +1,6 @@
 ---
 title: Afsm ViewModel Integration
-updated: 2026-05-11
+updated: 2026-05-25
 ---
 
 # Afsm ViewModel Integration
@@ -41,12 +41,26 @@ Use the lower-level reducer overload for custom non-graphable reducers:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    initialState: S,
     reducer: AfsmReducer<S, E, C, F>,
+    initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 ```
+
+Although the exact parameter type is `AfsmCommandHandler<C, E>`, Kotlin callers
+normally pass a direct SAM lambda:
+
+```kotlin
+commandHandler = { command: SignupCommand, dispatch ->
+    // execute repository/use-case work
+    // dispatch(result event)
+}
+```
+
+The default `AfsmCommandHandler.none()` intentionally ignores emitted commands.
+Use it only for machines that never emit commands; command-emitting machines
+should always pass an explicit handler.
 
 ## Intended ViewModel Shape
 
@@ -124,7 +138,8 @@ Verified cases:
 - `onEvent(event)` can delegate to `host.dispatch(event)`
 - command handling can dispatch follow-up events through the runtime queue
 - effects emitted by the state machine are visible through the ViewModel
-- no-command use compiles through the default `AfsmCommandHandler.none()`
+- no-command use compiles through the default `AfsmCommandHandler.none()`, while
+  command-emitting machines should pass an explicit handler
 
 ## Ergonomics Assessment
 
