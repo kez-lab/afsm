@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-05-25] documentation | Render state boundary guidance
+
+- Source: First-use render-state boundary review.
+- Action: Documented when to pass `DraftState` directly and when to add a
+  feature-owned render state, then linked the rule to Auth and Checkout
+  examples.
+- Updated: `README.md`, `docs/getting-started.md`,
+  `docs/modeling-rules.md`, `docs/auth-walkthrough.md`,
+  `docs/examples.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-25] documentation | No-effect Compose route quickstart bridge
 
 - Source: First-use route wiring review after the Draft ViewModel path.

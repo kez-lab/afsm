@@ -451,6 +451,57 @@ fun DraftScreen(
 Keep repository calls out of the route and screen. They stay in the ViewModel's
 command handler, and the machine stays plain Kotlin.
 
+## Add Render State Only When UI Logic Grows
+
+The first Draft route can pass `DraftState` directly to `DraftScreen`. That is
+fine while the screen only reads `state.data.title`, `state.data.errorMessage`,
+and a small phase check such as "is saving".
+
+Add a render state when Compose starts inferring UI behavior from several
+phases, hiding fields for terminal phases, or choosing button actions from
+business phases. The mapping belongs beside the feature contract, not inside
+the composable body:
+
+```kotlin
+data class DraftRenderState(
+    val title: String,
+    val errorMessage: String?,
+    val isSaving: Boolean,
+    val canEdit: Boolean,
+    val canSave: Boolean,
+)
+
+fun DraftState.toRenderState(): DraftRenderState {
+    return DraftRenderState(
+        title = data.title,
+        errorMessage = data.errorMessage,
+        isSaving = phase == DraftPhase.Saving,
+        canEdit = phase == DraftPhase.Editing,
+        canSave = phase == DraftPhase.Editing && data.title.isNotBlank(),
+    )
+}
+```
+
+Then keep the route as the adapter:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+
+DraftScreen(
+    state = state.toRenderState(),
+    onTitleChanged = { value ->
+        viewModel.onEvent(DraftEvent.TitleChanged(value))
+    },
+    onSaveClick = {
+        viewModel.onEvent(DraftEvent.SaveClicked)
+    },
+)
+```
+
+Test render-state mapping when it hides internal phases or decides visible UI
+actions. Do not add it just to rename every field from `DraftData`; direct
+`DraftState` is simpler until the UI boundary earns a separate model.
+
 ## Add The First Effect Later
 
 Keep the first Draft machine on `AfsmNoEffect` until the screen has real

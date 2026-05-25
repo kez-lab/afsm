@@ -50,6 +50,34 @@ instance, for example `PaymentInProgress(requestId)`,
 ordinary form fields, loaded product records, validation messages, or retry
 counts in every phase constructor; keep them in `Data`.
 
+## State vs Render State
+
+Expose `StateFlow<State>` from the ViewModel so the Android integration remains
+honest and testable. A Compose route may pass that state directly to a small
+screen at first.
+
+Add a feature-owned render state when UI code would otherwise:
+
+- branch on several internal phases,
+- infer button labels or enabled states from business phases,
+- hide or reshape fields for terminal phases,
+- duplicate the same `phase + data` interpretation in multiple composables.
+
+Keep the mapping local:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+
+CheckoutScreen(
+    state = state.toRenderState(),
+    onPayClick = { viewModel.onEvent(CheckoutEvent.PayClicked) },
+)
+```
+
+Do not add render state merely to wrap every `Data` property. The boundary is
+useful when it keeps Compose rendering ordinary while the machine graph remains
+precise.
+
 ## DSL Machine vs Reducer
 
 Prefer `afsmMachine { ... }` for graphable complex flows. This gives you:

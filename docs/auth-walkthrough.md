@@ -175,6 +175,26 @@ class AuthViewModel(
 The command handler owns repository/session work and returns success or failure
 to the machine as typed events.
 
+## Render State Boundary
+
+Auth is small, but it still maps `AuthState` to `AuthRenderState` before
+rendering. This keeps Compose focused on ordinary screen choices such as
+loading state, selected mode, form values, and authenticated email:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+val renderState = state.toRenderState()
+
+AuthScreen(
+    state = renderState,
+    onEvent = viewModel::onEvent,
+)
+```
+
+Use this pattern when a screen starts interpreting several phases for UI
+enablement, labels, or terminal display. The first Draft screen can pass
+`DraftState` directly until that mapping earns its own model.
+
 ## Effect Policy
 
 Successful auth transitions to a durable phase:

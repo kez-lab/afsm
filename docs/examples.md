@@ -52,6 +52,10 @@ After the ViewModel works, the first Compose route is still ordinary UI:
 collect `viewModel.state` with `collectAsStateWithLifecycle()` and send UI
 callbacks back through `viewModel.onEvent(...)`.
 
+Pass `DraftState` directly at first. Add a render state only when UI code starts
+deriving visible behavior from multiple phases; Auth and Checkout show that
+next step.
+
 It is the onboarding shape:
 
 ```text
@@ -68,6 +72,7 @@ It proves:
 - UI input can stay as data updates,
 - validation can be expressed with guarded transitions,
 - repository calls stay in the command handler,
+- render state can hide small phase/data details from Compose,
 - successful auth can be durable phase plus optional navigation effect
 - route code can collect `host.effects` with `CollectAfsmEffects(...)`
 

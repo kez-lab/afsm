@@ -198,6 +198,9 @@ The current direction is:
 - `docs/getting-started.md` now shows the first no-effect Compose route:
   collect `viewModel.state` with `collectAsStateWithLifecycle()`, pass state
   into a stateless screen, and send user callbacks back to `viewModel.onEvent`.
+- First-use docs now state the render-state boundary directly: pass
+  `DraftState` to tiny screens at first, then add a feature-owned render state
+  when Compose would otherwise infer UI behavior from multiple phases.
 
 ## Core Architecture Position
 

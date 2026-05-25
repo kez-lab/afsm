@@ -5,6 +5,28 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] render state boundary guidance
+
+Change:
+
+- Added first-use guidance that starts tiny Draft screens with direct
+  `DraftState` rendering.
+- Documented the trigger for adding a feature-owned render state: repeated
+  phase branching, UI action inference, terminal-field hiding, or duplicated
+  `phase + data` interpretation in Compose.
+- Linked the guidance to existing Auth and Checkout render-state examples.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a concrete boundary between the
+  machine's Android-facing state and optional UI render models.
+
 ## [2026-05-25] no-effect Compose route quickstart bridge
 
 Change:
