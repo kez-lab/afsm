@@ -1939,3 +1939,25 @@ Conclusion:
 - The quickstart failure-branch bug now has an explicit public rule attached to
   the DSL, reducing the chance that first-time users write data update and
   phase change as separate sibling alternatives.
+
+## [2026-05-25] First-use effect boundary documentation
+
+Change:
+
+- Updated getting-started to keep the Draft path on `AfsmNoEffect` and tell
+  users to add `afsm-compose` only when a screen emits UI one-shot effects.
+- Updated public API docs to state that machines without effects do not need the
+  Compose helper module.
+- Updated README Compose Effects guidance with the optional `afsm-compose`
+  dependency and `CollectAfsmEffects` import.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now get a clearer boundary between durable
+  state, optional UI effects, and the optional Compose collection dependency.

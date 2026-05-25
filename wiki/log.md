@@ -758,3 +758,14 @@
   `docs/modeling-rules.md`, `docs/afsm-public-api.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Effect boundary in first-use docs
+
+- Source: Follow-up API usability review of the first-time Android developer
+  path.
+- Action: Documented that `AfsmNoEffect` is the starting point for screens with
+  no UI one-shot output, and that `afsm-compose` is only needed when a Compose
+  route collects effects.
+- Updated: `README.md`, `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

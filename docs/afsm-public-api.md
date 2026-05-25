@@ -67,6 +67,10 @@ Optional Compose and graph tooling:
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 ```
 
+Add `afsm-compose` only for Compose routes that collect machine effects. A
+machine that never emits UI one-shots should use `AfsmNoEffect` and does not
+need the Compose helper module.
+
 ```kotlin
 plugins {
     id("com.google.devtools.ksp")
@@ -409,7 +413,8 @@ fun <F : Any> CollectAfsmEffects(
 ```
 
 Use this in route-level composables for UI one-shot behavior such as navigation
-or snackbar display.
+or snackbar display. Keep required product progress in state; effects are
+best-effort one-shot outputs.
 
 ## afsm-graph-ksp
 

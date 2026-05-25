@@ -21,6 +21,14 @@ dependencies {
 }
 ```
 
+Do not add `afsm-compose` for the first Draft screen. Add it only when a
+machine emits UI one-shot effects and a Compose route needs
+`CollectAfsmEffects(...)`:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
 For Maven Local snapshots, make sure the consuming build has `mavenLocal()` in
 `settings.gradle.kts`:
 
@@ -63,6 +71,10 @@ import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
 ```
+
+The Draft machine uses `AfsmNoEffect` because it has no navigation, snackbar,
+or close-screen one-shot output. Keep that marker until the screen has a real
+UI-side effect to collect.
 
 Do not start with graph generation. Add KSP and `@AfsmGraph` only after the
 machine is useful and tested.

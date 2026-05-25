@@ -360,9 +360,17 @@ For machines that emit UI effects, collect them at route level. The minimal
 draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
 feature defines an effect type.
 
+Add the Compose helper only for those effectful features:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
 Collect effects at route level. Navigation, snackbar display, focus, scroll, and animation state should stay in UI unless they are part of the business flow.
 
 ```kotlin
+import afsm.compose.CollectAfsmEffects
+
 @Composable
 fun EditorRoute(
     viewModel: EditorViewModel,

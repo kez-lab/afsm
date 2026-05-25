@@ -147,6 +147,9 @@ The current direction is:
 - Public DSL docs and `updateData(...)` KDoc now state that multi-action event
   handling must use one `case { ... }`; top-level shorthand calls are separate
   alternatives and are not merged.
+- First-use docs now make the effect boundary explicit: start no-effect
+  machines with `AfsmNoEffect`, and add `afsm-compose` only when a Compose route
+  collects real UI one-shot effects.
 
 ## Core Architecture Position
 
