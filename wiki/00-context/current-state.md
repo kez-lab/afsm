@@ -220,6 +220,10 @@ The current direction is:
   `afsm-test` provides Kotlin transition assertions, while Android
   `ViewModel` dispatcher rules and fake repositories are local test fixtures in
   the consuming app.
+- `docs/getting-started.md`, README, and example reading orders now state the
+  minimum first-use path directly: build the Draft machine, add JVM transition
+  tests, host it from a ViewModel, and add one ViewModel wiring test before
+  optional Compose, render-state, effect, saved-state, config, or graph work.
 
 ## Core Architecture Position
 

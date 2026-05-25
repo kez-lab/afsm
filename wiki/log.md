@@ -1021,3 +1021,12 @@
   `docs/afsm-public-api.md`, `consumer-smoke/README.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started minimum path stop point
+
+- Source: First-use getting-started structure review.
+- Action: Added a four-step minimum path, moved the first ViewModel wiring test
+  before optional expansion topics, and aligned README/example reading orders.
+- Updated: `docs/getting-started.md`, `README.md`, `docs/examples.md`,
+  `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

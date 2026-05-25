@@ -2540,3 +2540,28 @@ Conclusion:
 - First-time Android developers should no longer expect Afsm to ship Android
   ViewModel test rules when the existing `afsm-test` artifact only covers pure
   transition assertions.
+
+## [2026-05-25] Getting-started minimum path stop point
+
+Change:
+
+- Added a four-step minimum first-use path to `docs/getting-started.md`:
+  build the Draft machine, add JVM transition tests, host from a ViewModel, and
+  add one ViewModel wiring test.
+- Moved the first ViewModel test section before optional Compose route,
+  render-state, effect, saved-state, and host config sections.
+- Updated README and example/modeling reading orders so they point readers to
+  the same minimum path before optional expansions.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a clear stopping point after the
+  minimum Draft path, reducing pressure to absorb every optional runtime and UI
+  integration topic before the first successful adoption.
