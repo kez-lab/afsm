@@ -1009,3 +1009,15 @@
 - Updated: `docs/getting-started.md`, `docs/afsm-public-api.md`,
   `docs/testing-guide.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | ViewModel test fixture boundary
+
+- Source: First-use testing docs review after adding `afsm-test` and ViewModel
+  wiring tests.
+- Action: Clarified that `afsm-test` supplies Kotlin transition assertions,
+  while `MainDispatcherRule`, fake repositories, and dispatcher rules are local
+  fixtures in the consuming app tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `docs/afsm-public-api.md`, `consumer-smoke/README.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

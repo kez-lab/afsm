@@ -2517,3 +2517,26 @@ Conclusion:
 - First-time Android developers now have a short rule for default host config:
   avoid it in the first Draft path, then configure policy only when the host
   behavior itself is the product or test concern.
+
+## [2026-05-25] ViewModel test fixture boundary
+
+Change:
+
+- Clarified that `afsm-test` is a Kotlin-only transition assertion helper
+  module.
+- Updated getting-started, testing, public API, and consumer-smoke docs so
+  `MainDispatcherRule`, fake repositories, and other ViewModel test fixtures
+  are clearly owned by the consuming app's tests.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers should no longer expect Afsm to ship Android
+  ViewModel test rules when the existing `afsm-test` artifact only covers pure
+  transition assertions.

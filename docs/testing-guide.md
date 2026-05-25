@@ -20,6 +20,11 @@ Add the optional test helper artifact when transition tests start repeating raw
 testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 ```
 
+`afsm-test` is intentionally Kotlin-only. It provides transition assertion
+helpers for plain machine tests. It does not provide Android `ViewModel` rules,
+fake repositories, or coroutine dispatchers; keep those as local test fixtures
+in the consuming app.
+
 The helpers return the same transition, so assertions can be chained:
 
 ```kotlin
@@ -201,6 +206,8 @@ Good ViewModel tests cover:
   seed state without accidentally starting `onEnter` work.
 
 Use `runTest` plus a main dispatcher rule around `viewModelScope` code.
+The `MainDispatcherRule` and `RecordingDraftRepository` below are local test
+fixtures, not Afsm APIs.
 
 ```kotlin
 testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

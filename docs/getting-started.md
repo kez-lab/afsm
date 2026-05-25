@@ -613,6 +613,8 @@ machine, the command handler calls the repository, and command result events
 update `state.value`.
 
 Use `runTest` with a main dispatcher rule around `viewModelScope` code. The
+rule and fake repository are local test fixtures you copy into your app tests;
+`afsm-test` only supplies plain machine transition assertions. The
 complete Draft example is in
 [testing-guide.md](testing-guide.md#viewmodel-tests), and the same pattern is
 compiled in

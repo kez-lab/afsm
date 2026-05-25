@@ -216,6 +216,10 @@ The current direction is:
   for the initial Draft ViewModel and change host policy only when invalid
   transition diagnostics, command failure diagnostics, effect delivery, or queue
   pressure policy is the explicit target.
+- First-use testing docs now make the helper boundary explicit:
+  `afsm-test` provides Kotlin transition assertions, while Android
+  `ViewModel` dispatcher rules and fake repositories are local test fixtures in
+  the consuming app.
 
 ## Core Architecture Position
 
