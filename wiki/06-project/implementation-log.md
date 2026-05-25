@@ -2298,3 +2298,24 @@ Conclusion:
 
 - The first-use guide now keeps the test loop continuous from pure machine
   tests to Android ViewModel host wiring tests.
+
+## [2026-05-25] README ViewModel test link
+
+Change:
+
+- Added the ViewModel wiring test step to README's first-use short path.
+- Added README guidance that ViewModel tests should drive `onEvent(event)`,
+  verify repository command calls, and observe resulting `state.value`.
+- Linked README readers to the testing guide ViewModel section and the
+  executable `consumer-smoke` Draft ViewModel test.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Readers who start at README now see the same machine-test to ViewModel-test
+  loop as readers who start in `docs/getting-started.md`.

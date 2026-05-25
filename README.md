@@ -29,6 +29,7 @@ The short version:
 5. Start repository work from `command(...)`, usually in `onEnter`.
 6. Test the pure machine with plain JVM transition tests.
 7. Host the machine from a `ViewModel` with `afsmHost(...)`.
+8. Add one ViewModel wiring test for command execution and result events.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
@@ -350,7 +351,13 @@ Good feature tests usually cover:
 - effect emission,
 - stale command result handling.
 
-See [docs/testing-guide.md](docs/testing-guide.md).
+After the machine tests pass, add one ViewModel wiring test that drives
+`onEvent(event)`, verifies repository command calls, and observes the resulting
+`state.value`. Keep the rest of the transition matrix in pure machine tests.
+
+See [docs/testing-guide.md#viewmodel-tests](docs/testing-guide.md#viewmodel-tests)
+and the executable
+[`consumer-smoke` Draft ViewModel test](consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
 
 ## Long Command Safety
 

@@ -184,6 +184,9 @@ The current direction is:
 - `docs/getting-started.md` now links the first pure machine tests to the first
   ViewModel wiring test pattern, including the coroutine test dependency and
   the executable `consumer-smoke` mirror.
+- README's first-use short path now also tells readers to add one ViewModel
+  wiring test after pure machine tests, linking to the testing guide and
+  executable `consumer-smoke` test.
 
 ## Core Architecture Position
 

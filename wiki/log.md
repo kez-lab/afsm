@@ -914,3 +914,12 @@
   first ViewModel wiring test pattern and its executable consumer-smoke mirror.
 - Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | README ViewModel test link
+
+- Source: Review of the README first-use short path after adding ViewModel
+  consumer tests.
+- Action: Added a ViewModel wiring test step and linked README readers to the
+  testing guide and executable `consumer-smoke` Draft ViewModel test.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
