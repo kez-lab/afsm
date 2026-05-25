@@ -28,7 +28,7 @@ The ViewModel hosts that machine:
 ```kotlin
 private val host = afsmHost(
     machine = ScreenStateMachine,
-    commandHandler = AfsmCommandHandler { command, dispatch ->
+    commandHandler = { command: ScreenCommand, dispatch ->
         // repository/use-case work
         // dispatch(result event)
     },

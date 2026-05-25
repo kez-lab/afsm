@@ -176,7 +176,7 @@ commands and dispatches result events back into the machine.
 ```kotlin
 private val host = afsmHost(
     machine = DraftStateMachine,
-    commandHandler = AfsmCommandHandler { command, dispatch ->
+    commandHandler = { command: DraftCommand, dispatch ->
         when (command) {
             is DraftCommand.SaveDraft -> {
                 repository.save(command.title)

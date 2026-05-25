@@ -1563,3 +1563,24 @@ Conclusion:
 - The first-use Draft example now has an external compile and graph-generation
   canary, reducing the risk that public onboarding docs drift from the
   published artifact shape.
+
+## [2026-05-25] Direct command handler lambda examples
+
+Change:
+
+- Updated beginner docs, sample-shop ViewModels, and consumer smoke fixtures to
+  pass `commandHandler = { command: Command, dispatch -> ... }` directly.
+- Kept `AfsmCommandHandler` as the public runtime type, but removed the wrapper
+  import from first-use examples.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:compileDebugKotlin --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time Android developers can copy a smaller ViewModel host shape while
+  still using the same runtime command handler API.

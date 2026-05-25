@@ -597,3 +597,14 @@
   `docs/getting-started.md`, `docs/release-readiness.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] implementation | Direct command handler lambda examples
+
+- Source: API usability review of the first ViewModel code Android developers
+  copy from README/getting-started.
+- Action: Replaced beginner-facing `AfsmCommandHandler { ... }` wrapper usage
+  with direct `commandHandler = { command: Command, dispatch -> ... }` lambdas
+  in docs, sample ViewModels, and consumer smoke fixtures.
+- Updated: `sample-shop/`, `consumer-smoke/`, `README.md`, `docs/`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

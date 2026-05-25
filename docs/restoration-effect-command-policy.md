@@ -214,7 +214,7 @@ class CheckoutViewModel(
     private val host = afsmHost(
         machine = CheckoutStateMachine,
         initialState = initialState,
-        commandHandler = AfsmCommandHandler { command, dispatch ->
+        commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.SubmitPayment -> {
                     val result = paymentRepository.submit(command.payload)

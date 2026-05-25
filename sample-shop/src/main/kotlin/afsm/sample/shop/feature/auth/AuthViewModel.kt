@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.auth
 
-import afsm.runtime.AfsmCommandHandler
 import afsm.sample.shop.core.data.AuthRepository
 import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
@@ -14,7 +13,7 @@ class AuthViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = AuthStateMachine,
-        commandHandler = AfsmCommandHandler { command: AuthCommand, dispatch ->
+        commandHandler = { command: AuthCommand, dispatch ->
             when (command) {
                 is AuthCommand.Login -> {
                     authRepository.login(

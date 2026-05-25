@@ -5,7 +5,6 @@ import afsm.core.AfsmMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
-import afsm.runtime.AfsmCommandHandler
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
@@ -99,7 +98,7 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
-        commandHandler = AfsmCommandHandler { command: DraftCommand, dispatch ->
+        commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
                 is DraftCommand.SaveDraft -> {
                     repository.save(command.title)

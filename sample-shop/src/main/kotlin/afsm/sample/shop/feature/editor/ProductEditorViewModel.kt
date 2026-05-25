@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.runtime.AfsmCommandHandler
 import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
@@ -15,7 +14,7 @@ class ProductEditorViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = ProductEditorStateMachine,
-        commandHandler = AfsmCommandHandler { command: ProductEditorCommand, dispatch ->
+        commandHandler = { command: ProductEditorCommand, dispatch ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     delay(120)

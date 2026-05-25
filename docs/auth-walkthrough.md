@@ -123,7 +123,7 @@ is static:
 ```kotlin
 private val host = afsmHost(
     machine = AuthStateMachine,
-    commandHandler = AfsmCommandHandler { command, dispatch ->
+    commandHandler = { command: AuthCommand, dispatch ->
         // repository call -> AuthSucceeded/AuthFailed
     },
 )

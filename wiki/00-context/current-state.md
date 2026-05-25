@@ -100,6 +100,9 @@ The current direction is:
 - DSL predicates and payload phase factories are now read-only scopes. `case(condition = ...)` can inspect `phase`, `event`, and `data` but cannot update data or emit outputs; `transitionTo<PayloadPhase> { ... }` can create the target phase but cannot mutate the transition.
 - Checkout now omits ordinary invalid event/phase combinations and uses `ignore(...)` only for expected harmless duplicates, stale async results, and terminal duplicate actions.
 - Sample ViewModels now expose explicit `StateFlow<State>` and `Flow<Effect>` types so Android integration remains visible to first-time readers.
+- Beginner docs, sample ViewModels, and consumer smoke now pass command handlers
+  as direct Kotlin lambdas, keeping `AfsmCommandHandler` as the underlying API
+  type without making the first-use examples import the wrapper.
 
 ## Core Architecture Position
 
