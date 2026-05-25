@@ -122,6 +122,41 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
+    fun `top-level shorthand branches are alternatives not merged actions`() {
+        val machine = afsmMachine<
+            DslProductEditorPhase,
+            DslProductEditorData,
+            DslProductEditorEvent,
+            DslProductEditorCommand,
+            DslProductEditorEffect,
+            > {
+            initial(
+                phase = DslProductEditorPhase.EditingDraft,
+                data = DslProductEditorData(),
+            )
+
+            phase(DslProductEditorPhase.EditingDraft) {
+                on<DslProductEditorEvent.SubmitClicked> {
+                    updateData { copy(errorMessage = "handled first") }
+                    transitionTo(DslProductEditorPhase.SavingDraft)
+                }
+            }
+
+            phase(DslProductEditorPhase.SavingDraft)
+        }
+
+        val result = machine.transition(
+            state = machine.initialState,
+            event = DslProductEditorEvent.SubmitClicked,
+        )
+
+        assertEquals(DslProductEditorPhase.EditingDraft, result.state.phase)
+        assertEquals("handled first", result.state.data.errorMessage)
+        assertEquals(emptyList(), result.commands)
+        assertIs<AfsmDecision.Handled>(result.decision)
+    }
+
+    @Test
     fun `effect can be emitted without changing phase`() {
         val machine = productEditorMachine()
         val phase = DslProductEditorPhase.Published(

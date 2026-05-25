@@ -15,6 +15,20 @@ The plugin does not parse Kotlin function bodies and does not need sample
 events. It runs the compiled graph registry and writes the topology declared by
 the executable `afsmMachine { ... }` DSL.
 
+## Before You Enable Graph Generation
+
+Check these first:
+
+- The screen machine already compiles and has focused transition tests.
+- The machine is exposed as an `object` or no-required-arg class.
+- The exposed type is `AfsmMachine<State, Event, Command, Effect>`.
+- For Maven Local snapshots, `mavenLocal()` is present in both
+  `pluginManagement.repositories` and `dependencyResolutionManagement.repositories`.
+- KSP and `io.github.afsm.graph` are applied to the same Android module that
+  contains the annotated machines.
+- The app module does not own a hand-written MMD export test; use the generated
+  `generateAfsmMmd` task.
+
 ## 1. Configure Plugins
 
 `settings.gradle.kts`:
@@ -28,7 +42,18 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenLocal() // only needed for Maven Local snapshots
+        google()
+        mavenCentral()
+    }
+}
 ```
+
+Root `build.gradle.kts`:
 
 ```kotlin
 plugins {
