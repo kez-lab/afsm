@@ -1823,3 +1823,23 @@ Conclusion:
 
 - The smallest real Android walkthrough no longer hides the ViewModel bridge
   behind a comment, keeping the example ladder pasteable from Auth to Checkout.
+
+## [2026-05-25] Minimal Draft example catalog links
+
+Change:
+
+- Updated `docs/examples.md` so the Minimal Draft row points to
+  `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror.
+- Replaced README-only wording with the current source of truth: the
+  getting-started guide plus the Maven Local consumer mirror.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The example catalog now routes first-time users to the compile-checked Draft
+  onboarding path instead of an older README-only description.

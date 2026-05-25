@@ -9,7 +9,7 @@ data screens heavier. The examples are ordered from smallest to most persuasive.
 
 | Example | Read when | Shows | Docs | Source |
 |---|---|---|---|---|
-| Minimal Draft | You want the smallest possible machine | `Phase`, `Data`, `Event`, `Command`, command success/failure events, `onEnter`, `ViewModel.afsmHost` | [README.md](../README.md) | README-only copy-paste example |
+| Minimal Draft | You want the smallest possible machine | `Phase`, `Data`, `Event`, `Command`, command success/failure events, `onEnter`, `ViewModel.afsmHost` | [getting-started.md](getting-started.md) | [DraftQuickstart.kt](../consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/DraftQuickstart.kt), [README.md](../README.md) |
 | Auth | You need login/register form submission | form data, validation guards, command result events, navigation effect | [auth-walkthrough.md](auth-walkthrough.md) | [AuthStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt), [AuthViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthViewModel.kt), [AuthStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt) |
 | Checkout | You need async loading, payment, retry, stale results, and durable completion | graphable payment flow, request ids, state plus optional effect, render mapping | [checkout-walkthrough.md](checkout-walkthrough.md) | [CheckoutStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt), [CheckoutViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt), [CheckoutStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt) |
 | ProductEditor | You need an advanced graph stress test | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) | [ProductEditorStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt), [ProductEditorViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt), [ProductEditorStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt) |
@@ -38,11 +38,13 @@ review, test, or diagram; it should not be the default for every screen.
 
 ### Minimal Draft
 
-The README example proves the core API can be understood without Android,
+The getting-started Draft example proves the core API can be understood before
 Room, KSP, or graph generation.
 
-The README then adds the smallest `ViewModel.afsmHost(...)` bridge. Treat those
-as two steps: first make the pure machine work, then host it from Android.
+The guide then adds the smallest `ViewModel.afsmHost(...)` bridge. Treat those
+as two steps: first make the pure machine work, then host it from Android. The
+consumer-smoke mirror compiles that shape against published Maven Local
+artifacts.
 
 It is the onboarding shape:
 

@@ -706,3 +706,12 @@
 - Updated: `docs/auth-walkthrough.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Minimal Draft example links
+
+- Source: API usability review of the example catalog after strengthening the
+  getting-started and consumer-smoke Draft path.
+- Action: Updated the Minimal Draft row and description to point to
+  `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror.
+- Updated: `docs/examples.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

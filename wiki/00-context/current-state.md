@@ -132,6 +132,9 @@ The current direction is:
 - `docs/auth-walkthrough.md` now shows the complete small-sample ViewModel
   wiring, including login/register command handling, session persistence,
   success/failure result events, `StateFlow`, effects, and `onEvent(event)`.
+- `docs/examples.md` now points Minimal Draft readers to
+  `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror
+  instead of describing the first sample as README-only.
 
 ## Core Architecture Position
 
