@@ -850,3 +850,12 @@
   `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftQuickstartTest.kt`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | README and release quickstart sync
+
+- Source: Follow-up after expanding Draft quickstart transition tests.
+- Action: Reformatted the README Draft ViewModel snippet and updated
+  release-readiness to include validation branch coverage.
+- Updated: `README.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

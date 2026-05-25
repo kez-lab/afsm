@@ -2155,3 +2155,23 @@ Conclusion:
 
 - The first-use test loop now covers a data-only validation branch, not only the
   successful command path and command failure result path.
+
+## [2026-05-25] README and release quickstart sync
+
+Change:
+
+- Reformatted the README Draft ViewModel snippet so the command-handler block
+  matches getting-started and consumer-smoke.
+- Updated release-readiness to state that consumer-smoke now covers validation,
+  command emission, and save failure recovery.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The top-level README and release checklist now match the current executable
+  quickstart coverage.

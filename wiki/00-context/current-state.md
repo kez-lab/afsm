@@ -168,6 +168,8 @@ The current direction is:
   branches are alternatives and not merged transition actions.
 - Draft quickstart JVM tests now cover the missing-title data-only validation
   branch in addition to command emission and save failure recovery.
+- README and release-readiness now match the current quickstart ViewModel
+  snippet formatting and consumer-smoke test coverage.
 
 ## Core Architecture Position
 
