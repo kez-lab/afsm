@@ -141,6 +141,9 @@ The current direction is:
 - `docs/sample-shop-afsm-guide.md` now frames `AfsmReducer` as a lower-level
   runtime contract while keeping graphable `AfsmMachine<State, Event, Command,
   Effect>` objects as the normal feature-code boundary.
+- `consumer-smoke` now runs focused Draft quickstart JVM tests in addition to
+  compiling and exporting graphs, so command emission and save failure recovery
+  are verified against Maven Local artifacts.
 
 ## Core Architecture Position
 

@@ -209,10 +209,12 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         }
 
         on<DraftEvent.DraftSaveFailed> {
-            updateData { data, event ->
-                data.copy(errorMessage = event.message)
+            case {
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
+                }
+                transitionTo(DraftPhase.Editing)
             }
-            transitionTo(DraftPhase.Editing)
         }
     }
 

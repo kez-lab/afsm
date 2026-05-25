@@ -734,3 +734,16 @@
 - Updated: `docs/sample-shop-afsm-guide.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] verification | Consumer smoke Draft tests
+
+- Source: API usability review of whether the Draft quickstart failure path was
+  executable in the external consumer gate.
+- Action: Added consumer-smoke JVM tests for Draft command emission and save
+  failure recovery, made `verify-consumer-smoke.sh` run them, and fixed the
+  quickstart failure branch so `updateData` and `transitionTo` run in the same
+  `case`.
+- Updated: `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`,
+  `README.md`, `docs/getting-started.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

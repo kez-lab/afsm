@@ -1885,3 +1885,33 @@ Conclusion:
 - The sample guide now matches the current public onboarding stance: reducers
   exist, but first-time Android feature code should start from graphable
   machines.
+
+## [2026-05-25] Consumer smoke Draft transition tests
+
+Change:
+
+- Added `DraftQuickstartTest` to `consumer-smoke`.
+- The tests verify `SaveClicked` enters `Saving` and emits `SaveDraft`, and
+  `DraftSaveFailed` returns to `Editing` with `errorMessage`.
+- The new failure test exposed a quickstart bug: `updateData(...)` and
+  `transitionTo(...)` were declared as two sibling event actions, which meant
+  runtime handling stopped after the data-only branch. README, getting-started,
+  and the consumer-smoke mirror now wrap those actions in one `case { ... }`.
+- Updated `scripts/verify-consumer-smoke.sh` to run `:app:testDebugUnitTest`
+  before graph generation.
+- Updated consumer-smoke and release-readiness docs to reflect that focused
+  Draft quickstart transition behavior is now part of the external consumer
+  gate.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use Draft quickstart is now verified as executable behavior in the
+  external Maven Local consumer build, not only as compilable code and generated
+  graph output.
