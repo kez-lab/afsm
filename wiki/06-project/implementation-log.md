@@ -1633,3 +1633,26 @@ Conclusion:
 - The first copy-paste path now demonstrates the accepted command failure
   policy: expected domain failure returns to the FSM as a typed event from the
   command handler.
+
+## [2026-05-25] Getting-started ViewModel scaffold
+
+Change:
+
+- Replaced the partial `private val host = afsmHost(...)` snippet in
+  `docs/getting-started.md` with a complete `DraftViewModel` scaffold.
+- The snippet now includes the `DraftRepository` contract,
+  `StateFlow<DraftState>` exposure, and `onEvent(event)` forwarding in the same
+  code block as the command handler.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time Android developers can paste a complete `DraftViewModel.kt` shape
+  from the getting-started guide instead of assembling host/state/event wiring
+  from prose.

@@ -110,6 +110,9 @@ The current direction is:
   `DraftSaveFailed(message)` from the command handler, returning from `Saving`
   to `Editing` with `errorMessage` instead of leaving first-time users to invent
   their own failure path outside the machine.
+- `docs/getting-started.md` now shows the complete `DraftViewModel` scaffold
+  instead of only the `private val host` snippet, including repository contract,
+  `StateFlow<DraftState>`, and `onEvent(event)`.
 
 ## Core Architecture Position
 

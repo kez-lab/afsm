@@ -246,35 +246,42 @@ This example assumes the repository reports expected save failures as a result:
 interface DraftRepository {
     suspend fun save(title: String): Result<Unit>
 }
-```
 
-```kotlin
-private val host = afsmHost(
-    machine = DraftStateMachine,
-    commandHandler = { command: DraftCommand, dispatch ->
-        when (command) {
-            is DraftCommand.SaveDraft -> repository.save(command.title).fold(
-                onSuccess = {
-                    dispatch(DraftEvent.DraftSaveCompleted)
-                },
-                onFailure = { error ->
-                    dispatch(
-                        DraftEvent.DraftSaveFailed(
-                            error.message ?: "Draft save failed.",
-                        ),
-                    )
-                },
-            )
-        }
-    },
-)
+class DraftViewModel(
+    private val repository: DraftRepository,
+) : ViewModel() {
+    private val host = afsmHost(
+        machine = DraftStateMachine,
+        commandHandler = { command: DraftCommand, dispatch ->
+            when (command) {
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
+            }
+        },
+    )
+
+    val state: StateFlow<DraftState> = host.state
+
+    fun onEvent(event: DraftEvent) {
+        host.dispatch(event)
+    }
+}
 ```
 
 Expected domain failures should become result events from the command handler.
 Do not mutate `host.state` directly from repository callbacks.
 
-Expose `host.state` as `StateFlow<State>`, expose `host.effects` only when the
-feature has one-shot UI effects, and forward UI input to `host.dispatch(event)`.
+Expose `host.effects` only when the feature has one-shot UI effects.
 
 If the starting state comes from navigation arguments, a deep link, repository
 restoration, or `SavedStateHandle`, pass an explicit initial state:
