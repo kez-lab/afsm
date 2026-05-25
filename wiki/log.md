@@ -584,3 +584,12 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-05-23-afsm-6-agent-second-first-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-05-25] implementation | Changelog API vocabulary cleanup
+
+- Source: API usability review of release notes for first-time Android
+  developers.
+- Action: Updated `CHANGELOG.md` so the unreleased Added section uses the
+  current `phase`, `data`, and `Handled` vocabulary, while superseded
+  pre-release DSL names are listed only under Removed.
+- Updated: `CHANGELOG.md`, `wiki/log.md`.
