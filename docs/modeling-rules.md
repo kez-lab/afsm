@@ -50,6 +50,34 @@ instance, for example `PaymentInProgress(requestId)`,
 ordinary form fields, loaded product records, validation messages, or retry
 counts in every phase constructor; keep them in `Data`.
 
+## State vs Render State
+
+Expose `StateFlow<State>` from the ViewModel so the Android integration remains
+honest and testable. A Compose route may pass that state directly to a small
+screen at first.
+
+Add a feature-owned render state when UI code would otherwise:
+
+- branch on several internal phases,
+- infer button labels or enabled states from business phases,
+- hide or reshape fields for terminal phases,
+- duplicate the same `phase + data` interpretation in multiple composables.
+
+Keep the mapping local:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+
+CheckoutScreen(
+    state = state.toRenderState(),
+    onPayClick = { viewModel.onEvent(CheckoutEvent.PayClicked) },
+)
+```
+
+Do not add render state merely to wrap every `Data` property. The boundary is
+useful when it keeps Compose rendering ordinary while the machine graph remains
+precise.
+
 ## DSL Machine vs Reducer
 
 Prefer `afsmMachine { ... }` for graphable complex flows. This gives you:
@@ -109,6 +137,9 @@ the product flow, do not model it as effect-only.
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
+In pure machine tests, assert important impossible events with `assertInvalid()`.
+At runtime, the host applies `AfsmInvalidTransitionPolicy`; the default policy
+throws so flow bugs are visible while developing.
 Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.
@@ -125,9 +156,10 @@ the event both changes data and changes phase.
 
 ## First Reading Order
 
-1. [getting-started.md](getting-started.md) for the compile-checked Draft path.
-2. [testing-guide.md](testing-guide.md) after the first Draft tests, before
-   expanding coverage.
+1. [getting-started.md](getting-started.md) for the minimum Draft path:
+   machine, JVM tests, ViewModel host, and one ViewModel wiring test.
+2. [testing-guide.md](testing-guide.md) before expanding transition or
+   ViewModel coverage.
 3. [examples.md](examples.md) to choose the right sample.
 4. [auth-walkthrough.md](auth-walkthrough.md) for the smallest real screen.
 5. [checkout-walkthrough.md](checkout-walkthrough.md) for loading, retry, stale results, and durable completion.
