@@ -1,6 +1,11 @@
 package afsm.consumer.smoke
 
-import org.junit.Assert.assertEquals
+import afsm.test.assertCommands
+import afsm.test.assertData
+import afsm.test.assertHandled
+import afsm.test.assertNoCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
 import org.junit.Test
 
 class DraftQuickstartTest {
@@ -14,8 +19,27 @@ class DraftQuickstartTest {
             event = DraftEvent.SaveClicked,
         )
 
-        assertEquals(DraftPhase.Saving, result.state.phase)
-        assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Saving)
+            .assertCommands(DraftCommand.SaveDraft("Plan"))
+    }
+
+    @Test
+    fun saveClickedWithMissingTitleStaysEditingWithMessage() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Editing,
+                data = DraftData(title = ""),
+            ),
+            event = DraftEvent.SaveClicked,
+        )
+
+        result
+            .assertHandled()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(DraftData(errorMessage = "Title is required."))
+            .assertNoCommands()
     }
 
     @Test
@@ -28,7 +52,14 @@ class DraftQuickstartTest {
             event = DraftEvent.DraftSaveFailed("Network unavailable"),
         )
 
-        assertEquals(DraftPhase.Editing, result.state.phase)
-        assertEquals("Network unavailable", result.state.data.errorMessage)
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(
+                DraftData(
+                    title = "Plan",
+                    errorMessage = "Network unavailable",
+                ),
+            )
     }
 }
