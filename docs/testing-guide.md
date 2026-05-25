@@ -1,6 +1,8 @@
 # Afsm Testing Guide
 
 Afsm state machines should be tested as plain Kotlin behavior specs.
+For the first copy-pasteable Draft tests, start with
+[getting-started.md](getting-started.md).
 
 The machine is deterministic:
 
@@ -9,6 +11,33 @@ current state + event -> next state + commands + effects + decision
 ```
 
 That shape is the main reason to keep transition rules outside Android `ViewModel`.
+
+Add the optional test helper artifact when transition tests start repeating raw
+`result.state.phase`, `result.commands`, `result.effects`, and
+`result.decision` assertions:
+
+```kotlin
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+```
+
+`afsm-test` is intentionally Kotlin-only. It provides transition assertion
+helpers for plain machine tests. It does not provide Android `ViewModel` rules,
+fake repositories, or coroutine dispatchers; keep those as local test fixtures
+in the consuming app.
+
+The helpers return the same transition, so assertions can be chained:
+
+```kotlin
+import afsm.test.assertCommands
+import afsm.test.assertEffects
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
+
+result
+    .assertTransitioned()
+    .assertPhase(Phase.Saving)
+    .assertCommands(Command.Save("Plan"))
+```
 
 ## First Six Tests
 
@@ -22,12 +51,16 @@ fun `SubmitClicked enters Submitting when form is valid`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(SignupPhase.Submitting, result.state.phase)
-    assertEquals(AfsmDecision.Transitioned, result.decision)
+    result
+        .assertTransitioned()
+        .assertPhase(SignupPhase.Submitting)
 }
 ```
 
 ### Invalid transition
+
+Assert invalid flow rules at the pure machine level. `machine.transition(...)`
+returns an `Invalid` decision that test helpers can inspect directly:
 
 ```kotlin
 @Test
@@ -37,9 +70,16 @@ fun `SubmitSucceeded before submit is invalid`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertIs<AfsmDecision.Invalid>(result.decision)
+    result.assertInvalid()
 }
 ```
+
+Do not copy this exact scenario into a ViewModel happy-path test. `AfsmHost`
+applies `AfsmInvalidTransitionPolicy`, and the default runtime policy throws so
+flow bugs are visible during development. If a ViewModel test intentionally
+drives an impossible event, configure the host with `AfsmInvalidTransitionPolicy.Record`
+and assert diagnostics; otherwise keep invalid-flow coverage in plain machine
+tests.
 
 ### Command emission
 
@@ -51,10 +91,7 @@ fun `entering Submitting emits submit command`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(
-        listOf(SignupCommand.Submit(validForm)),
-        result.commands,
-    )
+    result.assertCommands(SignupCommand.Submit(validForm))
 }
 ```
 
@@ -68,17 +105,22 @@ fun `completed signup emits navigation effect`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertEquals(
-        listOf(SignupEffect.OpenHome),
-        result.effects,
-    )
+    result.assertEffects(SignupEffect.OpenHome)
 }
 ```
+
+When a machine graduates from `AfsmNoEffect` to a real effect type, add this
+pure transition assertion before wiring Compose collection. The machine test
+proves the output exists; the route remains responsible for collecting
+`host.effects` with `CollectAfsmEffects(...)`.
 
 ### Command failure result
 
 Expected domain failures should return to the machine as typed events from the
 command handler. Test the resulting state transition like any other event.
+Do not simulate an expected repository failure by making the command handler
+throw; thrown handler exceptions exercise `AfsmCommandFailurePolicy`, not the
+feature's failure branch.
 
 ```kotlin
 @Test
@@ -91,10 +133,24 @@ fun `save failure returns to Editing with message`() {
         event = DraftEvent.DraftSaveFailed("Network unavailable"),
     )
 
-    assertEquals(DraftPhase.Editing, result.state.phase)
-    assertEquals("Network unavailable", result.state.data.errorMessage)
+    result
+        .assertTransitioned()
+        .assertPhase(DraftPhase.Editing)
+        .assertData(
+            DraftData(
+                title = "Plan",
+                errorMessage = "Network unavailable",
+            ),
+        )
 }
 ```
+
+The external `consumer-smoke` fixture also has
+`DraftCommandFailurePolicyTest`, which proves that an unexpected thrown
+`SaveDraft` handler error is recorded as an `AfsmDiagnostic` when
+`AfsmCommandFailurePolicy.Record` is configured. It does not synthesize
+`DraftSaveFailed`; feature code should dispatch that event only for expected
+domain failures.
 
 ### Stale command result
 
@@ -119,13 +175,21 @@ fun `stale payment failure is ignored`() {
         ),
     )
 
-    assertIs<AfsmDecision.Ignored>(result.decision)
-    assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
+    result
+        .assertIgnored()
+        .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
 }
 ```
 
 Use `Invalid` for programmer errors and impossible flow results. Use `Ignored`
 for expected late/stale results that can happen in real asynchronous systems.
+This distinction matters because `Ignored` is a safe no-op in the host, while
+`Invalid` follows the configured runtime invalid-transition policy.
+
+Do not add `AfsmConfig` to most ViewModel tests. Add it only when the test is
+about hosted runtime policy, such as recording invalid transitions or recording
+unexpected command handler exceptions. If the test is about feature behavior,
+prefer pure machine assertions and typed command result events.
 
 ## ViewModel Tests
 
@@ -137,10 +201,86 @@ Good ViewModel tests cover:
 - command handlers call repositories/use cases,
 - command results dispatch follow-up events,
 - state is exposed as `StateFlow`,
-- effects can be collected by the UI layer.
+- effects can be collected by the UI layer,
+- explicit `initialState` values from navigation arguments or `SavedStateHandle`
+  seed state without accidentally starting `onEnter` work.
 
-Use `runTest`, a test main dispatcher, and `Dispatchers.setMain/resetMain`
-around `viewModelScope` code.
+Use `runTest` plus a main dispatcher rule around `viewModelScope` code.
+The `MainDispatcherRule` and `RecordingDraftRepository` below are local test
+fixtures, not Afsm APIs.
+
+```kotlin
+testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+```
+
+```kotlin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class DraftViewModelTest {
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun saveClickedCallsRepositoryAndPublishesSavedState() = runTest {
+        val repository = RecordingDraftRepository(Result.success(Unit))
+        val viewModel = DraftViewModel(repository)
+
+        viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
+        viewModel.onEvent(DraftEvent.SaveClicked)
+        mainDispatcherRule.advanceUntilIdle()
+
+        assertEquals(listOf("Plan"), repository.savedTitles)
+        assertEquals(DraftPhase.Saved, viewModel.state.value.phase)
+    }
+
+    private class RecordingDraftRepository(
+        private val result: Result<Unit>,
+    ) : DraftRepository {
+        val savedTitles = mutableListOf<String>()
+
+        override suspend fun save(title: String): Result<Unit> {
+            savedTitles += title
+            return result
+        }
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainDispatcherRule(
+    private val dispatcher: TestDispatcher = StandardTestDispatcher(),
+) : TestWatcher() {
+    override fun starting(description: Description) {
+        Dispatchers.setMain(dispatcher)
+    }
+
+    override fun finished(description: Description) {
+        Dispatchers.resetMain()
+    }
+
+    fun advanceUntilIdle() {
+        dispatcher.scheduler.advanceUntilIdle()
+    }
+}
+```
+
+Keep the ViewModel test narrow. It should prove the host bridge and command
+handler wiring, while the machine tests continue to own every transition branch.
+
+For `SavedStateHandle`, construct the handle directly in the test and convert
+small saved values into the feature's explicit initial state. Do not serialize
+the whole screen state into the handle just to make a test easier.
 
 ## Do Not Weaken Spec Tests
 
