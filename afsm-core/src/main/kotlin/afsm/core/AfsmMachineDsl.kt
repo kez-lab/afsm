@@ -432,6 +432,10 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * Use this when the event only changes extended state such as form fields
      * or errors. Because no phase target is declared, the machine remains in
      * the current phase.
+     *
+     * This convenience creates a complete data-only case. If the same event
+     * must also change phase, emit a command, or emit an effect, use [case] and
+     * put all actions in that one case.
      */
     public fun updateData(
         label: String? = null,
@@ -452,6 +456,10 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * Use this overload for input events whose payload changes data. The
      * first lambda parameter is the current data; the second is the typed
      * event payload.
+     *
+     * This convenience creates a complete data-only case. If the same event
+     * must also change phase, emit a command, or emit an effect, use [case] and
+     * put all actions in that one case.
      */
     public fun updateData(
         label: String? = null,

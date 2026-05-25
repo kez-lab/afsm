@@ -20,6 +20,11 @@ ordinary `ViewModel + StateFlow` is clearer.
 Start with [docs/getting-started.md](docs/getting-started.md) if this is your
 first Afsm screen.
 
+Use this README as the quick map. Copy the first real Draft files from
+[docs/getting-started.md](docs/getting-started.md); that guide is mirrored in
+`consumer-smoke` and compiled against the published Maven Local artifacts during
+the release gate.
+
 The short version:
 
 1. Draw the phases first.
@@ -27,7 +32,14 @@ The short version:
 3. Handle UI/repository results as `Event`.
 4. Move between phases with `transitionTo(...)`.
 5. Start repository work from `command(...)`, usually in `onEnter`.
-6. Host the machine from a `ViewModel` with `afsmHost(...)`.
+6. Test the pure machine with plain JVM transition tests.
+7. Host the machine from a `ViewModel` with `afsmHost(...)`.
+8. Add one ViewModel wiring test for command execution and result events.
+
+That is the minimum first pass. After that, connect Compose with
+`collectAsStateWithLifecycle`, add render state only when UI starts inferring
+behavior from phases, and add effects, saved state, config, or graphs only when
+the screen needs them.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
@@ -57,7 +69,10 @@ Daily choices:
 | Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
 | An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
 
-Define a small machine first. Do not start with graph/KSP.
+Define a small machine first. Do not start with graph/KSP. The snippet below is
+for orientation; use [docs/getting-started.md](docs/getting-started.md) as the
+copy-paste source for the complete `DraftStateMachine.kt` and
+`DraftViewModel.kt` path.
 
 ```kotlin
 import afsm.core.AfsmMachine
@@ -82,6 +97,7 @@ sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
     data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 
 sealed interface DraftCommand {
@@ -136,6 +152,15 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.DraftSaveCompleted> {
             transitionTo(DraftPhase.Saved)
         }
+
+        on<DraftEvent.DraftSaveFailed> {
+            case {
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
+                }
+                transitionTo(DraftPhase.Editing)
+            }
+        }
     }
 
     phase(DraftPhase.Saved)
@@ -163,6 +188,10 @@ import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
 
+interface DraftRepository {
+    suspend fun save(title: String): Result<Unit>
+}
+
 class DraftViewModel(
     private val repository: DraftRepository,
 ) : ViewModel() {
@@ -170,10 +199,18 @@ class DraftViewModel(
         machine = DraftStateMachine,
         commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
-                is DraftCommand.SaveDraft -> {
-                    repository.save(command.title)
-                    dispatch(DraftEvent.DraftSaveCompleted)
-                }
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
             }
         },
     )
@@ -195,6 +232,9 @@ private val host = afsmHost(
     commandHandler = draftCommandHandler,
 )
 ```
+
+For a tested `SavedStateHandle` version of this pattern, see
+[docs/getting-started.md](docs/getting-started.md#add-initial-state-from-savedstatehandle-later).
 
 ## Install
 
@@ -228,6 +268,9 @@ dependencies {
     implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+    testImplementation("junit:junit:4.13.2")
 }
 ```
 
@@ -293,6 +336,11 @@ private val host = afsmHost(
 State machine tests are plain JVM tests.
 
 ```kotlin
+import afsm.test.assertCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
+import org.junit.Test
+
 @Test
 fun `SaveClicked enters Saving and emits SaveDraft`() {
     val result = DraftStateMachine.transition(
@@ -303,8 +351,10 @@ fun `SaveClicked enters Saving and emits SaveDraft`() {
         event = DraftEvent.SaveClicked,
     )
 
-    assertEquals(DraftPhase.Saving, result.state.phase)
-    assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+    result
+        .assertTransitioned()
+        .assertPhase(DraftPhase.Saving)
+        .assertCommands(DraftCommand.SaveDraft("Plan"))
 }
 ```
 
@@ -313,10 +363,17 @@ Good feature tests usually cover:
 - valid phase transition,
 - invalid transition,
 - command emission,
+- command failure result path,
 - effect emission,
 - stale command result handling.
 
-See [docs/testing-guide.md](docs/testing-guide.md).
+After the machine tests pass, add one ViewModel wiring test that drives
+`onEvent(event)`, verifies repository command calls, and observes the resulting
+`state.value`. Keep the rest of the transition matrix in pure machine tests.
+
+See [docs/testing-guide.md#viewmodel-tests](docs/testing-guide.md#viewmodel-tests)
+and the executable
+[`consumer-smoke` Draft ViewModel test](consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
 
 ## Long Command Safety
 
@@ -337,9 +394,20 @@ For machines that emit UI effects, collect them at route level. The minimal
 draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
 feature defines an effect type.
 
+For the first migration from `AfsmNoEffect` to a real feature effect type, see
+[docs/getting-started.md](docs/getting-started.md#add-the-first-effect-later).
+
+Add the Compose helper only for those effectful features:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
 Collect effects at route level. Navigation, snackbar display, focus, scroll, and animation state should stay in UI unless they are part of the business flow.
 
 ```kotlin
+import afsm.compose.CollectAfsmEffects
+
 @Composable
 fun EditorRoute(
     viewModel: EditorViewModel,
@@ -435,7 +503,8 @@ internal edge:
 - Command results should dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
-- Invalid transitions throw by default so flow bugs are visible during development.
+- Invalid transitions can be asserted in pure machine tests; hosted invalid
+  transitions throw by default so flow bugs are visible during development.
 - `CancellationException` is always rethrown.
 - Effects are best-effort one-shot outputs with no replay by default.
 
@@ -445,6 +514,7 @@ internal edge:
 |---|---|---|
 | `afsm-core` | Pure Kotlin transition types, reducer contract, executable machine DSL, graph metadata | No |
 | `afsm-runtime` | Coroutine host, serialized dispatch loop, command execution, effect delivery | No |
+| `afsm-test` | Kotlin test assertion helpers for Afsm transition behavior | No |
 | `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
 | `afsm-compose` | Lifecycle-aware Compose effect collection helper | Yes |
 | `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |

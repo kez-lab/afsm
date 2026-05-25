@@ -14,6 +14,7 @@ GRADLE_ARGS=("$@")
   :afsm-compose:compileDebugKotlin \
   :afsm-graph-ksp:test \
   :afsm-runtime:test \
+  :afsm-test:test \
   :afsm-viewmodel:testDebugUnitTest \
   :sample-shop:compileDebugKotlin \
   :sample-shop:testDebugUnitTest \
