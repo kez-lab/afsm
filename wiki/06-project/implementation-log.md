@@ -1607,3 +1607,29 @@ Conclusion:
 
 - The first-use guide now covers the setup context needed before copying the
   Draft machine and ViewModel snippets.
+
+## [2026-05-25] Draft quickstart save failure path
+
+Change:
+
+- Added `DraftSaveFailed(message)` to the Draft quickstart event contract.
+- The Draft machine now handles save failure while in `Saving` by updating
+  `DraftData.errorMessage` and returning to `Editing`.
+- README, `docs/getting-started.md`, `docs/examples.md`, and the
+  `consumer-smoke` Draft quickstart mirror now show command success/failure
+  result events instead of a success-only repository call.
+- `scripts/verify-consumer-smoke.sh` now asserts the generated quickstart graph
+  includes `Saving --> Editing: DraftSaveFailed`.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first copy-paste path now demonstrates the accepted command failure
+  policy: expected domain failure returns to the FSM as a typed event from the
+  command handler.

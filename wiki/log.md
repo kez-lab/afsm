@@ -618,3 +618,14 @@
   until after the machine is useful.
 - Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Draft command failure path
+
+- Source: API usability review of the first repository-backed Draft example.
+- Action: Added `DraftSaveFailed(message)` to the quickstart contract, modeled
+  `Saving -> Editing` failure recovery with `errorMessage`, and changed the
+  ViewModel command handler to dispatch success/failure result events.
+- Updated: `README.md`, `docs/getting-started.md`, `docs/examples.md`,
+  `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

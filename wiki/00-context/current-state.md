@@ -106,6 +106,10 @@ The current direction is:
 - `docs/getting-started.md` now starts with dependency, AndroidX, file-layout,
   and import checklists before teaching the Draft machine, so first-time Android
   developers do not need to jump to README before pasting code.
+- The Draft quickstart now models repository save failure as
+  `DraftSaveFailed(message)` from the command handler, returning from `Saving`
+  to `Editing` with `errorMessage` instead of leaving first-time users to invent
+  their own failure path outside the machine.
 
 ## Core Architecture Position
 

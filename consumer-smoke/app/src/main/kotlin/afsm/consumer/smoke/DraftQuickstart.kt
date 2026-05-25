@@ -26,6 +26,7 @@ sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
     data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 
 sealed interface DraftCommand {
@@ -84,13 +85,20 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.DraftSaveCompleted> {
             transitionTo(DraftPhase.Saved)
         }
+
+        on<DraftEvent.DraftSaveFailed> {
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
+            }
+            transitionTo(DraftPhase.Editing)
+        }
     }
 
     phase(DraftPhase.Saved)
 }
 
 interface DraftRepository {
-    suspend fun save(title: String)
+    suspend fun save(title: String): Result<Unit>
 }
 
 class DraftViewModel(
@@ -98,15 +106,23 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
-        commandHandler = { command: DraftCommand, dispatch ->
-            when (command) {
-                is DraftCommand.SaveDraft -> {
-                    repository.save(command.title)
+    commandHandler = { command: DraftCommand, dispatch ->
+        when (command) {
+            is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                onSuccess = {
                     dispatch(DraftEvent.DraftSaveCompleted)
-                }
-            }
-        },
-    )
+                },
+                onFailure = { error ->
+                    dispatch(
+                        DraftEvent.DraftSaveFailed(
+                            error.message ?: "Draft save failed.",
+                        ),
+                    )
+                },
+            )
+        }
+    },
+)
 
     val state: StateFlow<DraftState> = host.state
 

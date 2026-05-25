@@ -75,3 +75,8 @@ if ! grep -Fqx '  Saving --> Saved: DraftSaveCompleted' "$QUICKSTART_MMD_FILE"; 
   echo "Missing Draft quickstart Afsm graph transition: Saving --> Saved: DraftSaveCompleted" >&2
   exit 1
 fi
+
+if ! grep -Fqx '  Saving --> Editing: DraftSaveFailed' "$QUICKSTART_MMD_FILE"; then
+  echo "Missing Draft quickstart Afsm graph transition: Saving --> Editing: DraftSaveFailed" >&2
+  exit 1
+fi

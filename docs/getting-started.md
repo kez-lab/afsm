@@ -109,6 +109,7 @@ Start with a simple Draft flow:
 
 ```text
 Editing -- SaveClicked --> Saving -- DraftSaveCompleted --> Saved
+Saving -- DraftSaveFailed --> Editing
 ```
 
 1. Write the phase list first.
@@ -139,6 +140,7 @@ sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
     data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 ```
 
@@ -205,6 +207,13 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.DraftSaveCompleted> {
             transitionTo(DraftPhase.Saved)
         }
+
+        on<DraftEvent.DraftSaveFailed> {
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
+            }
+            transitionTo(DraftPhase.Editing)
+        }
     }
 
     phase(DraftPhase.Saved)
@@ -219,8 +228,8 @@ SaveClicked
 -> transitionTo(Saving)
 -> Saving.onEnter emits SaveDraft
 -> ViewModel command handler calls repository
--> command handler dispatches DraftSaveCompleted
--> Saving transitions to Saved
+-> command handler dispatches DraftSaveCompleted or DraftSaveFailed
+-> Saving transitions to Saved or back to Editing with an error message
 ```
 
 If a case does not call `transitionTo(...)`, it handles the event without a
@@ -231,19 +240,38 @@ phase change. Use that for form text changes and validation errors.
 The machine never calls repositories directly. The ViewModel host executes
 commands and dispatches result events back into the machine.
 
+This example assumes the repository reports expected save failures as a result:
+
+```kotlin
+interface DraftRepository {
+    suspend fun save(title: String): Result<Unit>
+}
+```
+
 ```kotlin
 private val host = afsmHost(
     machine = DraftStateMachine,
     commandHandler = { command: DraftCommand, dispatch ->
         when (command) {
-            is DraftCommand.SaveDraft -> {
-                repository.save(command.title)
-                dispatch(DraftEvent.DraftSaveCompleted)
-            }
+            is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                onSuccess = {
+                    dispatch(DraftEvent.DraftSaveCompleted)
+                },
+                onFailure = { error ->
+                    dispatch(
+                        DraftEvent.DraftSaveFailed(
+                            error.message ?: "Draft save failed.",
+                        ),
+                    )
+                },
+            )
         }
     },
 )
 ```
+
+Expected domain failures should become result events from the command handler.
+Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.state` as `StateFlow<State>`, expose `host.effects` only when the
 feature has one-shot UI effects, and forward UI input to `host.dispatch(event)`.
