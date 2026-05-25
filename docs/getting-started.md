@@ -9,6 +9,17 @@ Afsm is for complex `ViewModel` flows. If the screen is only loading a list,
 showing a detail page, toggling a like, or submitting a one-step form, ordinary
 `ViewModel + StateFlow` is usually clearer.
 
+The minimum first-use path is:
+
+1. Build the Draft machine.
+2. Add the first JVM transition tests.
+3. Host the machine from a `ViewModel`.
+4. Add one ViewModel wiring test.
+
+Stop there for the first pass. Compose route wiring, render-state mapping,
+effects, custom host config, saved state, and graph generation are later
+additions.
+
 ## Before You Paste Code
 
 Add the three required modules to your Android feature/app module:
@@ -18,7 +29,33 @@ dependencies {
     implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
+```
+
+Do not add `afsm-compose` for the first Draft screen. Add it only when a
+machine emits UI one-shot effects and a Compose route needs
+`CollectAfsmEffects(...)`:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
+If a later ViewModel reads `SavedStateHandle` directly, add the AndroidX
+saved-state artifact in that Android module:
+
+```kotlin
+implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0")
+```
+
+If this is a Compose screen and the app module does not already have lifecycle
+Compose, add it for `collectAsStateWithLifecycle()`:
+
+```kotlin
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
 ```
 
 For Maven Local snapshots, make sure the consuming build has `mavenLocal()` in
@@ -40,12 +77,15 @@ Android consumers must also enable AndroidX:
 android.useAndroidX=true
 ```
 
-Keep the first screen split into two files:
+Keep the first Afsm code split into two files:
 
 | File | Put here |
 |---|---|
 | `DraftStateMachine.kt` | `Phase`, `Data`, `State`, `Event`, `Command`, and `afsmMachine { ... }` |
 | `DraftViewModel.kt` | `afsmHost(...)`, command execution, `StateFlow`, and `onEvent(...)` |
+
+Compose route and screen files stay ordinary UI code. Add them when you connect
+the ViewModel to UI rendering.
 
 The state machine file needs:
 
@@ -63,6 +103,10 @@ import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
 ```
+
+The Draft machine uses `AfsmNoEffect` because it has no navigation, snackbar,
+or close-screen one-shot output. Keep that marker until the screen has a real
+UI-side effect to collect.
 
 Do not start with graph generation. Add KSP and `@AfsmGraph` only after the
 machine is useful and tested.
@@ -109,6 +153,7 @@ Start with a simple Draft flow:
 
 ```text
 Editing -- SaveClicked --> Saving -- DraftSaveCompleted --> Saved
+Saving -- DraftSaveFailed --> Editing
 ```
 
 1. Write the phase list first.
@@ -139,6 +184,7 @@ sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
     data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 ```
 
@@ -205,6 +251,15 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.DraftSaveCompleted> {
             transitionTo(DraftPhase.Saved)
         }
+
+        on<DraftEvent.DraftSaveFailed> {
+            case {
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
+                }
+                transitionTo(DraftPhase.Editing)
+            }
+        }
     }
 
     phase(DraftPhase.Saved)
@@ -219,45 +274,425 @@ SaveClicked
 -> transitionTo(Saving)
 -> Saving.onEnter emits SaveDraft
 -> ViewModel command handler calls repository
--> command handler dispatches DraftSaveCompleted
--> Saving transitions to Saved
+-> command handler dispatches DraftSaveCompleted or DraftSaveFailed
+-> Saving transitions to Saved or back to Editing with an error message
 ```
+
+Initial state construction does not run `onEnter`. The Draft example starts in
+`Editing`, so no work is expected at construction time. For startup work, model
+an explicit event such as `ScreenEntered`, dispatch it after the ViewModel or UI
+is ready, and let that event transition to a loading phase whose `onEnter`
+emits the command.
 
 If a case does not call `transitionTo(...)`, it handles the event without a
 phase change. Use that for form text changes and validation errors.
+
+If one event must update data and change phase, keep both statements inside the
+same `case { ... }`. Sibling calls such as `updateData(...)` followed by
+`transitionTo(...)` are separate alternatives; the first matching alternative
+handles the event.
+
+## Add First JVM Tests
+
+Test the pure machine before wiring the Android `ViewModel`. These tests are
+mirrored by `consumer-smoke`, so the release gate verifies that the quickstart
+behavior still works from Maven Local artifacts.
+
+```kotlin
+import afsm.test.assertCommands
+import afsm.test.assertData
+import afsm.test.assertHandled
+import afsm.test.assertNoCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
+import org.junit.Test
+
+class DraftStateMachineTest {
+    @Test
+    fun saveClickedEntersSavingAndEmitsSaveDraft() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Editing,
+                data = DraftData(title = "Plan"),
+            ),
+            event = DraftEvent.SaveClicked,
+        )
+
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Saving)
+            .assertCommands(DraftCommand.SaveDraft("Plan"))
+    }
+
+    @Test
+    fun saveClickedWithMissingTitleStaysEditingWithMessage() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Editing,
+                data = DraftData(title = ""),
+            ),
+            event = DraftEvent.SaveClicked,
+        )
+
+        result
+            .assertHandled()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(DraftData(errorMessage = "Title is required."))
+            .assertNoCommands()
+    }
+
+    @Test
+    fun saveFailureReturnsToEditingWithMessage() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Saving,
+                data = DraftData(title = "Plan"),
+            ),
+            event = DraftEvent.DraftSaveFailed("Network unavailable"),
+        )
+
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(
+                DraftData(
+                    title = "Plan",
+                    errorMessage = "Network unavailable",
+                ),
+            )
+    }
+}
+```
+
+Keep these tests focused on transition behavior: next phase, changed data,
+emitted commands, emitted effects, and ignored or invalid decisions. The
+`afsm-test` helpers keep those assertions focused on behavior instead of raw
+transition structure. ViewModel tests should verify Android wiring, not
+duplicate every state-machine branch.
 
 ## Host From ViewModel
 
 The machine never calls repositories directly. The ViewModel host executes
 commands and dispatches result events back into the machine.
 
+This example assumes the repository reports expected save failures as a result:
+
 ```kotlin
-private val host = afsmHost(
-    machine = DraftStateMachine,
-    commandHandler = { command: DraftCommand, dispatch ->
-        when (command) {
-            is DraftCommand.SaveDraft -> {
-                repository.save(command.title)
-                dispatch(DraftEvent.DraftSaveCompleted)
+interface DraftRepository {
+    suspend fun save(title: String): Result<Unit>
+}
+
+class DraftViewModel(
+    private val repository: DraftRepository,
+    initialState: DraftState = DraftStateMachine.initialState,
+) : ViewModel() {
+    private val host = afsmHost(
+        machine = DraftStateMachine,
+        initialState = initialState,
+        commandHandler = { command: DraftCommand, dispatch ->
+            when (command) {
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
             }
-        }
+        },
+    )
+
+    val state: StateFlow<DraftState> = host.state
+
+    fun onEvent(event: DraftEvent) {
+        host.dispatch(event)
+    }
+}
+```
+
+Expected domain failures should become result events from the command handler.
+An unexpected thrown exception from the handler is a runtime command failure
+policy case, not a replacement for `DraftSaveFailed`.
+Do not mutate `host.state` directly from repository callbacks.
+
+Expose `host.effects` only when the feature has one-shot UI effects.
+
+## Add First ViewModel Test
+
+After the machine tests pass, add one ViewModel wiring test. Do not duplicate
+every state-machine branch here. Prove that `onEvent(event)` reaches the hosted
+machine, the command handler calls the repository, and command result events
+update `state.value`.
+
+Use `runTest` with a main dispatcher rule around `viewModelScope` code. The
+rule and fake repository are local test fixtures you copy into your app tests;
+`afsm-test` only supplies plain machine transition assertions. The complete
+Draft example is in [testing-guide.md](testing-guide.md#viewmodel-tests), and
+the same pattern is compiled in
+[`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
+
+At this point the minimum Afsm path is complete: a plain Kotlin machine, pure
+transition tests, a ViewModel host, and one Android wiring test. Continue only
+when the screen needs one of the later additions below.
+
+## Connect The First Compose Route
+
+For the no-effect Draft screen, do not add `afsm-compose`. A normal Compose
+route only needs lifecycle-aware state collection and event callbacks into the
+ViewModel:
+
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun DraftRoute(
+    viewModel: DraftViewModel,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    DraftScreen(
+        state = state,
+        onTitleChanged = { value ->
+            viewModel.onEvent(DraftEvent.TitleChanged(value))
+        },
+        onSaveClick = {
+            viewModel.onEvent(DraftEvent.SaveClicked)
+        },
+    )
+}
+
+@Composable
+fun DraftScreen(
+    state: DraftState,
+    onTitleChanged: (String) -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    // Render state.data.title, state.data.errorMessage, and state.phase.
+    // Send user actions through the callbacks.
+}
+```
+
+Keep repository calls out of the route and screen. They stay in the ViewModel's
+command handler, and the machine stays plain Kotlin.
+
+## Add Render State Only When UI Logic Grows
+
+The first Draft route can pass `DraftState` directly to `DraftScreen`. That is
+fine while the screen only reads `state.data.title`, `state.data.errorMessage`,
+and a small phase check such as "is saving".
+
+Add a render state when Compose starts inferring UI behavior from several
+phases, hiding fields for terminal phases, or choosing button actions from
+business phases. The mapping belongs beside the feature contract, not inside
+the composable body:
+
+```kotlin
+data class DraftRenderState(
+    val title: String,
+    val errorMessage: String?,
+    val isSaving: Boolean,
+    val canEdit: Boolean,
+    val canSave: Boolean,
+)
+
+fun DraftState.toRenderState(): DraftRenderState {
+    return DraftRenderState(
+        title = data.title,
+        errorMessage = data.errorMessage,
+        isSaving = phase == DraftPhase.Saving,
+        canEdit = phase == DraftPhase.Editing,
+        canSave = phase == DraftPhase.Editing && data.title.isNotBlank(),
+    )
+}
+```
+
+Then keep the route as the adapter:
+
+```kotlin
+val state by viewModel.state.collectAsStateWithLifecycle()
+
+DraftScreen(
+    state = state.toRenderState(),
+    onTitleChanged = { value ->
+        viewModel.onEvent(DraftEvent.TitleChanged(value))
+    },
+    onSaveClick = {
+        viewModel.onEvent(DraftEvent.SaveClicked)
     },
 )
 ```
 
-Expose `host.state` as `StateFlow<State>`, expose `host.effects` only when the
-feature has one-shot UI effects, and forward UI input to `host.dispatch(event)`.
+Test render-state mapping when it hides internal phases or decides visible UI
+actions. Do not add it just to rename every field from `DraftData`; direct
+`DraftState` is simpler until the UI boundary earns a separate model.
 
-If the starting state comes from navigation arguments, a deep link, repository
-restoration, or `SavedStateHandle`, pass an explicit initial state:
+## Add The First Effect Later
+
+Keep the first Draft machine on `AfsmNoEffect` until the screen has real
+route-level UI work such as optional navigation, a fire-and-forget snackbar, or
+closing the screen. When that moment comes, change the effect type first:
 
 ```kotlin
-private val host = afsmHost(
-    machine = CheckoutStateMachine,
-    initialState = checkoutState(productId = productId),
-    commandHandler = checkoutCommandHandler,
+sealed interface DraftEffect {
+    data object CloseEditor : DraftEffect
+}
+
+typealias DraftMachine =
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, DraftEffect>
+```
+
+After this change, remove the `AfsmNoEffect` import from the machine file.
+
+Then emit the effect from the transition that also records durable product
+progress in state:
+
+```kotlin
+on<DraftEvent.DraftSaveCompleted> {
+    case {
+        transitionTo(DraftPhase.Saved)
+        effect(label = "CloseEditor") { DraftEffect.CloseEditor }
+    }
+}
+```
+
+Do not make required progress effect-only. `DraftPhase.Saved` is the durable
+business result; `DraftEffect.CloseEditor` is only a convenience for the
+currently active route.
+
+Expose effects from the ViewModel:
+
+```kotlin
+import kotlinx.coroutines.flow.Flow
+
+val effects: Flow<DraftEffect> = host.effects
+```
+
+Add `afsm-compose` only in the UI module that collects the effect:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
+Collect effects at the route level, next to lifecycle-aware state collection:
+
+```kotlin
+import afsm.compose.CollectAfsmEffects
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun DraftRoute(
+    viewModel: DraftViewModel,
+    onDone: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    CollectAfsmEffects(viewModel.effects) { effect ->
+        when (effect) {
+            DraftEffect.CloseEditor -> onDone()
+        }
+    }
+
+    DraftScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+    )
+}
+```
+
+For effects that must survive lifecycle gaps, use state plus an acknowledgement
+event instead of `Effect`. See
+[restoration-effect-command-policy.md](restoration-effect-command-policy.md).
+
+## Add Initial State From SavedStateHandle Later
+
+If the starting state comes from navigation arguments, a deep link, repository
+restoration, or `SavedStateHandle`, convert those small inputs into a feature
+state before calling `afsmHost(...)`. Keep the machine graphable by passing the
+same `machine` plus an explicit `initialState`.
+
+For the Draft example, save only the title key:
+
+```kotlin
+import androidx.lifecycle.SavedStateHandle
+
+const val DraftTitleKey = "draftTitle"
+
+fun draftStateFromSavedState(savedStateHandle: SavedStateHandle): DraftState {
+    return DraftState(
+        phase = DraftPhase.Editing,
+        data = DraftData(
+            title = savedStateHandle.get<String>(DraftTitleKey).orEmpty(),
+        ),
+    )
+}
+```
+
+Then pass that state into the ViewModel or factory that owns the host:
+
+```kotlin
+val viewModel = DraftViewModel(
+    repository = repository,
+    initialState = draftStateFromSavedState(savedStateHandle),
 )
 ```
+
+Test this path by constructing `SavedStateHandle` directly. Also assert that
+restored initial state does not start work by itself:
+
+```kotlin
+@Test
+fun savedStateHandleTitleSeedsInitialDraftStateWithoutStartingWork() = runTest {
+    val savedStateHandle = SavedStateHandle(
+        mapOf(DraftTitleKey to "Restored plan"),
+    )
+    val repository = RecordingDraftRepository(Result.success(Unit))
+    val viewModel = DraftViewModel(
+        repository = repository,
+        initialState = draftStateFromSavedState(savedStateHandle),
+    )
+
+    mainDispatcherRule.advanceUntilIdle()
+
+    assertEquals(DraftPhase.Editing, viewModel.state.value.phase)
+    assertEquals(DraftData(title = "Restored plan"), viewModel.state.value.data)
+    assertEquals(emptyList<String>(), repository.savedTitles)
+}
+```
+
+This is the same shape Checkout uses for a navigation `productId`; it starts
+work only after an explicit `ScreenEntered` event moves the machine to a
+loading phase.
+
+## When To Change Host Config
+
+Do not add `AfsmConfig` to the first Draft ViewModel. The defaults are the
+beginner path: invalid hosted transitions throw, unexpected command handler
+exceptions throw, effects are one-shot with no replay, and event/command queues
+are bounded.
+
+Reach for host config only when the runtime policy itself is the thing you are
+choosing or testing:
+
+| Situation | First choice |
+|---|---|
+| You are only testing transition rules | Keep using pure machine tests; do not configure a host |
+| A ViewModel test intentionally drives an invalid hosted event | Use `AfsmInvalidTransitionPolicy.Record` with a logger and assert diagnostics |
+| A resilient host should log unexpected command handler exceptions | Use `AfsmCommandFailurePolicy.Record` with a logger |
+| A repository returns an expected failure | Dispatch a typed result event such as `DraftSaveFailed`; do not use config |
+| A required UI action must survive lifecycle gaps | Model durable state plus an acknowledgement event before changing effect delivery |
+| A queue overflow exception appears | Emit fewer/coarser commands first; increase capacity only after confirming the burst is expected |
+
+If a screen needs custom host policy, keep it in the ViewModel host setup. Do
+not move Android lifecycle, logging, or repository concerns into the machine.
 
 ## What To Read Next
 
@@ -265,4 +700,5 @@ private val host = afsmHost(
 2. [auth-walkthrough.md](auth-walkthrough.md) for a small Android form.
 3. [checkout-walkthrough.md](checkout-walkthrough.md) for retry and stale results.
 4. [product-editor-walkthrough.md](product-editor-walkthrough.md) for a large transaction flow.
-5. [graph-generation.md](graph-generation.md) only after the machine is useful.
+5. [testing-guide.md](testing-guide.md) for broader transition and ViewModel test coverage.
+6. [graph-generation.md](graph-generation.md) only after the machine is useful.

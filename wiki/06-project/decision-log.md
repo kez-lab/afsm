@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-05-11
+updated: 2026-05-25
 ---
 
 # Decision Log
@@ -1142,3 +1142,27 @@ Consequences:
   sample; ProductEditor is the advanced graph stress test.
 - `ignore(...)` remains available only for expected harmless no-ops. Omitted
   event handlers remain invalid by default.
+
+## [2026-05-25] Add afsm-test as a test-only helper artifact
+
+Decision: Add a dedicated `afsm-test` JVM artifact for transition assertion
+helpers.
+
+Rationale:
+
+- First-time Android developers repeatedly start transition tests by inspecting
+  `result.decision`, `result.state.phase`, `result.commands`, and
+  `result.effects` directly.
+- Those properties are the correct low-level model, but they make the first test
+  read like Afsm internals instead of behavior.
+- A test-only artifact can improve test readability without adding runtime,
+  Android, or Compose coupling.
+
+Consequences:
+
+- `afsm-test` depends on `afsm-core` and Kotlin test APIs only.
+- The first helpers stay focused on assertion readability:
+  decision assertions, full state, `AfsmState` phase/data, commands, effects,
+  and no-output checks.
+- The module is published to Maven Local and covered by API validation and
+  consumer-smoke before broader sample test migration.

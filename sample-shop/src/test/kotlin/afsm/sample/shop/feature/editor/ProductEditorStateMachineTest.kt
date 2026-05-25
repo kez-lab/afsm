@@ -1,11 +1,15 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.core.AfsmDecision
 import afsm.core.AfsmTopologyTransition
 import afsm.core.toMmd
+import afsm.test.assertCommands
+import afsm.test.assertEffects
+import afsm.test.assertHandled
+import afsm.test.assertNoCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ProductEditorStateMachineTest {
@@ -27,7 +31,9 @@ class ProductEditorStateMachineTest {
             event = ProductEditorEvent.TitleChanged("Travel Mug"),
         )
 
-        assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(ProductEditorPhase.EditingDraft)
         assertEquals("Travel Mug", result.state.data.draft.form.title)
     }
 
@@ -39,9 +45,11 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.SaveDraftClicked)
 
-        assertEquals(ProductEditorPhase.SavingDraft, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.SavingDraft)
+            .assertCommands(ProductEditorCommand.SaveDraft(validDraft))
         assertEquals(validDraft, result.state.data.draft)
-        assertEquals(listOf(ProductEditorCommand.SaveDraft(validDraft)), result.commands)
     }
 
     @Test
@@ -53,7 +61,9 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.DraftSaveCompleted)
 
-        assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.DraftSaved)
         assertEquals(validDraft, result.state.data.draft)
     }
 
@@ -69,7 +79,9 @@ class ProductEditorStateMachineTest {
             event = ProductEditorEvent.PriceChanged("25.00"),
         )
 
-        assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.EditingDraft)
         assertEquals("25.00", result.state.data.draft.form.priceText)
     }
 
@@ -81,9 +93,11 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
 
-        assertEquals(ProductEditorPhase.ImageUploadInProgress, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.ImageUploadInProgress)
+            .assertCommands(ProductEditorCommand.StartImageUpload(validDraft))
         assertEquals(validDraft, result.state.data.draft)
-        assertEquals(listOf(ProductEditorCommand.StartImageUpload(validDraft)), result.commands)
     }
 
     @Test
@@ -98,12 +112,14 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
 
-        assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(ProductEditorPhase.EditingDraft)
+            .assertNoCommands()
         assertEquals(
             "Description must be at least 10 characters.",
             result.state.data.errorMessage,
         )
-        assertEquals(emptyList(), result.commands)
     }
 
     @Test
@@ -119,12 +135,14 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.SubmitClicked)
 
-        assertEquals(ProductEditorPhase.DraftSaved, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(ProductEditorPhase.DraftSaved)
+            .assertNoCommands()
         assertEquals(
             "Description must be at least 10 characters.",
             result.state.data.errorMessage,
         )
-        assertEquals(emptyList(), result.commands)
     }
 
     @Test
@@ -139,7 +157,9 @@ class ProductEditorStateMachineTest {
             event = ProductEditorEvent.ImageUploadFailed("Upload failed."),
         )
 
-        assertEquals(ProductEditorPhase.EditingDraft, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.EditingDraft)
         assertEquals("Upload failed.", result.state.data.errorMessage)
         assertEquals(validDraft, result.state.data.draft)
     }
@@ -157,20 +177,16 @@ class ProductEditorStateMachineTest {
         )
 
         val reviewedDraft = validDraft.copy(reviewAttempt = 1)
-        assertEquals(
-            ProductEditorPhase.ReviewSubmissionInProgress(uploadToken = "upload-1"),
-            result.state.phase,
-        )
-        assertEquals(reviewedDraft, result.state.data.draft)
-        assertEquals(
-            listOf(
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.ReviewSubmissionInProgress(uploadToken = "upload-1"))
+            .assertCommands(
                 ProductEditorCommand.StartReviewSubmission(
                     draft = reviewedDraft,
                     uploadToken = "upload-1",
                 ),
-            ),
-            result.commands,
-        )
+            )
+        assertEquals(reviewedDraft, result.state.data.draft)
     }
 
     @Test
@@ -187,7 +203,9 @@ class ProductEditorStateMachineTest {
             event = ProductEditorEvent.DescriptionChanged("Updated description."),
         )
 
-        assertEquals(state.phase, result.state.phase)
+        result
+            .assertHandled()
+            .assertPhase(state.phase)
         assertEquals("Updated description.", result.state.data.draft.form.description)
     }
 
@@ -203,9 +221,11 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.ResubmitClicked)
 
-        assertEquals(ProductEditorPhase.ImageUploadInProgress, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.ImageUploadInProgress)
+            .assertCommands(ProductEditorCommand.StartImageUpload(reviewedDraft))
         assertEquals(reviewedDraft, result.state.data.draft)
-        assertEquals(listOf(ProductEditorCommand.StartImageUpload(reviewedDraft)), result.commands)
     }
 
     @Test
@@ -218,12 +238,11 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.PublishClicked)
 
-        assertEquals(ProductEditorPhase.PublishInProgress, result.state.phase)
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.PublishInProgress)
+            .assertCommands(ProductEditorCommand.StartProductPublish(reviewedDraft))
         assertEquals(reviewedDraft, result.state.data.draft)
-        assertEquals(
-            listOf(ProductEditorCommand.StartProductPublish(reviewedDraft)),
-            result.commands,
-        )
     }
 
     @Test
@@ -237,8 +256,9 @@ class ProductEditorStateMachineTest {
 
         val result = machine.transition(state, ProductEditorEvent.DoneClicked)
 
-        assertIs<AfsmDecision.Handled>(result.decision)
-        assertEquals(listOf(ProductEditorEffect.CloseEditor), result.effects)
+        result
+            .assertHandled()
+            .assertEffects(ProductEditorEffect.CloseEditor)
     }
 
     @Test
