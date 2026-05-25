@@ -2588,3 +2588,28 @@ Conclusion:
 - First-time readers are less likely to copy diverging README snippets when the
   verified getting-started guide is the source of truth for the first Draft
   implementation.
+
+## [2026-05-26] Auth walkthrough Draft bridge
+
+Change:
+
+- Added an explicit `From Draft To Auth` section to `docs/auth-walkthrough.md`.
+- Clarified that Auth should be read after the minimum Draft path: machine, JVM
+  transition tests, ViewModel host, and one ViewModel wiring test.
+- Separated reused Draft concepts from Auth's new concepts: login/register
+  guarded cases, session persistence in the command handler, render-state
+  mapping, and the first real route effect.
+- Updated the example catalog so Auth is positioned as the first real form
+  screen after Draft rather than another starting point.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from copy-paste Draft
+  onboarding into the smallest real Android form screen before taking on
+  Checkout lifecycle and retry policy.

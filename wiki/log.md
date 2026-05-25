@@ -1039,3 +1039,14 @@
   `consumer-smoke`.
 - Updated: `README.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Auth walkthrough Draft bridge
+
+- Source: First-use review of Auth as the next example after the minimum Draft
+  path.
+- Action: Added a Draft-to-Auth bridge, separated reused concepts from new Auth
+  concepts, and positioned Auth as the first real form screen in the example
+  catalog.
+- Updated: `docs/auth-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

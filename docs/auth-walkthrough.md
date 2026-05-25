@@ -5,6 +5,32 @@ Auth is the smallest real Android example.
 Use it when you want to understand how Afsm fits a normal form screen without
 the size of Checkout or ProductEditor.
 
+Read Auth after you finish the minimum Draft path in
+[getting-started.md](getting-started.md): build the machine, add JVM transition
+tests, host it from a ViewModel, and add one ViewModel wiring test.
+
+## From Draft To Auth
+
+Keep the same mental model from Draft:
+
+- transition rules stay in a plain Kotlin machine,
+- `ViewModel.afsmHost(...)` owns Android lifecycle, command execution, state,
+  and effects,
+- repository results come back as typed events,
+- pure JVM transition tests are still the first tests to read.
+
+Auth adds only the next small Android-screen concepts:
+
+- two form modes, login and register, handled by guarded `case(...)` branches,
+- session persistence in the command handler after a repository success,
+- a feature-owned render state before Compose rendering,
+- one real route effect, `AuthEffect.OpenCatalog`, while the authenticated
+  session remains durable state.
+
+It still avoids the larger Checkout topics: dynamic initial state, async
+loading, request ids, stale command results, retry policy, and durable
+completion navigation.
+
 ## Files
 
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthContract.kt`

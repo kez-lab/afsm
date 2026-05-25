@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-25
+updated: 2026-05-26
 ---
 
 # Current State
@@ -228,6 +228,10 @@ The current direction is:
   Android developers to `docs/getting-started.md` as the copy-paste source of
   truth, because that guide is mirrored in `consumer-smoke` and verified
   against Maven Local artifacts.
+- `docs/auth-walkthrough.md` now explicitly bridges from the minimum Draft path
+  to Auth as the first real Android form screen, separating reused Draft
+  concepts from the new Auth concepts: login/register guarded cases, session
+  persistence, render state, and the first real route effect.
 
 ## Core Architecture Position
 
