@@ -715,3 +715,12 @@
   `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror.
 - Updated: `docs/examples.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Modeling rules reading order
+
+- Source: API usability review of stale first-reading links after the Draft
+  quickstart became the canonical first-use path.
+- Action: Updated `docs/modeling-rules.md` to start with
+  `docs/getting-started.md`, then examples, Auth, and Checkout.
+- Updated: `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

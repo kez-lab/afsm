@@ -135,6 +135,9 @@ The current direction is:
 - `docs/examples.md` now points Minimal Draft readers to
   `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror
   instead of describing the first sample as README-only.
+- `docs/modeling-rules.md` now starts its first reading order with
+  `docs/getting-started.md` and the Auth walkthrough instead of the older
+  README/sample-shop wording.
 
 ## Core Architecture Position
 

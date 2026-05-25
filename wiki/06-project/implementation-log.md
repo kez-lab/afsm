@@ -1843,3 +1843,23 @@ Conclusion:
 
 - The example catalog now routes first-time users to the compile-checked Draft
   onboarding path instead of an older README-only description.
+
+## [2026-05-25] Modeling rules reading order
+
+Change:
+
+- Updated `docs/modeling-rules.md` so its `First Reading Order` starts with
+  `docs/getting-started.md`.
+- Replaced the old `README.md` / `sample-shop Auth` wording with links to the
+  current getting-started, examples, Auth, and Checkout docs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The modeling rules now route first-time Android developers through the same
+  compile-checked onboarding ladder as the example catalog.

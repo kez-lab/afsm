@@ -120,9 +120,9 @@ should describe the business condition, not the Kotlin expression. Prefer
 
 ## First Reading Order
 
-1. `README.md` minimal machine.
+1. [getting-started.md](getting-started.md) for the compile-checked Draft path.
 2. [examples.md](examples.md) to choose the right sample.
-3. `sample-shop` Auth for the smallest real screen.
+3. [auth-walkthrough.md](auth-walkthrough.md) for the smallest real screen.
 4. [checkout-walkthrough.md](checkout-walkthrough.md) for loading, retry, stale results, and durable completion.
 5. Generated `ProductEditorStateMachine.mmd` for the full graph.
 6. `ProductEditorStateMachine.kt` for the implementation.
