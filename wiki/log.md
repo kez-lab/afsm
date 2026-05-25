@@ -788,3 +788,11 @@
 - Updated: `README.md`, `docs/getting-started.md`,
   `docs/release-readiness.md`, `consumer-smoke/`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] fixture | Draft quickstart mirror formatting
+
+- Source: Follow-up mirror review after updating getting-started snippets.
+- Action: Reformatted the consumer-smoke Draft ViewModel command-handler block
+  to match the public getting-started snippet.
+- Updated: `consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/DraftQuickstart.kt`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

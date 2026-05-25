@@ -108,23 +108,23 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
-    commandHandler = { command: DraftCommand, dispatch ->
-        when (command) {
-            is DraftCommand.SaveDraft -> repository.save(command.title).fold(
-                onSuccess = {
-                    dispatch(DraftEvent.DraftSaveCompleted)
-                },
-                onFailure = { error ->
-                    dispatch(
-                        DraftEvent.DraftSaveFailed(
-                            error.message ?: "Draft save failed.",
-                        ),
-                    )
-                },
-            )
-        }
-    },
-)
+        commandHandler = { command: DraftCommand, dispatch ->
+            when (command) {
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
+            }
+        },
+    )
 
     val state: StateFlow<DraftState> = host.state
 

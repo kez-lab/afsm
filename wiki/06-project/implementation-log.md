@@ -2006,3 +2006,22 @@ Conclusion:
 
 - The copy-paste quickstart now includes the dependency needed to compile and
   run its first JVM tests.
+
+## [2026-05-25] Draft quickstart mirror formatting
+
+Change:
+
+- Reformatted the `consumer-smoke` Draft ViewModel mirror so the
+  `afsmHost(...)` command handler indentation matches `docs/getting-started.md`.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The executable quickstart mirror is easier to compare with the public
+  getting-started snippet during future drift reviews.
