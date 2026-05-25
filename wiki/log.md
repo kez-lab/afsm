@@ -639,3 +639,12 @@
   `onEvent(event)` forwarding.
 - Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started initial entry note
+
+- Source: API usability review of how first-time users start initial repository
+  work from a machine.
+- Action: Added a note that initial state construction does not run `onEnter`;
+  startup work should come from an explicit event such as `ScreenEntered`.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

@@ -232,6 +232,12 @@ SaveClicked
 -> Saving transitions to Saved or back to Editing with an error message
 ```
 
+Initial state construction does not run `onEnter`. The Draft example starts in
+`Editing`, so no work is expected at construction time. For startup work, model
+an explicit event such as `ScreenEntered`, dispatch it after the ViewModel or UI
+is ready, and let that event transition to a loading phase whose `onEnter`
+emits the command.
+
 If a case does not call `transitionTo(...)`, it handles the event without a
 phase change. Use that for form text changes and validation errors.
 

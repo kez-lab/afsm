@@ -113,6 +113,9 @@ The current direction is:
 - `docs/getting-started.md` now shows the complete `DraftViewModel` scaffold
   instead of only the `private val host` snippet, including repository contract,
   `StateFlow<DraftState>`, and `onEvent(event)`.
+- `docs/getting-started.md` now calls out that initial state construction does
+  not run `onEnter`; startup work should be triggered by an explicit event such
+  as `ScreenEntered`.
 
 ## Core Architecture Position
 

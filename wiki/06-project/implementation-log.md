@@ -1656,3 +1656,26 @@ Conclusion:
 - First-time Android developers can paste a complete `DraftViewModel.kt` shape
   from the getting-started guide instead of assembling host/state/event wiring
   from prose.
+
+## [2026-05-25] Getting-started initial entry note
+
+Change:
+
+- Added an explicit note to `docs/getting-started.md` that initial state
+  construction does not run `onEnter`.
+- The guide now tells first-time users to model startup work as an explicit
+  event such as `ScreenEntered`, then transition into a loading phase whose
+  `onEnter` emits the command.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first guide now covers a common Android startup-work confusion before
+  users try to put initial repository loading directly in the initial phase's
+  `onEnter`.
