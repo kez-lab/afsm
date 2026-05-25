@@ -45,7 +45,9 @@ The current direction is:
 - `docs/release-readiness.md` now defines the local release gate, remaining product decisions, engineering gates, and the known Kotlin Gradle plugin POM deprecation warning.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
 - Binary API validation is enabled with API dumps for the five Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
-- `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes and documents pre-release alias removal.
+- `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes
+  using current `phase`, `data`, and `Handled` vocabulary while documenting
+  superseded pre-release names only under removed aliases.
 - `CONTRIBUTING.md` now captures the project development flow, test-integrity rules, public API change policy, and local release gate.
 - `scripts/verify-release-local.sh` now runs the full local release gate, including tests, sample graph generation, `apiCheck`, Maven Local publication, and external consumer smoke.
 - Maven Local generated POMs now have documented metadata audit status: packaging, internal dependency coordinates, names/descriptions are present; URL, license, SCM, and developer metadata remain product-owned decisions.

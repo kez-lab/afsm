@@ -885,3 +885,13 @@
   `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Changelog API vocabulary cleanup
+
+- Source: API usability review of release notes for first-time Android
+  developers.
+- Action: Updated `CHANGELOG.md` so the unreleased Added section uses the
+  current `phase`, `data`, and `Handled` vocabulary, while superseded
+  pre-release DSL names are listed only under Removed.
+- Updated: `CHANGELOG.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

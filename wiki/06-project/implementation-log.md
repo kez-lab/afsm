@@ -2228,3 +2228,26 @@ Conclusion:
 
 - The helper API now has both quickstart external-consumer coverage and
   real-sample unit-test dogfooding.
+
+## [2026-05-25] Changelog API vocabulary cleanup
+
+Change:
+
+- Updated the unreleased `CHANGELOG.md` Added section to use the current
+  `Handled`, `phase`, and `data` API vocabulary.
+- Moved superseded pre-release DSL names such as `Stayed`, `state(...)`,
+  `updateContext(...)`, `stay(...)`, and `otherwise(...)` into the Removed
+  section so release notes do not teach old names first.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+rg -n 'Stayed|state\(phase\)|updateContext|AfsmState<P, X>|AfsmState<Phase, Context>|AfsmPhaseMachine|stay\(|`stay`|otherwise\(|`otherwise`|phase/context' CHANGELOG.md README.md docs/*.md
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android readers see the current public API vocabulary in release
+  notes before any pre-release migration context.
