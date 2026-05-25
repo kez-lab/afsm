@@ -155,6 +155,9 @@ The current direction is:
   tests.
 - The quickstart dependency checklist and `consumer-smoke` fixture now include
   explicit JUnit wiring for those first JVM tests.
+- `Afsm` low-level transition helper KDoc now directs ordinary Android feature
+  code back to graphable `afsmMachine { ... }` and frames the helpers as custom
+  reducer support.
 
 ## Core Architecture Position
 

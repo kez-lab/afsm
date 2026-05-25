@@ -796,3 +796,12 @@
   to match the public getting-started snippet.
 - Updated: `consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/DraftQuickstart.kt`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] api-docs | Low-level Afsm helper KDoc
+
+- Source: Follow-up API surface review for first-time Android developers.
+- Action: Added KDoc that frames `Afsm` transition factory helpers as custom
+  reducer support and directs normal feature code to `afsmMachine { ... }`.
+- Updated: `afsm-core/src/main/kotlin/afsm/core/Afsm.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

@@ -2025,3 +2025,26 @@ Conclusion:
 
 - The executable quickstart mirror is easier to compare with the public
   getting-started snippet during future drift reviews.
+
+## [2026-05-25] Low-level Afsm helper KDoc
+
+Change:
+
+- Added KDoc to `Afsm` transition factory helpers.
+- The public API now states that `Afsm.transitioned(...)`, `Afsm.ignore(...)`,
+  and `Afsm.invalid(...)` are low-level custom reducer helpers.
+- The KDoc directs ordinary feature code to the graphable `afsmMachine { ... }`
+  DSL and its scoped `transitionTo`, `updateData`, `ignore`, and `invalid`
+  helpers.
+
+Verification:
+
+```bash
+git diff --check
+./gradlew :afsm-core:compileKotlin --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- IDE autocomplete now gives first-time users clearer guidance before they pick
+  the lower-level reducer escape hatch.
