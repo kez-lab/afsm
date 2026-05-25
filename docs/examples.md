@@ -10,8 +10,8 @@ data screens heavier. The examples are ordered from smallest to most persuasive.
 | Example | Read when | Shows | Docs | Source |
 |---|---|---|---|---|
 | Minimal Draft | You want the smallest possible machine | `Phase`, `Data`, `Event`, `Command`, command success/failure events, `onEnter`, `ViewModel.afsmHost`, route state collection | [getting-started.md](getting-started.md) | [DraftQuickstart.kt](../consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/DraftQuickstart.kt), [README.md](../README.md) |
-| Auth | You need login/register form submission | form data, validation guards, command result events, navigation effect | [auth-walkthrough.md](auth-walkthrough.md) | [AuthStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt), [AuthViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthViewModel.kt), [AuthStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt) |
-| Checkout | You need async loading, payment, retry, stale results, and durable completion | graphable payment flow, request ids, state plus optional effect, render mapping | [checkout-walkthrough.md](checkout-walkthrough.md) | [CheckoutStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt), [CheckoutViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt), [CheckoutStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt) |
+| Auth | You finished Draft and need the first real form screen | login/register modes, validation guards, command result events, render state, navigation effect | [auth-walkthrough.md](auth-walkthrough.md) | [AuthStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthStateMachine.kt), [AuthViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/auth/AuthViewModel.kt), [AuthStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt) |
+| Checkout | You finished Auth and need lifecycle, retry, and stale-result policy | dynamic initial state, `ScreenEntered`, `onEnter` commands, request ids, durable completion | [checkout-walkthrough.md](checkout-walkthrough.md) | [CheckoutStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt), [CheckoutViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt), [CheckoutStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt) |
 | ProductEditor | You need an advanced graph stress test | save draft, upload, review reject/resubmit, approve, publish, generated graph | [product-editor-walkthrough.md](product-editor-walkthrough.md) | [ProductEditorStateMachine.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt), [ProductEditorViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt), [ProductEditorStateMachineTest.kt](../sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt) |
 | Catalog/Product/Reviews | You need to know when not to use Afsm | ordinary `ViewModel + Flow` for data screens | This page | [CatalogViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/catalog/CatalogViewModel.kt), [ProductDetailViewModel.kt](../sample-shop/src/main/kotlin/afsm/sample/shop/feature/product/ProductDetailViewModel.kt) |
 
@@ -28,9 +28,10 @@ review, test, or diagram; it should not be the default for every screen.
 
 ## Recommended Reading Path
 
-1. Start with [getting-started.md](getting-started.md).
-2. Run the first Draft JVM tests, then use [testing-guide.md](testing-guide.md)
-   when you need broader transition or ViewModel coverage.
+1. Finish the minimum Draft path in [getting-started.md](getting-started.md):
+   machine, JVM tests, ViewModel host, and one ViewModel wiring test.
+2. Use [testing-guide.md](testing-guide.md) when you need broader transition or
+   ViewModel coverage.
 3. Read [modeling-rules.md](modeling-rules.md).
 4. Read [auth-walkthrough.md](auth-walkthrough.md) for the smallest Android screen.
 5. Read [checkout-walkthrough.md](checkout-walkthrough.md) for lifecycle and retry policy.
@@ -52,6 +53,10 @@ After the ViewModel works, the first Compose route is still ordinary UI:
 collect `viewModel.state` with `collectAsStateWithLifecycle()` and send UI
 callbacks back through `viewModel.onEvent(...)`.
 
+Pass `DraftState` directly at first. Add a render state only when UI code starts
+deriving visible behavior from multiple phases; Auth and Checkout show that
+next step.
+
 It is the onboarding shape:
 
 ```text
@@ -63,11 +68,16 @@ Saving -- DraftSaveFailed --> Editing
 
 Auth is the smallest real Android example.
 
+Read it after the minimum Draft path. It keeps the same machine -> JVM test ->
+ViewModel host loop, then adds login/register modes, render-state mapping,
+session persistence in the command handler, and the first real UI effect.
+
 It proves:
 
 - UI input can stay as data updates,
 - validation can be expressed with guarded transitions,
 - repository calls stay in the command handler,
+- render state can hide small phase/data details from Compose,
 - successful auth can be durable phase plus optional navigation effect
 - route code can collect `host.effects` with `CollectAfsmEffects(...)`
 
@@ -83,6 +93,11 @@ sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
 ### Checkout
 
 Checkout is the best production-style mid-size example for Android teams.
+
+Read it after Auth. It keeps the same command-handler, render-state, and
+optional-effect boundaries, then adds navigation-argument initial state, an
+explicit startup event, `onEnter` work phases, retry request ids, and durable
+completion state.
 
 It proves:
 
