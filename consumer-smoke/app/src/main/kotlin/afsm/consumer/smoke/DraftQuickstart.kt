@@ -5,10 +5,12 @@ import afsm.core.AfsmMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
-import afsm.runtime.AfsmCommandHandler
 import afsm.viewmodel.afsmHost
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
+
+const val DraftTitleKey = "draftTitle"
 
 sealed interface DraftPhase {
     data object Editing : DraftPhase
@@ -27,6 +29,7 @@ sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
     data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 
 sealed interface DraftCommand {
@@ -85,26 +88,54 @@ private fun draftMachine(): DraftMachine = afsmMachine {
         on<DraftEvent.DraftSaveCompleted> {
             transitionTo(DraftPhase.Saved)
         }
+
+        on<DraftEvent.DraftSaveFailed> {
+            case {
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
+                }
+                transitionTo(DraftPhase.Editing)
+            }
+        }
     }
 
     phase(DraftPhase.Saved)
 }
 
 interface DraftRepository {
-    suspend fun save(title: String)
+    suspend fun save(title: String): Result<Unit>
+}
+
+fun draftStateFromSavedState(savedStateHandle: SavedStateHandle): DraftState {
+    return DraftState(
+        phase = DraftPhase.Editing,
+        data = DraftData(
+            title = savedStateHandle.get<String>(DraftTitleKey).orEmpty(),
+        ),
+    )
 }
 
 class DraftViewModel(
     private val repository: DraftRepository,
+    initialState: DraftState = DraftStateMachine.initialState,
 ) : ViewModel() {
     private val host = afsmHost(
         machine = DraftStateMachine,
-        commandHandler = AfsmCommandHandler { command: DraftCommand, dispatch ->
+        initialState = initialState,
+        commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
-                is DraftCommand.SaveDraft -> {
-                    repository.save(command.title)
-                    dispatch(DraftEvent.DraftSaveCompleted)
-                }
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = {
+                        dispatch(DraftEvent.DraftSaveCompleted)
+                    },
+                    onFailure = { error ->
+                        dispatch(
+                            DraftEvent.DraftSaveFailed(
+                                error.message ?: "Draft save failed.",
+                            ),
+                        )
+                    },
+                )
             }
         },
     )
