@@ -121,16 +121,59 @@ Auth uses the simplest `afsmHost(machine = ...)` form because its initial state
 is static:
 
 ```kotlin
-private val host = afsmHost(
-    machine = AuthStateMachine,
-    commandHandler = { command: AuthCommand, dispatch ->
-        // repository call -> AuthSucceeded/AuthFailed
-    },
-)
+class AuthViewModel(
+    private val authRepository: AuthRepository,
+    private val sessionRepository: SessionRepository,
+) : ViewModel() {
+    private val host = afsmHost(
+        machine = AuthStateMachine,
+        commandHandler = { command: AuthCommand, dispatch ->
+            when (command) {
+                is AuthCommand.Login -> {
+                    authRepository.login(
+                        email = command.email,
+                        password = command.password,
+                    ).fold(
+                        onSuccess = { session ->
+                            sessionRepository.setSession(session)
+                            dispatch(AuthEvent.AuthSucceeded(session))
+                        },
+                        onFailure = { error ->
+                            dispatch(AuthEvent.AuthFailed(error.message ?: "Login failed."))
+                        },
+                    )
+                }
+
+                is AuthCommand.Register -> {
+                    authRepository.register(
+                        name = command.name,
+                        email = command.email,
+                        password = command.password,
+                    ).fold(
+                        onSuccess = { session ->
+                            sessionRepository.setSession(session)
+                            dispatch(AuthEvent.AuthSucceeded(session))
+                        },
+                        onFailure = { error ->
+                            dispatch(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
+                        },
+                    )
+                }
+            }
+        },
+    )
+
+    val state: StateFlow<AuthState> = host.state
+    val effects: Flow<AuthEffect> = host.effects
+
+    fun onEvent(event: AuthEvent) {
+        host.dispatch(event)
+    }
+}
 ```
 
-The ViewModel exposes `host.state` and `host.effects`, then delegates UI input
-to `host.dispatch(event)`.
+The command handler owns repository/session work and returns success or failure
+to the machine as typed events.
 
 ## Effect Policy
 

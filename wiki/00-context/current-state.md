@@ -129,6 +129,9 @@ The current direction is:
 - `docs/checkout-walkthrough.md` now shows the complete ViewModel startup
   bridge for the mid-size sample, including direct command handler lambda,
   explicit `ScreenEntered` dispatch, `StateFlow`, and effects exposure.
+- `docs/auth-walkthrough.md` now shows the complete small-sample ViewModel
+  wiring, including login/register command handling, session persistence,
+  success/failure result events, `StateFlow`, effects, and `onEvent(event)`.
 
 ## Core Architecture Position
 

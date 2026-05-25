@@ -1800,3 +1800,26 @@ Conclusion:
 - The internal engineering synthesis no longer points agents or maintainers at
   a stale reducer overload signature or an underspecified command-handler
   default.
+
+## [2026-05-25] Auth ViewModel wiring snippet
+
+Change:
+
+- Replaced the command-handler comment in `docs/auth-walkthrough.md` with a
+  complete `AuthViewModel` wiring snippet from the sample shape.
+- The snippet now shows login/register repository calls, session persistence,
+  success/failure result events, `StateFlow<AuthState>`, `Flow<AuthEffect>`,
+  and `onEvent(event)` forwarding.
+
+Verification:
+
+```bash
+git diff --check
+./gradlew :sample-shop:compileDebugKotlin --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The smallest real Android walkthrough no longer hides the ViewModel bridge
+  behind a comment, keeping the example ladder pasteable from Auth to Checkout.

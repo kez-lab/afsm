@@ -697,3 +697,12 @@
   the current reducer overload order and command-handler default guidance.
 - Updated: `wiki/03-engineering/afsm-viewmodel-integration.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Auth ViewModel wiring snippet
+
+- Source: API usability review of the smallest real Android walkthrough.
+- Action: Replaced the command-handler comment with a full `AuthViewModel`
+  wiring snippet that dispatches typed success/failure events.
+- Updated: `docs/auth-walkthrough.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
