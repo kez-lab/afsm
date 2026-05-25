@@ -17,15 +17,19 @@ Initial pre-release candidate.
 - `afsm-core` pure Kotlin module.
 - `AfsmReducer<S, E, C, F>` low-level transition contract.
 - `AfsmTransition<S, C, F>` with state, commands, effects, and decision.
-- `AfsmDecision` with `Transitioned`, `Stayed`, `Ignored`, and `Invalid`.
+- `AfsmDecision` with `Transitioned`, `Handled`, `Ignored`, and `Invalid`.
 - `AfsmNoEffect` marker for machines that do not emit UI-side effects.
 - `AfsmMachine<S, E, C, F>` graphable machine boundary with an initial state.
-- `AfsmState<P, X>` phase/context state model.
-- `AfsmPhaseMachine<P, X, E, C, F>` executable DSL machine with topology metadata.
-- `afsmMachine { ... }` DSL with `initial`, `state`, `on`, `transitionTo`, `stay`, `otherwise`, `ignore`, `invalid`, `onEnter`, `onExit`, `updateContext`, `command`, and `effect`.
+- `AfsmState<P, D>` phase/data state model.
+- `afsmMachine { ... }` executable DSL that returns
+  `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>` with topology metadata.
+- DSL helpers including `initial`, `phase`, `on`, `case`, `transitionTo`,
+  `ignore`, `invalid`, `onEnter`, `onExit`, `updateData`, `command`, and
+  `effect`.
 - `AfsmTopology`, `AfsmTopologyTransition`, `AfsmMmdOptions`, and Mermaid `.mmd` export support.
 - `@AfsmGraph`, `AfsmGraphSource`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
 - `afsm-runtime` coroutine host with serialized event dispatch.
+- `afsm-test` Kotlin test assertion helpers for Afsm transition behavior.
 - Sequential command execution that does not block later event reduction.
 - `AfsmHost.tryDispatch(event)` for non-throwing event queue attempts.
 - Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
@@ -36,13 +40,13 @@ Initial pre-release candidate.
 - `afsm-compose` with `CollectAfsmEffects(...)`.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
 - `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
-- `state(phase)` DSL convenience for terminal or marker phases with no handlers.
+- `phase(phase)` DSL convenience for terminal or marker phases with no handlers.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - GitHub CI workflow that runs the local release gate.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.
-- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
+- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
 - Kotlin explicit API mode for public library modules.
 - Binary API validation baseline for public library modules.
 
@@ -55,7 +59,17 @@ Initial pre-release candidate.
   - `AfsmStateChartMachine`
   - `AfsmChartState`
   - `AfsmGraphReducer`
-- Temporary `AfsmMachineAdapter` base before first publication; graphable machines now use `AfsmState<Phase, Context>` directly.
+- Superseded pre-release DSL names before first publication:
+  - `AfsmDecision.Stayed`
+  - `AfsmTransition.stayed(...)`
+  - `AfsmPhaseMachine`
+  - `state(...)`
+  - `updateContext(...)`
+  - `AfsmState.context`
+  - `stay(...)`
+  - `otherwise(...)`
+- Temporary `AfsmMachineAdapter` base before first publication; graphable
+  machines now use `AfsmState<Phase, Data>` directly.
 
 ### Known Issues
 
