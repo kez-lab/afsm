@@ -895,3 +895,14 @@
   pre-release DSL names are listed only under Removed.
 - Updated: `CHANGELOG.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | Draft ViewModel consumer test
+
+- Source: First-use testing review after adding machine transition helpers.
+- Action: Added external-consumer Draft ViewModel wiring tests with a test main
+  dispatcher and documented the same pattern in the testing guide.
+- Updated: `consumer-smoke/app/build.gradle.kts`,
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`,
+  `consumer-smoke/README.md`, `docs/testing-guide.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

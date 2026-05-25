@@ -1556,6 +1556,8 @@ Verification:
 
 ```bash
 ./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+git diff --check
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
 ```
 
 Conclusion:
@@ -2251,3 +2253,27 @@ Conclusion:
 
 - First-time Android readers see the current public API vocabulary in release
   notes before any pre-release migration context.
+
+## [2026-05-25] Draft ViewModel consumer test
+
+Change:
+
+- Added `kotlinx-coroutines-test` to the separate `consumer-smoke` Android
+  fixture.
+- Added Draft ViewModel wiring tests that set a test main dispatcher, dispatch
+  UI events through `DraftViewModel.onEvent`, verify repository command calls,
+  and assert command-result state updates for success and failure paths.
+- Updated `docs/testing-guide.md`, `consumer-smoke/README.md`, and release
+  readiness docs so first-time Android developers have a concrete ViewModel
+  test pattern after pure machine tests.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use path now verifies both pure machine behavior and Android
+  ViewModel host wiring from an external Maven Local consumer build.

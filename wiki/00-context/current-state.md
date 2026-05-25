@@ -178,6 +178,9 @@ The current direction is:
 - `sample-shop` Auth, Checkout, and ProductEditor state-machine tests now use
   `afsm-test` helpers for transition decisions, phases, commands, and effects,
   while keeping render-state and topology assertions explicit.
+- `consumer-smoke` now includes Draft ViewModel wiring tests with
+  `kotlinx-coroutines-test`, proving command-handler repository calls and
+  command-result state updates from Maven Local artifacts.
 
 ## Core Architecture Position
 

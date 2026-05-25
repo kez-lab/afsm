@@ -168,6 +168,55 @@ Good ViewModel tests cover:
 Use `runTest`, a test main dispatcher, and `Dispatchers.setMain/resetMain`
 around `viewModelScope` code.
 
+```kotlin
+testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+```
+
+```kotlin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class DraftViewModelTest {
+    @Test
+    fun saveClickedCallsRepositoryAndPublishesSavedState() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+        try {
+            val repository = RecordingDraftRepository(Result.success(Unit))
+            val viewModel = DraftViewModel(repository)
+
+            viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
+            viewModel.onEvent(DraftEvent.SaveClicked)
+            mainDispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(listOf("Plan"), repository.savedTitles)
+            assertEquals(DraftPhase.Saved, viewModel.state.value.phase)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    private class RecordingDraftRepository(
+        private val result: Result<Unit>,
+    ) : DraftRepository {
+        val savedTitles = mutableListOf<String>()
+
+        override suspend fun save(title: String): Result<Unit> {
+            savedTitles += title
+            return result
+        }
+    }
+}
+```
+
+Keep the ViewModel test narrow. It should prove the host bridge and command
+handler wiring, while the machine tests continue to own every transition branch.
+
 ## Do Not Weaken Spec Tests
 
 If a transition test fails, treat it as a behavior regression first.
