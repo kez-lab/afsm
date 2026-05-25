@@ -2641,3 +2641,22 @@ Conclusion:
 - First-time Android developers have a clearer step from Auth into the first
   production-style lifecycle/retry sample before reading the larger
   ProductEditor graph stress test.
+
+## [2026-05-26] Remove hosted CI workflow
+
+Change:
+
+- Deleted `.github/workflows/ci.yml`.
+- Recorded the new cost-control policy: run relevant local verification before
+  merge instead of relying on hosted GitHub Actions for every PR and push.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Future pushes and PR updates should no longer start the previous remote
+  `Verify release gate` job automatically.

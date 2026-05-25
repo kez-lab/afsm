@@ -1166,3 +1166,23 @@ Consequences:
   and no-output checks.
 - The module is published to Maven Local and covered by API validation and
   consumer-smoke before broader sample test migration.
+
+## [2026-05-26] Disable hosted CI for cost control
+
+Decision: Remove the GitHub Actions CI workflow and rely on local verification
+before merges.
+
+Rationale:
+
+- The stacked PR merge flow triggered many hosted GitHub Actions runs at once.
+- The immediate project priority is avoiding hosted-runner spend.
+- The existing local release gate remains available through
+  `scripts/verify-release-local.sh` when full verification is needed.
+
+Consequences:
+
+- PRs and pushes should not start the previous remote `Verify release gate`
+  workflow.
+- Maintainers should run the relevant local checks before merge.
+- Broad release readiness should still use the local release gate or a
+  deliberately re-enabled CI workflow when cost policy changes.

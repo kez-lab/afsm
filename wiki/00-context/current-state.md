@@ -236,6 +236,9 @@ The current direction is:
   as the first mid-size Android lifecycle and async-result example, calling out
   dynamic initial state, `ScreenEntered`, `onEnter` commands, retry request ids,
   stale-result ignores, and durable completion state.
+- GitHub Actions CI has been removed to avoid hosted-runner spend. Current merge
+  policy is local verification first, then direct merge without waiting for
+  remote CI.
 
 ## Core Architecture Position
 

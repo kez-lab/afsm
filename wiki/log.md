@@ -1060,3 +1060,14 @@
 - Updated: `docs/checkout-walkthrough.md`, `docs/examples.md`,
   `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] process | Remove hosted CI workflow
+
+- Source: Cost-control request after stacked PR merges triggered many hosted CI
+  runs.
+- Action: Deleted the GitHub Actions CI workflow and documented the local
+  verification before merge policy.
+- Updated: `.github/workflows/ci.yml`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
