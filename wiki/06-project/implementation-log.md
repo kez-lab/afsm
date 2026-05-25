@@ -1726,3 +1726,28 @@ Conclusion:
 - The API docs now make the default command handler's no-op behavior explicit,
   reducing the chance that first-time Android users accidentally drop emitted
   commands by omitting the host handler.
+
+## [2026-05-25] Graph generation setup checklist
+
+Change:
+
+- Added a `Before You Enable Graph Generation` checklist to
+  `docs/graph-generation.md`.
+- The checklist tells users to enable graph generation only after the machine
+  compiles and has focused transition tests.
+- The setup section now shows `mavenLocal()` in both
+  `pluginManagement.repositories` and `dependencyResolutionManagement.repositories`
+  for Maven Local snapshots.
+- The plugin declarations are now labeled as root `build.gradle.kts` setup.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time graph users now get the missing repository setup context before
+  applying KSP and the Afsm graph plugin to an Android module.

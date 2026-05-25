@@ -669,3 +669,12 @@
 - Updated: `afsm-runtime/`, `afsm-viewmodel/`, `docs/afsm-public-api.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Graph generation setup checklist
+
+- Source: API usability review of the first graph/KSP setup path after the
+  getting-started guide defers graph generation.
+- Action: Added a preflight checklist and documented Maven Local repository
+  setup for both plugin and dependency resolution in `docs/graph-generation.md`.
+- Updated: `docs/graph-generation.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

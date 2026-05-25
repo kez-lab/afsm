@@ -123,6 +123,9 @@ The current direction is:
   that the default command handler is only for machines that never emit
   commands; public API docs also show Kotlin callers should normally pass a
   direct command handler lambda.
+- `docs/graph-generation.md` now starts with a setup checklist and shows Maven
+  Local snapshot consumers must configure both `pluginManagement.repositories`
+  and `dependencyResolutionManagement.repositories`.
 
 ## Core Architecture Position
 
