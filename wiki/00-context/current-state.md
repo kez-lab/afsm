@@ -201,6 +201,9 @@ The current direction is:
 - First-use docs now state the render-state boundary directly: pass
   `DraftState` to tiny screens at first, then add a feature-owned render state
   when Compose would otherwise infer UI behavior from multiple phases.
+- The consumer-smoke Draft ViewModel tests now use a reusable
+  `MainDispatcherRule`, and public testing docs show that pattern instead of
+  repeating `Dispatchers.setMain/resetMain` in every test body.
 
 ## Core Architecture Position
 

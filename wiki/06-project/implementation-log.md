@@ -5,6 +5,34 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] ViewModel main dispatcher test rule
+
+Change:
+
+- Replaced repeated `Dispatchers.setMain/resetMain` blocks in the external
+  Draft ViewModel consumer tests with a local `MainDispatcherRule`.
+- Updated testing and getting-started docs to show the reusable rule pattern
+  for `viewModelScope` tests.
+- Updated consumer-smoke and release-readiness docs to describe the verified
+  dispatcher-rule path.
+
+Verification:
+
+```bash
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --tests 'afsm.consumer.smoke.DraftViewModelTest' --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- First-time Android developers can copy one focused ViewModel test shape
+  instead of repeating dispatcher setup in every test body.
+
 ## [2026-05-25] render state boundary guidance
 
 Change:

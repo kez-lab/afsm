@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-05-25] test+docs | ViewModel main dispatcher test rule
+
+- Source: First-use ViewModel test ergonomics review.
+- Action: Replaced repeated `Dispatchers.setMain/resetMain` blocks in the
+  consumer-smoke Draft ViewModel tests with a reusable `MainDispatcherRule` and
+  documented the same pattern in the public testing guide.
+- Updated: `consumer-smoke/`, `docs/testing-guide.md`,
+  `docs/getting-started.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-25] documentation | Render state boundary guidance
 
 - Source: First-use render-state boundary review.

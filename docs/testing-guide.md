@@ -173,8 +173,7 @@ Good ViewModel tests cover:
 - explicit `initialState` values from navigation arguments or `SavedStateHandle`
   seed state without accidentally starting `onEnter` work.
 
-Use `runTest`, a test main dispatcher, and `Dispatchers.setMain/resetMain`
-around `viewModelScope` code.
+Use `runTest` plus a main dispatcher rule around `viewModelScope` code.
 
 ```kotlin
 testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
@@ -184,31 +183,32 @@ testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DraftViewModelTest {
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     @Test
     fun saveClickedCallsRepositoryAndPublishesSavedState() = runTest {
-        val mainDispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(mainDispatcher)
-        try {
-            val repository = RecordingDraftRepository(Result.success(Unit))
-            val viewModel = DraftViewModel(repository)
+        val repository = RecordingDraftRepository(Result.success(Unit))
+        val viewModel = DraftViewModel(repository)
 
-            viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
-            viewModel.onEvent(DraftEvent.SaveClicked)
-            mainDispatcher.scheduler.advanceUntilIdle()
+        viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
+        viewModel.onEvent(DraftEvent.SaveClicked)
+        mainDispatcherRule.advanceUntilIdle()
 
-            assertEquals(listOf("Plan"), repository.savedTitles)
-            assertEquals(DraftPhase.Saved, viewModel.state.value.phase)
-        } finally {
-            Dispatchers.resetMain()
-        }
+        assertEquals(listOf("Plan"), repository.savedTitles)
+        assertEquals(DraftPhase.Saved, viewModel.state.value.phase)
     }
 
     private class RecordingDraftRepository(
@@ -220,6 +220,23 @@ class DraftViewModelTest {
             savedTitles += title
             return result
         }
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainDispatcherRule(
+    private val dispatcher: TestDispatcher = StandardTestDispatcher(),
+) : TestWatcher() {
+    override fun starting(description: Description) {
+        Dispatchers.setMain(dispatcher)
+    }
+
+    override fun finished(description: Description) {
+        Dispatchers.resetMain()
+    }
+
+    fun advanceUntilIdle() {
+        dispatcher.scheduler.advanceUntilIdle()
     }
 }
 ```

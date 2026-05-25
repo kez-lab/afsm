@@ -27,6 +27,7 @@ The smoke build covers:
 - JUnit quickstart test dependency wiring
 - Draft quickstart transition tests and Afsm test helpers from the Maven Local artifacts
 - Draft ViewModel command-handler tests with `kotlinx-coroutines-test`
+- Draft ViewModel main dispatcher rule wiring for `viewModelScope` tests
 - Draft explicit initial state from `SavedStateHandle` tests
 
 It intentionally stays small. The goal is dependency, plugin, KSP, graph

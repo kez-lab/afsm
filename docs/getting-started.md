@@ -588,8 +588,8 @@ every state-machine branch here. Prove that `onEvent(event)` reaches the hosted
 machine, the command handler calls the repository, and command result events
 update `state.value`.
 
-Use `runTest`, `StandardTestDispatcher`, and `Dispatchers.setMain/resetMain`
-around `viewModelScope` code. The complete Draft example is in
+Use `runTest` with a main dispatcher rule around `viewModelScope` code. The
+complete Draft example is in
 [testing-guide.md](testing-guide.md#viewmodel-tests), and the same pattern is
 compiled in
 [`consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`](../consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
@@ -633,26 +633,20 @@ restored initial state does not start work by itself:
 ```kotlin
 @Test
 fun savedStateHandleTitleSeedsInitialDraftStateWithoutStartingWork() = runTest {
-    val mainDispatcher = StandardTestDispatcher(testScheduler)
-    Dispatchers.setMain(mainDispatcher)
-    try {
-        val savedStateHandle = SavedStateHandle(
-            mapOf(DraftTitleKey to "Restored plan"),
-        )
-        val repository = RecordingDraftRepository(Result.success(Unit))
-        val viewModel = DraftViewModel(
-            repository = repository,
-            initialState = draftStateFromSavedState(savedStateHandle),
-        )
+    val savedStateHandle = SavedStateHandle(
+        mapOf(DraftTitleKey to "Restored plan"),
+    )
+    val repository = RecordingDraftRepository(Result.success(Unit))
+    val viewModel = DraftViewModel(
+        repository = repository,
+        initialState = draftStateFromSavedState(savedStateHandle),
+    )
 
-        mainDispatcher.scheduler.advanceUntilIdle()
+    mainDispatcherRule.advanceUntilIdle()
 
-        assertEquals(DraftPhase.Editing, viewModel.state.value.phase)
-        assertEquals(DraftData(title = "Restored plan"), viewModel.state.value.data)
-        assertEquals(emptyList<String>(), repository.savedTitles)
-    } finally {
-        Dispatchers.resetMain()
-    }
+    assertEquals(DraftPhase.Editing, viewModel.state.value.phase)
+    assertEquals(DraftData(title = "Restored plan"), viewModel.state.value.data)
+    assertEquals(emptyList<String>(), repository.savedTitles)
 }
 ```
 
