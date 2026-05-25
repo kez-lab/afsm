@@ -149,6 +149,13 @@ submitPayment(command).fold(
 Domain failure should become a domain event. It should not be thrown as an
 exception from the command handler.
 
+If a command handler does throw unexpectedly, the runtime does not create a
+domain failure event for the feature. `AfsmCommandFailurePolicy.Throw` fails
+the processing coroutine by default; `AfsmCommandFailurePolicy.Record` writes
+an `AfsmDiagnostic` through the configured logger and lets later host work
+continue. Use that policy for defensive logging, not for normal repository or
+validation failures.
+
 ## 6. Use Request IDs for Stale Results
 
 Long-running commands can finish after the user retries, cancels, or leaves the
