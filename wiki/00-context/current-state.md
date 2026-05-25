@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-25
+updated: 2026-05-26
 ---
 
 # Current State
@@ -45,7 +45,9 @@ The current direction is:
 - `docs/release-readiness.md` now defines the local release gate, remaining product decisions, engineering gates, and the known Kotlin Gradle plugin POM deprecation warning.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
 - Binary API validation is enabled with API dumps for the five Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
-- `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes and documents pre-release alias removal.
+- `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes
+  using current `phase`, `data`, and `Handled` vocabulary while documenting
+  superseded pre-release names only under removed aliases.
 - `CONTRIBUTING.md` now captures the project development flow, test-integrity rules, public API change policy, and local release gate.
 - `scripts/verify-release-local.sh` now runs the full local release gate, including tests, sample graph generation, `apiCheck`, Maven Local publication, and external consumer smoke.
 - Maven Local generated POMs now have documented metadata audit status: packaging, internal dependency coordinates, names/descriptions are present; URL, license, SCM, and developer metadata remain product-owned decisions.
@@ -110,6 +112,130 @@ The current direction is:
   `DraftSaveFailed(message)` from the command handler, returning from `Saving`
   to `Editing` with `errorMessage` instead of leaving first-time users to invent
   their own failure path outside the machine.
+- `docs/getting-started.md` now shows the complete `DraftViewModel` scaffold
+  instead of only the `private val host` snippet, including repository contract,
+  `StateFlow<DraftState>`, and `onEvent(event)`.
+- `docs/getting-started.md` now calls out that initial state construction does
+  not run `onEnter`; startup work should be triggered by an explicit event such
+  as `ScreenEntered`.
+- `docs/testing-guide.md` now includes command failure result testing as a
+  first-use test category, using the Draft save failure path as the concrete
+  example.
+- `AfsmCommandHandler.none()` and the `ViewModel.afsmHost(...)` KDoc now state
+  that the default command handler is only for machines that never emit
+  commands; public API docs also show Kotlin callers should normally pass a
+  direct command handler lambda.
+- `docs/graph-generation.md` now starts with a setup checklist and shows Maven
+  Local snapshot consumers must configure both `pluginManagement.repositories`
+  and `dependencyResolutionManagement.repositories`.
+- `docs/checkout-walkthrough.md` now shows the complete ViewModel startup
+  bridge for the mid-size sample, including direct command handler lambda,
+  explicit `ScreenEntered` dispatch, `StateFlow`, and effects exposure.
+- `docs/auth-walkthrough.md` now shows the complete small-sample ViewModel
+  wiring, including login/register command handling, session persistence,
+  success/failure result events, `StateFlow`, effects, and `onEvent(event)`.
+- `docs/examples.md` now points Minimal Draft readers to
+  `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror
+  instead of describing the first sample as README-only.
+- `docs/modeling-rules.md` now starts its first reading order with
+  `docs/getting-started.md` and the Auth walkthrough instead of the older
+  README/sample-shop wording.
+- `docs/sample-shop-afsm-guide.md` now frames `AfsmReducer` as a lower-level
+  runtime contract while keeping graphable `AfsmMachine<State, Event, Command,
+  Effect>` objects as the normal feature-code boundary.
+- `consumer-smoke` now runs focused Draft quickstart JVM tests in addition to
+  compiling and exporting graphs, so command emission and save failure recovery
+  are verified against Maven Local artifacts.
+- Public DSL docs and `updateData(...)` KDoc now state that multi-action event
+  handling must use one `case { ... }`; top-level shorthand calls are separate
+  alternatives and are not merged.
+- First-use docs now make the effect boundary explicit: start no-effect
+  machines with `AfsmNoEffect`, and add `afsm-compose` only when a Compose route
+  collects real UI one-shot effects.
+- `docs/getting-started.md` now shows the first two Draft JVM transition tests
+  before ViewModel wiring, matching the external `consumer-smoke` quickstart
+  tests.
+- The quickstart dependency checklist and `consumer-smoke` fixture now include
+  explicit JUnit wiring for those first JVM tests.
+- `Afsm` low-level transition helper KDoc now directs ordinary Android feature
+  code back to graphable `afsmMachine { ... }` and frames the helpers as custom
+  reducer support.
+- `wiki/00-context/open-questions.md` now treats UI one-shot modeling and
+  required navigation durability as resolved policy instead of open questions.
+- Example and modeling-rule reading orders now include the quickstart JVM test
+  loop before broader sample adoption.
+- README's first-use short version now includes plain JVM transition tests
+  before ViewModel hosting.
+- `afsm-core` now has a regression test proving top-level shorthand event
+  branches are alternatives and not merged transition actions.
+- Draft quickstart JVM tests now cover the missing-title data-only validation
+  branch in addition to command emission and save failure recovery.
+- README and release-readiness now match the current quickstart ViewModel
+  snippet formatting and consumer-smoke test coverage.
+- A new `afsm-test` module provides Kotlin transition assertion helpers, and
+  the Draft quickstart tests dogfood it through `consumer-smoke` against Maven
+  Local artifacts.
+- `sample-shop` Auth, Checkout, and ProductEditor state-machine tests now use
+  `afsm-test` helpers for transition decisions, phases, commands, and effects,
+  while keeping render-state and topology assertions explicit.
+- `consumer-smoke` now includes Draft ViewModel wiring tests with
+  `kotlinx-coroutines-test`, proving command-handler repository calls and
+  command-result state updates from Maven Local artifacts.
+- `docs/getting-started.md` now links the first pure machine tests to the first
+  ViewModel wiring test pattern, including the coroutine test dependency and
+  the executable `consumer-smoke` mirror.
+- README's first-use short path now also tells readers to add one ViewModel
+  wiring test after pure machine tests, linking to the testing guide and
+  executable `consumer-smoke` test.
+- `docs/getting-started.md` now includes the first `AfsmNoEffect` to real
+  feature `Effect` migration path, showing the effect type change, durable
+  state plus optional effect emission, ViewModel `Flow<Effect>` exposure, and
+  route-level `CollectAfsmEffects(...)` collection.
+- The Draft quickstart ViewModel now accepts an explicit initial state, and
+  `consumer-smoke` verifies a `SavedStateHandle` title key can seed Draft state
+  without starting work; docs now show this as the first navigation/deep-link
+  restoration path before moving to Checkout.
+- `docs/getting-started.md` now shows the first no-effect Compose route:
+  collect `viewModel.state` with `collectAsStateWithLifecycle()`, pass state
+  into a stateless screen, and send user callbacks back to `viewModel.onEvent`.
+- First-use docs now state the render-state boundary directly: pass
+  `DraftState` to tiny screens at first, then add a feature-owned render state
+  when Compose would otherwise infer UI behavior from multiple phases.
+- The consumer-smoke Draft ViewModel tests now use a reusable
+  `MainDispatcherRule`, and public testing docs show that pattern instead of
+  repeating `Dispatchers.setMain/resetMain` in every test body.
+- Public testing docs now distinguish pure-machine `assertInvalid()` coverage
+  from hosted runtime behavior, where the default `AfsmInvalidTransitionPolicy`
+  throws invalid transitions.
+- `consumer-smoke` now verifies the command failure boundary for first-use
+  docs: expected repository failures dispatch typed result events such as
+  `DraftSaveFailed`, while unexpected thrown command handler exceptions use
+  `AfsmCommandFailurePolicy` diagnostics and do not synthesize domain failure
+  events.
+- First-use docs now tell Android developers to leave `AfsmConfig` at defaults
+  for the initial Draft ViewModel and change host policy only when invalid
+  transition diagnostics, command failure diagnostics, effect delivery, or queue
+  pressure policy is the explicit target.
+- First-use testing docs now make the helper boundary explicit:
+  `afsm-test` provides Kotlin transition assertions, while Android
+  `ViewModel` dispatcher rules and fake repositories are local test fixtures in
+  the consuming app.
+- `docs/getting-started.md`, README, and example reading orders now state the
+  minimum first-use path directly: build the Draft machine, add JVM transition
+  tests, host it from a ViewModel, and add one ViewModel wiring test before
+  optional Compose, render-state, effect, saved-state, config, or graph work.
+- README now explicitly frames itself as a quick map and points first-time
+  Android developers to `docs/getting-started.md` as the copy-paste source of
+  truth, because that guide is mirrored in `consumer-smoke` and verified
+  against Maven Local artifacts.
+- `docs/auth-walkthrough.md` now explicitly bridges from the minimum Draft path
+  to Auth as the first real Android form screen, separating reused Draft
+  concepts from the new Auth concepts: login/register guarded cases, session
+  persistence, render state, and the first real route effect.
+- `docs/checkout-walkthrough.md` now explicitly bridges from Auth to Checkout
+  as the first mid-size Android lifecycle and async-result example, calling out
+  dynamic initial state, `ScreenEntered`, `onEnter` commands, retry request ids,
+  stale-result ignores, and durable completion state.
 
 ## Core Architecture Position
 

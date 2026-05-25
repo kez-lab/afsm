@@ -1,5 +1,69 @@
 # Wiki Log
 
+## [2026-05-25] documentation | Invalid transition testing boundary
+
+- Source: First-use invalid transition policy review.
+- Action: Clarified that `assertInvalid()` is pure-machine coverage while
+  hosted invalid transitions use `AfsmInvalidTransitionPolicy` and throw by
+  default.
+- Updated: `README.md`, `docs/testing-guide.md`,
+  `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | ViewModel main dispatcher test rule
+
+- Source: First-use ViewModel test ergonomics review.
+- Action: Replaced repeated `Dispatchers.setMain/resetMain` blocks in the
+  consumer-smoke Draft ViewModel tests with a reusable `MainDispatcherRule` and
+  documented the same pattern in the public testing guide.
+- Updated: `consumer-smoke/`, `docs/testing-guide.md`,
+  `docs/getting-started.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Render state boundary guidance
+
+- Source: First-use render-state boundary review.
+- Action: Documented when to pass `DraftState` directly and when to add a
+  feature-owned render state, then linked the rule to Auth and Checkout
+  examples.
+- Updated: `README.md`, `docs/getting-started.md`,
+  `docs/modeling-rules.md`, `docs/auth-walkthrough.md`,
+  `docs/examples.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | No-effect Compose route quickstart bridge
+
+- Source: First-use route wiring review after the Draft ViewModel path.
+- Action: Added a no-effect Compose route example that collects
+  `viewModel.state`, passes state to a stateless screen, and sends UI callbacks
+  through `viewModel.onEvent(...)`.
+- Updated: `README.md`, `docs/getting-started.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | SavedStateHandle initial state quickstart bridge
+
+- Source: First-use dynamic initial-state review.
+- Action: Added a consumer-smoke `SavedStateHandle` to explicit Draft
+  `initialState` test and documented the same path in the getting-started,
+  testing, README, consumer-smoke, and release-readiness docs.
+- Updated: `consumer-smoke/`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/release-readiness.md`, `README.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | First effect onboarding bridge
+
+- Source: First-use effect/Compose onboarding review.
+- Action: Added a concrete `AfsmNoEffect` to feature `Effect` migration path,
+  including durable state plus optional effect emission, ViewModel exposure,
+  route-level collection, and a testing-guide reminder to assert effects in
+  pure transition tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `docs/examples.md`, `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-01] ingest | Android ViewModel FSM discussion
 
 - Source: `raw/conversations/2026-05-01-android-viewmodel-fsm-discussion.md`
@@ -629,3 +693,370 @@
   `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started ViewModel scaffold
+
+- Source: API usability review of the `DraftViewModel.kt` paste path in
+  `docs/getting-started.md`.
+- Action: Replaced the partial host-only snippet with a full `DraftViewModel`
+  scaffold including repository contract, `StateFlow<DraftState>`, and
+  `onEvent(event)` forwarding.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started initial entry note
+
+- Source: API usability review of how first-time users start initial repository
+  work from a machine.
+- Action: Added a note that initial state construction does not run `onEnter`;
+  startup work should come from an explicit event such as `ScreenEntered`.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Command failure test guidance
+
+- Source: API usability review of the first machine test path after adding
+  `DraftSaveFailed`.
+- Action: Added command failure result testing to `docs/testing-guide.md` and
+  README's feature-test checklist.
+- Updated: `README.md`, `docs/testing-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] api-docs | Command handler default behavior
+
+- Source: API usability review of `ViewModel.afsmHost(...)` signatures and the
+  `AfsmCommandHandler.none()` default.
+- Action: Added KDoc and public API documentation that the default command
+  handler intentionally ignores commands and is only for no-command machines;
+  Kotlin callers should normally pass a direct command handler lambda.
+- Updated: `afsm-runtime/`, `afsm-viewmodel/`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Graph generation setup checklist
+
+- Source: API usability review of the first graph/KSP setup path after the
+  getting-started guide defers graph generation.
+- Action: Added a preflight checklist and documented Maven Local repository
+  setup for both plugin and dependency resolution in `docs/graph-generation.md`.
+- Updated: `docs/graph-generation.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Checkout ViewModel startup snippet
+
+- Source: API usability review of the Checkout walkthrough after adding the
+  getting-started initial-entry note.
+- Action: Replaced `commandHandler = ...` with a complete ViewModel startup
+  bridge that dispatches `ScreenEntered` and shows command result handling.
+- Updated: `docs/checkout-walkthrough.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] wiki | ViewModel integration sync
+
+- Source: Stale API check after documenting `AfsmCommandHandler.none()` and
+  direct command handler lambdas.
+- Action: Updated `wiki/03-engineering/afsm-viewmodel-integration.md` to match
+  the current reducer overload order and command-handler default guidance.
+- Updated: `wiki/03-engineering/afsm-viewmodel-integration.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Auth ViewModel wiring snippet
+
+- Source: API usability review of the smallest real Android walkthrough.
+- Action: Replaced the command-handler comment with a full `AuthViewModel`
+  wiring snippet that dispatches typed success/failure events.
+- Updated: `docs/auth-walkthrough.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Minimal Draft example links
+
+- Source: API usability review of the example catalog after strengthening the
+  getting-started and consumer-smoke Draft path.
+- Action: Updated the Minimal Draft row and description to point to
+  `docs/getting-started.md` and the consumer-smoke `DraftQuickstart.kt` mirror.
+- Updated: `docs/examples.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Modeling rules reading order
+
+- Source: API usability review of stale first-reading links after the Draft
+  quickstart became the canonical first-use path.
+- Action: Updated `docs/modeling-rules.md` to start with
+  `docs/getting-started.md`, then examples, Auth, and Checkout.
+- Updated: `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Sample guide API feedback sync
+
+- Source: Stale wording scan after aligning public onboarding around
+  `AfsmMachine<State, Event, Command, Effect>`.
+- Action: Reframed `AfsmReducer` as a lower-level runtime contract in
+  `docs/sample-shop-afsm-guide.md`.
+- Updated: `docs/sample-shop-afsm-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] verification | Consumer smoke Draft tests
+
+- Source: API usability review of whether the Draft quickstart failure path was
+  executable in the external consumer gate.
+- Action: Added consumer-smoke JVM tests for Draft command emission and save
+  failure recovery, made `verify-consumer-smoke.sh` run them, and fixed the
+  quickstart failure branch so `updateData` and `transitionTo` run in the same
+  `case`.
+- Updated: `consumer-smoke/`, `scripts/verify-consumer-smoke.sh`,
+  `README.md`, `docs/getting-started.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Case composition rule
+
+- Source: Follow-up after consumer-smoke tests exposed the sibling
+  `updateData` / `transitionTo` quickstart bug.
+- Action: Documented that multi-action event handling must use one
+  `case { ... }`, and that top-level shorthand calls are separate alternatives.
+- Updated: `afsm-core/`, `docs/getting-started.md`,
+  `docs/modeling-rules.md`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Effect boundary in first-use docs
+
+- Source: Follow-up API usability review of the first-time Android developer
+  path.
+- Action: Documented that `AfsmNoEffect` is the starting point for screens with
+  no UI one-shot output, and that `afsm-compose` is only needed when a Compose
+  route collects effects.
+- Updated: `README.md`, `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | First quickstart JVM tests
+
+- Source: Follow-up API usability review of the first-time Android developer
+  path.
+- Action: Added the first two Draft transition tests to getting-started before
+  ViewModel wiring, matching the consumer-smoke executable quickstart tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] docs+fixture | Quickstart test dependency
+
+- Source: Follow-up after adding first JUnit quickstart tests.
+- Action: Added explicit JUnit dependency guidance to quickstart docs and the
+  consumer-smoke fixture.
+- Updated: `README.md`, `docs/getting-started.md`,
+  `docs/release-readiness.md`, `consumer-smoke/`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] fixture | Draft quickstart mirror formatting
+
+- Source: Follow-up mirror review after updating getting-started snippets.
+- Action: Reformatted the consumer-smoke Draft ViewModel command-handler block
+  to match the public getting-started snippet.
+- Updated: `consumer-smoke/app/src/main/kotlin/afsm/consumer/smoke/DraftQuickstart.kt`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] api-docs | Low-level Afsm helper KDoc
+
+- Source: Follow-up API surface review for first-time Android developers.
+- Action: Added KDoc that frames `Afsm` transition factory helpers as custom
+  reducer support and directs normal feature code to `afsmMachine { ... }`.
+- Updated: `afsm-core/src/main/kotlin/afsm/core/Afsm.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] wiki | Effect policy open-question cleanup
+
+- Source: Follow-up stale-question review after first-use effect documentation.
+- Action: Moved UI one-shot modeling and required navigation durability from
+  open questions to resolved policy.
+- Updated: `wiki/00-context/open-questions.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Example reading path test loop
+
+- Source: Follow-up after adding first quickstart JVM tests.
+- Action: Added the quickstart test loop to example and modeling-rule reading
+  orders before larger sample adoption.
+- Updated: `docs/examples.md`, `docs/modeling-rules.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | README first-use test step
+
+- Source: Follow-up after aligning example reading order with first JVM tests.
+- Action: Added plain JVM transition tests to README's first-use short version.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test | Case composition regression
+
+- Source: Follow-up after the Draft quickstart sibling `updateData` /
+  `transitionTo` bug.
+- Action: Added an `afsm-core` DSL regression test that locks top-level
+  shorthand branches as alternatives, not merged actions.
+- Updated: `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] test | Draft quickstart validation branch
+
+- Source: Follow-up quickstart test coverage review.
+- Action: Added a missing-title validation test to getting-started and
+  consumer-smoke Draft quickstart tests.
+- Updated: `docs/getting-started.md`,
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftQuickstartTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | README and release quickstart sync
+
+- Source: Follow-up after expanding Draft quickstart transition tests.
+- Action: Reformatted the README Draft ViewModel snippet and updated
+  release-readiness to include validation branch coverage.
+- Updated: `README.md`, `docs/release-readiness.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] api+test | Afsm test helper quickstart dogfood
+
+- Source: First-use testing ergonomics review.
+- Action: Added `afsm-test` transition assertion helpers and dogfooded them in
+  Draft quickstart tests through `consumer-smoke`.
+- Updated: `settings.gradle.kts`, `afsm-test/`, `consumer-smoke/`,
+  `scripts/verify-release-local.sh`, `README.md`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/afsm-public-api.md`,
+  `docs/release-readiness.md`, `CHANGELOG.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] implementation | Sample-shop test helper dogfood
+
+- Source: Follow-up after adding `afsm-test`.
+- Action: Updated sample-shop state-machine tests to use `afsm-test` helpers
+  for transition assertions while leaving render-state and topology checks
+  explicit.
+- Updated: `sample-shop/build.gradle.kts`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Changelog API vocabulary cleanup
+
+- Source: API usability review of release notes for first-time Android
+  developers.
+- Action: Updated `CHANGELOG.md` so the unreleased Added section uses the
+  current `phase`, `data`, and `Handled` vocabulary, while superseded
+  pre-release DSL names are listed only under Removed.
+- Updated: `CHANGELOG.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | Draft ViewModel consumer test
+
+- Source: First-use testing review after adding machine transition helpers.
+- Action: Added external-consumer Draft ViewModel wiring tests with a test main
+  dispatcher and documented the same pattern in the testing guide.
+- Updated: `consumer-smoke/app/build.gradle.kts`,
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt`,
+  `consumer-smoke/README.md`, `docs/testing-guide.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started ViewModel test link
+
+- Source: Review after adding external-consumer Draft ViewModel tests.
+- Action: Added a getting-started bridge from pure Draft machine tests to the
+  first ViewModel wiring test pattern and its executable consumer-smoke mirror.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | README ViewModel test link
+
+- Source: Review of the README first-use short path after adding ViewModel
+  consumer tests.
+- Action: Added a ViewModel wiring test step and linked README readers to the
+  testing guide and executable `consumer-smoke` Draft ViewModel test.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test+docs | Command failure boundary consumer test
+
+- Source: First-use command failure boundary review.
+- Action: Added a consumer-smoke test for unexpected command handler exceptions
+  using `AfsmCommandFailurePolicy.Record` and documented that expected
+  repository failures should remain typed result events.
+- Updated:
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftCommandFailurePolicyTest.kt`,
+  `consumer-smoke/README.md`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/restoration-effect-command-policy.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | First-use host config guidance
+
+- Source: First-use runtime policy review after command failure boundary tests.
+- Action: Added a getting-started decision table for when to leave
+  `AfsmConfig` at defaults and when to configure hosted runtime policy.
+- Updated: `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `docs/testing-guide.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | ViewModel test fixture boundary
+
+- Source: First-use testing docs review after adding `afsm-test` and ViewModel
+  wiring tests.
+- Action: Clarified that `afsm-test` supplies Kotlin transition assertions,
+  while `MainDispatcherRule`, fake repositories, and dispatcher rules are local
+  fixtures in the consuming app tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `docs/afsm-public-api.md`, `consumer-smoke/README.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started minimum path stop point
+
+- Source: First-use getting-started structure review.
+- Action: Added a four-step minimum path, moved the first ViewModel wiring test
+  before optional expansion topics, and aligned README/example reading orders.
+- Updated: `docs/getting-started.md`, `README.md`, `docs/examples.md`,
+  `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | README copy-source boundary
+
+- Source: README/getting-started first-use drift review.
+- Action: Clarified that README is a quick map and that
+  `docs/getting-started.md` is the copy-paste source verified by
+  `consumer-smoke`.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Auth walkthrough Draft bridge
+
+- Source: First-use review of Auth as the next example after the minimum Draft
+  path.
+- Action: Added a Draft-to-Auth bridge, separated reused concepts from new Auth
+  concepts, and positioned Auth as the first real form screen in the example
+  catalog.
+- Updated: `docs/auth-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] documentation | Checkout walkthrough Auth bridge
+
+- Source: First-use review of Checkout as the next example after Auth.
+- Action: Added an Auth-to-Checkout bridge, separated reused Auth concepts from
+  Checkout lifecycle/retry concepts, and corrected the durable completion effect
+  snippet to the current labeled DSL shape.
+- Updated: `docs/checkout-walkthrough.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

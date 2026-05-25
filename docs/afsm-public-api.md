@@ -61,11 +61,19 @@ implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 ```
 
-Optional Compose and graph tooling:
+Optional test, Compose, and graph tooling:
+
+```kotlin
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+```
 
 ```kotlin
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 ```
+
+Add `afsm-compose` only for Compose routes that collect machine effects. A
+machine that never emits UI one-shots should use `AfsmNoEffect` and does not
+need the Compose helper module.
 
 ```kotlin
 plugins {
@@ -112,6 +120,10 @@ The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
 For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
 Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
+If one accepted event needs multiple actions, keep them in the same
+`case { ... }`. Top-level shorthand calls such as `updateData(...)` and
+`transitionTo(...)` are separate alternatives; they are not merged into one
+transition.
 
 ### AfsmDecision
 
@@ -322,6 +334,11 @@ Runtime guarantees:
 
 ### AfsmConfig
 
+Start with the default `AfsmConfig()` in ordinary feature ViewModels. Change it
+only when the host runtime policy is intentionally different from the default
+development behavior. Expected product failures should still be modeled as
+typed result events, not as config changes.
+
 ```kotlin
 class AfsmConfig(
     val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
@@ -379,6 +396,20 @@ Use `machine` for the standard path. Use `machine + initialState` when the
 starting state is dynamic. Use `reducer + initialState` only for custom
 non-graphable reducer escape hatches.
 
+The signatures show `AfsmCommandHandler<C, E>` because that is the exact API
+type. Kotlin callers should usually pass a direct lambda:
+
+```kotlin
+commandHandler = { command: ScreenCommand, dispatch ->
+    // execute host work
+    // dispatch(result event)
+}
+```
+
+The default `AfsmCommandHandler.none()` is only for machines that never emit
+commands. If a machine emits commands and the handler is omitted, those
+commands are intentionally ignored.
+
 ## afsm-compose
 
 ```kotlin
@@ -391,7 +422,26 @@ fun <F : Any> CollectAfsmEffects(
 ```
 
 Use this in route-level composables for UI one-shot behavior such as navigation
-or snackbar display.
+or snackbar display. Keep required product progress in state; effects are
+best-effort one-shot outputs.
+
+## afsm-test
+
+`afsm-test` contains Kotlin-only helpers for common transition assertions:
+
+```kotlin
+result
+    .assertTransitioned()
+    .assertPhase(ScreenPhase.Saving)
+    .assertCommands(ScreenCommand.Save)
+```
+
+Use these helpers in unit tests when they make the behavioral expectation
+clearer than inspecting `result.decision`, `result.state.phase`,
+`result.commands`, and `result.effects` directly.
+
+Android `ViewModel` test rules, fake repositories, and dispatcher rules remain
+consumer-owned test fixtures.
 
 ## afsm-graph-ksp
 
