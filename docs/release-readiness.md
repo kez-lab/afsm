@@ -25,16 +25,24 @@ What this proves:
 - The graph Gradle plugin default processor dependency is generated from the
   shared Afsm version and tested so `io.github.afsm.graph` and
   `afsm-graph-ksp` stay aligned.
-- Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
+- Maven Local publishes all six API-tracked library modules plus the Afsm graph Gradle plugin.
 - A separate Android Gradle build consumes the published Maven Local artifacts,
-  including the ViewModel AAR, graph Gradle plugin, KSP processor, and the Draft
-  quickstart machine/ViewModel mirrored from `docs/getting-started.md`.
-- The separate consumer build runs Draft quickstart JVM tests for command
-  emission and save failure recovery against those Maven Local artifacts.
+  including the ViewModel AAR, test helper artifact, graph Gradle plugin, KSP
+  processor, and the Draft quickstart machine/ViewModel mirrored from
+  `docs/getting-started.md`.
+- The separate consumer build runs Draft quickstart JVM tests for validation,
+  command emission, and save failure recovery against those Maven Local
+  artifacts.
+- The separate consumer build also runs Draft ViewModel wiring tests with a
+  main dispatcher rule so command execution and explicit initial state from
+  `SavedStateHandle` are verified outside the root build.
+- The separate consumer build also verifies unexpected command handler
+  exceptions use `AfsmCommandFailurePolicy` diagnostics instead of being
+  modeled as domain failure result events.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
-- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
-- Binary API dumps are checked for the five API-tracked Afsm library modules.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
+- Binary API dumps are checked for the six API-tracked Afsm library modules.
 
 ## GitHub CI
 
@@ -90,7 +98,10 @@ Current compatibility baseline:
 `consumer-smoke` proves that a separate Android Gradle build can resolve and
 compile against the Maven Local artifacts, including the first-use Draft
 quickstart machine and ViewModel. It also runs focused Draft quickstart
-transition tests. It does not prove broader sample behavior, runtime
+transition tests for validation, command emission, and save failure recovery,
+plus Draft ViewModel tests for command execution and explicit initial state
+from `SavedStateHandle` using a reusable main dispatcher rule. It does not
+prove broader sample behavior, runtime
 correctness, or binary compatibility by itself; those remain covered by module
 tests, sample tests, graph generation, and `apiCheck` in the local release gate.
 
@@ -112,6 +123,8 @@ implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+testImplementation("junit:junit:4.13.2")
 ```
 
 ```kotlin
@@ -135,6 +148,7 @@ Current generated POMs contain:
 |---|---:|---:|---:|
 | `afsm-core` | `jar` | None | Yes |
 | `afsm-runtime` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
+| `afsm-test` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
 | `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |

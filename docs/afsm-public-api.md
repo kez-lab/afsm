@@ -61,11 +61,19 @@ implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 ```
 
-Optional Compose and graph tooling:
+Optional test, Compose, and graph tooling:
+
+```kotlin
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+```
 
 ```kotlin
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 ```
+
+Add `afsm-compose` only for Compose routes that collect machine effects. A
+machine that never emits UI one-shots should use `AfsmNoEffect` and does not
+need the Compose helper module.
 
 ```kotlin
 plugins {
@@ -326,6 +334,11 @@ Runtime guarantees:
 
 ### AfsmConfig
 
+Start with the default `AfsmConfig()` in ordinary feature ViewModels. Change it
+only when the host runtime policy is intentionally different from the default
+development behavior. Expected product failures should still be modeled as
+typed result events, not as config changes.
+
 ```kotlin
 class AfsmConfig(
     val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
@@ -409,7 +422,26 @@ fun <F : Any> CollectAfsmEffects(
 ```
 
 Use this in route-level composables for UI one-shot behavior such as navigation
-or snackbar display.
+or snackbar display. Keep required product progress in state; effects are
+best-effort one-shot outputs.
+
+## afsm-test
+
+`afsm-test` contains Kotlin-only helpers for common transition assertions:
+
+```kotlin
+result
+    .assertTransitioned()
+    .assertPhase(ScreenPhase.Saving)
+    .assertCommands(ScreenCommand.Save)
+```
+
+Use these helpers in unit tests when they make the behavioral expectation
+clearer than inspecting `result.decision`, `result.state.phase`,
+`result.commands`, and `result.effects` directly.
+
+Android `ViewModel` test rules, fake repositories, and dispatcher rules remain
+consumer-owned test fixtures.
 
 ## afsm-graph-ksp
 
