@@ -2468,3 +2468,176 @@ Conclusion:
 
 - Readers who start at README now see the same machine-test to ViewModel-test
   loop as readers who start in `docs/getting-started.md`.
+
+## [2026-05-25] Command failure boundary consumer test
+
+Change:
+
+- Added an external-consumer Draft command failure policy test that hosts
+  `DraftStateMachine` with `AfsmCommandFailurePolicy.Record`.
+- Verified that an unexpected thrown `SaveDraft` handler exception records an
+  `AfsmDiagnostic` and does not synthesize `DraftSaveFailed`.
+- Updated getting-started, testing, restoration/effect/command policy,
+  release-readiness, and consumer-smoke docs to keep the boundary visible:
+  expected repository failures are typed result events, while unexpected handler
+  exceptions are runtime policy cases.
+
+Verification:
+
+```bash
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --tests 'afsm.consumer.smoke.DraftCommandFailurePolicyTest' --no-daemon
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time Android users now see and execute the difference between normal
+  command result events and defensive command handler exception policy.
+
+## [2026-05-25] First-use host config guidance
+
+Change:
+
+- Added a getting-started decision table for when to leave `AfsmConfig` at its
+  defaults and when to configure hosted runtime policy.
+- Updated API and testing docs to keep `AfsmConfig` out of ordinary feature
+  tests unless the test target is invalid-transition diagnostics, command
+  failure diagnostics, effect delivery, or queue pressure.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a short rule for default host config:
+  avoid it in the first Draft path, then configure policy only when the host
+  behavior itself is the product or test concern.
+
+## [2026-05-25] ViewModel test fixture boundary
+
+Change:
+
+- Clarified that `afsm-test` is a Kotlin-only transition assertion helper
+  module.
+- Updated getting-started, testing, public API, and consumer-smoke docs so
+  `MainDispatcherRule`, fake repositories, and other ViewModel test fixtures
+  are clearly owned by the consuming app's tests.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers should no longer expect Afsm to ship Android
+  ViewModel test rules when the existing `afsm-test` artifact only covers pure
+  transition assertions.
+
+## [2026-05-25] Getting-started minimum path stop point
+
+Change:
+
+- Added a four-step minimum first-use path to `docs/getting-started.md`:
+  build the Draft machine, add JVM transition tests, host from a ViewModel, and
+  add one ViewModel wiring test.
+- Moved the first ViewModel test section before optional Compose route,
+  render-state, effect, saved-state, and host config sections.
+- Updated README and example/modeling reading orders so they point readers to
+  the same minimum path before optional expansions.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a clear stopping point after the
+  minimum Draft path, reducing pressure to absorb every optional runtime and UI
+  integration topic before the first successful adoption.
+
+## [2026-05-25] README copy-source boundary
+
+Change:
+
+- Clarified that README is the quick map for first-use onboarding, not the
+  canonical copy-paste source.
+- Pointed first-time Android developers to `docs/getting-started.md` as the
+  complete Draft file source because that guide is mirrored in `consumer-smoke`
+  and compiled against Maven Local artifacts.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time readers are less likely to copy diverging README snippets when the
+  verified getting-started guide is the source of truth for the first Draft
+  implementation.
+
+## [2026-05-26] Auth walkthrough Draft bridge
+
+Change:
+
+- Added an explicit `From Draft To Auth` section to `docs/auth-walkthrough.md`.
+- Clarified that Auth should be read after the minimum Draft path: machine, JVM
+  transition tests, ViewModel host, and one ViewModel wiring test.
+- Separated reused Draft concepts from Auth's new concepts: login/register
+  guarded cases, session persistence in the command handler, render-state
+  mapping, and the first real route effect.
+- Updated the example catalog so Auth is positioned as the first real form
+  screen after Draft rather than another starting point.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from copy-paste Draft
+  onboarding into the smallest real Android form screen before taking on
+  Checkout lifecycle and retry policy.
+
+## [2026-05-26] Checkout walkthrough Auth bridge
+
+Change:
+
+- Added an explicit `From Auth To Checkout` section to
+  `docs/checkout-walkthrough.md`.
+- Clarified that Checkout should be read after Auth, not as the first
+  copy-paste target.
+- Separated reused Auth concepts from Checkout's new concepts: navigation
+  argument initial state, explicit `ScreenEntered`, `onEnter` commands,
+  request ids, stale-result ignores, and durable completion state.
+- Updated the durable completion effect snippet to use the current
+  `effect(label = ...) { ... }` DSL shape.
+- Updated the example catalog so Checkout is positioned as the first mid-size
+  lifecycle and async-result policy example after Auth.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from Auth into the first
+  production-style lifecycle/retry sample before reading the larger
+  ProductEditor graph stress test.

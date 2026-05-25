@@ -29,6 +29,10 @@ The smoke build covers:
 - Draft ViewModel command-handler tests with `kotlinx-coroutines-test`
 - Draft ViewModel main dispatcher rule wiring for `viewModelScope` tests
 - Draft explicit initial state from `SavedStateHandle` tests
+- Draft command failure policy coverage for unexpected handler exceptions
+- A local ViewModel test fixture boundary: `afsm-test` supplies transition
+  assertions, while dispatcher rules and fake repositories live in the
+  consuming app's tests
 
 It intentionally stays small. The goal is dependency, plugin, KSP, graph
 generation, quickstart transition and ViewModel wiring behavior, and API

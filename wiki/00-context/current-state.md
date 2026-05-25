@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-25
+updated: 2026-05-26
 ---
 
 # Current State
@@ -207,6 +207,35 @@ The current direction is:
 - Public testing docs now distinguish pure-machine `assertInvalid()` coverage
   from hosted runtime behavior, where the default `AfsmInvalidTransitionPolicy`
   throws invalid transitions.
+- `consumer-smoke` now verifies the command failure boundary for first-use
+  docs: expected repository failures dispatch typed result events such as
+  `DraftSaveFailed`, while unexpected thrown command handler exceptions use
+  `AfsmCommandFailurePolicy` diagnostics and do not synthesize domain failure
+  events.
+- First-use docs now tell Android developers to leave `AfsmConfig` at defaults
+  for the initial Draft ViewModel and change host policy only when invalid
+  transition diagnostics, command failure diagnostics, effect delivery, or queue
+  pressure policy is the explicit target.
+- First-use testing docs now make the helper boundary explicit:
+  `afsm-test` provides Kotlin transition assertions, while Android
+  `ViewModel` dispatcher rules and fake repositories are local test fixtures in
+  the consuming app.
+- `docs/getting-started.md`, README, and example reading orders now state the
+  minimum first-use path directly: build the Draft machine, add JVM transition
+  tests, host it from a ViewModel, and add one ViewModel wiring test before
+  optional Compose, render-state, effect, saved-state, config, or graph work.
+- README now explicitly frames itself as a quick map and points first-time
+  Android developers to `docs/getting-started.md` as the copy-paste source of
+  truth, because that guide is mirrored in `consumer-smoke` and verified
+  against Maven Local artifacts.
+- `docs/auth-walkthrough.md` now explicitly bridges from the minimum Draft path
+  to Auth as the first real Android form screen, separating reused Draft
+  concepts from the new Auth concepts: login/register guarded cases, session
+  persistence, render state, and the first real route effect.
+- `docs/checkout-walkthrough.md` now explicitly bridges from Auth to Checkout
+  as the first mid-size Android lifecycle and async-result example, calling out
+  dynamic initial state, `ScreenEntered`, `onEnter` commands, retry request ids,
+  stale-result ignores, and durable completion state.
 
 ## Core Architecture Position
 
