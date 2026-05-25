@@ -5,6 +5,30 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] first effect onboarding bridge
+
+Change:
+
+- Added a getting-started section for the first migration from `AfsmNoEffect`
+  to a real feature `Effect` type.
+- Documented the exact handoff from machine effect emission to ViewModel
+  `Flow<Effect>` exposure and route-level `CollectAfsmEffects(...)`
+  collection.
+- Clarified in testing docs that effect emission should be asserted as a pure
+  transition before Compose collection is wired.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a direct next step after the no-effect
+  Draft machine when a screen later needs optional navigation, snackbar, or
+  close-screen behavior.
+
 ## [2026-05-03] afsm-core minimal Kotlin skeleton
 
 Change:

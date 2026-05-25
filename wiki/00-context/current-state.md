@@ -187,6 +187,10 @@ The current direction is:
 - README's first-use short path now also tells readers to add one ViewModel
   wiring test after pure machine tests, linking to the testing guide and
   executable `consumer-smoke` test.
+- `docs/getting-started.md` now includes the first `AfsmNoEffect` to real
+  feature `Effect` migration path, showing the effect type change, durable
+  state plus optional effect emission, ViewModel `Flow<Effect>` exposure, and
+  route-level `CollectAfsmEffects(...)` collection.
 
 ## Core Architecture Position
 

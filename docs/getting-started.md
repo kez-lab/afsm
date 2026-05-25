@@ -390,6 +390,85 @@ Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.
 
+## Add The First Effect Later
+
+Keep the first Draft machine on `AfsmNoEffect` until the screen has real
+route-level UI work such as optional navigation, a fire-and-forget snackbar, or
+closing the screen. When that moment comes, change the effect type first:
+
+```kotlin
+sealed interface DraftEffect {
+    data object CloseEditor : DraftEffect
+}
+
+typealias DraftMachine =
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, DraftEffect>
+```
+
+After this change, remove the `AfsmNoEffect` import from the machine file.
+
+Then emit the effect from the transition that also records durable product
+progress in state:
+
+```kotlin
+on<DraftEvent.DraftSaveCompleted> {
+    case {
+        transitionTo(DraftPhase.Saved)
+        effect(label = "CloseEditor") { DraftEffect.CloseEditor }
+    }
+}
+```
+
+Do not make required progress effect-only. `DraftPhase.Saved` is the durable
+business result; `DraftEffect.CloseEditor` is only a convenience for the
+currently active route.
+
+Expose effects from the ViewModel:
+
+```kotlin
+import kotlinx.coroutines.flow.Flow
+
+val effects: Flow<DraftEffect> = host.effects
+```
+
+Add `afsm-compose` only in the UI module that collects the effect:
+
+```kotlin
+implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
+```
+
+Collect effects at the route level, next to lifecycle-aware state collection:
+
+```kotlin
+import afsm.compose.CollectAfsmEffects
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun DraftRoute(
+    viewModel: DraftViewModel,
+    onDone: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    CollectAfsmEffects(viewModel.effects) { effect ->
+        when (effect) {
+            DraftEffect.CloseEditor -> onDone()
+        }
+    }
+
+    DraftScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+    )
+}
+```
+
+For effects that must survive lifecycle gaps, use state plus an acknowledgement
+event instead of `Effect`. See
+[restoration-effect-command-policy.md](restoration-effect-command-policy.md).
+
 ## Add First ViewModel Test
 
 After the machine tests pass, add one ViewModel wiring test. Do not duplicate

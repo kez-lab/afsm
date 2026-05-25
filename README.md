@@ -378,6 +378,9 @@ For machines that emit UI effects, collect them at route level. The minimal
 draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
 feature defines an effect type.
 
+For the first migration from `AfsmNoEffect` to a real feature effect type, see
+[docs/getting-started.md](docs/getting-started.md#add-the-first-effect-later).
+
 Add the Compose helper only for those effectful features:
 
 ```kotlin

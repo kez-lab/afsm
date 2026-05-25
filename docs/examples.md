@@ -64,7 +64,11 @@ It proves:
 - UI input can stay as data updates,
 - validation can be expressed with guarded transitions,
 - repository calls stay in the command handler,
-- successful auth can be durable phase plus optional navigation effect.
+- successful auth can be durable phase plus optional navigation effect
+- route code can collect `host.effects` with `CollectAfsmEffects(...)`
+
+For the first `AfsmNoEffect` to real effect migration, read
+`AuthStateMachine.kt` together with `AuthScreen.kt`.
 
 Generated graph:
 

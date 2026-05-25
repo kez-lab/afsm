@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-05-25] documentation | First effect onboarding bridge
+
+- Source: First-use effect/Compose onboarding review.
+- Action: Added a concrete `AfsmNoEffect` to feature `Effect` migration path,
+  including durable state plus optional effect emission, ViewModel exposure,
+  route-level collection, and a testing-guide reminder to assert effects in
+  pure transition tests.
+- Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
+  `docs/examples.md`, `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-01] ingest | Android ViewModel FSM discussion
 
 - Source: `raw/conversations/2026-05-01-android-viewmodel-fsm-discussion.md`

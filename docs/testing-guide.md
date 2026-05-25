@@ -24,6 +24,7 @@ The helpers return the same transition, so assertions can be chained:
 
 ```kotlin
 import afsm.test.assertCommands
+import afsm.test.assertEffects
 import afsm.test.assertPhase
 import afsm.test.assertTransitioned
 
@@ -92,6 +93,11 @@ fun `completed signup emits navigation effect`() {
     result.assertEffects(SignupEffect.OpenHome)
 }
 ```
+
+When a machine graduates from `AfsmNoEffect` to a real effect type, add this
+pure transition assertion before wiring Compose collection. The machine test
+proves the output exists; the route remains responsible for collecting
+`host.effects` with `CollectAfsmEffects(...)`.
 
 ### Command failure result
 
