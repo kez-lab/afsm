@@ -1,5 +1,15 @@
 # Wiki Log
 
+## [2026-05-25] documentation | No-effect Compose route quickstart bridge
+
+- Source: First-use route wiring review after the Draft ViewModel path.
+- Action: Added a no-effect Compose route example that collects
+  `viewModel.state`, passes state to a stateless screen, and sends UI callbacks
+  through `viewModel.onEvent(...)`.
+- Updated: `README.md`, `docs/getting-started.md`, `docs/examples.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-05-25] test+docs | SavedStateHandle initial state quickstart bridge
 
 - Source: First-use dynamic initial-state review.

@@ -40,6 +40,13 @@ saved-state artifact in that Android module:
 implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0")
 ```
 
+If this is a Compose screen and the app module does not already have lifecycle
+Compose, add it for `collectAsStateWithLifecycle()`:
+
+```kotlin
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+```
+
 For Maven Local snapshots, make sure the consuming build has `mavenLocal()` in
 `settings.gradle.kts`:
 
@@ -59,12 +66,15 @@ Android consumers must also enable AndroidX:
 android.useAndroidX=true
 ```
 
-Keep the first screen split into two files:
+Keep the first Afsm code split into two files:
 
 | File | Put here |
 |---|---|
 | `DraftStateMachine.kt` | `Phase`, `Data`, `State`, `Event`, `Command`, and `afsmMachine { ... }` |
 | `DraftViewModel.kt` | `afsmHost(...)`, command execution, `StateFlow`, and `onEvent(...)` |
+
+Compose route and screen files stay ordinary UI code. Add them when you connect
+the ViewModel to UI rendering.
 
 The state machine file needs:
 
@@ -398,6 +408,48 @@ Expected domain failures should become result events from the command handler.
 Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.
+
+## Connect The First Compose Route
+
+For the no-effect Draft screen, do not add `afsm-compose`. A normal Compose
+route only needs lifecycle-aware state collection and event callbacks into the
+ViewModel:
+
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun DraftRoute(
+    viewModel: DraftViewModel,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    DraftScreen(
+        state = state,
+        onTitleChanged = { value ->
+            viewModel.onEvent(DraftEvent.TitleChanged(value))
+        },
+        onSaveClick = {
+            viewModel.onEvent(DraftEvent.SaveClicked)
+        },
+    )
+}
+
+@Composable
+fun DraftScreen(
+    state: DraftState,
+    onTitleChanged: (String) -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    // Render state.data.title, state.data.errorMessage, and state.phase.
+    // Send user actions through the callbacks.
+}
+```
+
+Keep repository calls out of the route and screen. They stay in the ViewModel's
+command handler, and the machine stays plain Kotlin.
 
 ## Add The First Effect Later
 

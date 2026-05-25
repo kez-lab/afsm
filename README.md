@@ -30,6 +30,7 @@ The short version:
 6. Test the pure machine with plain JVM transition tests.
 7. Host the machine from a `ViewModel` with `afsmHost(...)`.
 8. Add one ViewModel wiring test for command execution and result events.
+9. Collect `viewModel.state` from a route with `collectAsStateWithLifecycle`.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production

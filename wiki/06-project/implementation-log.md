@@ -5,6 +5,28 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] no-effect Compose route quickstart bridge
+
+Change:
+
+- Added a getting-started section that connects the no-effect Draft ViewModel
+  to a normal Compose route with `collectAsStateWithLifecycle()`.
+- Clarified that `afsm-compose` is not needed until a route collects real
+  one-shot effects.
+- Updated README and the example catalog so the first-use path includes route
+  state collection after ViewModel wiring.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now see the first UI handoff before studying
+  effect collection or the larger sample routes.
+
 ## [2026-05-25] SavedStateHandle initial state quickstart bridge
 
 Change:

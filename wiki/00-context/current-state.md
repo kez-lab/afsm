@@ -195,6 +195,9 @@ The current direction is:
   `consumer-smoke` verifies a `SavedStateHandle` title key can seed Draft state
   without starting work; docs now show this as the first navigation/deep-link
   restoration path before moving to Checkout.
+- `docs/getting-started.md` now shows the first no-effect Compose route:
+  collect `viewModel.state` with `collectAsStateWithLifecycle()`, pass state
+  into a stateless screen, and send user callbacks back to `viewModel.onEvent`.
 
 ## Core Architecture Position
 
