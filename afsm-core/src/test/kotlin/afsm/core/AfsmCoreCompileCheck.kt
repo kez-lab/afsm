@@ -241,6 +241,35 @@ private class LoginStateMachine : LoginMachine {
     }
 }
 
+private sealed interface ToggleState {
+    data object Off : ToggleState
+    data object On : ToggleState
+}
+
+private sealed interface ToggleEvent {
+    data object ToggleRequested : ToggleEvent
+}
+
+private typealias ToggleTransition =
+    AfsmTransition<ToggleState, AfsmNoCommand, AfsmNoEffect>
+
+private typealias ToggleMachine =
+    AfsmReducer<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect>
+
+private object ToggleStateMachine : ToggleMachine {
+    override fun transition(
+        state: ToggleState,
+        event: ToggleEvent,
+    ): ToggleTransition {
+        return when (event) {
+            ToggleEvent.ToggleRequested -> when (state) {
+                ToggleState.Off -> Afsm.transitioned(ToggleState.On)
+                ToggleState.On -> Afsm.transitioned(ToggleState.Off)
+            }
+        }
+    }
+}
+
 @Suppress("unused")
 private fun compileAfsmNoEffectUsage() {
     val machine: LoginMachine = LoginStateMachine()
@@ -250,6 +279,19 @@ private fun compileAfsmNoEffectUsage() {
     )
 
     val noEffects: List<AfsmNoEffect> = transition.effects
+    check(noEffects.isEmpty())
+}
+
+@Suppress("unused")
+private fun compileAfsmNoCommandUsage() {
+    val transition: ToggleTransition = ToggleStateMachine.transition(
+        state = ToggleState.Off,
+        event = ToggleEvent.ToggleRequested,
+    )
+
+    val noCommands: List<AfsmNoCommand> = transition.commands
+    val noEffects: List<AfsmNoEffect> = transition.effects
+    check(noCommands.isEmpty())
     check(noEffects.isEmpty())
 }
 

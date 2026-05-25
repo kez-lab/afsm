@@ -133,3 +133,5 @@ Resolved:
 - `case(condition = ...)` and payload phase factories are read-only scopes, so predicates and phase constructors cannot accidentally update data or emit commands/effects.
 - First-use onboarding should start with the minimal Draft flow; Checkout is the production-style mid-size sample and ProductEditor is the advanced graph stress test.
 - Public docs should explain phase payloads as minimal phase-instance identifiers, while durable screen data stays in `Data`.
+- Use `AfsmNoCommand` as the standard marker command type for machines that
+  never emit host-executed work, mirroring `AfsmNoEffect`.

@@ -1,6 +1,5 @@
 # Afsm
 
-[![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 ![Status](https://img.shields.io/badge/status-internal%20beta-orange)
 ![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
@@ -57,6 +56,9 @@ The core mental model:
 | `Event` | User input or command result |
 | `Command` | Host-executed work, such as repository calls or timers |
 | `Effect` | Optional UI one-shot output |
+
+Use `AfsmNoCommand` when a machine never emits host-executed work. Use
+`AfsmNoEffect` when it never emits UI one-shot output.
 
 Daily choices:
 

@@ -1071,3 +1071,15 @@
   `wiki/00-context/current-state.md`,
   `wiki/06-project/decision-log.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-26] api | AfsmNoCommand marker
+
+- Source: Merge of the no-command marker API PR after the stacked onboarding
+  PRs landed.
+- Action: Added `AfsmNoCommand`, consumer-smoke usage, public docs, API dump,
+  changelog, and wiki records while preserving the newer onboarding docs.
+- Updated: `afsm-core/`, `consumer-smoke/`, `CHANGELOG.md`, `README.md`,
+  `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

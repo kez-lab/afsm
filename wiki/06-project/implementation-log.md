@@ -1,9 +1,33 @@
 ---
 title: Implementation Log
-updated: 2026-05-25
+updated: 2026-05-26
 ---
 
 # Implementation Log
+
+## [2026-05-26] No-command marker API
+
+Change:
+
+- Added `AfsmNoCommand` to `afsm-core` for machines that never emit
+  host-executed work.
+- Added core compile checks and an external `consumer-smoke` ViewModel-hosted
+  machine that uses `AfsmNoCommand` from Maven Local artifacts.
+- Updated beginner and public API docs to present `AfsmNoCommand` alongside
+  `AfsmNoEffect`.
+- Added the new public marker to `CHANGELOG.md`.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-core:apiCheck --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- No-command machines no longer need feature-owned empty command sealed
+  interfaces.
 
 ## [2026-05-25] invalid transition testing boundary
 

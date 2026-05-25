@@ -16,7 +16,7 @@ The current direction is:
 - Store durable architecture reasoning in this LLM Wiki so future Codex sessions can continue without rediscovering the same context.
 - Use official Android UI layer, ViewModel, Compose state, coroutine, Flow testing, and saved state guidance as constraints for the FSM design.
 - A minimal Kotlin/JVM `afsm-core` project now exists and compiles with the v2 core API shape.
-- `AfsmNoEffect` and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
+- `AfsmNoCommand`, `AfsmNoEffect`, and `AfsmTransition<S, C, F>` were validated through compile-time signup/login reference usage.
 - A minimal coroutine-based `afsm-runtime` module now exists.
 - `AfsmHost` serializes non-suspending `dispatch(event)` calls through a bounded FIFO event queue, exposes `StateFlow<S>` state, exposes best-effort `Flow<F>` effects, and executes commands sequentially on a separate command processor so suspended commands do not block later event reduction.
 - Project-scoped AI engineering guardrails now require spec-first/TDD-oriented work and prohibit weakening tests merely to make implementation pass.
@@ -43,8 +43,8 @@ The current direction is:
   are mirrored in `consumer-smoke`, so the first-use documentation compiles
   against Maven Local artifacts and exports a graph during release verification.
 - `docs/release-readiness.md` now defines the local release gate, remaining product decisions, engineering gates, and the known Kotlin Gradle plugin POM deprecation warning.
-- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
-- Binary API validation is enabled with API dumps for the five Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp` so public declarations must be intentional.
+- Binary API validation is enabled with API dumps for the six Afsm library modules; `sample-shop` is excluded because it is a sample app, not published API.
 - `CHANGELOG.md` now contains the initial `0.1.0 - Unreleased` release notes
   using current `phase`, `data`, and `Handled` vocabulary while documenting
   superseded pre-release names only under removed aliases.

@@ -39,12 +39,14 @@ What this proves:
 - The separate consumer build also verifies unexpected command handler
   exceptions use `AfsmCommandFailurePolicy` diagnostics instead of being
   modeled as domain failure result events.
+- The separate consumer build also compiles a no-command machine using
+  `AfsmNoCommand` and hosts it from a ViewModel without a command handler.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
 - Binary API dumps are checked for the six API-tracked Afsm library modules.
 
-## GitHub CI
+## Hosted CI
 
 The private GitHub repository is:
 
@@ -52,22 +54,17 @@ The private GitHub repository is:
 https://github.com/kez-lab/afsm
 ```
 
-CI workflow:
+The hosted GitHub Actions CI workflow was removed for cost control:
 
 ```text
 .github/workflows/ci.yml
 ```
 
-The workflow runs on pushes to `main`, pull requests, and manual dispatch. It
-uses JDK 17, the Android SDK, Gradle caching, and the same local release gate:
+Run the local release gate explicitly when full verification is needed:
 
 ```bash
 ./scripts/verify-release-local.sh --warning-mode all
 ```
-
-The CI badge in `README.md` points to this workflow. Because the repository is
-private, badge visibility depends on GitHub authentication and repository
-access.
 
 ## Internal Beta Adoption Contract
 

@@ -18,6 +18,7 @@ Initial pre-release candidate.
 - `AfsmReducer<S, E, C, F>` low-level transition contract.
 - `AfsmTransition<S, C, F>` with state, commands, effects, and decision.
 - `AfsmDecision` with `Transitioned`, `Handled`, `Ignored`, and `Invalid`.
+- `AfsmNoCommand` marker for machines that do not emit host-executed work.
 - `AfsmNoEffect` marker for machines that do not emit UI-side effects.
 - `AfsmMachine<S, E, C, F>` graphable machine boundary with an initial state.
 - `AfsmState<P, D>` phase/data state model.
