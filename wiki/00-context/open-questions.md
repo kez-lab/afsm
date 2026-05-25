@@ -17,7 +17,6 @@ updated: 2026-05-25
 ## Scope
 
 - What should the first public API look like before it becomes too framework-like?
-- Should a dedicated `afsm-test` module exist, or should testing stay as documentation and plain Kotlin assertions until repeated helper needs are proven?
 - What sample flows best prove the library's value to external Android teams?
 
 Resolved:
@@ -29,6 +28,9 @@ Resolved:
 - UI one-shot modeling is policy-based: durable product progress belongs in
   state, disposable UI behavior can be an `Effect`, and UI behavior that must
   survive lifecycle gaps should be state plus an acknowledgement event.
+- A dedicated `afsm-test` module exists because first-use testing repeatedly
+  exposed raw `AfsmTransition` structure. Keep it test-only and focused on
+  assertion helpers unless repeated helper needs prove more API is necessary.
 
 ## Product
 

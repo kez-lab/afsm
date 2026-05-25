@@ -34,4 +34,5 @@ dependencies {
     implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.github.afsm:afsm-test:$afsmVersion")
 }

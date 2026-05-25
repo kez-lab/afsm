@@ -26,6 +26,7 @@ Initial pre-release candidate.
 - `AfsmTopology`, `AfsmTopologyTransition`, `AfsmMmdOptions`, and Mermaid `.mmd` export support.
 - `@AfsmGraph`, `AfsmGraphSource`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
 - `afsm-runtime` coroutine host with serialized event dispatch.
+- `afsm-test` Kotlin test assertion helpers for Afsm transition behavior.
 - Sequential command execution that does not block later event reduction.
 - `AfsmHost.tryDispatch(event)` for non-throwing event queue attempts.
 - Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
@@ -42,7 +43,7 @@ Initial pre-release candidate.
 - GitHub CI workflow that runs the local release gate.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.
-- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
+- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
 - Kotlin explicit API mode for public library modules.
 - Binary API validation baseline for public library modules.
 

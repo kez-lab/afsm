@@ -25,17 +25,18 @@ What this proves:
 - The graph Gradle plugin default processor dependency is generated from the
   shared Afsm version and tested so `io.github.afsm.graph` and
   `afsm-graph-ksp` stay aligned.
-- Maven Local publishes all five API-tracked library modules plus the Afsm graph Gradle plugin.
+- Maven Local publishes all six API-tracked library modules plus the Afsm graph Gradle plugin.
 - A separate Android Gradle build consumes the published Maven Local artifacts,
-  including the ViewModel AAR, graph Gradle plugin, KSP processor, and the Draft
-  quickstart machine/ViewModel mirrored from `docs/getting-started.md`.
+  including the ViewModel AAR, test helper artifact, graph Gradle plugin, KSP
+  processor, and the Draft quickstart machine/ViewModel mirrored from
+  `docs/getting-started.md`.
 - The separate consumer build runs Draft quickstart JVM tests for validation,
   command emission, and save failure recovery against those Maven Local
   artifacts.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
-- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
-- Binary API dumps are checked for the five API-tracked Afsm library modules.
+- Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
+- Binary API dumps are checked for the six API-tracked Afsm library modules.
 
 ## GitHub CI
 
@@ -114,6 +115,7 @@ implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
 implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 testImplementation("junit:junit:4.13.2")
 ```
 
@@ -138,6 +140,7 @@ Current generated POMs contain:
 |---|---:|---:|---:|
 | `afsm-core` | `jar` | None | Yes |
 | `afsm-runtime` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
+| `afsm-test` | `jar` | `io.github.afsm:afsm-core:0.1.0-SNAPSHOT` | Yes |
 | `afsm-viewmodel` | `aar` | `io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT` | Yes |
 | `afsm-compose` | `aar` | AndroidX Compose/Lifecycle dependencies | Yes |
 | `afsm-graph-ksp` | `jar` | None | Yes |

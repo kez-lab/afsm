@@ -859,3 +859,16 @@
 - Updated: `README.md`, `docs/release-readiness.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] api+test | Afsm test helper quickstart dogfood
+
+- Source: First-use testing ergonomics review.
+- Action: Added `afsm-test` transition assertion helpers and dogfooded them in
+  Draft quickstart tests through `consumer-smoke`.
+- Updated: `settings.gradle.kts`, `afsm-test/`, `consumer-smoke/`,
+  `scripts/verify-release-local.sh`, `README.md`, `docs/getting-started.md`,
+  `docs/testing-guide.md`, `docs/afsm-public-api.md`,
+  `docs/release-readiness.md`, `CHANGELOG.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

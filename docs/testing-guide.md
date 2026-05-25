@@ -12,6 +12,27 @@ current state + event -> next state + commands + effects + decision
 
 That shape is the main reason to keep transition rules outside Android `ViewModel`.
 
+Add the optional test helper artifact when transition tests start repeating raw
+`result.state.phase`, `result.commands`, `result.effects`, and
+`result.decision` assertions:
+
+```kotlin
+testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+```
+
+The helpers return the same transition, so assertions can be chained:
+
+```kotlin
+import afsm.test.assertCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
+
+result
+    .assertTransitioned()
+    .assertPhase(Phase.Saving)
+    .assertCommands(Command.Save("Plan"))
+```
+
 ## First Six Tests
 
 ### Valid transition
@@ -24,8 +45,9 @@ fun `SubmitClicked enters Submitting when form is valid`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(SignupPhase.Submitting, result.state.phase)
-    assertEquals(AfsmDecision.Transitioned, result.decision)
+    result
+        .assertTransitioned()
+        .assertPhase(SignupPhase.Submitting)
 }
 ```
 
@@ -39,7 +61,7 @@ fun `SubmitSucceeded before submit is invalid`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertIs<AfsmDecision.Invalid>(result.decision)
+    result.assertInvalid()
 }
 ```
 
@@ -53,10 +75,7 @@ fun `entering Submitting emits submit command`() {
         event = SignupEvent.SubmitClicked,
     )
 
-    assertEquals(
-        listOf(SignupCommand.Submit(validForm)),
-        result.commands,
-    )
+    result.assertCommands(SignupCommand.Submit(validForm))
 }
 ```
 
@@ -70,10 +89,7 @@ fun `completed signup emits navigation effect`() {
         event = SignupEvent.SubmitSucceeded,
     )
 
-    assertEquals(
-        listOf(SignupEffect.OpenHome),
-        result.effects,
-    )
+    result.assertEffects(SignupEffect.OpenHome)
 }
 ```
 
@@ -93,8 +109,15 @@ fun `save failure returns to Editing with message`() {
         event = DraftEvent.DraftSaveFailed("Network unavailable"),
     )
 
-    assertEquals(DraftPhase.Editing, result.state.phase)
-    assertEquals("Network unavailable", result.state.data.errorMessage)
+    result
+        .assertTransitioned()
+        .assertPhase(DraftPhase.Editing)
+        .assertData(
+            DraftData(
+                title = "Plan",
+                errorMessage = "Network unavailable",
+            ),
+        )
 }
 ```
 
@@ -121,8 +144,9 @@ fun `stale payment failure is ignored`() {
         ),
     )
 
-    assertIs<AfsmDecision.Ignored>(result.decision)
-    assertEquals(CheckoutPhase.PaymentInProgress(requestId = 2), result.state.phase)
+    result
+        .assertIgnored()
+        .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
 }
 ```
 

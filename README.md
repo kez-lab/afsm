@@ -252,6 +252,7 @@ dependencies {
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
 }
 ```
@@ -318,7 +319,9 @@ private val host = afsmHost(
 State machine tests are plain JVM tests.
 
 ```kotlin
-import org.junit.Assert.assertEquals
+import afsm.test.assertCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
 import org.junit.Test
 
 @Test
@@ -331,8 +334,10 @@ fun `SaveClicked enters Saving and emits SaveDraft`() {
         event = DraftEvent.SaveClicked,
     )
 
-    assertEquals(DraftPhase.Saving, result.state.phase)
-    assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+    result
+        .assertTransitioned()
+        .assertPhase(DraftPhase.Saving)
+        .assertCommands(DraftCommand.SaveDraft("Plan"))
 }
 ```
 
@@ -482,6 +487,7 @@ internal edge:
 |---|---|---|
 | `afsm-core` | Pure Kotlin transition types, reducer contract, executable machine DSL, graph metadata | No |
 | `afsm-runtime` | Coroutine host, serialized dispatch loop, command execution, effect delivery | No |
+| `afsm-test` | Kotlin test assertion helpers for Afsm transition behavior | No |
 | `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
 | `afsm-compose` | Lifecycle-aware Compose effect collection helper | Yes |
 | `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |

@@ -170,6 +170,9 @@ The current direction is:
   branch in addition to command emission and save failure recovery.
 - README and release-readiness now match the current quickstart ViewModel
   snippet formatting and consumer-smoke test coverage.
+- A new `afsm-test` module provides Kotlin transition assertion helpers, and
+  the Draft quickstart tests dogfood it through `consumer-smoke` against Maven
+  Local artifacts.
 
 ## Core Architecture Position
 

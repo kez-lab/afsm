@@ -2175,3 +2175,33 @@ Conclusion:
 
 - The top-level README and release checklist now match the current executable
   quickstart coverage.
+
+## [2026-05-25] Afsm test helper quickstart dogfood
+
+Change:
+
+- Added a new `afsm-test` JVM module with transition assertion helpers.
+- Added the module to settings, release verification, Maven Local publishing,
+  and API validation.
+- Updated the Draft quickstart tests in docs and `consumer-smoke` to dogfood
+  `assertTransitioned`, `assertHandled`, `assertPhase`, `assertData`,
+  `assertCommands`, and `assertNoCommands`.
+- Updated public docs, release readiness, decision log, changelog, and wiki
+  current/open-question state.
+
+Verification:
+
+```bash
+git diff --check
+./gradlew :afsm-test:test --warning-mode all --no-daemon
+./gradlew :afsm-test:apiDump --warning-mode all --no-daemon
+./gradlew :afsm-test:apiCheck apiCheck --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use test path now has a dedicated helper artifact and executable
+  external-consumer coverage, reducing raw transition-structure boilerplate in
+  the first tests Android developers copy.

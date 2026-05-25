@@ -20,11 +20,12 @@ The smoke build covers:
 - `io.github.afsm:afsm-core`
 - `io.github.afsm:afsm-compose`
 - `io.github.afsm:afsm-runtime`
+- `io.github.afsm:afsm-test`
 - `io.github.afsm:afsm-viewmodel`
 - `io.github.afsm:afsm-graph-ksp`
 - `io.github.afsm.graph` Gradle plugin
 - JUnit quickstart test dependency wiring
-- Draft quickstart transition tests from the Maven Local artifacts
+- Draft quickstart transition tests and Afsm test helpers from the Maven Local artifacts
 
 It intentionally stays small. The goal is dependency, plugin, KSP, graph
 generation, quickstart transition behavior, and API consumption verification,

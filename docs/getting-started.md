@@ -19,6 +19,7 @@ dependencies {
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
 
+    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
 }
 ```
@@ -269,7 +270,12 @@ mirrored by `consumer-smoke`, so the release gate verifies that the quickstart
 behavior still works from Maven Local artifacts.
 
 ```kotlin
-import org.junit.Assert.assertEquals
+import afsm.test.assertCommands
+import afsm.test.assertData
+import afsm.test.assertHandled
+import afsm.test.assertNoCommands
+import afsm.test.assertPhase
+import afsm.test.assertTransitioned
 import org.junit.Test
 
 class DraftStateMachineTest {
@@ -283,8 +289,10 @@ class DraftStateMachineTest {
             event = DraftEvent.SaveClicked,
         )
 
-        assertEquals(DraftPhase.Saving, result.state.phase)
-        assertEquals(listOf(DraftCommand.SaveDraft("Plan")), result.commands)
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Saving)
+            .assertCommands(DraftCommand.SaveDraft("Plan"))
     }
 
     @Test
@@ -297,9 +305,11 @@ class DraftStateMachineTest {
             event = DraftEvent.SaveClicked,
         )
 
-        assertEquals(DraftPhase.Editing, result.state.phase)
-        assertEquals("Title is required.", result.state.data.errorMessage)
-        assertEquals(emptyList<DraftCommand>(), result.commands)
+        result
+            .assertHandled()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(DraftData(errorMessage = "Title is required."))
+            .assertNoCommands()
     }
 
     @Test
@@ -312,15 +322,24 @@ class DraftStateMachineTest {
             event = DraftEvent.DraftSaveFailed("Network unavailable"),
         )
 
-        assertEquals(DraftPhase.Editing, result.state.phase)
-        assertEquals("Network unavailable", result.state.data.errorMessage)
+        result
+            .assertTransitioned()
+            .assertPhase(DraftPhase.Editing)
+            .assertData(
+                DraftData(
+                    title = "Plan",
+                    errorMessage = "Network unavailable",
+                ),
+            )
     }
 }
 ```
 
 Keep these tests focused on transition behavior: next phase, changed data,
-emitted commands, emitted effects, and ignored or invalid decisions. ViewModel
-tests should verify Android wiring, not duplicate every state-machine branch.
+emitted commands, emitted effects, and ignored or invalid decisions. The
+`afsm-test` helpers keep those assertions focused on behavior instead of raw
+transition structure. ViewModel tests should verify Android wiring, not
+duplicate every state-machine branch.
 
 ## Host From ViewModel
 
