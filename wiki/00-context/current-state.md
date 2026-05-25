@@ -138,6 +138,9 @@ The current direction is:
 - `docs/modeling-rules.md` now starts its first reading order with
   `docs/getting-started.md` and the Auth walkthrough instead of the older
   README/sample-shop wording.
+- `docs/sample-shop-afsm-guide.md` now frames `AfsmReducer` as a lower-level
+  runtime contract while keeping graphable `AfsmMachine<State, Event, Command,
+  Effect>` objects as the normal feature-code boundary.
 
 ## Core Architecture Position
 

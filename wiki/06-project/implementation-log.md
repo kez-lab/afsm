@@ -1863,3 +1863,25 @@ Conclusion:
 
 - The modeling rules now route first-time Android developers through the same
   compile-checked onboarding ladder as the example catalog.
+
+## [2026-05-25] Sample guide API feedback sync
+
+Change:
+
+- Updated `docs/sample-shop-afsm-guide.md` so Early API Feedback no longer
+  describes `AfsmReducer` as the primary host-facing contract for feature code.
+- The guide now states that feature code should normally expose graphable
+  `AfsmMachine<State, Event, Command, Effect>` objects, while `AfsmReducer`
+  remains the lower-level runtime contract.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The sample guide now matches the current public onboarding stance: reducers
+  exist, but first-time Android feature code should start from graphable
+  machines.

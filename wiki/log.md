@@ -724,3 +724,13 @@
   `docs/getting-started.md`, then examples, Auth, and Checkout.
 - Updated: `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Sample guide API feedback sync
+
+- Source: Stale wording scan after aligning public onboarding around
+  `AfsmMachine<State, Event, Command, Effect>`.
+- Action: Reframed `AfsmReducer` as a lower-level runtime contract in
+  `docs/sample-shop-afsm-guide.md`.
+- Updated: `docs/sample-shop-afsm-guide.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
