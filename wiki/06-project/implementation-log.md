@@ -1751,3 +1751,30 @@ Conclusion:
 
 - First-time graph users now get the missing repository setup context before
   applying KSP and the Afsm graph plugin to an Android module.
+
+## [2026-05-25] Checkout ViewModel startup snippet
+
+Change:
+
+- Replaced the `commandHandler = ...` placeholder in
+  `docs/checkout-walkthrough.md` with a complete `CheckoutViewModel` startup
+  bridge.
+- The snippet now shows direct command handler lambda usage, repository result
+  dispatch, `StateFlow<CheckoutState>`, `Flow<CheckoutEffect>`, and
+  `init { host.dispatch(CheckoutEvent.ScreenEntered) }`.
+- Added a note that initial state construction does not run `onEnter`; the
+  explicit `ScreenEntered` event moves Checkout from `Idle` to `ProductLoading`.
+
+Verification:
+
+```bash
+git diff --check
+./gradlew :sample-shop:compileDebugKotlin --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The mid-size production sample now demonstrates the actual Android bridge
+  needed for navigation-argument state plus startup loading, instead of hiding
+  it behind an ellipsis.

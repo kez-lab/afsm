@@ -678,3 +678,13 @@
   setup for both plugin and dependency resolution in `docs/graph-generation.md`.
 - Updated: `docs/graph-generation.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | Checkout ViewModel startup snippet
+
+- Source: API usability review of the Checkout walkthrough after adding the
+  getting-started initial-entry note.
+- Action: Replaced `commandHandler = ...` with a complete ViewModel startup
+  bridge that dispatches `ScreenEntered` and shows command result handling.
+- Updated: `docs/checkout-walkthrough.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

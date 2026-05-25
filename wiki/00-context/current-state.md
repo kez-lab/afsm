@@ -126,6 +126,9 @@ The current direction is:
 - `docs/graph-generation.md` now starts with a setup checklist and shows Maven
   Local snapshot consumers must configure both `pluginManagement.repositories`
   and `dependencyResolutionManagement.repositories`.
+- `docs/checkout-walkthrough.md` now shows the complete ViewModel startup
+  bridge for the mid-size sample, including direct command handler lambda,
+  explicit `ScreenEntered` dispatch, `StateFlow`, and effects exposure.
 
 ## Core Architecture Position
 

@@ -82,18 +82,85 @@ every phase constructor.
 ## Dynamic Initial State
 
 Checkout starts from a navigation `productId`, so the ViewModel provides the
-initial state:
+initial state and dispatches an explicit startup event:
 
 ```kotlin
-private val host = afsmHost(
-    machine = CheckoutStateMachine,
-    initialState = checkoutState(productId = productId),
-    commandHandler = ...
-)
+class CheckoutViewModel(
+    productId: Long,
+    private val productRepository: ProductRepository,
+    private val paymentRepository: PaymentRepository,
+    private val sessionRepository: SessionRepository,
+) : ViewModel() {
+    private val host = afsmHost(
+        machine = CheckoutStateMachine,
+        initialState = checkoutState(productId = productId),
+        commandHandler = { command: CheckoutCommand, dispatch ->
+            when (command) {
+                is CheckoutCommand.LoadProduct -> {
+                    val product = productRepository.findProduct(command.productId)
+                    if (product == null) {
+                        dispatch(CheckoutEvent.ProductUnavailable)
+                    } else {
+                        dispatch(CheckoutEvent.ProductLoaded(product))
+                    }
+                }
+
+                is CheckoutCommand.SubmitPayment -> {
+                    val session = sessionRepository.currentSession()
+                    if (session == null) {
+                        dispatch(
+                            CheckoutEvent.PaymentFailed(
+                                requestId = command.requestId,
+                                message = "Login is required.",
+                            ),
+                        )
+                    } else {
+                        paymentRepository.submitPayment(
+                            session = session,
+                            product = command.product,
+                        ).fold(
+                            onSuccess = { receipt ->
+                                dispatch(
+                                    CheckoutEvent.PaymentSucceeded(
+                                        requestId = command.requestId,
+                                        receipt = receipt,
+                                    ),
+                                )
+                            },
+                            onFailure = { error ->
+                                dispatch(
+                                    CheckoutEvent.PaymentFailed(
+                                        requestId = command.requestId,
+                                        message = error.message ?: "Payment failed.",
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+        },
+    )
+
+    val state: StateFlow<CheckoutState> = host.state
+    val effects: Flow<CheckoutEffect> = host.effects
+
+    init {
+        host.dispatch(CheckoutEvent.ScreenEntered)
+    }
+
+    fun onEvent(event: CheckoutEvent) {
+        host.dispatch(event)
+    }
+}
 ```
 
 This is the standard path for graphable machines with navigation arguments,
 deep links, or `SavedStateHandle` restoration.
+
+Do not rely on initial state construction to run `onEnter`. Checkout starts in
+`Idle`; `ScreenEntered` moves it to `ProductLoading`, whose `onEnter` emits the
+`LoadProduct` command.
 
 ## Commands
 
