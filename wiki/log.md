@@ -1030,3 +1030,12 @@
 - Updated: `docs/getting-started.md`, `README.md`, `docs/examples.md`,
   `docs/modeling-rules.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | README copy-source boundary
+
+- Source: README/getting-started first-use drift review.
+- Action: Clarified that README is a quick map and that
+  `docs/getting-started.md` is the copy-paste source verified by
+  `consumer-smoke`.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

@@ -224,6 +224,10 @@ The current direction is:
   minimum first-use path directly: build the Draft machine, add JVM transition
   tests, host it from a ViewModel, and add one ViewModel wiring test before
   optional Compose, render-state, effect, saved-state, config, or graph work.
+- README now explicitly frames itself as a quick map and points first-time
+  Android developers to `docs/getting-started.md` as the copy-paste source of
+  truth, because that guide is mirrored in `consumer-smoke` and verified
+  against Maven Local artifacts.
 
 ## Core Architecture Position
 

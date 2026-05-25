@@ -2565,3 +2565,26 @@ Conclusion:
 - First-time Android developers now have a clear stopping point after the
   minimum Draft path, reducing pressure to absorb every optional runtime and UI
   integration topic before the first successful adoption.
+
+## [2026-05-25] README copy-source boundary
+
+Change:
+
+- Clarified that README is the quick map for first-use onboarding, not the
+  canonical copy-paste source.
+- Pointed first-time Android developers to `docs/getting-started.md` as the
+  complete Draft file source because that guide is mirrored in `consumer-smoke`
+  and compiled against Maven Local artifacts.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time readers are less likely to copy diverging README snippets when the
+  verified getting-started guide is the source of truth for the first Draft
+  implementation.
