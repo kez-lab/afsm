@@ -6,7 +6,6 @@ import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
 import afsm.generated.AfsmGeneratedGraphRegistry
-import afsm.runtime.AfsmCommandHandler
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 
@@ -79,7 +78,7 @@ private fun smokeMachine(): SmokeMachine {
 internal class ConsumerSmokeViewModel : ViewModel() {
     val host = afsmHost(
         machine = ConsumerSmokeMachine,
-        commandHandler = AfsmCommandHandler { command, dispatch ->
+        commandHandler = { command: SmokeCommand, dispatch ->
             when (command) {
                 is SmokeCommand.SaveTitle -> dispatch(SmokeEvent.Saved)
             }

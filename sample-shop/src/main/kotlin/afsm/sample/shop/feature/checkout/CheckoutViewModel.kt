@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.checkout
 
-import afsm.runtime.AfsmCommandHandler
 import afsm.sample.shop.core.data.PaymentRepository
 import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
@@ -18,7 +17,7 @@ class CheckoutViewModel(
     private val host = afsmHost(
         machine = CheckoutStateMachine,
         initialState = checkoutState(productId = productId),
-        commandHandler = AfsmCommandHandler { command: CheckoutCommand, dispatch ->
+        commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
                     val product = productRepository.findProduct(command.productId)

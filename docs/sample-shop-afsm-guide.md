@@ -92,7 +92,7 @@ Key usage shape:
 ```kotlin
 private val host = afsmHost(
     machine = AuthStateMachine,
-    commandHandler = AfsmCommandHandler { command, dispatch ->
+    commandHandler = { command: AuthCommand, dispatch ->
         // Execute repository work, then dispatch result events.
     },
 )
@@ -236,7 +236,10 @@ The current sample suggests:
 - Flow states must remain phases. Hiding `SavingDraft` or `DraftSaved` as data flags made the state machine less readable and less graphable.
 - `ProductDraft` belongs in data; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
-- `AfsmReducer` is the host-facing contract. The executable DSL builds an `AfsmMachine`, and machines now operate directly on the standard `AfsmState<Phase, Data>` data class.
+- `AfsmReducer` remains the lower-level runtime contract, but feature code
+  should normally expose graphable `AfsmMachine<State, Event, Command, Effect>`
+  objects. The executable DSL builds that machine directly on the standard
+  `AfsmState<Phase, Data>` data class.
 - `AfsmMachine<State, Event, Command, Effect>` is the feature-boundary alias
   shape for graphable machines, so sample code keeps the internal `Phase/Data`
   split behind a named state type.

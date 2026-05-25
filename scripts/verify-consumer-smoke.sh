@@ -26,12 +26,19 @@ fi
   --refresh-dependencies \
   clean \
   :app:compileDebugKotlin \
+  :app:testDebugUnitTest \
   :app:generateAfsmMmd \
   "${GRADLE_ARGS[@]}"
 
 MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/ConsumerSmoke.mmd"
+QUICKSTART_MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/DraftQuickstart.mmd"
 if [[ ! -f "$MMD_FILE" ]]; then
   echo "Missing consumer smoke Afsm graph: $MMD_FILE" >&2
+  exit 1
+fi
+
+if [[ ! -f "$QUICKSTART_MMD_FILE" ]]; then
+  echo "Missing Draft quickstart Afsm graph: $QUICKSTART_MMD_FILE" >&2
   exit 1
 fi
 
@@ -40,12 +47,37 @@ if ! head -n 1 "$MMD_FILE" | grep -q '^stateDiagram-v2$'; then
   exit 1
 fi
 
-if ! grep -q '^  Editing --> Saving: SaveClicked$' "$MMD_FILE"; then
+if ! head -n 1 "$QUICKSTART_MMD_FILE" | grep -q '^stateDiagram-v2$'; then
+  echo "Invalid Draft quickstart Afsm graph header: $QUICKSTART_MMD_FILE" >&2
+  exit 1
+fi
+
+if ! grep -Fqx '  Editing --> Saving: SaveClicked' "$MMD_FILE"; then
   echo "Missing consumer smoke Afsm graph transition: Editing --> Saving: SaveClicked" >&2
   exit 1
 fi
 
-if ! grep -q '^  Saving --> Saved: Saved$' "$MMD_FILE"; then
+if ! grep -Fqx '  Saving --> Saved: Saved' "$MMD_FILE"; then
   echo "Missing consumer smoke Afsm graph transition: Saving --> Saved: Saved" >&2
+  exit 1
+fi
+
+if ! grep -Fqx '  Editing --> Saving: SaveClicked [valid title]' "$QUICKSTART_MMD_FILE"; then
+  echo "Missing Draft quickstart Afsm graph transition: Editing --> Saving: SaveClicked [valid title]" >&2
+  exit 1
+fi
+
+if ! grep -Fqx '  Editing --> Editing: SaveClicked [missing title]' "$QUICKSTART_MMD_FILE"; then
+  echo "Missing Draft quickstart Afsm graph transition: Editing --> Editing: SaveClicked [missing title]" >&2
+  exit 1
+fi
+
+if ! grep -Fqx '  Saving --> Saved: DraftSaveCompleted' "$QUICKSTART_MMD_FILE"; then
+  echo "Missing Draft quickstart Afsm graph transition: Saving --> Saved: DraftSaveCompleted" >&2
+  exit 1
+fi
+
+if ! grep -Fqx '  Saving --> Editing: DraftSaveFailed' "$QUICKSTART_MMD_FILE"; then
+  echo "Missing Draft quickstart Afsm graph transition: Saving --> Editing: DraftSaveFailed" >&2
   exit 1
 fi
