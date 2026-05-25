@@ -137,6 +137,9 @@ the product flow, do not model it as effect-only.
 
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
+In pure machine tests, assert important impossible events with `assertInvalid()`.
+At runtime, the host applies `AfsmInvalidTransitionPolicy`; the default policy
+throws so flow bugs are visible while developing.
 Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.
@@ -153,9 +156,10 @@ the event both changes data and changes phase.
 
 ## First Reading Order
 
-1. [getting-started.md](getting-started.md) for the compile-checked Draft path.
-2. [testing-guide.md](testing-guide.md) after the first Draft tests, before
-   expanding coverage.
+1. [getting-started.md](getting-started.md) for the minimum Draft path:
+   machine, JVM tests, ViewModel host, and one ViewModel wiring test.
+2. [testing-guide.md](testing-guide.md) before expanding transition or
+   ViewModel coverage.
 3. [examples.md](examples.md) to choose the right sample.
 4. [auth-walkthrough.md](auth-walkthrough.md) for the smallest real screen.
 5. [checkout-walkthrough.md](checkout-walkthrough.md) for loading, retry, stale results, and durable completion.

@@ -20,6 +20,11 @@ ordinary `ViewModel + StateFlow` is clearer.
 Start with [docs/getting-started.md](docs/getting-started.md) if this is your
 first Afsm screen.
 
+Use this README as the quick map. Copy the first real Draft files from
+[docs/getting-started.md](docs/getting-started.md); that guide is mirrored in
+`consumer-smoke` and compiled against the published Maven Local artifacts during
+the release gate.
+
 The short version:
 
 1. Draw the phases first.
@@ -30,8 +35,11 @@ The short version:
 6. Test the pure machine with plain JVM transition tests.
 7. Host the machine from a `ViewModel` with `afsmHost(...)`.
 8. Add one ViewModel wiring test for command execution and result events.
-9. Collect `viewModel.state` from a route with `collectAsStateWithLifecycle`.
-10. Add a render state only when UI starts inferring behavior from phases.
+
+That is the minimum first pass. After that, connect Compose with
+`collectAsStateWithLifecycle`, add render state only when UI starts inferring
+behavior from phases, and add effects, saved state, config, or graphs only when
+the screen needs them.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
@@ -61,7 +69,10 @@ Daily choices:
 | Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
 | An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
 
-Define a small machine first. Do not start with graph/KSP.
+Define a small machine first. Do not start with graph/KSP. The snippet below is
+for orientation; use [docs/getting-started.md](docs/getting-started.md) as the
+copy-paste source for the complete `DraftStateMachine.kt` and
+`DraftViewModel.kt` path.
 
 ```kotlin
 import afsm.core.AfsmMachine
@@ -492,7 +503,8 @@ internal edge:
 - Command results should dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
-- Invalid transitions throw by default so flow bugs are visible during development.
+- Invalid transitions can be asserted in pure machine tests; hosted invalid
+  transitions throw by default so flow bugs are visible during development.
 - `CancellationException` is always rethrown.
 - Effects are best-effort one-shot outputs with no replay by default.
 

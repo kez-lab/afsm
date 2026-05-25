@@ -20,6 +20,11 @@ Add the optional test helper artifact when transition tests start repeating raw
 testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
 ```
 
+`afsm-test` is intentionally Kotlin-only. It provides transition assertion
+helpers for plain machine tests. It does not provide Android `ViewModel` rules,
+fake repositories, or coroutine dispatchers; keep those as local test fixtures
+in the consuming app.
+
 The helpers return the same transition, so assertions can be chained:
 
 ```kotlin
@@ -54,6 +59,9 @@ fun `SubmitClicked enters Submitting when form is valid`() {
 
 ### Invalid transition
 
+Assert invalid flow rules at the pure machine level. `machine.transition(...)`
+returns an `Invalid` decision that test helpers can inspect directly:
+
 ```kotlin
 @Test
 fun `SubmitSucceeded before submit is invalid`() {
@@ -65,6 +73,13 @@ fun `SubmitSucceeded before submit is invalid`() {
     result.assertInvalid()
 }
 ```
+
+Do not copy this exact scenario into a ViewModel happy-path test. `AfsmHost`
+applies `AfsmInvalidTransitionPolicy`, and the default runtime policy throws so
+flow bugs are visible during development. If a ViewModel test intentionally
+drives an impossible event, configure the host with `AfsmInvalidTransitionPolicy.Record`
+and assert diagnostics; otherwise keep invalid-flow coverage in plain machine
+tests.
 
 ### Command emission
 
@@ -103,6 +118,9 @@ proves the output exists; the route remains responsible for collecting
 
 Expected domain failures should return to the machine as typed events from the
 command handler. Test the resulting state transition like any other event.
+Do not simulate an expected repository failure by making the command handler
+throw; thrown handler exceptions exercise `AfsmCommandFailurePolicy`, not the
+feature's failure branch.
 
 ```kotlin
 @Test
@@ -126,6 +144,13 @@ fun `save failure returns to Editing with message`() {
         )
 }
 ```
+
+The external `consumer-smoke` fixture also has
+`DraftCommandFailurePolicyTest`, which proves that an unexpected thrown
+`SaveDraft` handler error is recorded as an `AfsmDiagnostic` when
+`AfsmCommandFailurePolicy.Record` is configured. It does not synthesize
+`DraftSaveFailed`; feature code should dispatch that event only for expected
+domain failures.
 
 ### Stale command result
 
@@ -158,6 +183,13 @@ fun `stale payment failure is ignored`() {
 
 Use `Invalid` for programmer errors and impossible flow results. Use `Ignored`
 for expected late/stale results that can happen in real asynchronous systems.
+This distinction matters because `Ignored` is a safe no-op in the host, while
+`Invalid` follows the configured runtime invalid-transition policy.
+
+Do not add `AfsmConfig` to most ViewModel tests. Add it only when the test is
+about hosted runtime policy, such as recording invalid transitions or recording
+unexpected command handler exceptions. If the test is about feature behavior,
+prefer pure machine assertions and typed command result events.
 
 ## ViewModel Tests
 
@@ -174,6 +206,8 @@ Good ViewModel tests cover:
   seed state without accidentally starting `onEnter` work.
 
 Use `runTest` plus a main dispatcher rule around `viewModelScope` code.
+The `MainDispatcherRule` and `RecordingDraftRepository` below are local test
+fixtures, not Afsm APIs.
 
 ```kotlin
 testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
