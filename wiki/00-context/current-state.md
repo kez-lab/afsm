@@ -103,6 +103,9 @@ The current direction is:
 - Beginner docs, sample ViewModels, and consumer smoke now pass command handlers
   as direct Kotlin lambdas, keeping `AfsmCommandHandler` as the underlying API
   type without making the first-use examples import the wrapper.
+- `docs/getting-started.md` now starts with dependency, AndroidX, file-layout,
+  and import checklists before teaching the Draft machine, so first-time Android
+  developers do not need to jump to README before pasting code.
 
 ## Core Architecture Position
 

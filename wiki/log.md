@@ -608,3 +608,13 @@
 - Updated: `sample-shop/`, `consumer-smoke/`, `README.md`, `docs/`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | Getting-started paste checklist
+
+- Source: API usability review of where first-time Android developers pause
+  before pasting the Draft machine into an app module.
+- Action: Added dependency, AndroidX, file-layout, and import checklists at the
+  start of `docs/getting-started.md`, and explicitly deferred graph generation
+  until after the machine is useful.
+- Updated: `docs/getting-started.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

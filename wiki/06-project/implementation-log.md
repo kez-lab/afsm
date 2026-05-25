@@ -1584,3 +1584,26 @@ Conclusion:
 
 - First-time Android developers can copy a smaller ViewModel host shape while
   still using the same runtime command handler API.
+
+## [2026-05-25] Getting-started paste checklist
+
+Change:
+
+- Added a `Before You Paste Code` section to `docs/getting-started.md`.
+- The section lists required Maven coordinates, Maven Local repository setup,
+  AndroidX setup, recommended `DraftStateMachine.kt` / `DraftViewModel.kt`
+  split, and the imports needed by each file.
+- The guide now explicitly tells first-time users to defer graph generation
+  until the machine is useful and tested.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use guide now covers the setup context needed before copying the
+  Draft machine and ViewModel snippets.

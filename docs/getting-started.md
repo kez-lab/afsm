@@ -9,6 +9,64 @@ Afsm is for complex `ViewModel` flows. If the screen is only loading a list,
 showing a detail page, toggling a like, or submitting a one-step form, ordinary
 `ViewModel + StateFlow` is usually clearer.
 
+## Before You Paste Code
+
+Add the three required modules to your Android feature/app module:
+
+```kotlin
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+}
+```
+
+For Maven Local snapshots, make sure the consuming build has `mavenLocal()` in
+`settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+    }
+}
+```
+
+Android consumers must also enable AndroidX:
+
+```properties
+android.useAndroidX=true
+```
+
+Keep the first screen split into two files:
+
+| File | Put here |
+|---|---|
+| `DraftStateMachine.kt` | `Phase`, `Data`, `State`, `Event`, `Command`, and `afsmMachine { ... }` |
+| `DraftViewModel.kt` | `afsmHost(...)`, command execution, `StateFlow`, and `onEvent(...)` |
+
+The state machine file needs:
+
+```kotlin
+import afsm.core.AfsmMachine
+import afsm.core.AfsmNoEffect
+import afsm.core.AfsmState
+import afsm.core.afsmMachine
+```
+
+The ViewModel file needs:
+
+```kotlin
+import afsm.viewmodel.afsmHost
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.StateFlow
+```
+
+Do not start with graph generation. Add KSP and `@AfsmGraph` only after the
+machine is useful and tested.
+
 ## The 10-Minute Model
 
 Use these words in this order:
