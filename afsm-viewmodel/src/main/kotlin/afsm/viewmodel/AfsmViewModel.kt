@@ -15,6 +15,9 @@ import androidx.lifecycle.viewModelScope
  * machine already owns its initial state and reducer behavior. It keeps feature
  * ViewModels focused on command execution instead of repeating
  * `initialState = machine.initialState, reducer = machine`.
+ *
+ * If the machine emits commands, pass [commandHandler]. The default command
+ * handler is intended only for machines that never emit commands.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
     machine: AfsmMachine<S, E, C, F>,
@@ -38,6 +41,9 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * [androidx.lifecycle.SavedStateHandle].
  *
  * The supplied [initialState] wins over [machine]'s default initial state.
+ *
+ * If the machine emits commands, pass [commandHandler]. The default command
+ * handler is intended only for machines that never emit commands.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
     machine: AfsmMachine<S, E, C, F>,
@@ -59,6 +65,9 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * Use this overload when the initial state is dynamic, for example when it is
  * derived from navigation arguments or a [androidx.lifecycle.SavedStateHandle],
  * and the reducer intentionally does not expose graph topology.
+ *
+ * If the reducer emits commands, pass [commandHandler]. The default command
+ * handler is intended only for reducers that never emit commands.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
     reducer: AfsmReducer<S, E, C, F>,
