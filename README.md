@@ -27,7 +27,8 @@ The short version:
 3. Handle UI/repository results as `Event`.
 4. Move between phases with `transitionTo(...)`.
 5. Start repository work from `command(...)`, usually in `onEnter`.
-6. Host the machine from a `ViewModel` with `afsmHost(...)`.
+6. Test the pure machine with plain JVM transition tests.
+7. Host the machine from a `ViewModel` with `afsmHost(...)`.
 
 Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
 [docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production

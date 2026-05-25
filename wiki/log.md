@@ -823,3 +823,10 @@
 - Updated: `docs/examples.md`, `docs/modeling-rules.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] documentation | README first-use test step
+
+- Source: Follow-up after aligning example reading order with first JVM tests.
+- Action: Added plain JVM transition tests to README's first-use short version.
+- Updated: `README.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

@@ -2093,3 +2093,22 @@ Conclusion:
 
 - First-time Android developers are now routed through executable transition
   tests before choosing larger samples.
+
+## [2026-05-25] README first-use test step
+
+Change:
+
+- Added plain JVM transition tests to README's first-use short version before
+  `ViewModel.afsmHost(...)` hosting.
+- Updated current-state and project log to keep the onboarding order durable.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The repository first screen now matches the test-first quickstart flow instead
+  of making tests look like a later optional step.

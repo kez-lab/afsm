@@ -162,6 +162,8 @@ The current direction is:
   required navigation durability as resolved policy instead of open questions.
 - Example and modeling-rule reading orders now include the quickstart JVM test
   loop before broader sample adoption.
+- README's first-use short version now includes plain JVM transition tests
+  before ViewModel hosting.
 
 ## Core Architecture Position
 
