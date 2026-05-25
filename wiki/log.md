@@ -658,3 +658,14 @@
 - Updated: `README.md`, `docs/testing-guide.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] api-docs | Command handler default behavior
+
+- Source: API usability review of `ViewModel.afsmHost(...)` signatures and the
+  `AfsmCommandHandler.none()` default.
+- Action: Added KDoc and public API documentation that the default command
+  handler intentionally ignores commands and is only for no-command machines;
+  Kotlin callers should normally pass a direct command handler lambda.
+- Updated: `afsm-runtime/`, `afsm-viewmodel/`, `docs/afsm-public-api.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

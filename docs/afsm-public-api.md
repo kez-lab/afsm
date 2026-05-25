@@ -379,6 +379,20 @@ Use `machine` for the standard path. Use `machine + initialState` when the
 starting state is dynamic. Use `reducer + initialState` only for custom
 non-graphable reducer escape hatches.
 
+The signatures show `AfsmCommandHandler<C, E>` because that is the exact API
+type. Kotlin callers should usually pass a direct lambda:
+
+```kotlin
+commandHandler = { command: ScreenCommand, dispatch ->
+    // execute host work
+    // dispatch(result event)
+}
+```
+
+The default `AfsmCommandHandler.none()` is only for machines that never emit
+commands. If a machine emits commands and the handler is omitted, those
+commands are intentionally ignored.
+
 ## afsm-compose
 
 ```kotlin

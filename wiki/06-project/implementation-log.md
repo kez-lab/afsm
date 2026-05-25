@@ -1701,3 +1701,28 @@ Conclusion:
 - First-time users now see that expected command failures should be tested as
   ordinary typed event transitions, not as ViewModel-side state mutation or
   swallowed command handler exceptions.
+
+## [2026-05-25] Command handler default documentation
+
+Change:
+
+- Added KDoc to `AfsmCommandHandler.none()` explaining that it intentionally
+  ignores commands and should only be used for no-command machines.
+- Added KDoc to `ViewModel.afsmHost(...)` overloads clarifying that callers must
+  pass a command handler when machines or reducers emit commands.
+- Updated `docs/afsm-public-api.md` to show that Kotlin callers normally pass a
+  direct command handler lambda even though the signature type is
+  `AfsmCommandHandler<C, E>`.
+
+Verification:
+
+```bash
+./gradlew :afsm-runtime:compileKotlin :afsm-viewmodel:compileDebugKotlin --warning-mode all --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The API docs now make the default command handler's no-op behavior explicit,
+  reducing the chance that first-time Android users accidentally drop emitted
+  commands by omitting the host handler.

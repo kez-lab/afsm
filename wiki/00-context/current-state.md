@@ -119,6 +119,10 @@ The current direction is:
 - `docs/testing-guide.md` now includes command failure result testing as a
   first-use test category, using the Draft save failure path as the concrete
   example.
+- `AfsmCommandHandler.none()` and the `ViewModel.afsmHost(...)` KDoc now state
+  that the default command handler is only for machines that never emit
+  commands; public API docs also show Kotlin callers should normally pass a
+  direct command handler lambda.
 
 ## Core Architecture Position
 
