@@ -2565,3 +2565,79 @@ Conclusion:
 - First-time Android developers now have a clear stopping point after the
   minimum Draft path, reducing pressure to absorb every optional runtime and UI
   integration topic before the first successful adoption.
+
+## [2026-05-25] README copy-source boundary
+
+Change:
+
+- Clarified that README is the quick map for first-use onboarding, not the
+  canonical copy-paste source.
+- Pointed first-time Android developers to `docs/getting-started.md` as the
+  complete Draft file source because that guide is mirrored in `consumer-smoke`
+  and compiled against Maven Local artifacts.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time readers are less likely to copy diverging README snippets when the
+  verified getting-started guide is the source of truth for the first Draft
+  implementation.
+
+## [2026-05-26] Auth walkthrough Draft bridge
+
+Change:
+
+- Added an explicit `From Draft To Auth` section to `docs/auth-walkthrough.md`.
+- Clarified that Auth should be read after the minimum Draft path: machine, JVM
+  transition tests, ViewModel host, and one ViewModel wiring test.
+- Separated reused Draft concepts from Auth's new concepts: login/register
+  guarded cases, session persistence in the command handler, render-state
+  mapping, and the first real route effect.
+- Updated the example catalog so Auth is positioned as the first real form
+  screen after Draft rather than another starting point.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from copy-paste Draft
+  onboarding into the smallest real Android form screen before taking on
+  Checkout lifecycle and retry policy.
+
+## [2026-05-26] Checkout walkthrough Auth bridge
+
+Change:
+
+- Added an explicit `From Auth To Checkout` section to
+  `docs/checkout-walkthrough.md`.
+- Clarified that Checkout should be read after Auth, not as the first
+  copy-paste target.
+- Separated reused Auth concepts from Checkout's new concepts: navigation
+  argument initial state, explicit `ScreenEntered`, `onEnter` commands,
+  request ids, stale-result ignores, and durable completion state.
+- Updated the durable completion effect snippet to use the current
+  `effect(label = ...) { ... }` DSL shape.
+- Updated the example catalog so Checkout is positioned as the first mid-size
+  lifecycle and async-result policy example after Auth.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from Auth into the first
+  production-style lifecycle/retry sample before reading the larger
+  ProductEditor graph stress test.

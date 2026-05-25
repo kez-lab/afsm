@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-05-25
+updated: 2026-05-26
 ---
 
 # Current State
@@ -224,6 +224,18 @@ The current direction is:
   minimum first-use path directly: build the Draft machine, add JVM transition
   tests, host it from a ViewModel, and add one ViewModel wiring test before
   optional Compose, render-state, effect, saved-state, config, or graph work.
+- README now explicitly frames itself as a quick map and points first-time
+  Android developers to `docs/getting-started.md` as the copy-paste source of
+  truth, because that guide is mirrored in `consumer-smoke` and verified
+  against Maven Local artifacts.
+- `docs/auth-walkthrough.md` now explicitly bridges from the minimum Draft path
+  to Auth as the first real Android form screen, separating reused Draft
+  concepts from the new Auth concepts: login/register guarded cases, session
+  persistence, render state, and the first real route effect.
+- `docs/checkout-walkthrough.md` now explicitly bridges from Auth to Checkout
+  as the first mid-size Android lifecycle and async-result example, calling out
+  dynamic initial state, `ScreenEntered`, `onEnter` commands, retry request ids,
+  stale-result ignores, and durable completion state.
 
 ## Core Architecture Position
 

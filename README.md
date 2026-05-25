@@ -20,6 +20,11 @@ ordinary `ViewModel + StateFlow` is clearer.
 Start with [docs/getting-started.md](docs/getting-started.md) if this is your
 first Afsm screen.
 
+Use this README as the quick map. Copy the first real Draft files from
+[docs/getting-started.md](docs/getting-started.md); that guide is mirrored in
+`consumer-smoke` and compiled against the published Maven Local artifacts during
+the release gate.
+
 The short version:
 
 1. Draw the phases first.
@@ -64,7 +69,10 @@ Daily choices:
 | Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
 | An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
 
-Define a small machine first. Do not start with graph/KSP.
+Define a small machine first. Do not start with graph/KSP. The snippet below is
+for orientation; use [docs/getting-started.md](docs/getting-started.md) as the
+copy-paste source for the complete `DraftStateMachine.kt` and
+`DraftViewModel.kt` path.
 
 ```kotlin
 import afsm.core.AfsmMachine
