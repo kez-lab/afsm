@@ -6,6 +6,31 @@ It is small enough to read in one sitting, but it has the Android problems that
 make a state machine worthwhile: screen entry, loading, payment, retry, stale
 async results, durable completion, and optional navigation.
 
+Read Checkout after [auth-walkthrough.md](auth-walkthrough.md), not as the first
+copy-paste target. Auth teaches the small form-screen loop; Checkout adds the
+first lifecycle and async-result policies that usually make Afsm worth using in
+production screens.
+
+## From Auth To Checkout
+
+Keep the same model from Auth:
+
+- `State` is still `AfsmState<Phase, Data>`,
+- repository work still lives in the ViewModel command handler,
+- result events still return to the machine as typed events,
+- render state still keeps Compose out of internal phases,
+- navigation remains durable state plus an optional route effect.
+
+Checkout adds the next Android-specific concerns:
+
+- dynamic initial state from a navigation `productId`,
+- an explicit `ScreenEntered` event because initial state construction does not
+  run `onEnter`,
+- `onEnter` commands for startup loading and payment submission,
+- request ids so stale payment results after retry can be ignored safely,
+- durable completion state so required product progress does not depend on
+  best-effort effect delivery.
+
 ## Files
 
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutContract.kt`
@@ -273,7 +298,9 @@ CheckoutPhase.Completed(orderId)
 The navigation callback is also emitted as an effect:
 
 ```kotlin
-effect(CheckoutEffect.PaymentCompleted(orderId))
+effect(label = "PaymentCompleted") {
+    CheckoutEffect.PaymentCompleted(orderId)
+}
 ```
 
 If the effect is missed, the screen can still render the completed order from
