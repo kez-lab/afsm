@@ -212,6 +212,10 @@ The current direction is:
   `DraftSaveFailed`, while unexpected thrown command handler exceptions use
   `AfsmCommandFailurePolicy` diagnostics and do not synthesize domain failure
   events.
+- First-use docs now tell Android developers to leave `AfsmConfig` at defaults
+  for the initial Draft ViewModel and change host policy only when invalid
+  transition diagnostics, command failure diagnostics, effect delivery, or queue
+  pressure policy is the explicit target.
 
 ## Core Architecture Position
 

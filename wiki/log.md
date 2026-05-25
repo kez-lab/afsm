@@ -1000,3 +1000,12 @@
   `docs/testing-guide.md`, `docs/restoration-effect-command-policy.md`,
   `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] documentation | First-use host config guidance
+
+- Source: First-use runtime policy review after command failure boundary tests.
+- Action: Added a getting-started decision table for when to leave
+  `AfsmConfig` at defaults and when to configure hosted runtime policy.
+- Updated: `docs/getting-started.md`, `docs/afsm-public-api.md`,
+  `docs/testing-guide.md`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

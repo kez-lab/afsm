@@ -411,6 +411,28 @@ Do not mutate `host.state` directly from repository callbacks.
 
 Expose `host.effects` only when the feature has one-shot UI effects.
 
+## When To Change Host Config
+
+Do not add `AfsmConfig` to the first Draft ViewModel. The defaults are the
+beginner path: invalid hosted transitions throw, unexpected command handler
+exceptions throw, effects are one-shot with no replay, and event/command queues
+are bounded.
+
+Reach for host config only when the runtime policy itself is the thing you are
+choosing or testing:
+
+| Situation | First choice |
+|---|---|
+| You are only testing transition rules | Keep using pure machine tests; do not configure a host |
+| A ViewModel test intentionally drives an invalid hosted event | Use `AfsmInvalidTransitionPolicy.Record` with a logger and assert diagnostics |
+| A resilient host should log unexpected command handler exceptions | Use `AfsmCommandFailurePolicy.Record` with a logger |
+| A repository returns an expected failure | Dispatch a typed result event such as `DraftSaveFailed`; do not use config |
+| A required UI action must survive lifecycle gaps | Model durable state plus an acknowledgement event before changing effect delivery |
+| A queue overflow exception appears | Emit fewer/coarser commands first; increase capacity only after confirming the burst is expected |
+
+If a screen needs custom host policy, keep it in the ViewModel host setup. Do
+not move Android lifecycle, logging, or repository concerns into the machine.
+
 ## Connect The First Compose Route
 
 For the no-effect Draft screen, do not add `afsm-compose`. A normal Compose

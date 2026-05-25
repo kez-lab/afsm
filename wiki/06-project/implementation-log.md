@@ -2494,3 +2494,26 @@ Conclusion:
 
 - First-time Android users now see and execute the difference between normal
   command result events and defensive command handler exception policy.
+
+## [2026-05-25] First-use host config guidance
+
+Change:
+
+- Added a getting-started decision table for when to leave `AfsmConfig` at its
+  defaults and when to configure hosted runtime policy.
+- Updated API and testing docs to keep `AfsmConfig` out of ordinary feature
+  tests unless the test target is invalid-transition diagnostics, command
+  failure diagnostics, effect delivery, or queue pressure.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a short rule for default host config:
+  avoid it in the first Draft path, then configure policy only when the host
+  behavior itself is the product or test concern.

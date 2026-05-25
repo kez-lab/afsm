@@ -334,6 +334,11 @@ Runtime guarantees:
 
 ### AfsmConfig
 
+Start with the default `AfsmConfig()` in ordinary feature ViewModels. Change it
+only when the host runtime policy is intentionally different from the default
+development behavior. Expected product failures should still be modeled as
+typed result events, not as config changes.
+
 ```kotlin
 class AfsmConfig(
     val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =

@@ -181,6 +181,11 @@ for expected late/stale results that can happen in real asynchronous systems.
 This distinction matters because `Ignored` is a safe no-op in the host, while
 `Invalid` follows the configured runtime invalid-transition policy.
 
+Do not add `AfsmConfig` to most ViewModel tests. Add it only when the test is
+about hosted runtime policy, such as recording invalid transitions or recording
+unexpected command handler exceptions. If the test is about feature behavior,
+prefer pure machine assertions and typed command result events.
+
 ## ViewModel Tests
 
 ViewModel tests should verify wiring, not duplicate every transition test.
