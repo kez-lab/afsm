@@ -779,3 +779,12 @@
 - Updated: `docs/getting-started.md`, `docs/testing-guide.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] docs+fixture | Quickstart test dependency
+
+- Source: Follow-up after adding first JUnit quickstart tests.
+- Action: Added explicit JUnit dependency guidance to quickstart docs and the
+  consumer-smoke fixture.
+- Updated: `README.md`, `docs/getting-started.md`,
+  `docs/release-readiness.md`, `consumer-smoke/`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

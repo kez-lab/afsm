@@ -32,4 +32,6 @@ dependencies {
     implementation("io.github.afsm:afsm-compose:$afsmVersion")
     implementation("io.github.afsm:afsm-runtime:$afsmVersion")
     implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
+
+    testImplementation("junit:junit:4.13.2")
 }

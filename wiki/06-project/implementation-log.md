@@ -1983,3 +1983,26 @@ Conclusion:
 
 - First-time Android developers now see the intended test loop before Android
   wiring, making the pure state-machine contract easier to lock down early.
+
+## [2026-05-25] Quickstart test dependency wiring
+
+Change:
+
+- Added `testImplementation("junit:junit:4.13.2")` to the quickstart dependency
+  checklist because the first Draft tests use JUnit4 imports.
+- Added the same explicit test dependency to the external `consumer-smoke`
+  fixture instead of relying on incidental transitive classpath behavior.
+- Updated README and release-readiness artifact snippets to include the test
+  dependency boundary.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The copy-paste quickstart now includes the dependency needed to compile and
+  run its first JVM tests.

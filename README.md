@@ -250,6 +250,8 @@ dependencies {
     implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
     implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
+
+    testImplementation("junit:junit:4.13.2")
 }
 ```
 
@@ -315,6 +317,9 @@ private val host = afsmHost(
 State machine tests are plain JVM tests.
 
 ```kotlin
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
 @Test
 fun `SaveClicked enters Saving and emits SaveDraft`() {
     val result = DraftStateMachine.transition(

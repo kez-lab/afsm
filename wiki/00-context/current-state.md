@@ -153,6 +153,8 @@ The current direction is:
 - `docs/getting-started.md` now shows the first two Draft JVM transition tests
   before ViewModel wiring, matching the external `consumer-smoke` quickstart
   tests.
+- The quickstart dependency checklist and `consumer-smoke` fixture now include
+  explicit JUnit wiring for those first JVM tests.
 
 ## Core Architecture Position
 
