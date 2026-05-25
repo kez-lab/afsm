@@ -2205,3 +2205,26 @@ Conclusion:
 - The first-use test path now has a dedicated helper artifact and executable
   external-consumer coverage, reducing raw transition-structure boilerplate in
   the first tests Android developers copy.
+
+## [2026-05-25] Sample-shop test helper dogfood
+
+Change:
+
+- Added `:afsm-test` as a `sample-shop` unit-test dependency.
+- Updated Auth, Checkout, and ProductEditor state-machine tests to use
+  `afsm-test` helpers for transition decisions, phases, commands, effects, and
+  no-output assertions.
+- Kept render-state and topology assertions explicit because they test
+  sample-specific UI mapping and graph metadata rather than generic transition
+  structure.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The helper API now has both quickstart external-consumer coverage and
+  real-sample unit-test dogfooding.

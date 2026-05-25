@@ -173,6 +173,9 @@ The current direction is:
 - A new `afsm-test` module provides Kotlin transition assertion helpers, and
   the Draft quickstart tests dogfood it through `consumer-smoke` against Maven
   Local artifacts.
+- `sample-shop` Auth, Checkout, and ProductEditor state-machine tests now use
+  `afsm-test` helpers for transition decisions, phases, commands, and effects,
+  while keeping render-state and topology assertions explicit.
 
 ## Core Architecture Position
 

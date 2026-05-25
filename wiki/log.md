@@ -872,3 +872,16 @@
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] implementation | Sample-shop test helper dogfood
+
+- Source: Follow-up after adding `afsm-test`.
+- Action: Updated sample-shop state-machine tests to use `afsm-test` helpers
+  for transition assertions while leaving render-state and topology checks
+  explicit.
+- Updated: `sample-shop/build.gradle.kts`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/auth/AuthStateMachineTest.kt`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`,
+  `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
