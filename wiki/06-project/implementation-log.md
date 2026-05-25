@@ -5,6 +5,155 @@ updated: 2026-05-25
 
 # Implementation Log
 
+## [2026-05-25] invalid transition testing boundary
+
+Change:
+
+- Clarified that `assertInvalid()` belongs in pure machine tests, where
+  `machine.transition(...)` returns an inspectable `Invalid` decision.
+- Documented that hosted invalid transitions follow
+  `AfsmInvalidTransitionPolicy`, with `Throw` as the default runtime behavior.
+- Updated README runtime policy wording and modeling rules to connect invalid
+  tests, ignored events, and host policy.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers are less likely to copy impossible-flow
+  assertions into ViewModel happy-path tests and be surprised by host failures.
+
+## [2026-05-25] ViewModel main dispatcher test rule
+
+Change:
+
+- Replaced repeated `Dispatchers.setMain/resetMain` blocks in the external
+  Draft ViewModel consumer tests with a local `MainDispatcherRule`.
+- Updated testing and getting-started docs to show the reusable rule pattern
+  for `viewModelScope` tests.
+- Updated consumer-smoke and release-readiness docs to describe the verified
+  dispatcher-rule path.
+
+Verification:
+
+```bash
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --tests 'afsm.consumer.smoke.DraftViewModelTest' --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- First-time Android developers can copy one focused ViewModel test shape
+  instead of repeating dispatcher setup in every test body.
+
+## [2026-05-25] render state boundary guidance
+
+Change:
+
+- Added first-use guidance that starts tiny Draft screens with direct
+  `DraftState` rendering.
+- Documented the trigger for adding a feature-owned render state: repeated
+  phase branching, UI action inference, terminal-field hiding, or duplicated
+  `phase + data` interpretation in Compose.
+- Linked the guidance to existing Auth and Checkout render-state examples.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a concrete boundary between the
+  machine's Android-facing state and optional UI render models.
+
+## [2026-05-25] no-effect Compose route quickstart bridge
+
+Change:
+
+- Added a getting-started section that connects the no-effect Draft ViewModel
+  to a normal Compose route with `collectAsStateWithLifecycle()`.
+- Clarified that `afsm-compose` is not needed until a route collects real
+  one-shot effects.
+- Updated README and the example catalog so the first-use path includes route
+  state collection after ViewModel wiring.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now see the first UI handoff before studying
+  effect collection or the larger sample routes.
+
+## [2026-05-25] SavedStateHandle initial state quickstart bridge
+
+Change:
+
+- Added an executable `SavedStateHandle` to explicit `DraftState` helper in the
+  external `consumer-smoke` quickstart mirror.
+- Let `DraftViewModel` accept an explicit initial state while keeping
+  `DraftViewModel(repository)` as the default beginner path.
+- Added a consumer-smoke ViewModel test proving a restored title seeds
+  `Editing` state without starting repository work.
+- Updated getting-started, testing, README, consumer-smoke, and release
+  readiness docs to make the dynamic initial-state path concrete.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Result:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Conclusion:
+
+- First-time Android developers now have a tested bridge from
+  `SavedStateHandle`/navigation inputs to `afsmHost(machine, initialState)`,
+  before they need to study the larger Checkout walkthrough.
+
+## [2026-05-25] first effect onboarding bridge
+
+Change:
+
+- Added a getting-started section for the first migration from `AfsmNoEffect`
+  to a real feature `Effect` type.
+- Documented the exact handoff from machine effect emission to ViewModel
+  `Flow<Effect>` exposure and route-level `CollectAfsmEffects(...)`
+  collection.
+- Clarified in testing docs that effect emission should be asserted as a pure
+  transition before Compose collection is wired.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a direct next step after the no-effect
+  Draft machine when a screen later needs optional navigation, snackbar, or
+  close-screen behavior.
+
 ## [2026-05-03] afsm-core minimal Kotlin skeleton
 
 Change:
@@ -1556,6 +1705,8 @@ Verification:
 
 ```bash
 ./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+git diff --check
+./scripts/verify-release-local.sh --warning-mode all --no-daemon
 ```
 
 Conclusion:
@@ -2228,3 +2379,265 @@ Conclusion:
 
 - The helper API now has both quickstart external-consumer coverage and
   real-sample unit-test dogfooding.
+
+## [2026-05-25] Changelog API vocabulary cleanup
+
+Change:
+
+- Updated the unreleased `CHANGELOG.md` Added section to use the current
+  `Handled`, `phase`, and `data` API vocabulary.
+- Moved superseded pre-release DSL names such as `Stayed`, `state(...)`,
+  `updateContext(...)`, `stay(...)`, and `otherwise(...)` into the Removed
+  section so release notes do not teach old names first.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+rg -n 'Stayed|state\(phase\)|updateContext|AfsmState<P, X>|AfsmState<Phase, Context>|AfsmPhaseMachine|stay\(|`stay`|otherwise\(|`otherwise`|phase/context' CHANGELOG.md README.md docs/*.md
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android readers see the current public API vocabulary in release
+  notes before any pre-release migration context.
+
+## [2026-05-25] Draft ViewModel consumer test
+
+Change:
+
+- Added `kotlinx-coroutines-test` to the separate `consumer-smoke` Android
+  fixture.
+- Added Draft ViewModel wiring tests that set a test main dispatcher, dispatch
+  UI events through `DraftViewModel.onEvent`, verify repository command calls,
+  and assert command-result state updates for success and failure paths.
+- Updated `docs/testing-guide.md`, `consumer-smoke/README.md`, and release
+  readiness docs so first-time Android developers have a concrete ViewModel
+  test pattern after pure machine tests.
+
+Verification:
+
+```bash
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use path now verifies both pure machine behavior and Android
+  ViewModel host wiring from an external Maven Local consumer build.
+
+## [2026-05-25] Getting-started ViewModel test link
+
+Change:
+
+- Added `kotlinx-coroutines-test` to the getting-started dependency checklist.
+- Added a short "Add First ViewModel Test" section after the Draft ViewModel
+  host example.
+- Linked first-time readers to the broader testing guide and the executable
+  `consumer-smoke` Draft ViewModel test mirror.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- The first-use guide now keeps the test loop continuous from pure machine
+  tests to Android ViewModel host wiring tests.
+
+## [2026-05-25] README ViewModel test link
+
+Change:
+
+- Added the ViewModel wiring test step to README's first-use short path.
+- Added README guidance that ViewModel tests should drive `onEvent(event)`,
+  verify repository command calls, and observe resulting `state.value`.
+- Linked README readers to the testing guide ViewModel section and the
+  executable `consumer-smoke` Draft ViewModel test.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Readers who start at README now see the same machine-test to ViewModel-test
+  loop as readers who start in `docs/getting-started.md`.
+
+## [2026-05-25] Command failure boundary consumer test
+
+Change:
+
+- Added an external-consumer Draft command failure policy test that hosts
+  `DraftStateMachine` with `AfsmCommandFailurePolicy.Record`.
+- Verified that an unexpected thrown `SaveDraft` handler exception records an
+  `AfsmDiagnostic` and does not synthesize `DraftSaveFailed`.
+- Updated getting-started, testing, restoration/effect/command policy,
+  release-readiness, and consumer-smoke docs to keep the boundary visible:
+  expected repository failures are typed result events, while unexpected handler
+  exceptions are runtime policy cases.
+
+Verification:
+
+```bash
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --tests 'afsm.consumer.smoke.DraftCommandFailurePolicyTest' --no-daemon
+ANDROID_HOME="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1)" ./gradlew -p consumer-smoke :app:testDebugUnitTest --no-daemon
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- First-time Android users now see and execute the difference between normal
+  command result events and defensive command handler exception policy.
+
+## [2026-05-25] First-use host config guidance
+
+Change:
+
+- Added a getting-started decision table for when to leave `AfsmConfig` at its
+  defaults and when to configure hosted runtime policy.
+- Updated API and testing docs to keep `AfsmConfig` out of ordinary feature
+  tests unless the test target is invalid-transition diagnostics, command
+  failure diagnostics, effect delivery, or queue pressure.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a short rule for default host config:
+  avoid it in the first Draft path, then configure policy only when the host
+  behavior itself is the product or test concern.
+
+## [2026-05-25] ViewModel test fixture boundary
+
+Change:
+
+- Clarified that `afsm-test` is a Kotlin-only transition assertion helper
+  module.
+- Updated getting-started, testing, public API, and consumer-smoke docs so
+  `MainDispatcherRule`, fake repositories, and other ViewModel test fixtures
+  are clearly owned by the consuming app's tests.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers should no longer expect Afsm to ship Android
+  ViewModel test rules when the existing `afsm-test` artifact only covers pure
+  transition assertions.
+
+## [2026-05-25] Getting-started minimum path stop point
+
+Change:
+
+- Added a four-step minimum first-use path to `docs/getting-started.md`:
+  build the Draft machine, add JVM transition tests, host from a ViewModel, and
+  add one ViewModel wiring test.
+- Moved the first ViewModel test section before optional Compose route,
+  render-state, effect, saved-state, and host config sections.
+- Updated README and example/modeling reading orders so they point readers to
+  the same minimum path before optional expansions.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers now have a clear stopping point after the
+  minimum Draft path, reducing pressure to absorb every optional runtime and UI
+  integration topic before the first successful adoption.
+
+## [2026-05-25] README copy-source boundary
+
+Change:
+
+- Clarified that README is the quick map for first-use onboarding, not the
+  canonical copy-paste source.
+- Pointed first-time Android developers to `docs/getting-started.md` as the
+  complete Draft file source because that guide is mirrored in `consumer-smoke`
+  and compiled against Maven Local artifacts.
+- Updated current-state and chronological wiki logs.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time readers are less likely to copy diverging README snippets when the
+  verified getting-started guide is the source of truth for the first Draft
+  implementation.
+
+## [2026-05-26] Auth walkthrough Draft bridge
+
+Change:
+
+- Added an explicit `From Draft To Auth` section to `docs/auth-walkthrough.md`.
+- Clarified that Auth should be read after the minimum Draft path: machine, JVM
+  transition tests, ViewModel host, and one ViewModel wiring test.
+- Separated reused Draft concepts from Auth's new concepts: login/register
+  guarded cases, session persistence in the command handler, render-state
+  mapping, and the first real route effect.
+- Updated the example catalog so Auth is positioned as the first real form
+  screen after Draft rather than another starting point.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from copy-paste Draft
+  onboarding into the smallest real Android form screen before taking on
+  Checkout lifecycle and retry policy.
+
+## [2026-05-26] Checkout walkthrough Auth bridge
+
+Change:
+
+- Added an explicit `From Auth To Checkout` section to
+  `docs/checkout-walkthrough.md`.
+- Clarified that Checkout should be read after Auth, not as the first
+  copy-paste target.
+- Separated reused Auth concepts from Checkout's new concepts: navigation
+  argument initial state, explicit `ScreenEntered`, `onEnter` commands,
+  request ids, stale-result ignores, and durable completion state.
+- Updated the durable completion effect snippet to use the current
+  `effect(label = ...) { ... }` DSL shape.
+- Updated the example catalog so Checkout is positioned as the first mid-size
+  lifecycle and async-result policy example after Auth.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer step from Auth into the first
+  production-style lifecycle/retry sample before reading the larger
+  ProductEditor graph stress test.

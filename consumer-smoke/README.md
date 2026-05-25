@@ -26,10 +26,17 @@ The smoke build covers:
 - `io.github.afsm.graph` Gradle plugin
 - JUnit quickstart test dependency wiring
 - Draft quickstart transition tests and Afsm test helpers from the Maven Local artifacts
+- Draft ViewModel command-handler tests with `kotlinx-coroutines-test`
+- Draft ViewModel main dispatcher rule wiring for `viewModelScope` tests
+- Draft explicit initial state from `SavedStateHandle` tests
+- Draft command failure policy coverage for unexpected handler exceptions
+- A local ViewModel test fixture boundary: `afsm-test` supplies transition
+  assertions, while dispatcher rules and fake repositories live in the
+  consuming app's tests
 
 It intentionally stays small. The goal is dependency, plugin, KSP, graph
-generation, quickstart transition behavior, and API consumption verification,
-not sample app behavior coverage.
+generation, quickstart transition and ViewModel wiring behavior, and API
+consumption verification, not sample app behavior coverage.
 
 Current compatibility baseline:
 

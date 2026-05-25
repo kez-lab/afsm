@@ -334,6 +334,11 @@ Runtime guarantees:
 
 ### AfsmConfig
 
+Start with the default `AfsmConfig()` in ordinary feature ViewModels. Change it
+only when the host runtime policy is intentionally different from the default
+development behavior. Expected product failures should still be modeled as
+typed result events, not as config changes.
+
 ```kotlin
 class AfsmConfig(
     val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
@@ -422,7 +427,7 @@ best-effort one-shot outputs.
 
 ## afsm-test
 
-`afsm-test` contains Kotlin test helpers for common transition assertions:
+`afsm-test` contains Kotlin-only helpers for common transition assertions:
 
 ```kotlin
 result
@@ -434,6 +439,9 @@ result
 Use these helpers in unit tests when they make the behavioral expectation
 clearer than inspecting `result.decision`, `result.state.phase`,
 `result.commands`, and `result.effects` directly.
+
+Android `ViewModel` test rules, fake repositories, and dispatcher rules remain
+consumer-owned test fixtures.
 
 ## afsm-graph-ksp
 

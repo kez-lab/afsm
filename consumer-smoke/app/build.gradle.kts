@@ -32,7 +32,9 @@ dependencies {
     implementation("io.github.afsm:afsm-compose:$afsmVersion")
     implementation("io.github.afsm:afsm-runtime:$afsmVersion")
     implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.github.afsm:afsm-test:$afsmVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
