@@ -164,6 +164,8 @@ The current direction is:
   loop before broader sample adoption.
 - README's first-use short version now includes plain JVM transition tests
   before ViewModel hosting.
+- `afsm-core` now has a regression test proving top-level shorthand event
+  branches are alternatives and not merged transition actions.
 
 ## Core Architecture Position
 

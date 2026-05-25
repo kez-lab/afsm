@@ -830,3 +830,13 @@
 - Action: Added plain JVM transition tests to README's first-use short version.
 - Updated: `README.md`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-05-25] test | Case composition regression
+
+- Source: Follow-up after the Draft quickstart sibling `updateData` /
+  `transitionTo` bug.
+- Action: Added an `afsm-core` DSL regression test that locks top-level
+  shorthand branches as alternatives, not merged actions.
+- Updated: `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

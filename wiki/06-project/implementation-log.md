@@ -2112,3 +2112,25 @@ Conclusion:
 
 - The repository first screen now matches the test-first quickstart flow instead
   of making tests look like a later optional step.
+
+## [2026-05-25] Case composition regression test
+
+Change:
+
+- Added an `afsm-core` executable DSL test proving sibling shorthand branches
+  are alternatives, not merged actions.
+- The test models top-level `updateData { ... }` followed by
+  `transitionTo(...)` for the same event and asserts only the first matching
+  data-only branch handles the event.
+
+Verification:
+
+```bash
+git diff --check
+./gradlew :afsm-core:test --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The quickstart bug exposed by consumer-smoke now has a core-level regression
+  test in addition to public documentation.
