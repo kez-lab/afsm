@@ -288,6 +288,21 @@ class DraftStateMachineTest {
     }
 
     @Test
+    fun saveClickedWithMissingTitleStaysEditingWithMessage() {
+        val result = DraftStateMachine.transition(
+            state = DraftState(
+                phase = DraftPhase.Editing,
+                data = DraftData(title = ""),
+            ),
+            event = DraftEvent.SaveClicked,
+        )
+
+        assertEquals(DraftPhase.Editing, result.state.phase)
+        assertEquals("Title is required.", result.state.data.errorMessage)
+        assertEquals(emptyList<DraftCommand>(), result.commands)
+    }
+
+    @Test
     fun saveFailureReturnsToEditingWithMessage() {
         val result = DraftStateMachine.transition(
             state = DraftState(

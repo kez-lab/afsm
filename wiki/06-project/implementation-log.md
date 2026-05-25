@@ -2134,3 +2134,24 @@ Conclusion:
 
 - The quickstart bug exposed by consumer-smoke now has a core-level regression
   test in addition to public documentation.
+
+## [2026-05-25] Draft quickstart validation test
+
+Change:
+
+- Added a missing-title Draft quickstart JVM test to `docs/getting-started.md`.
+- Added the same test to the external `consumer-smoke` quickstart fixture.
+- The test asserts that `SaveClicked` with an empty title remains in `Editing`,
+  sets `Title is required.`, and emits no command.
+
+Verification:
+
+```bash
+git diff --check
+./scripts/verify-consumer-smoke.sh --warning-mode all --no-daemon
+```
+
+Conclusion:
+
+- The first-use test loop now covers a data-only validation branch, not only the
+  successful command path and command failure result path.

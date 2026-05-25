@@ -166,6 +166,8 @@ The current direction is:
   before ViewModel hosting.
 - `afsm-core` now has a regression test proving top-level shorthand event
   branches are alternatives and not merged transition actions.
+- Draft quickstart JVM tests now cover the missing-title data-only validation
+  branch in addition to command emission and save failure recovery.
 
 ## Core Architecture Position
 

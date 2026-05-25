@@ -840,3 +840,13 @@
 - Updated: `afsm-core/src/test/kotlin/afsm/core/AfsmExecutableDslCompileCheckTest.kt`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-05-25] test | Draft quickstart validation branch
+
+- Source: Follow-up quickstart test coverage review.
+- Action: Added a missing-title validation test to getting-started and
+  consumer-smoke Draft quickstart tests.
+- Updated: `docs/getting-started.md`,
+  `consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftQuickstartTest.kt`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
