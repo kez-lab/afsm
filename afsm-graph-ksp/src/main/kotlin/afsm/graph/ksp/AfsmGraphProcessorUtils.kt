@@ -3,6 +3,8 @@ package afsm.graph.ksp
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSTypeAlias
 
 internal fun KSClassDeclaration.hasSuperType(qualifiedName: String): Boolean {
     return getAllSuperTypes().any { type ->
@@ -13,6 +15,14 @@ internal fun KSClassDeclaration.hasSuperType(qualifiedName: String): Boolean {
 internal fun KSClassDeclaration.hasRequiredConstructorParameters(): Boolean {
     return primaryConstructor?.parameters.orEmpty().any { parameter ->
         !parameter.hasDefault && !parameter.isVararg
+    }
+}
+
+internal tailrec fun KSDeclaration.resolveClassDeclaration(): KSClassDeclaration? {
+    return when (this) {
+        is KSClassDeclaration -> this
+        is KSTypeAlias -> type.resolve().declaration.resolveClassDeclaration()
+        else -> null
     }
 }
 

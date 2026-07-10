@@ -9,6 +9,74 @@ import org.gradle.testkit.runner.GradleRunner
 
 class AfsmGraphProcessorFunctionalTest {
     @Test
+    fun `processor generates registry for top-level machine property`() {
+        val projectDir = createKspFixture()
+        projectDir.writeMachineSource(
+            """
+            package example
+
+            import afsm.core.AfsmGraph
+
+            @AfsmGraph(id = "Direct", fileName = "DirectMachine.mmd")
+            internal val DirectMachine: TestMachine = testMachine("Direct")
+            """.trimIndent(),
+        )
+
+        gradle(projectDir)
+            .withArguments("compileKotlin", "--stacktrace")
+            .build()
+
+        val registry = projectDir.resolve(
+            "build/generated/ksp/main/kotlin/afsm/generated/AfsmGeneratedGraphRegistry.kt",
+        )
+        assertTrue(registry.isFile)
+        val registrySource = registry.readText()
+        assertContains(registrySource, "id = \"Direct\"")
+        assertContains(registrySource, "fileName = \"DirectMachine.mmd\"")
+        assertContains(registrySource, "createTopology = { example.DirectMachine.topology }")
+    }
+
+    @Test
+    fun `processor rejects unsafe graph property shapes`() {
+        val projectDir = createKspFixture()
+        projectDir.writeMachineSource(
+            """
+            package example
+
+            import afsm.core.AfsmGraph
+
+            @AfsmGraph
+            private val PrivateMachine: TestMachine = testMachine("Private")
+
+            object MachineHolder {
+                @AfsmGraph
+                val MemberMachine: TestMachine = testMachine("Member")
+            }
+
+            @AfsmGraph
+            var MutableMachine: TestMachine = testMachine("Mutable")
+
+            @AfsmGraph
+            val ComputedMachine: TestMachine
+                get() = testMachine("Computed")
+
+            @AfsmGraph
+            val NotMachine: String = "not a graph source"
+            """.trimIndent(),
+        )
+
+        val result = gradle(projectDir)
+            .withArguments("compileKotlin", "--stacktrace")
+            .buildAndFail()
+
+        assertContains(result.output, "@AfsmGraph property must not be private.")
+        assertContains(result.output, "@AfsmGraph property must be top-level.")
+        assertContains(result.output, "@AfsmGraph property must be an immutable val.")
+        assertContains(result.output, "@AfsmGraph property must have a stable backing field.")
+        assertContains(result.output, "@AfsmGraph property must implement AfsmReducer.")
+    }
+
+    @Test
     fun `processor generates registry for object and no required arg class machines`() {
         val projectDir = createKspFixture()
         projectDir.writeMachineSource(

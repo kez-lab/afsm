@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
 
@@ -29,17 +30,9 @@ internal class AfsmGraphProcessor(
         }
 
         val invalidSymbols = symbols.filterNot { it.validate() }
-        val declarations = symbols
+        val entries = symbols
             .filter { it.validate() }
-            .mapNotNull { symbol ->
-                val declaration = symbol as? KSClassDeclaration
-                if (declaration == null) {
-                    logger.error("@AfsmGraph can only be used on StateMachine classes.", symbol)
-                }
-                declaration
-            }
-
-        val entries = declarations.mapNotNull(::validateAndCreateEntry)
+            .mapNotNull(::validateAndCreateEntry)
             .sortedBy { it.id }
 
         validateDuplicates(entries)
@@ -53,6 +46,20 @@ internal class AfsmGraphProcessor(
     }
 
     private fun validateAndCreateEntry(
+        declaration: KSAnnotated,
+    ): GraphEntry? = when (declaration) {
+        is KSClassDeclaration -> validateAndCreateClassEntry(declaration)
+        is KSPropertyDeclaration -> validateAndCreatePropertyEntry(declaration)
+        else -> {
+            logger.error(
+                "@AfsmGraph can only be used on StateMachine classes, objects, or top-level properties.",
+                declaration,
+            )
+            null
+        }
+    }
+
+    private fun validateAndCreateClassEntry(
         declaration: KSClassDeclaration,
     ): GraphEntry? {
         val qualifiedName = declaration.qualifiedName?.asString()
@@ -113,6 +120,75 @@ internal class AfsmGraphProcessor(
             } else {
                 "$qualifiedName()"
             },
+            sourceFile = declaration.containingFile,
+        )
+    }
+
+    private fun validateAndCreatePropertyEntry(
+        declaration: KSPropertyDeclaration,
+    ): GraphEntry? {
+        if (Modifier.PRIVATE in declaration.modifiers) {
+            logger.error("@AfsmGraph property must not be private.", declaration)
+            return null
+        }
+
+        if (declaration.parentDeclaration != null) {
+            logger.error("@AfsmGraph property must be top-level.", declaration)
+            return null
+        }
+
+        if (declaration.extensionReceiver != null) {
+            logger.error("@AfsmGraph property must not be an extension property.", declaration)
+            return null
+        }
+
+        if (declaration.isMutable) {
+            logger.error("@AfsmGraph property must be an immutable val.", declaration)
+            return null
+        }
+
+        if (!declaration.hasBackingField || declaration.isDelegated()) {
+            logger.error("@AfsmGraph property must have a stable backing field.", declaration)
+            return null
+        }
+
+        val qualifiedName = declaration.qualifiedName?.asString()
+        if (qualifiedName == null) {
+            logger.error("@AfsmGraph property must have a qualified name.", declaration)
+            return null
+        }
+
+        val typeDeclaration = declaration.type.resolve().declaration.resolveClassDeclaration()
+        if (typeDeclaration == null || !typeDeclaration.hasSuperType(AFSM_REDUCER)) {
+            logger.error("@AfsmGraph property must implement AfsmReducer.", declaration)
+            return null
+        }
+
+        if (!typeDeclaration.hasSuperType(AFSM_GRAPH_SOURCE)) {
+            logger.error("@AfsmGraph property must implement AfsmGraphSource.", declaration)
+            return null
+        }
+
+        val annotation = declaration.annotations.firstOrNull { annotation ->
+            annotation.annotationType.resolve().declaration.qualifiedName?.asString() == AFSM_GRAPH_ANNOTATION
+        }
+        val id = annotation.stringArgument("id")
+            .ifBlank { declaration.simpleName.asString() }
+        val fileName = annotation.stringArgument("fileName")
+            .ifBlank { "$id.mmd" }
+
+        if (!fileName.isSafeMmdFileName()) {
+            logger.error(
+                "Afsm graph fileName must be a safe relative .mmd path.",
+                declaration,
+            )
+            return null
+        }
+
+        return GraphEntry(
+            id = id,
+            fileName = fileName,
+            sourceExpression = qualifiedName,
             sourceFile = declaration.containingFile,
         )
     }
