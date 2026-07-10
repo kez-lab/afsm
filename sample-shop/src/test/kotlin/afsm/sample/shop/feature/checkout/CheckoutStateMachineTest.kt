@@ -8,6 +8,7 @@ import afsm.test.assertCommands
 import afsm.test.assertEffects
 import afsm.test.assertHandled
 import afsm.test.assertIgnored
+import afsm.test.assertInvalid
 import afsm.test.assertNoEffects
 import afsm.test.assertNoOutputs
 import afsm.test.assertPhase
@@ -47,6 +48,25 @@ class CheckoutStateMachineTest {
     }
 
     @Test
+    fun `pay and retry before product load stay idle and explain the prerequisite`() {
+        val initialState = checkoutState(productId = product.id)
+
+        val pay = machine.transition(initialState, CheckoutEvent.PayClicked)
+        val retry = machine.transition(initialState, CheckoutEvent.RetryClicked)
+
+        pay
+            .assertHandled()
+            .assertPhase(CheckoutPhase.Idle)
+            .assertNoOutputs()
+        retry
+            .assertHandled()
+            .assertPhase(CheckoutPhase.Idle)
+            .assertNoOutputs()
+        assertEquals("Product is required before payment.", pay.state.data.errorMessage)
+        assertEquals("Product is required before payment.", retry.state.data.errorMessage)
+    }
+
+    @Test
     fun `product loaded enters ready phase with product data`() {
         val result = machine.transition(
             state = checkoutState(
@@ -59,6 +79,26 @@ class CheckoutStateMachineTest {
         result.assertPhase(CheckoutPhase.ProductReady)
         assertEquals(product, result.state.data.product)
         assertEquals(null, result.state.data.errorMessage)
+    }
+
+    @Test
+    fun `product unavailable enters a terminal phase that rejects payment`() {
+        val unavailable = machine.transition(
+            state = checkoutState(
+                productId = product.id,
+                phase = CheckoutPhase.ProductLoading,
+            ),
+            event = CheckoutEvent.ProductUnavailable,
+        )
+
+        unavailable
+            .assertTransitioned()
+            .assertPhase(CheckoutPhase.ProductUnavailable)
+
+        machine.transition(unavailable.state, CheckoutEvent.PayClicked)
+            .assertInvalid()
+            .assertPhase(CheckoutPhase.ProductUnavailable)
+            .assertNoOutputs()
     }
 
     @Test
@@ -84,6 +124,28 @@ class CheckoutStateMachineTest {
                 ),
             )
         assertEquals(1, result.state.data.nextPaymentRequestId)
+    }
+
+    @Test
+    fun `duplicate pay and retry while payment is in flight are ignored`() {
+        val state = checkoutState(
+            productId = product.id,
+            phase = CheckoutPhase.PaymentInProgress(requestId = 1),
+            data = CheckoutData(
+                productId = product.id,
+                product = product,
+                nextPaymentRequestId = 1,
+            ),
+        )
+
+        machine.transition(state, CheckoutEvent.PayClicked)
+            .assertIgnored()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 1))
+            .assertNoOutputs()
+        machine.transition(state, CheckoutEvent.RetryClicked)
+            .assertIgnored()
+            .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 1))
+            .assertNoOutputs()
     }
 
     @Test
@@ -196,6 +258,37 @@ class CheckoutStateMachineTest {
 
         duplicatePay.assertIgnored()
         duplicateRetry.assertIgnored()
+    }
+
+    @Test
+    fun `late payment results after completion are ignored`() {
+        val completed = checkoutState(
+            productId = product.id,
+            phase = CheckoutPhase.Completed(orderId = 42),
+            data = CheckoutData(
+                productId = product.id,
+                product = product,
+                nextPaymentRequestId = 1,
+            ),
+        )
+        val receipt = OrderReceipt(
+            orderId = 42,
+            productId = product.id,
+            totalCents = product.priceCents,
+        )
+
+        machine.transition(
+            completed,
+            CheckoutEvent.PaymentSucceeded(requestId = 1, receipt = receipt),
+        ).assertIgnored()
+            .assertPhase(CheckoutPhase.Completed(orderId = 42))
+            .assertNoEffects()
+        machine.transition(
+            completed,
+            CheckoutEvent.PaymentFailed(requestId = 1, message = "late failure"),
+        ).assertIgnored()
+            .assertPhase(CheckoutPhase.Completed(orderId = 42))
+            .assertNoOutputs()
     }
 
     @Test
