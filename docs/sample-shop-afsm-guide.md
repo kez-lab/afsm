@@ -217,6 +217,8 @@ State machine tests are plain JVM tests:
 
 - `AuthStateMachineTest`
 - `CheckoutStateMachineTest`
+- `CheckoutViewModelTest` for dynamic initialization and repository
+  command-result wiring
 - `ProductEditorStateMachineTest`
 
 These tests are executable specs. If a test fails, treat it as a product behavior signal first. Do not weaken tests just to make implementation pass.

@@ -51,6 +51,9 @@ Initial pre-release candidate.
 - `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
 - `phase(phase)` DSL convenience for terminal or marker phases with no handlers.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
+- Checkout ViewModel integration fixtures for dynamic navigation state,
+  production repository command-result wiring, durable completion, and active
+  effect delivery.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.

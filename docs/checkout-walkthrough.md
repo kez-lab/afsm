@@ -38,6 +38,7 @@ Checkout adds the next Android-specific concerns:
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt`
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutScreen.kt`
 - `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`
+- `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModelTest.kt`
 
 ## Graph
 
@@ -350,3 +351,13 @@ Read `CheckoutStateMachineTest` in this order:
 6. `topology exposes Checkout graph without sample events`
 
 These tests are the executable spec for the example.
+
+Then read `CheckoutViewModelTest` for the Android adapter boundary:
+
+1. navigation product id to `LoadProduct` and `ProductReady`
+2. valid-session payment to durable `Completed` plus active effect delivery
+3. missing-session payment failure without an order insert
+4. missing-product command result to `ProductUnavailable`
+
+The ViewModel tests use production repositories over recording DAO fakes. They
+verify command-result wiring without repeating every machine branch.

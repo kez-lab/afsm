@@ -209,6 +209,11 @@ Use `runTest` plus a main dispatcher rule around `viewModelScope` code.
 The `MainDispatcherRule` and `RecordingDraftRepository` below are local test
 fixtures, not Afsm APIs.
 
+The sample `CheckoutViewModelTest` is the production-like reference for a
+dynamic initial product id, real repository classes over fake DAOs, command
+results fed back as events, durable completion, and active effect collection.
+It deliberately leaves detailed branch coverage in `CheckoutStateMachineTest`.
+
 ```kotlin
 testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 ```

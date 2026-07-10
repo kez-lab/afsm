@@ -1,7 +1,7 @@
 ---
 title: Checkout ViewModel Integration Verification
 updated: 2026-07-10
-status: planned
+status: verified
 ---
 
 # Checkout ViewModel Integration Verification
@@ -11,9 +11,9 @@ status: planned
 Checkout is the reference flow for runtime-supplied initial state, async
 commands, request ids, retries, durable completion, and a one-shot effect. Its
 plain machine tests are strong, and `afsm-viewmodel` has a generic dynamic-state
-fixture, but `sample-shop` has no `CheckoutViewModelTest`.
+fixture, but the sample had no `CheckoutViewModelTest` at the planning baseline.
 
-The current suite therefore does not prove that the real Android adapter:
+The suite at that baseline did not prove that the real Android adapter:
 
 - seeds Checkout with the navigation product id,
 - executes `LoadProduct` and maps its result back to a typed event,
@@ -59,3 +59,16 @@ duplicated wholesale.
 Passing these tests will prove Android adapter wiring in the repository sample.
 It will not prove process recreation, real Room behavior, Compose rendering, or
 human pilot usefulness.
+
+## Verification Result
+
+Commit `62e73d1` added the four planned scenarios using production repositories
+over recording DAO fakes. No production behavior changed.
+
+The focused test, complete sample JVM suite plus graph generation, and full
+local release gate all passed. The full gate included API checks, Maven Local
+publication, and the clean external consumer build.
+
+The planned Android adapter evidence gap is closed. Process recreation, real
+Room integration, Compose rendering, and human pilot evidence remain outside
+this verification boundary.

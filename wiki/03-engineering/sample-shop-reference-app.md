@@ -231,6 +231,11 @@ Result:
 BUILD SUCCESSFUL
 ```
 
+`CheckoutViewModelTest` additionally verifies navigation-derived product state,
+real repository command-result wiring over fake DAOs, missing-session failure,
+durable completion, and active effect delivery. The full release gate including
+the clean external consumer passed after this test was added.
+
 Android CLI journey verification:
 
 - [[../05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]]

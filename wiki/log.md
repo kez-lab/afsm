@@ -1316,3 +1316,19 @@
 - Updated:
   `wiki/03-engineering/checkout-viewmodel-integration-verification.md`,
   `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] verification | Checkout ViewModel integration
+
+- Source: Four production-ViewModel/repository tests, the complete sample JVM
+  suite, generated graphs, full local release gate, and external consumer.
+- Action: Closed the sample Android adapter evidence gap without changing
+  production behavior and synchronized the walkthrough, testing guide, sample
+  reference, changelog, raw evidence, and canonical project state.
+- Updated: `sample-shop/src/test/`, `docs/checkout-walkthrough.md`,
+  `docs/sample-shop-afsm-guide.md`, `docs/testing-guide.md`, `CHANGELOG.md`,
+  `raw/verification/2026-07-10-checkout-viewmodel-integration/README.md`,
+  `raw/README.md`,
+  `wiki/03-engineering/checkout-viewmodel-integration-verification.md`,
+  `wiki/03-engineering/sample-shop-reference-app.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

@@ -2802,3 +2802,26 @@ Conclusion:
 
 - Checkout's machine, graph, and tests now explain both its macro flow and the
   important graph-invisible handled/ignored/invalid policies.
+
+## [2026-07-10] Checkout ViewModel integration coverage
+
+Change:
+
+- Added four JVM tests over the production Checkout ViewModel and repositories,
+  replacing only Room DAOs with recording fakes.
+- Covered navigation-derived product id, load result mapping, successful
+  payment state/effect, missing-session failure, and missing-product handling.
+- Made no production or public API change.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.checkout.CheckoutViewModelTest' --no-daemon
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Checkout now has both pure flow specification and real Android adapter wiring
+  evidence; the full local release gate and clean external consumer pass.
