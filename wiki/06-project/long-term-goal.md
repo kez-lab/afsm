@@ -1,6 +1,6 @@
 ---
 title: Afsm Long-Term Goal
-updated: 2026-07-10
+updated: 2026-07-11
 status: active
 ---
 
@@ -185,4 +185,6 @@ that proof; they do not replace it.
 
 ## Current Evidence
 
+- [[goal-evidence-baseline-2026-07-11|Goal Evidence Baseline 2026-07-11]]
 - [[goal-evidence-baseline-2026-07-10|Goal Evidence Baseline 2026-07-10]]
+  (historical starting baseline)

@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-07-10
+updated: 2026-07-11
 ---
 
 # Open Questions
@@ -52,6 +52,12 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Should graph generation remain one selected Android unit-test variant per
   module, or support multi-variant and multi-module aggregation before broader
   external adoption?
+
+## Runtime Diagnostics
+
+- After the types-only default and explicit raw-value opt-in are prototyped,
+  does a real pilot need a custom safe-attribute mapper, or is type/category
+  context sufficient for first release diagnostics?
 
 ## Real Usability Evidence
 

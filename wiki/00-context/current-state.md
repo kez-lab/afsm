@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-07-10
+updated: 2026-07-11
 ---
 
 # Current State
@@ -102,6 +102,10 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   does not block later event reduction. Automatic phase-change cancellation is
   not provided; features use explicit cancel commands and request ids.
 - Effects have no replay by default. Late collectors do not receive old effects.
+- Runtime diagnostic behavior is the next safety redesign target. The current
+  `AfsmDiagnostic` still exposes raw state/event/command/throwable values, which
+  conflicts with the product requirement to avoid sensitive-data exposure by
+  default.
 
 ## Examples and Documentation
 

@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-07-10
+updated: 2026-07-11
 ---
 
 # Wiki Index
@@ -33,6 +33,7 @@ updated: 2026-07-10
 - [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
 - [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
+- [[03-engineering/afsm-diagnostic-privacy-experiment|Afsm Diagnostic Privacy Experiment]] - Pre-release redesign of runtime diagnostics around types-only defaults and explicit raw-value opt-in.
 - [[03-engineering/sample-shop-reference-app|Sample Shop Reference App]] - Complex Compose + Room sample app that validates where Afsm helps and where ordinary ViewModel state is preferable.
 - [[03-engineering/android-official-guidance|Android Official Guidance]] - Official Android documentation distilled into constraints for this FSM architecture.
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.
@@ -48,6 +49,7 @@ updated: 2026-07-10
 
 - [[06-project/long-term-goal|Afsm Long-Term Goal]] - Active usability-first product goal with full pre-release design freedom and an evidence-driven improvement loop.
 - [[06-project/goal-evidence-baseline-2026-07-10|Afsm Goal Evidence Baseline 2026-07-10]] - Outcome-by-outcome proof audit and first redesign-cycle selection.
+- [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Current outcome audit after authoring, Checkout readability, Android integration, and restoration cycles.
 - [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Facilitator-only rubric for an unaided Android developer machine/graph/tests session.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
 - [[06-project/implementation-log|Implementation Log]] - Chronological implementation changes and verification commands.

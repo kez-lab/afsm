@@ -1358,3 +1358,25 @@
   `raw/README.md`, `wiki/00-context/`, `wiki/03-engineering/`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-07-11] maintenance | Goal evidence re-baseline
+
+- Source: Original long-term Goal, current code/tests/graphs/docs, Checkout
+  restoration evidence, API dump, and current open questions at `dff5f28`.
+- Action: Re-scored all eight outcomes, preserved the human/pilot boundary, and
+  selected raw diagnostic payload exposure as the largest autonomous safety
+  gap.
+- Updated: `wiki/06-project/goal-evidence-baseline-2026-07-11.md`,
+  `wiki/06-project/long-term-goal.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] experiment | Diagnostic privacy by default
+
+- Source: Current `AfsmDiagnostic` public getters, Auth credential-bearing
+  types, Draft user-text commands, runtime tests, and the long-term privacy
+  requirement.
+- Action: Compared four diagnostic designs and selected a types-only default
+  envelope with explicit raw-value opt-in and no compatibility getters.
+- Updated: `wiki/03-engineering/afsm-diagnostic-privacy-experiment.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/index.md`, `wiki/log.md`.
