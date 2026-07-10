@@ -37,11 +37,13 @@ Answer these questions and record the end time:
 6. How does the flow prevent an old payment result from changing newer state?
 7. Give one example each of `Handled`, `Ignored`, and `Invalid` behavior. State
    why the three decisions are different.
-8. Which completion output is durable state, and which output is a one-shot UI
+8. Why does `PaymentStatusUnknown` have no normal incoming graph edge, and what
+   automatic work or user action is intentionally unavailable there?
+9. Which completion output is durable state, and which output is a one-shot UI
    notification?
-9. Which artifact was most useful for the overview, exact rule details, and
+10. Which artifact was most useful for the overview, exact rule details, and
    executable proof?
-10. List anything you still cannot determine from these three files.
+11. List anything you still cannot determine from these three files.
 
 ## After the Timed Part
 

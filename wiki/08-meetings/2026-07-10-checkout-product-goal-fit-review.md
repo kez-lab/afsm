@@ -80,6 +80,35 @@ distinctions explicit:
 - an event rejected by terminal `ProductUnavailable` is `Invalid`,
 - expected duplicate or stale work is `Ignored`.
 
+The later restoration slice adds one intentional orphan graph state:
+`PaymentStatusUnknown`. Its machine test explains that it comes from restored
+pending work and rejects retry. The three-artifact path therefore still explains
+the important business policy without reading the ViewModel persistence keys;
+the exact SavedStateHandle mapping remains an Android integration concern.
+
+### Restoration Fresh-Use Follow-Up
+
+What became clearer:
+
+- interrupted payment uncertainty is a named phase instead of an invisible
+  ViewModel fallback,
+- the machine test proves that retry is invalid there,
+- durable completion and one-shot effect replay have separate restoration
+  behavior.
+
+What became harder:
+
+- the Mermaid graph shows `PaymentStatusUnknown` without an incoming edge, so
+  the graph alone cannot say that Android restoration supplies it,
+- the exact three saved keys remain outside the machine/graph/test
+  comprehension constraint by design.
+
+Repository verdict: keep the conservative phase. Adding fake runtime edges to
+the graph would misrepresent executable events. The human first-use task now
+asks directly about the orphan state; repeated confusion would justify a future
+topology note/entry-source experiment. No such graph API is added from this AI
+review alone.
+
 ## Product Verdict
 
 The artifact split is directionally correct:

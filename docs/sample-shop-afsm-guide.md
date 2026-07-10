@@ -157,6 +157,7 @@ Policy:
 Files:
 
 - `feature/checkout/CheckoutContract.kt`
+- `feature/checkout/CheckoutRestoration.kt`
 - `feature/checkout/CheckoutStateMachine.kt`
 - `feature/checkout/CheckoutViewModel.kt`
 - `feature/checkout/CheckoutScreen.kt`
@@ -179,6 +180,10 @@ CheckoutRoute enters with productId
 -> PaymentSucceeded/PaymentFailed
 -> CheckoutPhase.Completed(orderId) + PaymentCompleted effect
    or CheckoutPhase.PaymentFailed retry state
+
+Process recreation with unresolved payment
+-> CheckoutPhase.PaymentStatusUnknown(requestId)
+-> no automatic command or retry action
 ```
 
 Policy:
@@ -199,6 +204,10 @@ Policy:
   instead of invalid programmer errors.
 - Checkout demonstrates `afsmHost(machine = ..., initialState = ...)` for a
   graphable machine whose starting state depends on a navigation argument.
+- Checkout persists only product, completed-order, and pending-request ids.
+  Durable completion restores without effect replay; interrupted payment
+  restores `PaymentStatusUnknown` and requires backend status recovery rather
+  than automatic resubmission.
 - `CheckoutState.toRenderState()` keeps Compose rendering simple while the
   internal graph stays precise.
 - `./gradlew :sample-shop:generateAfsmMmd` now writes

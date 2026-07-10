@@ -324,9 +324,10 @@ coordinates still need product approval.
 
 Afsm is in private internal beta. The local release gate is green, Maven Local
 evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
-flows. Stable OSS/Maven Central publishing is intentionally blocked until
-license, final coordinates, SCM metadata, signing, and release ownership are
-decided. Internal pilot rules are documented in
+flows. Checkout also demonstrates minimal stable/pending `SavedStateHandle`
+restoration without automatic payment retry. Stable OSS/Maven Central
+publishing is intentionally blocked until license, final coordinates, SCM
+metadata, signing, and release ownership are decided. Internal pilot rules are documented in
 [docs/release-readiness.md](docs/release-readiness.md). The no-prior-Afsm
 Checkout comprehension task is in
 [docs/checkout-first-use-participant-task.md](docs/checkout-first-use-participant-task.md).

@@ -60,6 +60,24 @@ Prefer one of these patterns:
 - Store a request id and query status before deciding whether to retry.
 - Make the command idempotent on the server side if automatic retry is required.
 
+### Checkout Reference Policy
+
+The sample Checkout flow persists three small keys:
+
+- navigation `productId`,
+- durable `completedOrderId`,
+- `pendingPaymentRequestId` while the payment repository call is unresolved.
+
+Restoration uses `completed > pending > fresh` priority. Completion restores a
+durable `Completed(orderId)` phase without replaying its effect. A pending key
+restores `PaymentStatusUnknown(requestId)`, which offers no automatic retry or
+payment action. A fresh route restores `Idle` and intentionally dispatches
+`ScreenEntered` to load the product.
+
+This does not claim that a local request id can determine a remote payment
+outcome. Production payment integrations still need backend idempotency and a
+status query before resolving `PaymentStatusUnknown`.
+
 ## 3. Effects Are Best-Effort
 
 Afsm effects are one-shot outputs exposed as `Flow<F>`.
@@ -215,10 +233,14 @@ Do not treat command queue overflow as normal domain failure.
 
 ```kotlin
 class CheckoutViewModel(
+    navigationProductId: Long,
     savedStateHandle: SavedStateHandle,
     paymentRepository: PaymentRepository,
 ) : ViewModel() {
-    private val initialState = restoreCheckoutState(savedStateHandle)
+    private val initialState = checkoutStateFromSavedState(
+        savedStateHandle = savedStateHandle,
+        navigationProductId = navigationProductId,
+    )
 
     private val host = afsmHost(
         machine = checkoutStateMachine,
@@ -226,8 +248,34 @@ class CheckoutViewModel(
         commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.SubmitPayment -> {
-                    val result = paymentRepository.submit(command.payload)
-                    dispatch(result.toCheckoutEvent(command.requestId))
+                    savedStateHandle[CheckoutPendingPaymentRequestIdKey] =
+                        command.requestId
+                    paymentRepository.submit(command.payload).fold(
+                        onSuccess = { receipt ->
+                            savedStateHandle[CheckoutCompletedOrderIdKey] =
+                                receipt.orderId
+                            savedStateHandle.remove<Long>(
+                                CheckoutPendingPaymentRequestIdKey,
+                            )
+                            dispatch(
+                                CheckoutEvent.PaymentSucceeded(
+                                    requestId = command.requestId,
+                                    receipt = receipt,
+                                ),
+                            )
+                        },
+                        onFailure = { error ->
+                            savedStateHandle.remove<Long>(
+                                CheckoutPendingPaymentRequestIdKey,
+                            )
+                            dispatch(
+                                CheckoutEvent.PaymentFailed(
+                                    requestId = command.requestId,
+                                    message = error.message ?: "Payment failed.",
+                                ),
+                            )
+                        },
+                    )
                 }
             }
         },
@@ -236,6 +284,12 @@ class CheckoutViewModel(
     val state: StateFlow<CheckoutState> = host.state
     val effects: Flow<CheckoutEffect> = host.effects
 
+    init {
+        if (initialState.phase == CheckoutPhase.Idle) {
+            host.dispatch(CheckoutEvent.ScreenEntered)
+        }
+    }
+
     fun onEvent(event: CheckoutEvent) {
         host.dispatch(event)
     }
@@ -243,4 +297,5 @@ class CheckoutViewModel(
 ```
 
 The ViewModel owns Android lifecycle integration. The machine owns flow rules.
-The command handler owns side-effectful work.
+The command handler owns side-effectful work and feature-owned persistence keys.
+The Afsm core does not serialize machine state.

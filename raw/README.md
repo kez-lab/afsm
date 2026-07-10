@@ -13,5 +13,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-10-checkout-product-goal-fit/`: constrained machine/graph/tests-only evidence for whether Checkout supports Afsm's readability and safety goal.
 - `verification/2026-07-10-checkout-first-use-protocol-dry-run/`: facilitator setup and rubric-grounding checks for the human Checkout first-use protocol; not a participant result.
 - `verification/2026-07-10-checkout-viewmodel-integration/`: dynamic product id, real repository command-result, durable completion/effect, failure, full release-gate, and external-consumer evidence for Checkout's Android adapter.
+- `verification/2026-07-10-checkout-process-restoration/`: red/green tests, minimal SavedStateHandle keys, unknown-payment protection, graph/APK/release-gate results, and Android CLI device-discovery boundary.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

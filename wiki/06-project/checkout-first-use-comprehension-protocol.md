@@ -45,7 +45,7 @@ does not reveal a preferred artifact or command.
 3. Start timing when the participant opens the first artifact.
 4. Do not define Afsm terms, suggest a reading order, or point to lines.
 5. Neutral clarification of the written task is allowed and must be logged.
-6. Stop timing when the participant submits the ten answers.
+6. Stop timing when the participant submits the eleven answers.
 7. Run the confidence/debrief questions only after the timed answers are fixed.
 
 Screen recording is optional. Preserve no proprietary app data or personal
@@ -53,7 +53,7 @@ identifiers in repository evidence.
 
 ## Scoring Rubric
 
-Score ten points before discussing the answers:
+Score eleven points before discussing the answers:
 
 | Area | Points | Required understanding |
 |---|---:|---|
@@ -62,6 +62,7 @@ Score ten points before discussing the answers:
 | Work and outputs | 2 | `LoadProduct` and `SubmitPayment` are entry commands; completion is durable `Completed(orderId)` state plus one-shot `PaymentCompleted`. |
 | Retry identity | 2 | Retry increments the request id; success/failure changes state only when its id matches; stale results are ignored. |
 | Decision policy | 2 | Correct examples and meanings for state-preserving `Handled`, expected no-op `Ignored`, and impossible `Invalid`. |
+| Restoration | 1 | `PaymentStatusUnknown` is restoration-only, has no ordinary incoming edge, and blocks automatic submit/retry until backend status is resolved. |
 | Artifact roles | 1 | Graph gives macro topology, machine gives exact executable rules, tests prove scenarios and non-graph decisions. |
 
 Critical misconceptions override the numeric score:
@@ -70,13 +71,15 @@ Critical misconceptions override the numeric score:
 - claiming an effect is durable completion state,
 - claiming Checkout owns a valid default product id,
 - claiming stale payment results are accepted or treated as fatal invalid
-  transitions.
+  transitions,
+- claiming `PaymentStatusUnknown` automatically reloads, retries, or proves the
+  remote payment outcome.
 
 ## Provisional Gates
 
 Assumption: until real timing data exists, a successful first-use session means:
 
-- at least 8/10 points,
+- at least 9/11 points,
 - no critical misconception,
 - timed answers completed within 20 minutes,
 - self-rated overview and safety predictability both at least 4/5,
@@ -121,10 +124,18 @@ complex feature module. Record the pre-Afsm mutation sites and flow tests,
 implementation effort, review comprehension, defects or missed transitions,
 rollback cost, and whether the team would keep the design.
 
-## Preparation Dry Run
+## Initial Preparation Dry Run
 
-The facilitator setup passed on 2026-07-10 at `bdaf6a9`: graph generation
-succeeded, all three files were present, ten timed questions were detected, and
-every rubric area had evidence in the constrained artifacts. No human answers
-or scores were produced. See
+The pre-restoration facilitator setup passed on 2026-07-10 at `bdaf6a9`: graph
+generation succeeded, all three files were present, ten timed questions were
+detected, and every original rubric area had evidence in the constrained
+artifacts. No human answers or scores were produced. See
 `raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/README.md`.
+
+## Post-Restoration Preparation Check
+
+After `PaymentStatusUnknown` was added, the task and rubric were updated before
+any participant session. The constrained artifacts passed the preparation check
+with three files, eleven timed questions, ten evidence patterns, and a 25-line
+graph. No human result was produced. See
+`raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/restoration-follow-up.md`.

@@ -212,7 +212,9 @@ fixtures, not Afsm APIs.
 The sample `CheckoutViewModelTest` is the production-like reference for a
 dynamic initial product id, real repository classes over fake DAOs, command
 results fed back as events, durable completion, and active effect collection.
-It deliberately leaves detailed branch coverage in `CheckoutStateMachineTest`.
+It also verifies minimal completed/pending `SavedStateHandle` restoration and
+that unresolved payment does not start automatic work. It deliberately leaves
+detailed branch coverage in `CheckoutStateMachineTest`.
 
 ```kotlin
 testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")

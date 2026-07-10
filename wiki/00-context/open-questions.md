@@ -42,10 +42,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## Android Restoration
 
-- Should v1 ship a reusable restoration helper beyond
-  `afsmHost(machine, initialState)`, minimal `SavedStateHandle` conversion, and
-  the documented stable-state restoration policy, or should restoration remain
-  feature-owned guidance?
+- Should v1 ship a reusable restoration helper beyond feature-owned Draft and
+  Checkout `SavedStateHandle` conversion plus `afsmHost(machine, initialState)`,
+  or is the current explicit policy clearer until another real flow repeats the
+  same snapshot shape?
 
 ## Graph Tooling
 
@@ -83,6 +83,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   not own a generic retry policy.
 - Restoration reconstructs minimal stable state, does not restore in-flight
   work, and does not run `onEnter` during initial state construction.
+- Checkout persists minimal product/completed/pending ids. An interrupted
+  payment restores `PaymentStatusUnknown` and never submits automatically;
+  production resolution requires backend idempotency or status lookup.
 - Invalid hosted transitions throw by default; resilient hosts may opt into
   `AfsmInvalidTransitionPolicy.Record`.
 - Named no-transition condition cases appear in Flow graphs. `ignore(...)` and

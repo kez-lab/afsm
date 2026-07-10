@@ -92,7 +92,9 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 - Phase-changing execution order is
   `onExit -> case actions -> target phase factory -> onEnter`.
 - Initial state construction does not run `onEnter`. Restoration reconstructs
-  minimal stable state and deliberately starts or retries work through an event.
+  minimal stable state and deliberately starts work through an event only when
+  safe. Checkout restores unresolved payment to `PaymentStatusUnknown` rather
+  than retrying automatically.
 - `AfsmInvalidTransitionPolicy.Throw` and
   `AfsmCommandFailurePolicy.Throw` are the defaults. Event and command queues
   default to capacity `64` and fail fast on overflow.
@@ -108,7 +110,8 @@ The supported learning order is:
 1. Draft in `docs/getting-started.md` and `consumer-smoke`.
 2. Auth as the first real Android form screen.
 3. Checkout for dynamic initial state, loading, retry, request ids, stale result
-   handling, durable completion, and optional navigation effect.
+   handling, durable completion, process restoration, and optional navigation
+   effect.
 4. ProductEditor as the advanced graph and transition-order stress test.
 5. Ordinary catalog/detail/like/review screens as examples where Afsm is not
    needed.
@@ -138,17 +141,19 @@ copy/paste source and is mirrored by the external consumer fixture.
   `raw/verification/`; it proves the dated sample journeys it records, not the
   state of every later commit.
 - A no-coaching Checkout first-use task and facilitator rubric are ready, but no
-  real Android developer session has been recorded yet. The facilitator setup
-  dry run passes; provisional time and score gates remain assumptions until the
-  first human run.
+  real Android developer session has been recorded yet. The post-restoration
+  facilitator setup check passes; provisional time and score gates remain
+  assumptions until the first human run.
 - `CheckoutViewModelTest` now proves dynamic product id, product loading,
   repository command-result events, session failure, durable completion, and
   active effect delivery through the real sample ViewModel and production
   repositories over fake DAO boundaries.
-- Checkout still lacks representative process-restoration behavior. A bounded
-  experiment now specifies minimal stable/pending `SavedStateHandle` keys and an
-  explicit `PaymentStatusUnknown` phase instead of serializing the full machine
-  state or silently retrying interrupted payment work.
+- Checkout now implements representative feature-owned process restoration with
+  minimal stable/pending `SavedStateHandle` keys and an explicit
+  `PaymentStatusUnknown` phase instead of serializing the full machine state or
+  silently retrying interrupted payment work. JVM, graph, APK assemble, and full
+  release gates pass; on-device launch is unverified because Android CLI could
+  not discover the booted emulator.
 
 ## Remaining Decisions
 

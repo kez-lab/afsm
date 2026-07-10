@@ -1343,3 +1343,18 @@
   `PaymentStatusUnknown` phase.
 - Updated: `wiki/03-engineering/checkout-process-restoration-experiment.md`,
   `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] implementation | Checkout process restoration
+
+- Source: Candidate B spec, expected compiler failure, focused machine/ViewModel
+  tests, generated graph, APK assemble, full local release gate, and Android CLI
+  device-discovery attempt.
+- Action: Implemented minimal stable/pending keys and conservative
+  `PaymentStatusUnknown`, synchronized product/docs evidence, and kept the
+  on-device and real-backend boundaries explicit.
+- Updated: `sample-shop/`, `CHANGELOG.md`, `docs/`,
+  `raw/verification/2026-07-10-checkout-process-restoration/README.md`,
+  `raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/restoration-follow-up.md`,
+  `raw/README.md`, `wiki/00-context/`, `wiki/03-engineering/`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

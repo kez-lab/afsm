@@ -1,7 +1,7 @@
 ---
 title: Checkout Process Restoration Experiment
 updated: 2026-07-10
-status: candidate-b-planned
+status: candidate-b-implemented
 ---
 
 # Checkout Process Restoration Experiment
@@ -114,3 +114,23 @@ repeated boilerplate before a library abstraction is justified.
 This prototype can prove feature-owned stable snapshot policy and protection
 against automatic duplicate work. It cannot simulate OS process death or prove
 a real payment backend's idempotency/status-query contract.
+
+## Implementation Result
+
+Candidate B is implemented in `sample-shop`:
+
+- Checkout restores from the three feature-owned keys with
+  `completed > pending > fresh` priority,
+- `PaymentStatusUnknown(requestId)` is a declared restoration-only machine
+  phase with no pay/retry handler,
+- fresh `Idle` alone receives `ScreenEntered`,
+- pending is written immediately before repository payment work and cleared on
+  normal success/failure,
+- completion is stored before the success event is dispatched,
+- the route uses the AndroidX SavedState-aware ViewModel factory DSL,
+- focused tests, full sample tests, graph generation, APK assemble, and the full
+  local release gate pass.
+
+On-device launch remains unverified because the official Android CLI could not
+discover the booted emulator. Real payment status recovery remains a backend
+contract, not an Afsm runtime claim.

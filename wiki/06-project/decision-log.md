@@ -1437,9 +1437,38 @@ Rationale:
 
 Consequences:
 
-- Initial 20-minute and 8/10 gates are explicitly assumptions until real data
-  validates or replaces them.
+- The current 20-minute and 9/11 gates are explicitly assumptions until real
+  data validates or replaces them; the rubric grew when restoration safety
+  became part of Checkout.
 - AI-assisted and unaided sessions are recorded separately.
 - Raw answers and interventions are preserved before Wiki conclusions change.
 - A comprehension pass is necessary but does not replace a production-like
   feature pilot.
+
+## [2026-07-10] Restore Checkout with stable and unknown-payment keys
+
+Decision: Keep restoration feature-owned and persist only Checkout product id,
+completed order id, and pending payment request id. Restore an unresolved
+payment to `PaymentStatusUnknown(requestId)` without automatic commands or
+retry actions.
+
+Rationale:
+
+- Restoring `PaymentInProgress` would resurrect a command-shaped phase without
+  its coroutine or a known backend result.
+- Restoring every interrupted flow as `Idle` would hide payment uncertainty and
+  make duplicate work easier.
+- Full state serialization would persist repository-derived product data and
+  couple Android storage to every machine field.
+- A visible conservative phase is safer and more readable than claiming the
+  local runtime can resolve remote payment status.
+
+Consequences:
+
+- Durable completion survives recreation without replaying its effect.
+- Fresh `Idle` alone dispatches the startup event.
+- `PaymentStatusUnknown` appears as a restoration-only graph state with no
+  ordinary incoming edge.
+- Production payment apps still need idempotency and status lookup.
+- A public generic restoration helper remains unjustified until another real
+  flow repeats enough of this feature-owned shape.

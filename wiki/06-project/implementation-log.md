@@ -2825,3 +2825,29 @@ Conclusion:
 
 - Checkout now has both pure flow specification and real Android adapter wiring
   evidence; the full local release gate and clean external consumer pass.
+
+## [2026-07-10] Checkout stable process restoration
+
+Change:
+
+- Added minimal product/completed/pending `SavedStateHandle` conversion and a
+  SavedState-aware sample ViewModel factory.
+- Added restoration-only `PaymentStatusUnknown(requestId)` with no automatic
+  command, pay action, or retry action.
+- Persisted pending immediately before payment work, completion before success
+  dispatch, and cleared pending on normal success/failure.
+- Added red/green machine, render-state, and ViewModel tests.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.checkout.CheckoutViewModelTest' --tests 'afsm.sample.shop.feature.checkout.CheckoutStateMachineTest' :sample-shop:generateAfsmMmd --no-daemon
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd :sample-shop:assembleDebug --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Candidate B passes repository verification and the external consumer gate.
+  Android CLI on-device launch remains blocked by device discovery, and real
+  backend payment recovery remains outside the sample proof.

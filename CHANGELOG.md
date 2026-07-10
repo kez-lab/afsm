@@ -54,6 +54,8 @@ Initial pre-release candidate.
 - Checkout ViewModel integration fixtures for dynamic navigation state,
   production repository command-result wiring, durable completion, and active
   effect delivery.
+- Checkout feature-owned `SavedStateHandle` restoration for durable completion
+  and explicit unresolved-payment protection through `PaymentStatusUnknown`.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.

@@ -157,6 +157,7 @@ This keeps phase state names separate from host-executed transition actions.
 Checkout files:
 
 - `CheckoutContract.kt`
+- `CheckoutRestoration.kt`
 - `CheckoutStateMachine.kt`
 - `CheckoutViewModel.kt`
 - `CheckoutScreen.kt`
@@ -175,6 +176,10 @@ ScreenEntered
 -> PaymentSucceeded/PaymentFailed
 -> Completed(orderId) phase + PaymentCompleted effect
    or PaymentFailed retry state
+
+process recreation with pending payment
+-> PaymentStatusUnknown(requestId) phase
+-> no automatic command or retry action
 ```
 
 The fake payment repository fails the first attempt for higher-priced products so retry behavior is visible without external services.
@@ -192,11 +197,17 @@ Checkout is now a graphable DSL machine:
 
 - `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
 - `checkoutStateMachine` is an `@AfsmGraph` top-level `AfsmMachine` property.
-- `CheckoutViewModel` uses `afsmHost(machine = checkoutStateMachine, initialState = checkoutState(productId))`.
+- `CheckoutViewModel` uses `afsmHost(machine = checkoutStateMachine,
+  initialState = checkoutStateFromSavedState(...))`.
+- `CheckoutViewModel` derives that explicit state from navigation plus
+  `SavedStateHandle`, persisting only product, completed-order, and pending
+  request ids.
 - The machine declares only `initialPhase = CheckoutPhase.Idle`; it has no fake
   `productId = 0` default, and the no-state host overload is unavailable.
 - `ProductLoading` emits `LoadProduct` from `onEnter`.
 - `PaymentInProgress(requestId)` emits `SubmitPayment` from `onEnter`.
+- `PaymentStatusUnknown(requestId)` is restoration-only and blocks automatic
+  duplicate payment work until a production backend can resolve status.
 - `CheckoutState.toRenderState()` keeps Compose rendering independent from internal phase details.
 - `./gradlew :sample-shop:generateAfsmMmd` writes `sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd`.
 
@@ -215,7 +226,9 @@ Current feedback from the sample:
 - The standard `AfsmState<Phase, Data>` model removes ProductEditor adapter boilerplate while keeping the state diagram focused on phases.
 - Auth now confirms the same direct `AfsmState<Phase, Data>` approach works for simpler flows too.
 - `CollectAfsmEffects(...)` removes repeated lifecycle-effect collection wiring from Compose routes.
-- Checkout is the mid-size public example for dynamic initial state, retry, request ids, durable completion, and render-state mapping.
+- Checkout is the mid-size public example for dynamic initial state, retry,
+  request ids, durable completion, conservative process restoration, and
+  render-state mapping.
 
 ## Verification
 
@@ -233,8 +246,9 @@ BUILD SUCCESSFUL
 
 `CheckoutViewModelTest` additionally verifies navigation-derived product state,
 real repository command-result wiring over fake DAOs, missing-session failure,
-durable completion, and active effect delivery. The full release gate including
-the clean external consumer passed after this test was added.
+durable completion, active effect delivery, completed/pending saved-state
+restoration, and no automatic work from unknown payment status. The full
+release gate including the clean external consumer passed.
 
 Android CLI journey verification:
 
