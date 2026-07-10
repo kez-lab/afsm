@@ -113,6 +113,11 @@ The supported learning order is:
 5. Ordinary catalog/detail/like/review screens as examples where Afsm is not
    needed.
 
+A 2026-07-10 constrained Checkout review could reconstruct the main path,
+recovery, request-id safety, commands, and completion from only the machine,
+generated graph, and transition tests. The result is conditional until focused
+tests cover the remaining graph-invisible ignore/invalid policies.
+
 `README.md` is the quick map. `docs/getting-started.md` is the first-use
 copy/paste source and is mirrored by the external consumer fixture.
 

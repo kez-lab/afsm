@@ -10,5 +10,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-10-first-use-api-experiment/`: Kotlin compile, behavior, and diagnostic evidence for the first pre-release declaration redesign prototypes.
 - `verification/2026-07-10-graphable-machine-properties/`: KSP, sample, graph, API, and clean external-consumer evidence for direct top-level machine properties.
 - `verification/2026-07-10-dynamic-initial-state-safety/`: Core, ViewModel, compiler-diagnostic, Checkout, API, graph, and external-consumer evidence for separating default and runtime-supplied machine state.
+- `verification/2026-07-10-checkout-product-goal-fit/`: constrained machine/graph/tests-only evidence for whether Checkout supports Afsm's readability and safety goal.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

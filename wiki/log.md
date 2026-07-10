@@ -1254,3 +1254,16 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-07-10-afsm-direct-property-first-use-review.md`,
   `wiki/log.md`.
+
+## [2026-07-10] review | Checkout product-goal fit
+
+- Source: A constrained read of Checkout's executable machine, generated MMD,
+  and transition tests at repository baseline `56cda3b`.
+- Action: Reconstructed the complete main/recovery flow, recorded a conditional
+  product-goal pass, and specified missing graph-invisible safety scenarios as
+  the next executable acceptance slice.
+- Updated:
+  `raw/verification/2026-07-10-checkout-product-goal-fit/README.md`,
+  `raw/README.md`,
+  `wiki/08-meetings/2026-07-10-checkout-product-goal-fit-review.md`,
+  `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
