@@ -1,13 +1,13 @@
 ---
 title: Afsm Runtime Dispatch Loop
-updated: 2026-05-14
+updated: 2026-07-11
 ---
 
 # Afsm Runtime Dispatch Loop
 
 ## Summary
 
-`afsm-runtime` now provides the first executable runtime layer above `afsm-core`.
+`afsm-runtime` is the plain-Kotlin host layer above `afsm-core`.
 
 The module is Android-friendly but not Android-dependent:
 
@@ -15,7 +15,9 @@ The module is Android-friendly but not Android-dependent:
 - depends on `kotlinx-coroutines-core`
 - does not depend on Android SDK, AndroidX, ViewModel, Compose, DI, serialization, or code generation
 
-This keeps the runtime cohesive: it owns event queueing, state publication, effect publication, command execution, diagnostics, and invalid transition policy.
+This keeps the runtime cohesive: it owns bounded event queueing, state
+publication, effect publication, sequential command execution, privacy-aware
+diagnostics, and host failure policies.
 
 Android-specific lifetime ownership remains a caller concern for now. In ViewModel usage, the host should be attached to `viewModelScope`.
 
@@ -25,11 +27,17 @@ Android-specific lifetime ownership remains a caller concern for now. In ViewMod
 - `AfsmCommandHandler<C, E>`
 - `AfsmConfig`
 - `AfsmCommandExecutionPolicy`
+- `AfsmCommandFailurePolicy`
 - `AfsmInvalidTransitionPolicy`
 - `AfsmEffectDelivery`
 - `AfsmLogger`
 - `AfsmDiagnostic`
+- `AfsmDiagnosticCode`
+- `AfsmDiagnosticDecision`
+- `AfsmDiagnosticDataPolicy`
+- `AfsmDiagnosticValues`
 - `AfsmInvalidTransitionException`
+- `AfsmEventQueueOverflowException`
 - `AfsmCommandQueueOverflowException`
 
 ## Dispatch Contract
@@ -64,6 +72,10 @@ Important behavior:
 - Command execution does not block later event reduction.
 - Event and command queues are bounded by `AfsmConfig.eventQueueCapacity` and `AfsmConfig.commandQueueCapacity`, both defaulting to `64`.
 - If the command queue fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor indefinitely.
+- If a command result cannot enter the full event queue, the host throws
+  `AfsmEventQueueOverflowException` instead of blocking the command processor.
+- A command result dispatched after host closure is dropped and recorded as a
+  lifecycle diagnostic because the owning screen has ended.
 - Long-running loops should not be modeled as never-ending commands.
 
 ## Decision Handling
@@ -74,12 +86,12 @@ Important behavior:
 - emit effects
 - execute commands
 
-`AfsmDecision.Stayed`:
+`AfsmDecision.Handled`:
 
 - publish the returned state
 - emit effects
 - execute commands
-- intended for accepted same-state events such as cleanup
+- represents an accepted event without a phase change
 
 `AfsmDecision.Ignored`:
 
@@ -93,6 +105,25 @@ Important behavior:
 - drop outputs
 - `Record`: log diagnostic
 - `Throw`: throw `AfsmInvalidTransitionException` from the runtime processing coroutine
+
+## Diagnostic Privacy
+
+`AfsmDiagnosticDataPolicy.TypesOnly` is the default. Every diagnostic exposes:
+
+- a stable `AfsmDiagnosticCode`,
+- a value-free `AfsmDiagnosticDecision`,
+- a fixed library message,
+- simple state/event/command/failure type names,
+- Afsm-owned metadata such as queue capacity.
+
+Raw state, event, command, reason, and throwable objects are discarded before
+the configured logger receives the default diagnostic. They are grouped under
+nullable `diagnostic.values` only when the host explicitly selects
+`AfsmDiagnosticDataPolicy.IncludeValues`. That opt-in requires an
+application-owned privacy and redaction boundary.
+
+The diagnostic and grouped-values constructors are runtime-owned. No
+compatibility getter preserves the old raw top-level fields.
 
 ## Effect Delivery
 
@@ -145,8 +176,8 @@ This keeps the user-facing mental model small:
 Command:
 
 ```bash
-./gradlew test --no-daemon
-./scripts/verify-release-local.sh --warning-mode all
+./gradlew :afsm-runtime:check :afsm-runtime:apiCheck --no-daemon
+./scripts/verify-release-local.sh --no-daemon
 ```
 
 Result:
@@ -160,10 +191,13 @@ Verified cases:
 - external events and command-dispatched events preserve FIFO order
 - command-dispatched events do not re-enter transition processing recursively
 - accepted transitions emit state before effects and commands
-- `Stayed` may execute cleanup commands while keeping state
+- `Handled` may update data and execute commands/effects without changing phase
 - `Ignored` keeps runtime state and drops accidental outputs
 - `Invalid` with `Record` logs diagnostics and drops outputs
 - `Invalid` with `Throw` fails the runtime processing coroutine
+- default invalid and command-failure diagnostics do not retain credential-like
+  state, event, command, reason, exception message, or throwable values
+- `IncludeValues` restores grouped raw access only after explicit configuration
 - command queue overflow fails fast instead of suspending event processing
 - command-result event overflow fails fast instead of suspending command processing
 - default effects are not replayed to late collectors
@@ -185,6 +219,7 @@ Command-result event overflow now fails fast with
 command result event. If the host has already closed, command result events are
 dropped and logged because the Android screen lifecycle has ended.
 
-Next runtime concern: decide whether Afsm needs higher-level invoked-service
-semantics for automatic command cancellation or should continue with explicit
-feature-owned cancellation events and request ids.
+The next runtime safety concern is evidence for command cancellation. Decide
+whether Afsm needs higher-level invoked-service semantics for automatic
+phase-owned cancellation or should continue with explicit feature-owned cancel
+commands and request ids. The current contract remains explicit cancellation.

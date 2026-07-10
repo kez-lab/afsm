@@ -102,10 +102,11 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   does not block later event reduction. Automatic phase-change cancellation is
   not provided; features use explicit cancel commands and request ids.
 - Effects have no replay by default. Late collectors do not receive old effects.
-- Runtime diagnostic behavior is the next safety redesign target. The current
-  `AfsmDiagnostic` still exposes raw state/event/command/throwable values, which
-  conflicts with the product requirement to avoid sensitive-data exposure by
-  default.
+- Runtime diagnostics are types-only by default. They expose stable codes,
+  decision categories, fixed messages, type names, and Afsm-owned metadata.
+  Raw state/event/command/reason/throwable values require explicit
+  `AfsmDiagnosticDataPolicy.IncludeValues` and grouped `diagnostic.values`
+  access.
 
 ## Examples and Documentation
 
@@ -136,7 +137,8 @@ copy/paste source and is mirrored by the external consumer fixture.
 - `scripts/verify-release-local.sh` is the authoritative local release gate. It
   runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
   Maven Local publication, and the clean external consumer smoke build.
-- The full local release gate passed on 2026-07-10. The known Kotlin Gradle
+- The full local release gate passed on 2026-07-11 after the diagnostic privacy
+  redesign. The known Kotlin Gradle
   plugin POM rewriting deprecation warning remains non-blocking.
 - Hosted GitHub Actions CI was removed for cost control. No
   `.github/workflows/ci.yml` exists; maintainers run the relevant local checks

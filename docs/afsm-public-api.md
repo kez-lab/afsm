@@ -385,6 +385,8 @@ class AfsmConfig(
         AfsmEffectDelivery.Default,
     val eventQueueCapacity: Int = 64,
     val commandQueueCapacity: Int = 64,
+    val diagnosticDataPolicy: AfsmDiagnosticDataPolicy =
+        AfsmDiagnosticDataPolicy.TypesOnly,
     val logger: AfsmLogger =
         AfsmLogger.None,
 )
@@ -401,6 +403,45 @@ Command queue overflow:
 - `AfsmCommandQueueOverflowException` means a machine emitted accepted commands faster than the bounded host queue could accept them.
 - Prefer fewer, coarser commands or increase `commandQueueCapacity`.
 - Do not use command overflow as domain failure handling; domain failures should still become typed result events.
+
+### Diagnostics
+
+Diagnostics are privacy-safe by default. `AfsmDiagnosticDataPolicy.TypesOnly`
+discards raw state, event, command, reason, and throwable values before the
+configured logger receives the diagnostic.
+
+```kotlin
+diagnostic.code
+diagnostic.decision
+diagnostic.message
+diagnostic.stateType
+diagnostic.eventType
+diagnostic.commandType
+diagnostic.failureType
+diagnostic.metadata
+diagnostic.values // null under the default policy
+```
+
+Codes and decision categories are stable grouping fields. Messages are fixed
+library text, type fields are simple Kotlin type names, and metadata contains
+only Afsm-owned values such as queue capacity. Enum instances intentionally
+collapse to their enum type.
+
+Raw values require an explicit host policy:
+
+```kotlin
+AfsmConfig(
+    diagnosticDataPolicy = AfsmDiagnosticDataPolicy.IncludeValues,
+    logger = applicationLogger,
+)
+```
+
+This creates `diagnostic.values` with raw state, event, command, reason, and
+throwable objects. It may expose credentials, personal data, tokens, form
+input, or exception details. Do not use `IncludeValues` for production logs or
+crash tools without an application-owned redaction boundary. The
+`AfsmDiagnostic` constructor and `AfsmDiagnosticValues` constructor are not
+public; diagnostics are runtime-owned records.
 
 ## afsm-viewmodel
 

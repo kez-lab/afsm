@@ -147,8 +147,10 @@ fun `save failure returns to Editing with message`() {
 
 The external `consumer-smoke` fixture also has
 `DraftCommandFailurePolicyTest`, which proves that an unexpected thrown
-`SaveDraft` handler error is recorded as an `AfsmDiagnostic` when
-`AfsmCommandFailurePolicy.Record` is configured. It does not synthesize
+`SaveDraft` handler error is recorded as a safe `CommandFailure` diagnostic
+when `AfsmCommandFailurePolicy.Record` is configured. The default diagnostic
+identifies the Draft state/event/command and exception types but exposes no raw
+Draft title, exception message, or throwable. It does not synthesize
 `DraftSaveFailed`; feature code should dispatch that event only for expected
 domain failures.
 

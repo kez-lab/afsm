@@ -2851,3 +2851,28 @@ Conclusion:
 - Candidate B passes repository verification and the external consumer gate.
   Android CLI on-device launch remains blocked by device discovery, and real
   backend payment recovery remains outside the sample proof.
+
+## [2026-07-11] Privacy-safe runtime diagnostics
+
+Change:
+
+- Added diagnostic code, decision, data-policy, and grouped raw-value types.
+- Made `TypesOnly` the default and gated raw values behind `IncludeValues`.
+- Removed raw top-level getters and the public diagnostic constructor.
+- Replaced raw-value runtime/consumer assertions with safe code/type/metadata
+  assertions and credential-like privacy tests.
+- Regenerated the runtime API dump.
+
+Verification:
+
+```bash
+./gradlew :afsm-runtime:test --no-daemon
+./gradlew :afsm-runtime:apiDump --no-daemon
+./gradlew :afsm-runtime:check :afsm-runtime:apiCheck --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Default diagnostics no longer contain raw domain values, and the full local
+  release gate plus clean external consumer pass.

@@ -29,7 +29,7 @@ updated: 2026-07-11
 - [[03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]] - Historical compile/test validation for phased state helpers that were later removed from `afsm-core`.
 - [[03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]] - Clarifies Command as a transition action, separates Event/Action/Effect directionality, and defines ProductEditor naming policy.
 - [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.
-- [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Minimal coroutine runtime implementation and verification for serialized dispatch, decisions, commands, and effects.
+- [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Current bounded dispatch, sequential command, decision, effect, overflow, and privacy-aware diagnostic contract.
 - [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
 - [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
@@ -49,7 +49,7 @@ updated: 2026-07-11
 
 - [[06-project/long-term-goal|Afsm Long-Term Goal]] - Active usability-first product goal with full pre-release design freedom and an evidence-driven improvement loop.
 - [[06-project/goal-evidence-baseline-2026-07-10|Afsm Goal Evidence Baseline 2026-07-10]] - Outcome-by-outcome proof audit and first redesign-cycle selection.
-- [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Current outcome audit after authoring, Checkout readability, Android integration, and restoration cycles.
+- [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Outcome audit after Checkout restoration, with the completed diagnostic-privacy cycle result and next runtime gap.
 - [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Facilitator-only rubric for an unaided Android developer machine/graph/tests session.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
 - [[06-project/implementation-log|Implementation Log]] - Chronological implementation changes and verification commands.
@@ -80,6 +80,7 @@ updated: 2026-07-11
 - [[08-meetings/2026-05-23-afsm-6-agent-second-first-use-review|Afsm 6-Agent Second First-Use Review]] - Follow-up review that moved onboarding to Draft-first docs, made DSL predicates read-only, reduced Checkout ignore usage, and clarified phase payload rules.
 - [[08-meetings/2026-07-10-afsm-direct-property-first-use-review|Afsm Direct Property First-Use Review]] - Repository-based review of Candidate E that accepts direct properties provisionally and identifies Kotlin naming plus dynamic-initial-state safety gaps.
 - [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that now passes the main flow and graph-invisible safety-policy check.
+- [[08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review|Afsm Diagnostic Privacy Fresh-Use Review]] - Repository-based review of types-only diagnostics, explicit raw opt-in, and remaining pilot/logger evidence.
 
 ## Raw Sources
 

@@ -138,6 +138,13 @@ the product flow, do not model it as effect-only.
 You do not need to enumerate every impossible event. Omitted handlers are
 invalid by default. Add `ignore` only when the event is expected and harmless.
 In pure machine tests, assert important impossible events with `assertInvalid()`.
+
+Runtime diagnostics intentionally expose type/category context rather than raw
+state, event, command, reason, or throwable values by default. Do not put
+sensitive data into `invalid(reason)` expecting it to reach production logs;
+use typed domain state and application-owned safe telemetry when detailed
+business context is required.
+
 At runtime, the host applies `AfsmInvalidTransitionPolicy`; the default policy
 throws so flow bugs are visible while developing.
 Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable

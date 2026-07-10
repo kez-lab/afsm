@@ -30,6 +30,8 @@ The smoke build covers:
 - Draft ViewModel main dispatcher rule wiring for `viewModelScope` tests
 - Draft explicit initial state from `SavedStateHandle` tests
 - Draft command failure policy coverage for unexpected handler exceptions
+- Published-runtime diagnostic privacy coverage: the default command-failure
+  record exposes safe code/type fields and has no raw Draft values
 - A local ViewModel test fixture boundary: `afsm-test` supplies transition
   assertions, while dispatcher rules and fake repositories live in the
   consuming app's tests

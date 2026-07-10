@@ -521,6 +521,12 @@ internal edge:
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
 - Invalid transitions can be asserted in pure machine tests; hosted invalid
   transitions throw by default so flow bugs are visible during development.
+- Runtime diagnostics are types-only by default: codes, decision categories,
+  fixed messages, Kotlin type names, and Afsm-owned metadata are available,
+  while raw state/event/command/reason/throwable values are discarded.
+- `AfsmDiagnosticDataPolicy.IncludeValues` is an explicit privacy-risk opt-in.
+  Do not send its `diagnostic.values` to production logs or crash tools without
+  an application-owned redaction boundary.
 - `CancellationException` is always rethrown.
 - Effects are best-effort one-shot outputs with no replay by default.
 

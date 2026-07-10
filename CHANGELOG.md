@@ -42,6 +42,10 @@ Initial pre-release candidate.
 - Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
 - Bounded default command queue capacity through `AfsmConfig.commandQueueCapacity`.
 - Configurable invalid transition and command failure policies.
+- `AfsmDiagnosticCode`, `AfsmDiagnosticDecision`, and privacy-safe top-level
+  diagnostic fields for runtime failure grouping without raw domain values.
+- `AfsmDiagnosticDataPolicy.TypesOnly` as the default, with explicit
+  `IncludeValues` access through grouped `AfsmDiagnosticValues`.
 - Best-effort one-shot effect flow delivery.
 - `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including machine and dynamic initial state overloads.
 - `afsm-compose` with `CollectAfsmEffects(...)`.
@@ -83,6 +87,9 @@ Initial pre-release candidate.
   - `otherwise(...)`
 - Temporary `AfsmMachineAdapter` base before first publication; graphable
   machines now use `AfsmState<Phase, Data>` directly.
+- Raw top-level `AfsmDiagnostic` state, event, command, reason, and throwable
+  getters, plus the public diagnostic constructor. Raw access now requires the
+  explicit `IncludeValues` policy and `diagnostic.values`.
 - Hosted GitHub Actions CI workflow after the cost-control decision; local
   verification through `scripts/verify-release-local.sh` remains the release
   gate.

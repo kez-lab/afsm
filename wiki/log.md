@@ -1380,3 +1380,16 @@
 - Updated: `wiki/03-engineering/afsm-diagnostic-privacy-experiment.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] implementation | Privacy-safe runtime diagnostics
+
+- Source: Candidate C spec, credential-like red test, runtime/API checks,
+  generated API dump, full local release gate, and external consumer.
+- Action: Replaced raw diagnostic getters with a types-only safe envelope and
+  explicit grouped raw-value opt-in, then synchronized product knowledge.
+- Updated: `afsm-runtime/`, `consumer-smoke/`, `CHANGELOG.md`, `README.md`,
+  `docs/`, `raw/verification/2026-07-11-diagnostic-privacy/README.md`,
+  `raw/README.md`, `wiki/00-context/`, `wiki/03-engineering/`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review.md`,
+  `wiki/index.md`, `wiki/log.md`.

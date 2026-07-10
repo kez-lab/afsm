@@ -689,7 +689,9 @@ loading phase.
 Do not add `AfsmConfig` to the first Draft ViewModel. The defaults are the
 beginner path: invalid hosted transitions throw, unexpected command handler
 exceptions throw, effects are one-shot with no replay, and event/command queues
-are bounded.
+are bounded. Diagnostics are also types-only by default, so attaching a logger
+does not automatically retain raw Draft state, title, command, reason, or
+throwable values.
 
 Reach for host config only when the runtime policy itself is the thing you are
 choosing or testing:
@@ -699,6 +701,8 @@ choosing or testing:
 | You are only testing transition rules | Keep using pure machine tests; do not configure a host |
 | A ViewModel test intentionally drives an invalid hosted event | Use `AfsmInvalidTransitionPolicy.Record` with a logger and assert diagnostics |
 | A resilient host should log unexpected command handler exceptions | Use `AfsmCommandFailurePolicy.Record` with a logger |
+| A production logger or crash tool receives diagnostics | Keep `AfsmDiagnosticDataPolicy.TypesOnly`; group by code and type fields |
+| A local debugging tool genuinely needs raw diagnostic values | Select `IncludeValues` explicitly and keep `diagnostic.values` behind an application-owned privacy/redaction boundary |
 | A repository returns an expected failure | Dispatch a typed result event such as `DraftSaveFailed`; do not use config |
 | A required UI action must survive lifecycle gaps | Model durable state plus an acknowledgement event before changing effect delivery |
 | A queue overflow exception appears | Emit fewer/coarser commands first; increase capacity only after confirming the burst is expected |

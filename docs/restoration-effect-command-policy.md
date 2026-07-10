@@ -176,6 +176,11 @@ an `AfsmDiagnostic` through the configured logger and lets later host work
 continue. Use that policy for defensive logging, not for normal repository or
 validation failures.
 
+Diagnostics are `TypesOnly` by default: the logger receives a safe code,
+decision category, fixed message, type names, and Afsm-owned metadata, not raw
+domain values or exception details. `IncludeValues` is an explicit privacy-risk
+opt-in and requires an application-owned redaction boundary.
+
 ## 6. Use Request IDs for Stale Results
 
 Long-running commands can finish after the user retries, cancels, or leaves the

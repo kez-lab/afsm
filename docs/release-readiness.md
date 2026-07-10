@@ -38,7 +38,9 @@ What this proves:
   `SavedStateHandle` are verified outside the root build.
 - The separate consumer build also verifies unexpected command handler
   exceptions use `AfsmCommandFailurePolicy` diagnostics instead of being
-  modeled as domain failure result events.
+  modeled as domain failure result events. Its assertion also proves the
+  external default diagnostic exposes safe code/type fields and no raw Draft
+  values.
 - The separate consumer build also compiles a no-command machine using
   `AfsmNoCommand` and hosts it from a ViewModel without a command handler.
 - The separate consumer build is cleaned and dependency-refreshed by
@@ -97,8 +99,10 @@ compile against the Maven Local artifacts, including the first-use Draft
 quickstart machine and ViewModel. It also runs focused Draft quickstart
 transition tests for validation, command emission, and save failure recovery,
 plus Draft ViewModel tests for command execution and explicit initial state
-from `SavedStateHandle` using a reusable main dispatcher rule. It does not
-prove broader sample behavior, runtime
+from `SavedStateHandle` using a reusable main dispatcher rule. The command
+failure fixture verifies types-only diagnostics from the published runtime and
+does not retain raw Draft values. It does not prove broader sample behavior,
+runtime
 correctness, or binary compatibility by itself; those remain covered by module
 tests, sample tests, graph generation, and `apiCheck` in the local release gate.
 

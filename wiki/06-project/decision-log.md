@@ -1472,3 +1472,29 @@ Consequences:
 - Production payment apps still need idempotency and status lookup.
 - A public generic restoration helper remains unjustified until another real
   flow repeats enough of this feature-owned shape.
+
+## [2026-07-11] Make diagnostics types-only by default
+
+Decision: Replace raw top-level `AfsmDiagnostic` values with a safe envelope of
+code, decision category, fixed message, simple type names, and Afsm-owned
+metadata. Raw state/event/command/reason/throwable values are available only
+through nullable `diagnostic.values` after explicit `IncludeValues` config.
+
+Rationale:
+
+- Auth commands contain email/password values and Draft commands contain user
+  text, so raw diagnostic getters make accidental logging unsafe.
+- `AfsmLogger.None` does not protect teams once they intentionally configure a
+  Record policy and real logger.
+- Type/category context remains useful for locating a flow boundary without
+  serializing domain values.
+- A named opt-in preserves local debugging flexibility while making the privacy
+  decision visible in host configuration.
+
+Consequences:
+
+- Old raw top-level getters and the public diagnostic constructor are removed
+  before release; no compatibility alias is retained.
+- Invalid reasons and exception messages are hidden under the default policy.
+- Enum instances intentionally collapse to their enum type name.
+- A future custom safe-attribute mapper requires real pilot evidence.

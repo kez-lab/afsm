@@ -1,7 +1,7 @@
 ---
 title: Afsm Diagnostic Privacy Experiment
 updated: 2026-07-11
-status: candidate-c-planned
+status: candidate-c-implemented
 ---
 
 # Afsm Diagnostic Privacy Experiment
@@ -129,3 +129,19 @@ default envelope is proven.
 This experiment can prove default payload safety for Afsm-owned diagnostics. It
 cannot guarantee that application-authored logger code, exception messages, or
 explicit `IncludeValues` use is privacy-safe.
+
+## Implementation Result
+
+Candidate C is implemented:
+
+- default diagnostics expose safe codes, decision categories, fixed messages,
+  simple type names, and Afsm-owned metadata,
+- raw values are grouped under nullable `AfsmDiagnostic.values`,
+- `values` exists only with explicit `IncludeValues`,
+- old raw top-level getters and the public constructor were removed,
+- password/email/token fixtures prove safe top-level fields and diagnostic
+  string output do not contain the raw values,
+- runtime/API checks and the full Maven Local external-consumer gate pass.
+
+The result is the current pre-release direction, not a production privacy
+certification. A custom safe-attribute mapper remains evidence-dependent.

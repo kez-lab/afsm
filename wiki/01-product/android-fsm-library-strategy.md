@@ -1,6 +1,6 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-07-10
+updated: 2026-07-11
 ---
 
 # Android FSM Library Strategy
@@ -78,7 +78,8 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
    - State, Event, Command, and optional Effect are first-class types.
    - Invalid transitions are intentionally handled.
    - The executable definition and generated graph expose transition topology.
-   - Runtime failures and invalid transitions are observable through diagnostics.
+   - Runtime failures and invalid transitions are observable through
+     types-only diagnostics that do not expose raw domain values by default.
 
 2. Android alignment
    - ViewModel remains the screen-level state holder.

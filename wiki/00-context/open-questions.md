@@ -55,9 +55,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## Runtime Diagnostics
 
-- After the types-only default and explicit raw-value opt-in are prototyped,
-  does a real pilot need a custom safe-attribute mapper, or is type/category
-  context sufficient for first release diagnostics?
+- Now that the types-only default and explicit raw-value opt-in are
+  implemented, does a real pilot need a custom safe-attribute mapper, or is
+  type/category context sufficient for first release diagnostics?
 
 ## Real Usability Evidence
 
@@ -92,6 +92,8 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Checkout persists minimal product/completed/pending ids. An interrupted
   payment restores `PaymentStatusUnknown` and never submits automatically;
   production resolution requires backend idempotency or status lookup.
+- Diagnostics use `TypesOnly` by default. `IncludeValues` is an explicit
+  privacy-risk opt-in; no raw value remains on the top-level diagnostic.
 - Invalid hosted transitions throw by default; resilient hosts may opt into
   `AfsmInvalidTransitionPolicy.Record`.
 - Named no-transition condition cases appear in Flow graphs. `ignore(...)` and

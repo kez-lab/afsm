@@ -56,6 +56,24 @@ privacy-risk opt-in. Verify both the default redaction and the opt-in path with
 password-like realistic data, runtime tests, API dumps, docs, and the external
 consumer.
 
+## Cycle Result
+
+Completed in specification commit `b7e2538` and implementation commit
+`0837c28`:
+
+- `TypesOnly` is now the runtime default,
+- safe code/decision/type/metadata fields replace raw top-level values,
+- `IncludeValues` is the only grouped raw-value path,
+- credential-like runtime tests, API validation, Maven Local publication, and
+  the external Draft consumer pass,
+- a repository fresh-use review accepts the design provisionally while keeping
+  human interpretation and production logger review explicitly unproven.
+
+The next largest autonomously testable runtime gap is command cancellation.
+The repository currently documents explicit cancel commands and request ids,
+but has not yet compared that approach with phase-owned invoked-service
+semantics using a realistic interruptible Android flow.
+
 ## External Evidence Boundary
 
 This repository audit can improve default safety. It cannot replace the human
