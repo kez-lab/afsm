@@ -1,7 +1,7 @@
 ---
 title: ProductEditor Upload Boundary Verification 2026-07-11
 updated: 2026-07-11
-status: repository-pass-device-failed
+status: pass
 ---
 
 # ProductEditor Upload Boundary Verification 2026-07-11
@@ -14,6 +14,9 @@ Android CLI launch feasibility.
 
 Raw evidence:
 [ProductEditor Upload Boundary Verification](../../raw/verification/2026-07-11-product-editor-upload-boundary/README.md)
+
+Follow-up device evidence:
+[ProductEditor Cancel Upload Device Journey](../../raw/verification/2026-07-11-product-editor-cancel-device-journey/README.md)
 
 ## Repository Result
 
@@ -34,22 +37,29 @@ PASSED:
 <journey name="ProductEditor cancel upload">
   <action status="PASSED">Build and locate sample-shop debug APK</action>
   <action status="PASSED">Start existing medium_phone AVD with Android CLI</action>
-  <action status="FAILED">Install and launch the APK with android run</action>
-  <action status="SKIPPED">Navigate to ProductEditor</action>
-  <action status="SKIPPED">Submit a valid draft and observe Cancel upload</action>
-  <action status="SKIPPED">Tap Cancel upload and verify Editing draft</action>
+  <action status="PASSED">Install and launch the APK with android run</action>
+  <action status="PASSED">Create an account and navigate to ProductEditor</action>
+  <action status="PASSED">Submit a valid draft and observe Cancel upload</action>
+  <action status="PASSED">Tap Cancel upload and verify Editing draft</action>
 </journey>
 ```
 
-The CLI reported `emulator-5554` ready, then could not resolve either that
-serial or the `medium_phone` AVD name and reported no online default device.
-Per the journey and app-runner rules, evaluation stopped at the first required
-failure. No ADB install fallback, layout, screenshot, or coordinate interaction
-was used.
+The initial attempt failed because the emulator was started in a short-lived
+command session and was gone before the independent `android run` session
+looked for it. A follow-up kept `android emulator start --cold medium_phone`
+and `android run` under one persistent shell. Installation and activation then
+succeeded for `emulator-5554`.
+
+The upload screenshot visibly contains `Status: Uploading mock images`,
+`Cancel upload`, and `Processing...`. The post-cancel layout and screenshot
+show `Status: Editing draft`, the original draft values, and enabled draft
+actions. Installation remained an official `android run`; only UI tap/text
+input used `platform-tools/adb shell input` because Android CLI 1.0.15433482
+does not expose an input subcommand.
 
 ## Conclusion
 
-The repository/Android adapter contract passes. Current on-device cancellation
-usability remains unverified because installation and launch failed in the
-official Android CLI device-discovery boundary. This report is not human or
-production upload evidence.
+The repository/Android adapter contract and current emulator cancel journey
+pass. The result proves a visible, reachable local cancellation path but is not
+human usability evidence and does not prove that real transport or remote work
+stops.

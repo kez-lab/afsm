@@ -17,5 +17,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-11-diagnostic-privacy/`: credential-like red/green fixtures, types-only default diagnostics, explicit raw-value opt-in, API dump, full release-gate, and external-consumer evidence.
 - `verification/2026-07-11-phase-owned-invocation/`: sequential cancel-command contradiction, red/green invocation tests, ProductEditor cooperative upload cancellation, graph/API checks, and external-consumer evidence.
 - `verification/2026-07-11-product-editor-upload-boundary/`: injected suspend uploader red/green tests, safe failure/cancellation mapping, graph/APK/release gate, and exact Android CLI device-discovery failure.
+- `verification/2026-07-11-product-editor-cancel-device-journey/`: persistent-shell Android CLI install/launch plus layout/screenshot evidence that ProductEditor's mock upload is visibly cancellable and returns to the retained draft.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

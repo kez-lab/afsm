@@ -2934,3 +2934,33 @@ Conclusion:
 - Repository integration, graph, APK, API, Maven Local, and external consumer
   pass. Android CLI install/launch failed after its own emulator-start success,
   so UI journey actions remain unverified.
+
+## [2026-07-11] ProductEditor cancel upload device journey
+
+Change:
+
+- Kept the existing Checkout and ProductEditor implementation unchanged.
+- Re-ran emulator start and `android run` inside one persistent shell so the
+  AVD process survived across install, layout, screenshot, and interaction
+  commands.
+- Captured Auth, Catalog, valid draft, upload-in-progress, and post-cancel
+  states; verified the draft remained editable after cancellation.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:assembleDebug --no-daemon
+android describe --project_dir=.
+android emulator start --cold medium_phone
+android run --device=emulator-5554 \
+  --apks=sample-shop/build/outputs/apk/debug/sample-shop-debug.apk \
+  --activity=.MainActivity
+android layout --device=emulator-5554 --pretty
+android screen capture --output=<capture-path>
+```
+
+Conclusion:
+
+- The sample's visible local cancellation path passes on the current emulator.
+  Real transport cancellation, human comprehension, and production-like pilot
+  evidence remain open.

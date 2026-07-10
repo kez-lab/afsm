@@ -262,10 +262,11 @@ Android CLI journey verification:
 
 - [[../05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]]
 - [[../05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke|ProductEditor Executable DSL Smoke Verification]]
+- [[../05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification]]
 
 ## Next Gaps
 
-- Add Android CLI smoke evidence for the latest API-hardening pass if visual regression confidence is needed.
 - Consider a public codelab that walks through ProductEditor from contract to graph output after Checkout onboarding is stable.
-- Retry the ProductEditor cancel journey when Android CLI can resolve the AVD it
-  starts; repository pass does not establish on-device visibility or tapping.
+- Replace the demo uploader with a real transport/SDK only inside the selected
+  production-like pilot, with explicit remote cancellation and idempotency
+  evidence.

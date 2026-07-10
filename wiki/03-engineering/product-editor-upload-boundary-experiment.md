@@ -1,7 +1,7 @@
 ---
 title: ProductEditor Upload Boundary Experiment
 updated: 2026-07-11
-status: candidate-b-implemented
+status: candidate-b-implemented-device-verified
 ---
 
 # ProductEditor Upload Boundary Experiment
@@ -77,9 +77,9 @@ repeatable runtime abstraction.
 - The default sample uploader waits long enough for a person or journey tool to
   observe and tap `Cancel upload`.
 
-Assumption: 2 seconds is an adequate demo-only visibility window. This is not a
-production timeout or Afsm runtime policy and remains subject to device/human
-evidence.
+The 2026-07-11 device journey confirmed that 2 seconds is adequate for the
+current automated screenshot-and-tap path. It remains a demo-only visibility
+window, not a production timeout or human timing result.
 
 ## Acceptance Criteria
 
@@ -119,6 +119,10 @@ Candidate B is implemented in `8b44656`:
 - sample tests, graph, APK, API checks, full local release gate, Maven Local,
   and external consumer pass.
 
-Android CLI device verification did not pass: the CLI started `medium_phone`
-as `emulator-5554` but `android run` could not find the serial, AVD name, or any
-online default device. No on-device UI claim is made.
+The initial Android CLI attempt failed when the emulator and `android run` were
+split across short-lived command sessions. A follow-up persistent shell kept
+the emulator alive, and `android run` installed/launched the APK. Device
+captures then proved that `Uploading mock images` and `Cancel upload` are
+visible, the cancel action is tappable, and the screen returns to the retained
+editable draft. This closes the demo-device criterion, not the real transport
+or human evidence boundary.

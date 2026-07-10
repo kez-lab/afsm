@@ -1,0 +1,79 @@
+[
+  {
+    "text": "Afsm Shop",
+    "center": "[242,814]",
+    "key": 3506402
+  },
+  {
+    "text": "Reference app for Android state-machine flows",
+    "center": "[452,888]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable"
+    ],
+    "center": "[140,1041]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[339,1041]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,1188]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable",
+      "password"
+    ],
+    "center": "[540,1377]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,1572]",
+    "key": 3506402
+  },
+  {
+    "text": "Login",
+    "center": "[140,1041]",
+    "key": 3506402
+  },
+  {
+    "text": "Register",
+    "center": "[339,1041]",
+    "key": 3506402
+  },
+  {
+    "text": "Email",
+    "center": "[160,1198]",
+    "key": 3506402
+  },
+  {
+    "text": "Password",
+    "center": "[204,1387]",
+    "key": 3506402
+  },
+  {
+    "text": "Login",
+    "center": "[540,1571]",
+    "key": 3506402
+  }
+]

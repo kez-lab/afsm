@@ -1,0 +1,93 @@
+[
+  {
+    "text": "Afsm Shop",
+    "center": "[242,719]",
+    "key": 3506402
+  },
+  {
+    "text": "Reference app for Android state-machine flows",
+    "center": "[452,793]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[140,946]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable"
+    ],
+    "center": "[339,946]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,1093]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable"
+    ],
+    "center": "[540,1282]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable",
+      "long-clickable",
+      "password"
+    ],
+    "center": "[540,1471]",
+    "key": 3506402
+  },
+  {
+    "interactions": [
+      "clickable",
+      "focusable"
+    ],
+    "center": "[540,1666]",
+    "key": 3506402
+  },
+  {
+    "text": "Login",
+    "center": "[140,946]",
+    "key": 3506402
+  },
+  {
+    "text": "Register",
+    "center": "[339,946]",
+    "key": 3506402
+  },
+  {
+    "text": "Name",
+    "center": "[163,1103]",
+    "key": 3506402
+  },
+  {
+    "text": "Email",
+    "center": "[160,1292]",
+    "key": 3506402
+  },
+  {
+    "text": "Password",
+    "center": "[204,1481]",
+    "key": 3506402
+  },
+  {
+    "text": "Create account",
+    "center": "[540,1665]",
+    "key": 3506402
+  }
+]

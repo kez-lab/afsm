@@ -62,7 +62,7 @@ updated: 2026-07-11
 - [[05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]] - Android CLI layout/screenshot verification for signup and product registration FSM flows.
 - [[05-qa/verification-report-2026-05-09-product-editor-transition-action-rename-smoke|ProductEditor Transition Action Rename Smoke Verification]] - Android CLI regression evidence after ProductEditor state/command naming cleanup.
 - [[05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke|ProductEditor Executable DSL Smoke Verification]] - Android CLI regression evidence after migrating ProductEditor to the executable DSL.
-- [[05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification 2026-07-11]] - Repository-pass uploader cancellation/failure evidence with Android CLI install/launch failure kept explicit.
+- [[05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification 2026-07-11]] - Repository and emulator evidence for visible, tappable ProductEditor upload cancellation with retained draft state.
 
 ## LLM Operations
 

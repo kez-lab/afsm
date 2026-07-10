@@ -169,10 +169,11 @@ copy/paste source and is mirrored by the external consumer fixture.
   `PaymentStatusUnknown` phase instead of serializing the full machine state or
   silently retrying interrupted payment work. JVM, graph, APK assemble, and full
   release gates pass.
-- Current ProductEditor Android CLI verification failed at installation/launch:
-  the CLI reported `medium_phone` started as `emulator-5554`, then could not
-  resolve the serial, AVD name, or any online default device. No current
-  layout/screenshot/cancel-tap result exists.
+- Current ProductEditor Android CLI verification passes when emulator start and
+  `android run` share a persistent shell. The APK installs/launches, the
+  `Uploading mock images` state visibly exposes `Cancel upload`, and tapping it
+  returns to `Editing draft` with the draft retained. This is demo-device
+  evidence, not real transport, human, or production-pilot evidence.
 
 ## Remaining Decisions
 

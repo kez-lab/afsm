@@ -1459,3 +1459,20 @@
   `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] verification | ProductEditor cancel upload device journey
+
+- Source: Persistent-shell Android CLI 1.0.15433482 install/launch, layout
+  dumps, screenshots, and scripted ProductEditor interaction.
+- Action: Reclassified the prior device failure as a local command-session
+  lifetime boundary, verified the visible/tappable cancel path and retained
+  draft, and preserved the real transport and human/pilot limitations.
+- Updated:
+  `raw/verification/2026-07-11-product-editor-cancel-device-journey/`,
+  `raw/README.md`, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/product-editor-upload-boundary-experiment.md`,
+  `wiki/03-engineering/sample-shop-reference-app.md`,
+  `wiki/05-qa/verification-report-2026-07-11-product-editor-upload-boundary.md`,
+  `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review.md`,
+  `docs/release-readiness.md`, `wiki/index.md`, `wiki/log.md`.
