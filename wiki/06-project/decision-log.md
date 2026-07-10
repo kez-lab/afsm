@@ -1393,3 +1393,30 @@ Consequences:
   move together before any API freeze.
 - Graph ids/file names remain explicit and keep their existing PascalCase
   output names.
+
+## [2026-07-10] Separate graph rules from genuine default state
+
+Decision: `AfsmMachine<State, Event, Command, Effect>` owns transition behavior
+and topology without promising an initial state. `AfsmDefaultMachine` extends it
+only when a valid static default exists. Dynamic DSL declarations use
+`afsmMachine(initialPhase = ...)`, and the concise ViewModel host overload
+accepts only `AfsmDefaultMachine`.
+
+Rationale:
+
+- Checkout previously used `CheckoutData(productId = 0)` only to satisfy graph
+  topology even though no product `0` is a valid Android navigation default.
+- Documentation could not prevent accidental `afsmHost(machine)` use, while a
+  subtype-restricted overload makes the mistake fail at compile time.
+- The graph needs an initial phase, not invented durable data.
+- Static Draft/Auth/ProductEditor flows retain their existing concise default
+  path and body syntax.
+
+Consequences:
+
+- Checkout and future navigation/deep-link/restoration features expose base
+  `AfsmMachine` and must pass a runtime state to `afsmHost`.
+- Static features expose `AfsmDefaultMachine` and may use `machine.initialState`.
+- API dumps, public docs, tests, graph fixtures, and external consumers change
+  together before release; no compatibility shim is required.
+- The type split remains pre-release and may change after fresh-user evidence.

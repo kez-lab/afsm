@@ -60,3 +60,11 @@ evidence are still missing.
    explicit.
 3. Run a human first-use observation separately; do not count this AI review as
    that evidence.
+
+## Implementation Follow-Up
+
+The high-priority dynamic initialization finding is resolved in the current
+pre-release API: `AfsmMachine` no longer promises a default state,
+`AfsmDefaultMachine` adds one only for static flows, and Checkout declares
+`initialPhase = Idle` without `productId = 0`. Omitting Checkout-like runtime
+state now fails at the ViewModel host call during compilation.

@@ -1,6 +1,6 @@
 ---
 title: Afsm ViewModel Integration
-updated: 2026-05-25
+updated: 2026-07-10
 ---
 
 # Afsm ViewModel Integration
@@ -20,13 +20,15 @@ The standard graphable-machine helper is:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
+    machine: AfsmDefaultMachine<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
 ```
 
-Use the explicit initial-state overload when the state is dynamic:
+Only a machine with a genuine default state receives that overload. Use the
+explicit initial-state overload for a base `AfsmMachine` when the state is
+dynamic:
 
 ```kotlin
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
@@ -133,7 +135,8 @@ Verified cases:
 
 - a real `ViewModel` subclass can create `private val host = afsmHost(...)`
 - a graphable machine can be hosted with `afsmHost(machine = StateMachine, ...)`
-- a graphable machine can override its initial state with `afsmHost(machine = StateMachine, initialState = ...)`
+- a base graphable machine requires `afsmHost(machine = stateMachine, initialState = ...)`
+- an `AfsmDefaultMachine` may still override its default explicitly with the same overload
 - the ViewModel can expose `StateFlow<State>` and `Flow<Effect>` directly from the host
 - `onEvent(event)` can delegate to `host.dispatch(event)`
 - command handling can dispatch follow-up events through the runtime queue

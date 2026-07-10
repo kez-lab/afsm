@@ -90,7 +90,7 @@ the ViewModel to UI rendering.
 The state machine file needs:
 
 ```kotlin
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -202,12 +202,14 @@ sealed interface DraftCommand {
 
 5. Keep one explicit machine boundary. The `DraftState` alias is useful to the
    ViewModel and UI, but a separate machine alias, delegated wrapper, and
-   factory function are not needed.
+   factory function are not needed. Draft uses `AfsmDefaultMachine` because its
+   empty editing state is a genuine default; dynamic features use the base
+   `AfsmMachine` instead.
 
 6. Write the machine in phase order.
 
 ```kotlin
-val draftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmDefaultMachine<
     DraftState,
     DraftEvent,
     DraftCommand,
@@ -548,7 +550,7 @@ sealed interface DraftEffect {
     data object CloseEditor : DraftEffect
 }
 
-val draftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmDefaultMachine<
     DraftState,
     DraftEvent,
     DraftCommand,

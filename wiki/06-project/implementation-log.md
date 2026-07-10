@@ -2756,3 +2756,29 @@ Conclusion:
 
 - The current declaration reads as Kotlin value composition without changing
   runtime behavior or graph output.
+
+## [2026-07-10] Dynamic initial-state type safety
+
+Change:
+
+- Removed `initialState` from base `AfsmMachine` and added
+  `AfsmDefaultMachine` for real static defaults.
+- Added `afsmMachine(initialPhase = ...)` for graph topology without runtime
+  data and restricted the concise ViewModel host overload to default machines.
+- Removed Checkout's placeholder `productId = 0`; its ViewModel remains the
+  owner of navigation-derived state.
+- Updated static samples/consumer fixtures, API dumps, focused tests, and
+  negative compiler-diagnostic evidence.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-viewmodel:testDebugUnitTest :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd :afsm-graph-ksp:test
+./gradlew :afsm-core:apiDump :afsm-viewmodel:apiDump
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Dynamic features can no longer accidentally use a fake default through the
+  concise host overload; the full local release gate and external consumer pass.

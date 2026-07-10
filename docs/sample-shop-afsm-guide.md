@@ -185,6 +185,8 @@ Policy:
 
 - Checkout is now a graphable `AfsmMachine<CheckoutState, CheckoutEvent,
   CheckoutCommand, CheckoutEffect>` built with the executable DSL.
+- It declares `initialPhase = CheckoutPhase.Idle` without placeholder product
+  data, so ViewModel hosting requires the navigation-derived initial state.
 - `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
 - Product loading and payment commands are emitted from phase `onEnter`
   handlers and serialized by `AfsmHost`.
@@ -229,7 +231,7 @@ Current verification:
 
 The current sample suggests:
 
-- `AfsmTransition<S, C, F>` should rarely appear in app code now that primary samples expose graphable `AfsmMachine<State, Event, Command, Effect>` objects.
+- `AfsmTransition<S, C, F>` should rarely appear in app code now that primary samples expose graphable machine properties.
 - `ViewModel.afsmHost(...)` reads naturally in real Android ViewModels.
 - `afsmHost(machine = ..., initialState = ...)` keeps graphable state machines
   usable for navigation-argument screens like Checkout.
@@ -239,12 +241,12 @@ The current sample suggests:
 - `ProductDraft` belongs in data; phase constructors should carry only flow-specific edge data such as `uploadToken`, rejection reason, or published product metadata.
 - The executable DSL is more graph-friendly than the phased helper because branch targets are declared at build time and exported through `AfsmMachine.topology` / `AfsmTopology.toMmd()`.
 - `AfsmReducer` remains the lower-level runtime contract, but feature code
-  should normally expose graphable `AfsmMachine<State, Event, Command, Effect>`
-  objects. The executable DSL builds that machine directly on the standard
-  `AfsmState<Phase, Data>` data class.
-- `AfsmMachine<State, Event, Command, Effect>` is the feature-boundary alias
-  shape for graphable machines, so sample code keeps the internal `Phase/Data`
-  split behind a named state type.
+  should normally expose a graphable machine property. Static flows use
+  `AfsmDefaultMachine<State, Event, Command, Effect>`; flows whose initial data
+  comes from navigation or restoration use base `AfsmMachine` plus an explicit
+  host state. Both operate on the standard `AfsmState<Phase, Data>` data class.
+- A named feature state type keeps the internal `Phase/Data` split readable at
+  the machine boundary without introducing a wrapper object.
 - The standard `AfsmState<Phase, Data>` model now removes Auth/ProductEditor adapter boilerplate while keeping state diagrams focused on phases.
 - Custom sealed UI states require an explicit feature-owned `AfsmReducer`; the core API no longer ships an adapter base.
 - Kotlin typealias constructors cannot have a same-named default factory, so ProductEditor uses `productEditorState()` for initial/default state creation.

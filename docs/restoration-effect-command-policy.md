@@ -45,7 +45,9 @@ recoverable phase such as `PaymentReview`.
 
 ## 2. Treat `onEnter` as Runtime Entry, Not Restoration
 
-`initial(...)` does not run `onEnter`. This is intentional.
+`initial(...)` on an `AfsmDefaultMachine` and host-supplied state for a dynamic
+`AfsmMachine` do not run `onEnter`. `initialPhase` only marks graph topology; it
+does not create runtime data. This is intentional.
 
 If initial state construction ran `onEnter`, restoring a state such as
 `PaymentInProgress` could accidentally start another non-idempotent payment.

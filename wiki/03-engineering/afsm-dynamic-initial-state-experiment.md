@@ -1,7 +1,7 @@
 ---
 title: Afsm Dynamic Initial State Experiment
 updated: 2026-07-10
-status: experiment
+status: candidate-b-implemented
 ---
 
 # Afsm Dynamic Initial State Experiment
@@ -64,10 +64,9 @@ interface AfsmDefaultMachine<S, E, C, F> : AfsmMachine<S, E, C, F> {
 Static declaration:
 
 ```kotlin
-val draftStateMachine: AfsmDefaultMachine<...> = afsmMachine(
-    initialState = DraftState(DraftPhase.Editing, DraftData()),
-) {
-    // flow
+val draftStateMachine: AfsmDefaultMachine<...> = afsmMachine {
+    initial(DraftPhase.Editing, DraftData())
+    // phase rules
 }
 ```
 
@@ -133,3 +132,25 @@ and host overloads. Prototype only if Candidates B/C fail.
   concerns without introducing Android dependencies.
 - The public type names and compiler errors survive a fresh-use review.
 - Human and pilot evidence remain separate from repository verification.
+
+## Implementation Result
+
+Candidate B is implemented with the minimal static migration:
+
+- `AfsmMachine` now owns reducer behavior and topology only,
+- `AfsmDefaultMachine` owns `initialState`,
+- the existing `afsmMachine { initial(...) }` static DSL returns
+  `AfsmDefaultMachine`,
+- `afsmMachine(initialPhase = ...)` returns a base `AfsmMachine` without
+  runtime data,
+- only `AfsmDefaultMachine` is accepted by the no-state ViewModel host overload,
+- Checkout removed `CheckoutData(productId = 0)` and keeps its real
+  `checkoutState(productId)` in the ViewModel,
+- a negative compiler probe at the host call reported that
+  `AfsmDefaultMachine` was expected when the explicit Checkout-like state was
+  removed,
+- the full local release gate and clean Maven Local external consumer passed.
+
+The result is the current pre-release direction, not an API freeze. The type
+name and split still require a repository-based fresh-use review and eventual
+human evidence.

@@ -193,7 +193,7 @@ tokens or feature container:
     fileName = "DraftQuickstart.mmd",
 )
 val draftStateMachine:
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> =
+    AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> =
     afsmMachine {
         initial(
             phase = DraftPhase.Editing,
@@ -236,6 +236,14 @@ Implementation result:
   Local consumer build pass,
 - Checkout still supplies navigation data through `afsmHost(initialState =
   ...)`.
+
+Later safety refinement:
+
+- static direct properties such as Draft now expose `AfsmDefaultMachine`,
+- dynamic direct properties such as Checkout expose base `AfsmMachine` built
+  with `initialPhase`,
+- Checkout no longer carries a placeholder runtime value merely to make graph
+  generation possible.
 
 Candidate E is the current pre-release authoring candidate. Human first-use
 preference remains unverified, so this is not an API-freeze decision. See

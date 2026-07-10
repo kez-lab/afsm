@@ -20,7 +20,7 @@ property:
 ```kotlin
 typealias ScreenState = AfsmState<ScreenPhase, ScreenData>
 val screenStateMachine:
-    AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect> =
+    AfsmDefaultMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect> =
     afsmMachine {
         // initial state and phase rules
     }
@@ -32,7 +32,7 @@ their `Command` type. Machines that do not emit UI one-shot output should use
 
 ```kotlin
 val toggleStateMachine:
-    AfsmMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect> =
+    AfsmDefaultMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect> =
     afsmMachine {
         // no command or effect output
     }
@@ -164,20 +164,24 @@ Use this for custom state shapes or low-level integrations.
 ```kotlin
 interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
     AfsmReducer<S, E, C, F>,
-    AfsmGraphSource {
+    AfsmGraphSource
+
+interface AfsmDefaultMachine<S : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<S, E, C, F> {
     val initialState: S
-    val topology: AfsmTopology
 }
 ```
 
-Use this at feature boundaries once the state type has been named.
+`AfsmMachine` owns transition rules and topology. `AfsmDefaultMachine` also
+owns a genuine default state and enables the concise ViewModel host overload.
+Use the base type when Android runtime input is required.
 
 ```kotlin
 typealias ProductEditorState =
     AfsmState<ProductEditorPhase, ProductEditorData>
 
 val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // initial state and phase rules
     }
@@ -230,13 +234,25 @@ afsmMachine<Phase, Data, Event, Command, Effect> {
 }
 ```
 
+For navigation/deep-link data, declare only the graph's initial phase and use
+the base machine type:
+
+```kotlin
+val checkoutStateMachine:
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    afsmMachine(initialPhase = CheckoutPhase.Idle) {
+        // phase rules; no placeholder CheckoutData is needed
+    }
+```
+
 Emit long-running work either from the accepted `case` or from the target
 phase's `onEnter`, not both. Prefer `onEnter` when the work starts because the
 machine entered a work phase such as `Submitting`.
 
 | API | Meaning |
 |---|---|
-| `initial(phase, data)` | Initial state value; does not run `onEnter` |
+| `initial(phase, data)` | Genuine default state for `AfsmDefaultMachine`; does not run `onEnter` |
+| `afsmMachine(initialPhase = phase) { ... }` | Graph initial phase for a machine whose host must supply runtime data |
 | `phase(phase) { ... }` | Exact phase scope |
 | `phase(phase)` | Exact phase declaration with no handlers, useful for terminal states |
 | `phase<PayloadPhase> { ... }` | Payload phase scope |
@@ -390,7 +406,7 @@ Command queue overflow:
 
 ```kotlin
 fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
+    machine: AfsmDefaultMachine<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F>
@@ -410,9 +426,10 @@ fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
 ): AfsmHost<S, E, C, F>
 ```
 
-Use `machine` for the standard path. Use `machine + initialState` when the
-starting state is dynamic. Use `reducer + initialState` only for custom
-non-graphable reducer escape hatches.
+Use `AfsmDefaultMachine` for the static concise path. A base `AfsmMachine`
+requires `machine + initialState`, so a dynamic feature cannot accidentally use
+placeholder data. Use `reducer + initialState` only for custom non-graphable
+reducer escape hatches.
 
 The signatures show `AfsmCommandHandler<C, E>` because that is the exact API
 type. Kotlin callers should usually pass a direct lambda:
@@ -469,7 +486,7 @@ consumer-owned test fixtures.
     fileName = "ProductEditorStateMachine.mmd",
 )
 val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
     }
@@ -497,7 +514,7 @@ Class constructor policy:
 - DSL `state(...)` -> use `phase(...)`
 - DSL `updateContext(...)` -> use `updateData(...)`
 - `AfsmState.context` -> use `AfsmState.data`
-- `AfsmPhaseMachine` -> use the returned `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>`
+- `AfsmPhaseMachine` -> use `AfsmDefaultMachine` for genuine defaults or `AfsmMachine` for runtime-supplied state
 - `AfsmStateMachine` -> use `AfsmReducer`
 - `AfsmStateChart` -> use `AfsmMachine` / `afsmMachine`
 - `afsmStateChart` -> use `afsmMachine`

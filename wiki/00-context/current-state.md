@@ -34,8 +34,9 @@ external Maven Local consumer check.
 
 - A feature machine is plain Kotlin and owns deterministic flow rules.
 - Graphable feature code uses
-  `AfsmMachine<State, Event, Command, Effect>` and normally builds it with
-  `afsmMachine<Phase, Data, Event, Command, Effect> { ... }`.
+  `AfsmMachine<State, Event, Command, Effect>`. Static flows use the
+  `AfsmDefaultMachine` subtype with a genuine default state; dynamic flows use
+  `afsmMachine(initialPhase = ...)` and require host-supplied runtime state.
 - `AfsmState<Phase, Data>` separates finite business phases from durable data.
 - `Event` represents user input or an async result. `Command` represents
   host-executed work. `Effect` is optional best-effort UI output.
@@ -81,6 +82,9 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   machine alias, delegated object, or factory. Fresh human preference remains
   unverified, so this is a pre-release authoring candidate rather than an API
   freeze.
+- Checkout no longer declares placeholder `productId = 0` data. Its base
+  `AfsmMachine` has graph initial phase `Idle` but no default state, so the
+  ViewModel must call the explicit-state host overload at compile time.
 - `case(condition = ...)` and payload phase factories are read-only scopes.
 - A handled event stays in its phase by omitting `transitionTo(...)`.
   `ignore(...)` is reserved for expected harmless no-ops; omitted impossible

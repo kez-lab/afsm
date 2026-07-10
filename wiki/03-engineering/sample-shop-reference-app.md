@@ -1,6 +1,6 @@
 ---
 title: Sample Shop Reference App
-updated: 2026-05-23
+updated: 2026-07-10
 ---
 
 # Sample Shop Reference App
@@ -62,7 +62,7 @@ Auth files:
 Current implementation:
 
 - `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthData>`.
-- `authStateMachine` is the executable DSL machine property directly.
+- `authStateMachine` is the executable `AfsmDefaultMachine` property directly.
 - `authStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
 - `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
 - Route-level effects are collected with `CollectAfsmEffects(...)` from `afsm-compose`.
@@ -136,8 +136,8 @@ The ProductEditor sample now uses the v3 executable DSL:
 - Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform data, not hide phase movement.
 - Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data; it should not be represented as a second competing `transitionTo`.
 - `onEnter` owns phase-entry command emission.
-- `productEditorStateMachine` is the annotated DSL machine property and
-  implements `AfsmGraphSource` through `AfsmMachine`.
+- `productEditorStateMachine` is the annotated `AfsmDefaultMachine` property
+  and implements `AfsmGraphSource` through `AfsmMachine`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - MMD output now includes the initial node, meaningful guard labels, command/effect labels, and entry-command notes.
@@ -193,6 +193,8 @@ Checkout is now a graphable DSL machine:
 - `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
 - `checkoutStateMachine` is an `@AfsmGraph` top-level `AfsmMachine` property.
 - `CheckoutViewModel` uses `afsmHost(machine = checkoutStateMachine, initialState = checkoutState(productId))`.
+- The machine declares only `initialPhase = CheckoutPhase.Idle`; it has no fake
+  `productId = 0` default, and the no-state host overload is unavailable.
 - `ProductLoading` emits `LoadProduct` from `onEnter`.
 - `PaymentInProgress(requestId)` emits `SubmitPayment` from `onEnter`.
 - `CheckoutState.toRenderState()` keeps Compose rendering independent from internal phase details.
@@ -203,7 +205,9 @@ Checkout is now a graphable DSL machine:
 Current feedback from the sample:
 
 - `AfsmTransition<S, C, F>` is readable when each feature declares a local typealias.
-- Primary examples now hide raw transition type noise behind graphable `AfsmMachine<State, Event, Command, Effect>` feature objects.
+- Primary examples now hide raw transition type noise behind graphable machine
+  properties. Static flows expose `AfsmDefaultMachine`; Checkout exposes base
+  `AfsmMachine` because its initial data must come from navigation.
 - `Command` keeps transition functions pure and avoids suspend state machines.
 - `Effect` is useful for navigation completion but should remain rare.
 - `ViewModel.afsmHost(...)` is a good baseline API.

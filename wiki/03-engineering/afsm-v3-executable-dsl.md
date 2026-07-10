@@ -204,8 +204,9 @@ Current naming:
 |---|---|
 | `AfsmReducer<S, E, C, F>` | Host-facing reducer contract used by `AfsmHost` and Android `ViewModel` integration. It receives the full screen state `S`. |
 | `AfsmState<P, D>` | Standard Afsm state value: finite `phase` plus durable `data`. |
-| `AfsmMachine<S, E, C, F>` | Graphable feature-boundary reducer with an initial state and topology metadata. Use this once `State = AfsmState<Phase, Data>` has been named. |
-| `afsmMachine<P, D, E, C, F> { ... }` | Executable DSL builder. It returns `AfsmMachine<AfsmState<P, D>, E, C, F>`. |
+| `AfsmMachine<S, E, C, F>` | Graphable transition/topology rules without an assumed runtime default. |
+| `AfsmDefaultMachine<S, E, C, F>` | `AfsmMachine` subtype for a genuine static default state. |
+| `afsmMachine<P, D, E, C, F> { ... }` | Static executable DSL returning `AfsmDefaultMachine`; the `initialPhase` overload returns base `AfsmMachine`. |
 
 This means Android developers use the standard Afsm state directly:
 
@@ -240,7 +241,7 @@ Target developer experience:
 
 ```kotlin
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
     initial(
         phase = ProductEditorPhase.EditingDraft,
@@ -349,7 +350,7 @@ Graphable machine excerpt:
 
 ```kotlin
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
     initial(ProductEditorPhase.EditingDraft, ProductEditorData())
 
@@ -490,14 +491,13 @@ The v3 DSL compiles into an `AfsmMachine` definition.
 Execution contract:
 
 ```kotlin
-interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> {
-    val initialState: S
-    val topology: AfsmTopology
+interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
+    AfsmReducer<S, E, C, F>,
+    AfsmGraphSource
 
-    fun transition(
-        state: S,
-        event: E,
-    ): AfsmTransition<S, C, F>
+interface AfsmDefaultMachine<S : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<S, E, C, F> {
+    val initialState: S
 }
 
 data class AfsmState<P : Any, D : Any>(
@@ -518,7 +518,7 @@ fun productEditorState(
 ): ProductEditorState = AfsmState(phase = phase, data = data)
 
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
     }
@@ -622,7 +622,7 @@ Success criteria:
 
 Result on 2026-05-09:
 
-- Added the initial executable chart types to `afsm-core`; after later naming feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines, and `afsmMachine<P, D, E, C, F> { ... }` for the DSL builder that returns `AfsmMachine<AfsmState<P, D>, E, C, F>`.
+- Added the initial executable chart types to `afsm-core`; after later naming and initialization-safety feedback, the current public direction is `AfsmReducer` for the low-level host contract, `AfsmMachine<S, E, C, F>` for graphable machines without an assumed default, `AfsmDefaultMachine<S, E, C, F>` when a genuine default exists, and `afsmMachine<P, D, E, C, F> { ... }` for the DSL builder.
 - Updated on 2026-05-10: `AfsmChartState<P, X>` was superseded by `AfsmState<P, D>` as the standard phase/data state value. It was removed before public API stabilization.
 - Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `phase`, `on`, `onEnter`, `case`, `transitionTo`, `updateData`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
@@ -644,7 +644,7 @@ Implement enough interpreter behavior to execute one event:
 Current spike status:
 
 - Implemented current phase lookup, event handler lookup, ordered case matching, ordered `onExit -> case actions -> target phase factory -> onEnter`, ordered `updateData`, command collection, effect collection, and `Handled` versus `Transitioned` decisions.
-- Build-time validation now rejects missing initial state declarations, duplicate state declarations, duplicate event handlers in a state, and transition targets that have no declared state.
+- Build-time validation rejects a missing static default declaration, duplicate state declarations, duplicate event handlers in a state, and transition targets that have no declared state. Dynamic machines declare `initialPhase` instead of fake runtime data.
 - `ignore(...)` and `invalid(...)` now preserve `AfsmDecision.Ignored` / `AfsmDecision.Invalid` for handled non-graph transitions.
 
 ### Step 3: Graph Exporter
@@ -688,12 +688,20 @@ Result on 2026-05-09:
 Update on 2026-05-10:
 
 - Added `AfsmState<P, D>` as the standard state value in `afsm-core`.
-- `afsmMachine` now returns `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
+- At that point, `afsmMachine` returned `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
 - ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>`.
 - ProductEditor no longer needs phase/data adapter mapping. The later
   2026-07-10 first-use cleanup also removed the delegated object/factory;
   `productEditorStateMachine` is now the executable machine property itself.
 - Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.
+
+Update on 2026-07-10:
+
+- The static `afsmMachine { initial(...) }` overload now returns
+  `AfsmDefaultMachine<AfsmState<P, D>, E, C, F>`.
+- The dynamic `afsmMachine(initialPhase = ...)` overload returns base
+  `AfsmMachine<AfsmState<P, D>, E, C, F>` and cannot use the no-state
+  `ViewModel.afsmHost(machine = ...)` overload.
 
 ### Step 5: Public API Decision
 

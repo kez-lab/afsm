@@ -36,7 +36,7 @@ Use a property annotation plus the normal machine contract.
     fileName = "ProductEditorStateMachine.mmd",
 )
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
     }
@@ -58,7 +58,10 @@ public interface AfsmGraphSource {
 
 public interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
     AfsmReducer<S, E, C, F>,
-    AfsmGraphSource {
+    AfsmGraphSource
+
+public interface AfsmDefaultMachine<S : Any, E : Any, C : Any, F : Any> :
+    AfsmMachine<S, E, C, F> {
     public val initialState: S
 }
 ```
@@ -78,7 +81,7 @@ Current sample-shop usage is:
 ```kotlin
 @AfsmGraph
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
     }
@@ -96,8 +99,8 @@ With a second property:
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
 internal val checkoutStateMachine:
     AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
-    afsmMachine {
-        // executable machine body
+    afsmMachine(initialPhase = CheckoutPhase.Idle) {
+        // ViewModel supplies runtime CheckoutData
     }
 ```
 
@@ -162,7 +165,7 @@ Valid:
 @AfsmGraph
 class ProductEditorStateMachine(
     private val machine: ProductEditorMachine = productEditorMachine(),
-) : AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
+) : AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> {
     override val initialState = machine.initialState
     override val topology = machine.topology
     override fun transition(state: ProductEditorState, event: ProductEditorEvent) =

@@ -106,8 +106,20 @@ every phase constructor.
 
 ## Dynamic Initial State
 
-Checkout starts from a navigation `productId`, so the ViewModel provides the
-initial state and dispatches an explicit startup event:
+Checkout's machine declares only the initial graph phase. It cannot invent a
+usable `CheckoutData` without the navigation argument:
+
+```kotlin
+internal val checkoutStateMachine:
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    afsmMachine(initialPhase = CheckoutPhase.Idle) {
+        // phase rules
+    }
+```
+
+Because this is an `AfsmMachine`, not an `AfsmDefaultMachine`, the no-state
+`afsmHost(machine)` overload is not applicable. The ViewModel must provide the
+real state and then dispatch an explicit startup event:
 
 ```kotlin
 class CheckoutViewModel(

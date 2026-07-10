@@ -105,8 +105,8 @@ dependencies {
 )
 internal val checkoutStateMachine:
     AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
-    afsmMachine {
-        // executable machine body
+    afsmMachine(initialPhase = CheckoutPhase.Idle) {
+        // executable machine body; ViewModel supplies CheckoutData
     }
 ```
 

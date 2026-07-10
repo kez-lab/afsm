@@ -1238,3 +1238,19 @@
   missing Checkout state as the primary gate.
 - Updated: `wiki/03-engineering/afsm-dynamic-initial-state-experiment.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] implementation | Dynamic initial-state type split
+
+- Source: Dynamic initialization experiment, focused core/ViewModel tests,
+  negative compile probe, Checkout migration, API dumps, graph checks, and full
+  local release gate.
+- Action: Split graph rules from genuine defaults, made dynamic host state
+  compile-time mandatory, removed Checkout's product-id sentinel, and aligned
+  public/canonical documentation and evidence.
+- Updated: `afsm-core/`, `afsm-viewmodel/`, `sample-shop/`, `consumer-smoke/`,
+  `README.md`, `CHANGELOG.md`, `docs/`,
+  `raw/verification/2026-07-10-dynamic-initial-state-safety/README.md`,
+  `raw/README.md`, `wiki/00-context/`, `wiki/03-engineering/`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-07-10-afsm-direct-property-first-use-review.md`,
+  `wiki/log.md`.

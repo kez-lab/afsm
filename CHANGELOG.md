@@ -20,10 +20,16 @@ Initial pre-release candidate.
 - `AfsmDecision` with `Transitioned`, `Handled`, `Ignored`, and `Invalid`.
 - `AfsmNoCommand` marker for machines that do not emit host-executed work.
 - `AfsmNoEffect` marker for machines that do not emit UI-side effects.
-- `AfsmMachine<S, E, C, F>` graphable machine boundary with an initial state.
+- `AfsmMachine<S, E, C, F>` graphable transition/topology boundary without an
+  assumed default state.
+- `AfsmDefaultMachine<S, E, C, F>` for static flows with a genuine default
+  state and the concise ViewModel host overload.
 - `AfsmState<P, D>` phase/data state model.
 - `afsmMachine { ... }` executable DSL that returns
-  `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>` with topology metadata.
+  `AfsmDefaultMachine<AfsmState<Phase, Data>, Event, Command, Effect>` with
+  topology metadata.
+- `afsmMachine(initialPhase = ...) { ... }` for graphable dynamic flows whose
+  host must supply runtime data.
 - DSL helpers including `initial`, `phase`, `on`, `case`, `transitionTo`,
   `ignore`, `invalid`, `onEnter`, `onExit`, `updateData`, `command`, and
   `effect`.

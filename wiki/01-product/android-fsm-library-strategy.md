@@ -101,9 +101,11 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 The first usable library version should include:
 
 - `AfsmReducer<S, E, C, F>`
-- `AfsmMachine<S, E, C, F>` for graphable feature-boundary machines
-- `afsmMachine<P, D, E, C, F> { ... }` for graphable phase/data machines that
-  return `AfsmMachine<AfsmState<P, D>, E, C, F>`
+- `AfsmMachine<S, E, C, F>` for graphable machines without an assumed default
+- `AfsmDefaultMachine<S, E, C, F>` for graphable machines with a genuine
+  reusable default state
+- `afsmMachine<P, D, E, C, F> { ... }` for static phase/data machines, plus its
+  `initialPhase` overload for machines whose initial data comes from the host
 - `AfsmState<P, D>` as the standard `phase + data` state value
 - `AfsmTransition<S, C, F>`
 - invalid transition policy

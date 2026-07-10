@@ -80,7 +80,7 @@ copy-paste source for the complete `DraftStateMachine.kt` and
 `DraftViewModel.kt` path.
 
 ```kotlin
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -109,7 +109,7 @@ sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-val draftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmDefaultMachine<
     DraftState,
     DraftEvent,
     DraftCommand,
@@ -171,6 +171,10 @@ val draftStateMachine: AfsmMachine<
     phase(DraftPhase.Saved)
 }
 ```
+
+`AfsmDefaultMachine` means this static Draft flow owns a real default state. A
+feature that needs navigation or restored data uses base `AfsmMachine` plus
+`afsmMachine(initialPhase = ...)`, which makes an explicit host state mandatory.
 
 `case(...)` branches are checked in declaration order. The first branch whose
 `condition` returns `true` handles the event; if none match, the event is
@@ -449,7 +453,7 @@ See [docs/graph-generation.md](docs/graph-generation.md) for the full setup.
     id = "Draft",
     fileName = "DraftStateMachine.mmd",
 )
-val draftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmDefaultMachine<
     DraftState,
     DraftEvent,
     DraftCommand,

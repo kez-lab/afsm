@@ -42,10 +42,6 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## Android Restoration
 
-- Should a graphable feature with navigation/deep-link input be able to declare
-  transition rules and an initial phase without inventing default data such as
-  Checkout's `productId = 0`? The accepted shape must prevent accidental use of
-  `afsmHost(machine)` when a real external initial state is required.
 - Should v1 ship a reusable restoration helper beyond
   `afsmHost(machine, initialState)`, minimal `SavedStateHandle` conversion, and
   the documented stable-state restoration policy, or should restoration remain
@@ -69,6 +65,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Graphable features use a non-private stable top-level `val` machine. KSP
   references that property directly; delegated object/factory wrappers are no
   longer required, while eligible classes/objects remain supported.
+- `AfsmMachine` owns transition rules/topology without promising a default
+  state. `AfsmDefaultMachine` adds a genuine static default; dynamic features
+  declare `initialPhase` and cannot use `afsmHost(machine)` without an explicit
+  runtime state.
 - `AfsmTransition` carries effects. Effects are best-effort with no replay by
   default, while required progress stays in state or state plus acknowledgement.
 - Retry and stale-result policy is feature-owned through explicit phases,
