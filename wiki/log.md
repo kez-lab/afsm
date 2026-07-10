@@ -1393,3 +1393,14 @@
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] experiment | Phase-owned command invocation
+
+- Source: Sequential `AfsmHost` command processor, existing cleanup-command
+  test, cancellation guidance, and ProductEditor image-upload flow.
+- Action: Identified that a queued cancel command cannot interrupt active work,
+  compared five designs, and selected a bounded keyed `onEnter` invocation
+  prototype with automatic phase-exit cancellation.
+- Updated: `wiki/03-engineering/afsm-phase-owned-invocation-experiment.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.

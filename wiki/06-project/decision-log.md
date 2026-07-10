@@ -1498,3 +1498,29 @@ Consequences:
 - Invalid reasons and exception messages are hidden under the default policy.
 - Enum instances intentionally collapse to their enum type name.
 - A future custom safe-attribute mapper requires real pilot evidence.
+
+## [2026-07-11] Prototype phase-owned command invocation
+
+Decision: Prototype a bounded `onEnter { invoke(key, label) { command } }`
+contract whose runtime job is automatically cancelled when the machine exits
+the owning phase. Keep ordinary commands sequential and do not add a global
+concurrent command policy.
+
+Rationale:
+
+- The documented `onExit` cancel-command pattern cannot interrupt the active
+  command because the cancel waits in the same sequential queue.
+- ViewModel-owned job registries duplicate lifecycle, failure, and result
+  delivery policy in every feature.
+- Global concurrency weakens ordering and bounded-pressure guarantees for
+  unrelated short commands.
+- A keyed phase-owned invocation makes lifetime visible in the machine and can
+  be tested without Android dependencies.
+
+Consequences:
+
+- This is a breaking pre-release prototype, not an API freeze.
+- `AfsmTransition` needs separate ordinary-command and invocation output.
+- ProductEditor image upload is the first realistic proof.
+- Request ids and idempotency remain necessary for remote/non-cooperative work.
+- Full actor, hierarchy, restart, and service semantics remain deferred.

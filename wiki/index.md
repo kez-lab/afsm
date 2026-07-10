@@ -34,6 +34,7 @@ updated: 2026-07-11
 - [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
 - [[03-engineering/afsm-diagnostic-privacy-experiment|Afsm Diagnostic Privacy Experiment]] - Pre-release redesign of runtime diagnostics around types-only defaults and explicit raw-value opt-in.
+- [[03-engineering/afsm-phase-owned-invocation-experiment|Afsm Phase-Owned Invocation Experiment]] - Breaking prototype for keyed `onEnter` work that the runtime cancels automatically on phase exit.
 - [[03-engineering/sample-shop-reference-app|Sample Shop Reference App]] - Complex Compose + Room sample app that validates where Afsm helps and where ordinary ViewModel state is preferable.
 - [[03-engineering/android-official-guidance|Android Official Guidance]] - Official Android documentation distilled into constraints for this FSM architecture.
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.

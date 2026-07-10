@@ -36,9 +36,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   add hierarchical/parallel semantics? `AfsmTopologyState.parentId` exists as
   metadata, but the executable DSL and Mermaid renderer do not implement a
   nested runtime model.
-- Should invoked-service semantics for timers, polling, uploads, or sockets be
-  part of the first public release? The current v1 policy represents this work
-  as commands and requires explicit cancellation commands plus request ids.
+- After the bounded phase-owned invocation prototype, does real use justify
+  shipping it for uploads/timers/polling, or should Afsm document only
+  lifecycle cancellation and stale-result rejection? Full actor/service
+  semantics remain outside the selected prototype.
 
 ## Android Restoration
 
@@ -94,6 +95,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   production resolution requires backend idempotency or status lookup.
 - Diagnostics use `TypesOnly` by default. `IncludeValues` is an explicit
   privacy-risk opt-in; no raw value remains on the top-level diagnostic.
+- A queued `onExit` cancel command cannot interrupt the active sequential
+  command. Phase-owned keyed invocation is the selected prototype; it is not a
+  current runtime guarantee until implementation and verification pass.
 - Invalid hosted transitions throw by default; resilient hosts may opt into
   `AfsmInvalidTransitionPolicy.Record`.
 - Named no-transition condition cases appear in Flow graphs. `ignore(...)` and

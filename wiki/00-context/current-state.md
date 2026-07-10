@@ -98,9 +98,12 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 - `AfsmInvalidTransitionPolicy.Throw` and
   `AfsmCommandFailurePolicy.Throw` are the defaults. Event and command queues
   default to capacity `64` and fail fast on overflow.
-- Commands execute sequentially on a separate processor, so a suspended command
-  does not block later event reduction. Automatic phase-change cancellation is
-  not provided; features use explicit cancel commands and request ids.
+- Ordinary commands execute sequentially on a separate processor, so a
+  suspended command does not block later event reduction. The prior guidance
+  to emit an `onExit` cancel command is not effective because that command waits
+  behind the active sequential command. A bounded phase-owned `invoke` path is
+  now the selected pre-release prototype; request ids remain required for late
+  remote or non-cooperative results.
 - Effects have no replay by default. Late collectors do not receive old effects.
 - Runtime diagnostics are types-only by default. They expose stable codes,
   decision categories, fixed messages, type names, and Afsm-owned metadata.
