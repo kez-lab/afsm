@@ -228,6 +228,18 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
                 errors += "Duplicate phase declaration: $label."
             }
 
+        states.forEach { state ->
+            state.invocationKeys
+                .groupingBy { key -> key }
+                .eachCount()
+                .filterValues { count -> count > 1 }
+                .keys
+                .forEach { key ->
+                    errors +=
+                        "Duplicate invocation key ${key.value} in phase ${state.label}."
+                }
+        }
+
         if (states.none { it.matcher(initialPhase) != null }) {
             errors += "Initial phase ${afsmLabelForValue(initialPhase)} has no matching phase declaration."
         }
@@ -272,6 +284,7 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, F : Any, PS : 
     private val entryEffectLabels = mutableListOf<String>()
     private val exitCommandLabels = mutableListOf<String>()
     private val exitEffectLabels = mutableListOf<String>()
+    private val invocationKeys = mutableListOf<AfsmInvocationKey>()
     private val eventDefinitions = mutableListOf<AfsmEventDefinition<P, D, E, C, F>>()
 
     /**
@@ -301,15 +314,19 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, F : Any, PS : 
 
         entryCommandLabels += builtHandler.commandLabels
         entryEffectLabels += builtHandler.effectLabels
+        invocationKeys += builtHandler.invocationKeys
+        exitCommandLabels += builtHandler.invocationKeys.map { key ->
+            "cancel ${key.value}"
+        }
         entryHandlers += builtHandler.handler
     }
 
     /**
      * Declares actions that run when this phase is exited by a phase change.
      *
-     * The [handler] block is declaration code: calls such as
-     * `command(label = "CancelUpload") { ... }` record both graph metadata and
-     * runtime work in one place.
+     * The [handler] block is declaration code for short sequential cleanup and
+     * data/effect work. Long-running work declared with `onEnter { invoke(...) }`
+     * is cancelled automatically and does not need an exit command.
      *
      * Exit actions run before the accepted case actions, target payload phase
      * factory, and target phase `onEnter` handler. The execution order is:
@@ -399,6 +416,7 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, F : Any, PS : 
             entryEffectLabels = entryEffectLabels.toList(),
             exitCommandLabels = exitCommandLabels.toList(),
             exitEffectLabels = exitEffectLabels.toList(),
+            invocationKeys = invocationKeys.toList(),
             eventDefinitions = eventDefinitions.toList(),
         )
     }
@@ -910,6 +928,7 @@ public class AfsmEntryScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal
     private val actions = mutableListOf<(PS, AfsmDslExecution<P, D, C, F>) -> Unit>()
     private val commandLabels = mutableListOf<String>()
     private val effectLabels = mutableListOf<String>()
+    private val invocationKeys = mutableListOf<AfsmInvocationKey>()
 
     /**
      * Replaces data when the phase is entered.
@@ -955,6 +974,33 @@ public class AfsmEntryScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal
     }
 
     /**
+     * Starts long-running command work owned by the entered phase.
+     *
+     * The runtime executes the command in a tracked child job and cancels it
+     * automatically when the machine leaves this phase. Use ordinary [command]
+     * for short sequential work. Request ids are still required when remote or
+     * non-cooperative work can outlive local coroutine cancellation.
+     */
+    public fun invoke(
+        key: AfsmInvocationKey,
+        label: String? = null,
+        command: AfsmPhaseActionScope<P, D, PS>.() -> C,
+    ) {
+        invocationKeys += key
+        commandLabels += "invoke ${label ?: key.value}"
+        actions += { phase, execution ->
+            val data = AfsmPhaseActionScope<P, D, PS>(
+                phase = phase,
+                readData = { execution.data },
+            )
+            execution.commandInvocations += AfsmCommandInvocation.Start(
+                key = key,
+                command = data.command(),
+            )
+        }
+    }
+
+    /**
      * Emits a UI-side one-shot effect when the phase is entered.
      *
      * [label] is optional topology metadata. Prefer durable state for behavior
@@ -978,6 +1024,7 @@ public class AfsmEntryScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal
         return AfsmBuiltPhaseHandler(
             commandLabels = commandLabels.toList(),
             effectLabels = effectLabels.toList(),
+            invocationKeys = invocationKeys.toList(),
             handler = { phase, execution ->
                 val typedPhase = phaseMatcher(phase)
                 if (typedPhase != null) {
@@ -1022,7 +1069,11 @@ public class AfsmExitScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal 
     }
 
     /**
-     * Emits host-executed cleanup work when this phase is left.
+     * Emits short sequential host cleanup work when this phase is left.
+     *
+     * This command cannot interrupt an ordinary command already running in the
+     * sequential processor. Use `onEnter { invoke(...) }` when long-running
+     * work must be cancelled by leaving its owning phase.
      */
     public fun command(
         label: String? = null,
@@ -1059,6 +1110,7 @@ public class AfsmExitScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal 
         return AfsmBuiltPhaseHandler(
             commandLabels = commandLabels.toList(),
             effectLabels = effectLabels.toList(),
+            invocationKeys = emptyList(),
             handler = { phase, execution ->
                 val typedPhase = phaseMatcher(phase)
                 if (typedPhase != null) {
@@ -1074,6 +1126,7 @@ public class AfsmExitScope<P : Any, D : Any, C : Any, F : Any, PS : P> internal 
 internal data class AfsmBuiltPhaseHandler<P : Any, D : Any, C : Any, F : Any>(
     val commandLabels: List<String>,
     val effectLabels: List<String>,
+    val invocationKeys: List<AfsmInvocationKey>,
     val handler: AfsmEntryHandler<P, D, C, F>,
 )
 
@@ -1114,8 +1167,9 @@ public class AfsmTransitionScope<P : Any, D : Any, E : Any, C : Any, F : Any, PS
      * Emits host-executed work, such as a repository call or timer start.
      *
      * [command] is appended to the accepted transition output. Prefer emitting
-     * long-running work from `onEnter` when the work is tied to entering a phase;
-     * emit from a case when the work belongs specifically to one event branch.
+     * long-running cancellable work through `onEnter { invoke(...) }` when the
+     * work is owned by a phase; emit an ordinary command from a case when short
+     * sequential work belongs specifically to one event branch.
      */
     public fun command(command: C) {
         execution.commands += command
@@ -1142,6 +1196,7 @@ internal data class AfsmStateDefinition<P : Any, D : Any, E : Any, C : Any, F : 
     val entryEffectLabels: List<String>,
     val exitCommandLabels: List<String>,
     val exitEffectLabels: List<String>,
+    val invocationKeys: List<AfsmInvocationKey>,
     val eventDefinitions: List<AfsmEventDefinition<P, D, E, C, F>>,
 )
 
@@ -1263,12 +1318,14 @@ private open class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
                         state = nextState,
                         commands = execution.commands.toList(),
                         effects = execution.effects.toList(),
+                        commandInvocations = execution.commandInvocations.toList(),
                     )
                 } else {
                     AfsmTransition.handled(
                         state = nextState,
                         commands = execution.commands.toList(),
                         effects = execution.effects.toList(),
+                        commandInvocations = execution.commandInvocations.toList(),
                     )
                 }
             }
@@ -1292,6 +1349,7 @@ private open class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
                 state = nextState,
                 commands = execution.commands.toList(),
                 effects = execution.effects.toList(),
+                commandInvocations = execution.commandInvocations.toList(),
             )
         }
     }
@@ -1301,6 +1359,9 @@ private open class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
         sourcePhase: P,
         execution: AfsmDslExecution<P, D, C, F>,
     ) {
+        sourceDefinition.invocationKeys.forEach { key ->
+            execution.commandInvocations += AfsmCommandInvocation.Cancel(key)
+        }
         sourceDefinition.exitHandlers.forEach { handler ->
             handler(sourcePhase, execution)
         }
@@ -1331,6 +1392,7 @@ private class AfsmDefaultDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>
 internal class AfsmDslExecution<P : Any, D : Any, C : Any, F : Any>(
     var data: D,
     val commands: MutableList<C> = mutableListOf(),
+    val commandInvocations: MutableList<AfsmCommandInvocation<C>> = mutableListOf(),
     val effects: MutableList<F> = mutableListOf(),
 )
 

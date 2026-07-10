@@ -81,6 +81,7 @@ enum class ProductEditorPrimaryAction {
 enum class ProductEditorSecondaryAction {
     SaveDraft,
     ContinueEditing,
+    CancelUpload,
 }
 
 sealed interface ProductEditorEvent {
@@ -101,6 +102,8 @@ sealed interface ProductEditorEvent {
     data object PublishClicked : ProductEditorEvent
 
     data object DoneClicked : ProductEditorEvent
+
+    data object CancelUploadClicked : ProductEditorEvent
 
     data object DraftSaveCompleted : ProductEditorEvent
 
@@ -181,6 +184,7 @@ fun ProductEditorState.toRenderState(): ProductEditorRenderState {
             statusText = "Uploading mock images",
             fieldsEnabled = false,
             isProcessing = true,
+            secondaryAction = ProductEditorSecondaryAction.CancelUpload,
         )
 
         is ProductEditorPhase.ReviewSubmissionInProgress -> ProductEditorRenderState(

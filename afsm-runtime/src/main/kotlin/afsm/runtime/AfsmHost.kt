@@ -1,6 +1,8 @@
 package afsm.runtime
 
 import afsm.core.AfsmDecision
+import afsm.core.AfsmCommandInvocation
+import afsm.core.AfsmInvocationKey
 import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +41,8 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     private val commandProcessor: Job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
         processCommands()
     }
+    private val invocationScope = CoroutineScope(scope.coroutineContext + commandProcessor)
+    private val activeInvocations = mutableMapOf<AfsmInvocationKey, Job>()
 
     public val state: StateFlow<S> = _state.asStateFlow()
 
@@ -136,6 +140,19 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
             _effects.emit(effect)
         }
 
+        for (invocation in transition.commandInvocations) {
+            when (invocation) {
+                is AfsmCommandInvocation.Start -> startInvocation(
+                    state = transition.state,
+                    event = event,
+                    invocation = invocation,
+                    transition = transition,
+                )
+
+                is AfsmCommandInvocation.Cancel -> cancelInvocation(invocation.key)
+            }
+        }
+
         when (config.commandExecutionPolicy) {
             AfsmCommandExecutionPolicy.Sequential -> {
                 for (command in transition.commands) {
@@ -199,9 +216,15 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         event: E,
         command: C,
         transition: AfsmTransition<S, C, F>,
+        dispatchAllowed: () -> Boolean = { true },
     ) {
         try {
             commandHandler.handle(command) { nextEvent ->
+                if (!dispatchAllowed()) {
+                    throw CancellationException(
+                        "Afsm invocation result was rejected after cancellation.",
+                    )
+                }
                 enqueueCommandResultEvent(
                     state = state,
                     event = nextEvent,
@@ -230,6 +253,50 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
                 AfsmCommandFailurePolicy.Throw -> throw throwable
             }
         }
+    }
+
+    private fun startInvocation(
+        state: S,
+        event: E,
+        invocation: AfsmCommandInvocation.Start<C>,
+        transition: AfsmTransition<S, C, F>,
+    ) {
+        lateinit var job: Job
+        synchronized(activeInvocations) {
+            val existing = activeInvocations[invocation.key]
+            check(existing == null || !existing.isActive) {
+                "Afsm invocation key is already active: ${invocation.key.value}."
+            }
+
+            job = invocationScope.launch(start = CoroutineStart.LAZY) {
+                executeCommand(
+                    state = state,
+                    event = event,
+                    command = invocation.command,
+                    transition = transition,
+                    dispatchAllowed = { job.isActive },
+                )
+            }
+            activeInvocations[invocation.key] = job
+        }
+
+        job.invokeOnCompletion {
+            synchronized(activeInvocations) {
+                if (activeInvocations[invocation.key] === job) {
+                    activeInvocations.remove(invocation.key)
+                }
+            }
+        }
+        job.start()
+    }
+
+    private fun cancelInvocation(key: AfsmInvocationKey) {
+        val job = synchronized(activeInvocations) {
+            activeInvocations.remove(key)
+        }
+        job?.cancel(
+            CancellationException("Afsm phase-owned invocation was cancelled."),
+        )
     }
 
     private fun enqueueCommandResultEvent(

@@ -1,6 +1,7 @@
 package afsm.test
 
 import afsm.core.AfsmDecision
+import afsm.core.AfsmCommandInvocation
 import afsm.core.AfsmState
 import afsm.core.AfsmTransition
 import kotlin.test.assertEquals
@@ -137,6 +138,25 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoCommands(
 }
 
 /**
+ * Asserts the ordered phase-owned command invocation operations.
+ */
+public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertCommandInvocations(
+    vararg expected: AfsmCommandInvocation<C>,
+): AfsmTransition<S, C, F> {
+    assertEquals(expected.toList(), commandInvocations)
+    return this
+}
+
+/**
+ * Asserts that this transition emitted no phase-owned command invocation work.
+ */
+public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoCommandInvocations():
+    AfsmTransition<S, C, F> {
+    assertEquals(emptyList(), commandInvocations)
+    return this
+}
+
+/**
  * Asserts the ordered effects emitted by this transition.
  */
 public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertEffects(
@@ -161,6 +181,7 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoEffects()
 public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoOutputs():
     AfsmTransition<S, C, F> {
     assertNoCommands()
+    assertNoCommandInvocations()
     assertNoEffects()
     return this
 }

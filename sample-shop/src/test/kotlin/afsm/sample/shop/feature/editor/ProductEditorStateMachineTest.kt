@@ -1,7 +1,9 @@
 package afsm.sample.shop.feature.editor
 
+import afsm.core.AfsmCommandInvocation
 import afsm.core.AfsmTopologyTransition
 import afsm.core.toMmd
+import afsm.test.assertCommandInvocations
 import afsm.test.assertCommands
 import afsm.test.assertEffects
 import afsm.test.assertHandled
@@ -96,7 +98,13 @@ class ProductEditorStateMachineTest {
         result
             .assertTransitioned()
             .assertPhase(ProductEditorPhase.ImageUploadInProgress)
-            .assertCommands(ProductEditorCommand.StartImageUpload(validDraft))
+            .assertNoCommands()
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Start(
+                    key = productEditorImageUploadInvocationKey,
+                    command = ProductEditorCommand.StartImageUpload(validDraft),
+                ),
+            )
         assertEquals(validDraft, result.state.data.draft)
     }
 
@@ -160,6 +168,9 @@ class ProductEditorStateMachineTest {
         result
             .assertTransitioned()
             .assertPhase(ProductEditorPhase.EditingDraft)
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Cancel(productEditorImageUploadInvocationKey),
+            )
         assertEquals("Upload failed.", result.state.data.errorMessage)
         assertEquals(validDraft, result.state.data.draft)
     }
@@ -186,7 +197,32 @@ class ProductEditorStateMachineTest {
                     uploadToken = "upload-1",
                 ),
             )
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Cancel(productEditorImageUploadInvocationKey),
+            )
         assertEquals(reviewedDraft, result.state.data.draft)
+    }
+
+    @Test
+    fun `cancel upload returns to editing and cancels phase-owned invocation`() {
+        val state = productEditorState(
+            phase = ProductEditorPhase.ImageUploadInProgress,
+            data = ProductEditorData(draft = validDraft),
+        )
+
+        val result = machine.transition(
+            state = state,
+            event = ProductEditorEvent.CancelUploadClicked,
+        )
+
+        result
+            .assertTransitioned()
+            .assertPhase(ProductEditorPhase.EditingDraft)
+            .assertNoCommands()
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Cancel(productEditorImageUploadInvocationKey),
+            )
+        assertEquals(validDraft, result.state.data.draft)
     }
 
     @Test
@@ -224,7 +260,13 @@ class ProductEditorStateMachineTest {
         result
             .assertTransitioned()
             .assertPhase(ProductEditorPhase.ImageUploadInProgress)
-            .assertCommands(ProductEditorCommand.StartImageUpload(reviewedDraft))
+            .assertNoCommands()
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Start(
+                    key = productEditorImageUploadInvocationKey,
+                    command = ProductEditorCommand.StartImageUpload(reviewedDraft),
+                ),
+            )
         assertEquals(reviewedDraft, result.state.data.draft)
     }
 
@@ -303,7 +345,7 @@ class ProductEditorStateMachineTest {
     }
 
     @Test
-    fun `processing render states hide actions and disable draft fields`() {
+    fun `processing render states disable draft fields and only upload exposes cancel`() {
         val processingPhases = listOf(
             ProductEditorPhase.SavingDraft,
             ProductEditorPhase.ImageUploadInProgress,
@@ -321,7 +363,13 @@ class ProductEditorStateMachineTest {
             assertEquals(false, renderState.fieldsEnabled)
             assertEquals(true, renderState.isProcessing)
             assertEquals(null, renderState.primaryAction)
-            assertEquals(null, renderState.secondaryAction)
+            val expectedSecondaryAction = when (phase) {
+                ProductEditorPhase.ImageUploadInProgress ->
+                    ProductEditorSecondaryAction.CancelUpload
+
+                else -> null
+            }
+            assertEquals(expectedSecondaryAction, renderState.secondaryAction)
         }
     }
 
@@ -335,6 +383,13 @@ class ProductEditorStateMachineTest {
                 event = "SubmitClicked",
                 to = "ImageUploadInProgress",
                 conditionLabel = "valid draft",
+            ) in transitions,
+        )
+        assertTrue(
+            AfsmTopologyTransition(
+                from = "ImageUploadInProgress",
+                event = "CancelUploadClicked",
+                to = "EditingDraft",
             ) in transitions,
         )
         assertTrue(
@@ -361,7 +416,17 @@ class ProductEditorStateMachineTest {
 
         val mmd = machine.topology.toMmd()
 
+        val uploadState = machine.topology.states.single { state ->
+            state.id == "ImageUploadInProgress"
+        }
+        assertEquals(listOf("invoke StartImageUpload"), uploadState.entryCommandLabels)
+        assertEquals(
+            listOf("cancel product-editor/image-upload"),
+            uploadState.exitCommandLabels,
+        )
+
         assertTrue("EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]" in mmd)
+        assertTrue("ImageUploadInProgress --> EditingDraft: CancelUploadClicked" in mmd)
         assertTrue("Approved --> PublishInProgress: PublishClicked" in mmd)
     }
 }

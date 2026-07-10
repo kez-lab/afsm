@@ -6,7 +6,8 @@ public fun interface AfsmCommandHandler<C : Any, E : Any> {
      *
      * Command results should be converted back into events through [dispatch].
      * The runtime queues dispatched events instead of re-entering the state
-     * machine recursively.
+     * machine recursively. The same handler executes phase-owned invocations;
+     * those implementations must cooperate with coroutine cancellation.
      */
     public suspend fun handle(
         command: C,

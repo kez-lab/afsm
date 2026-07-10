@@ -13,19 +13,23 @@ public object Afsm {
     /**
      * Builds an accepted transition result for a custom reducer.
      *
-     * [state] must be the reducer's next state. [commands] and [effects] are
-     * outputs for the host/UI layer. Graphable DSL code should use
-     * `transitionTo(...)`, `command(...)`, and `effect(...)` instead.
+     * [state] must be the reducer's next state. [commands] are ordinary
+     * sequential host work, [commandInvocations] are keyed phase-owned work,
+     * and [effects] are UI output. Graphable DSL code should use
+     * `transitionTo(...)`, `command(...)`, `invoke(...)`, and `effect(...)`
+     * instead.
      */
     public fun <S : Any, C : Any, F : Any> transitioned(
         state: S,
         commands: List<C> = emptyList(),
         effects: List<F> = emptyList(),
+        commandInvocations: List<AfsmCommandInvocation<C>> = emptyList(),
     ): AfsmTransition<S, C, F> {
         return AfsmTransition.transitioned(
             state = state,
             commands = commands,
             effects = effects,
+            commandInvocations = commandInvocations,
         )
     }
 

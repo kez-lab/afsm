@@ -166,19 +166,40 @@ private fun ProductEditorActions(
     state: ProductEditorRenderState,
     onEvent: (ProductEditorEvent) -> Unit,
 ) {
+    val secondaryAction = state.secondaryAction
     if (state.isProcessing) {
-        Button(
-            enabled = false,
-            onClick = {},
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Processing...")
+        if (secondaryAction == null) {
+            Button(
+                enabled = false,
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Processing...")
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { onEvent(secondaryAction.toEvent()) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(secondaryAction.label)
+                }
+                Button(
+                    enabled = false,
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Processing...")
+                }
+            }
         }
         return
     }
 
     val primaryAction = state.primaryAction ?: return
-    val secondaryAction = state.secondaryAction
 
     if (secondaryAction == null) {
         Button(
@@ -220,6 +241,7 @@ private val ProductEditorSecondaryAction.label: String
     get() = when (this) {
         ProductEditorSecondaryAction.SaveDraft -> "Save draft"
         ProductEditorSecondaryAction.ContinueEditing -> "Continue editing"
+        ProductEditorSecondaryAction.CancelUpload -> "Cancel upload"
     }
 
 private fun ProductEditorPrimaryAction.toEvent(): ProductEditorEvent {
@@ -235,5 +257,6 @@ private fun ProductEditorSecondaryAction.toEvent(): ProductEditorEvent {
     return when (this) {
         ProductEditorSecondaryAction.SaveDraft -> ProductEditorEvent.SaveDraftClicked
         ProductEditorSecondaryAction.ContinueEditing -> ProductEditorEvent.ContinueEditingClicked
+        ProductEditorSecondaryAction.CancelUpload -> ProductEditorEvent.CancelUploadClicked
     }
 }

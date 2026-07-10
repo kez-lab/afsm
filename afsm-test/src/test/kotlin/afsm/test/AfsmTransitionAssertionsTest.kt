@@ -1,6 +1,8 @@
 package afsm.test
 
 import afsm.core.AfsmNoEffect
+import afsm.core.AfsmCommandInvocation
+import afsm.core.AfsmInvocationKey
 import afsm.core.AfsmState
 import afsm.core.AfsmTransition
 import kotlin.test.Test
@@ -13,11 +15,23 @@ class AfsmTransitionAssertionsTest {
             state = AfsmState(phase = Phase.Saving, data = Data(title = "Plan")),
             commands = listOf(Command.Save("Plan")),
             effects = listOf(Effect.ShowSaved),
+            commandInvocations = listOf(
+                AfsmCommandInvocation.Start(
+                    key = AfsmInvocationKey("draft/autosave"),
+                    command = Command.Save("Plan"),
+                ),
+            ),
         )
             .assertTransitioned()
             .assertPhase(Phase.Saving)
             .assertData(Data(title = "Plan"))
             .assertCommands(Command.Save("Plan"))
+            .assertCommandInvocations(
+                AfsmCommandInvocation.Start(
+                    key = AfsmInvocationKey("draft/autosave"),
+                    command = Command.Save("Plan"),
+                ),
+            )
             .assertEffects(Effect.ShowSaved)
     }
 

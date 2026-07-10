@@ -2,7 +2,11 @@ package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmGraph
 import afsm.core.AfsmDefaultMachine
+import afsm.core.AfsmInvocationKey
 import afsm.core.afsmMachine
+
+internal val productEditorImageUploadInvocationKey =
+    AfsmInvocationKey("product-editor/image-upload")
 
 @AfsmGraph(
     id = "ProductEditor",
@@ -114,9 +118,16 @@ internal val productEditorStateMachine:
 
         phase(ProductEditorPhase.ImageUploadInProgress) {
             onEnter {
-                command(label = "StartImageUpload") {
+                invoke(
+                    key = productEditorImageUploadInvocationKey,
+                    label = "StartImageUpload",
+                ) {
                     ProductEditorCommand.StartImageUpload(data.draft)
                 }
+            }
+
+            on<ProductEditorEvent.CancelUploadClicked> {
+                transitionTo(ProductEditorPhase.EditingDraft)
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
