@@ -1431,3 +1431,15 @@
 - Updated: `wiki/03-engineering/android-fsm-architecture.md`,
   `wiki/03-engineering/android-official-guidance.md`,
   `wiki/07-llm/wiki-lint-2026-07-11.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] experiment | ProductEditor upload execution boundary
+
+- Source: ProductEditor hardcoded `delay(250)`, current ViewModel cancellation
+  test, phase-owned invocation contract, Android integration goal, and Android
+  CLI device-discovery failure.
+- Action: Compared four execution boundaries and selected an injected
+  feature-owned suspend uploader with controllable cancellation/failure fakes
+  and an explicit remote-evidence boundary.
+- Updated: `wiki/03-engineering/product-editor-upload-boundary-experiment.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.

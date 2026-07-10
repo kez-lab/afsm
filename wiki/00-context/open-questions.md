@@ -46,6 +46,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Does a real flow need an explicit active-invocation capacity, or is a small
   statically declared key set plus host lifetime sufficient for the first
   release? Ordinary command queue capacity does not count invocation jobs.
+- After the injected ProductEditor mock proves the suspend boundary, which real
+  upload/SDK operation should serve as the production-like cancellation pilot,
+  and what remote cancellation/idempotency contract does it expose?
 
 ## Android Restoration
 

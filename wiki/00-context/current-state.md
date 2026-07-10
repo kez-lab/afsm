@@ -111,6 +111,10 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   Raw state/event/command/reason/throwable values require explicit
   `AfsmDiagnosticDataPolicy.IncludeValues` and grouped `diagnostic.values`
   access.
+- ProductEditor phase-owned cancellation is proven against the runtime and a
+  ViewModel delay, but the Android adapter still hardcodes that delay. A
+  feature-owned suspend uploader is the selected next experiment so repository
+  cancellation/failure mapping can be tested without timing races.
 
 ## Examples and Documentation
 

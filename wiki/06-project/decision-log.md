@@ -1524,3 +1524,27 @@ Consequences:
 - ProductEditor image upload is the first realistic proof.
 - Request ids and idempotency remain necessary for remote/non-cooperative work.
 - Full actor, hierarchy, restart, and service semantics remain deferred.
+
+## [2026-07-11] Inject the ProductEditor upload boundary
+
+Decision: Replace the hardcoded ViewModel upload delay/token with a
+feature-owned `ProductImageUploader` suspend interface. Keep invocation
+lifetime in `AfsmHost`, map normal uploader failures to typed machine events,
+and rethrow cancellation.
+
+Rationale:
+
+- Cancelling `delay(250)` is weaker evidence than cancelling an injected
+  repository/use-case boundary.
+- A controllable fake removes timing races and can prove start/cancel/failure
+  behavior directly.
+- ProductRepository owns persisted product records and should not absorb image
+  transfer concerns.
+- A generic Afsm upload/service API would overreach the current evidence.
+
+Consequences:
+
+- ProductEditorRoute explicitly supplies the sample mock uploader.
+- The mock uses a demo-only visibility delay; it is not runtime policy.
+- Machine topology and public Afsm APIs remain unchanged.
+- Real remote/SDK cancellation remains pilot evidence, not a repository claim.
