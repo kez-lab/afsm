@@ -13,7 +13,7 @@ import afsm.test.assertTransitioned
 import kotlin.test.Test
 
 class AuthStateMachineTest {
-    private val machine = AuthStateMachine
+    private val machine = authStateMachine
 
     @Test
     fun `register submit trims inputs enters loading and emits register command`() {

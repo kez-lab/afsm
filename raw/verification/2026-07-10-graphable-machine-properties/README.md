@@ -13,7 +13,7 @@ or factory function.
 - Private, member, mutable, computed/delegated, and non-machine properties are
   rejected.
 - Draft, Auth, Checkout, ProductEditor, and both external consumer graph
-  fixtures use direct machine properties.
+  fixtures use direct lower-camel machine properties.
 - Checkout continues to supply navigation `productId` through the host's
   explicit initial state.
 
@@ -40,6 +40,10 @@ artifact was published.
 The full local release gate also passed after documentation synchronization.
 The existing SDK XML compatibility and Gradle deprecation warnings remained
 non-blocking.
+
+After the fresh-use review renamed the machine values from PascalCase to Kotlin
+lower camel case, the full local release gate passed again. Graph ids and MMD
+file names remained unchanged.
 
 ## Evidence Boundary
 

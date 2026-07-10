@@ -8,7 +8,7 @@ import afsm.core.afsmMachine
     id = "Auth",
     fileName = "AuthStateMachine.mmd",
 )
-internal val AuthStateMachine:
+internal val authStateMachine:
     AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect> =
     afsmMachine {
         initial(

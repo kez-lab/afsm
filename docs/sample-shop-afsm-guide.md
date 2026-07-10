@@ -66,7 +66,7 @@ Flow:
 ```text
 TextField/Button interaction
 -> AuthEvent
--> AuthStateMachine.transition(state, event)
+-> authStateMachine.transition(state, event)
 -> AuthState + AuthCommand/AuthEffect
 -> AuthViewModel command handler
 -> AuthRepository
@@ -80,8 +80,8 @@ Contract:
 - `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthData>`.
 - `AuthPhase` contains the finite graph states: `Editing`, `Submitting`, and `Authenticated`.
 - `AuthData` keeps mode, form, and error data outside the finite phase; the terminal `Authenticated` phase carries its `UserSession` payload.
-- `AuthStateMachine` uses the executable DSL directly with `AuthPhase + AuthData`.
-- `AuthStateMachine` is annotated with `@AfsmGraph`; KSP discovers it and a Gradle export task writes `AuthStateMachine.mmd` through the generated registry.
+- `authStateMachine` uses the executable DSL directly with `AuthPhase + AuthData`.
+- `authStateMachine` is annotated with `@AfsmGraph`; KSP discovers it and a Gradle export task writes `AuthStateMachine.mmd` through the generated registry.
 - `AuthForm` keeps input data separate from the phase.
 - `AuthEvent` models user input and command results.
 - `AuthCommand` models async work the ViewModel must execute.
@@ -91,7 +91,7 @@ Key usage shape:
 
 ```kotlin
 private val host = afsmHost(
-    machine = AuthStateMachine,
+    machine = authStateMachine,
     commandHandler = { command: AuthCommand, dispatch ->
         // Execute repository work, then dispatch result events.
     },
@@ -140,7 +140,7 @@ Policy:
 - ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to data transformations so graph-relevant flow remains visible.
 - Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data, not as a second competing `transitionTo`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
-- `ProductEditorStateMachine` is the annotated executable machine property; no
+- `productEditorStateMachine` is the annotated executable machine property; no
   delegated object or separate factory is required.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated stable machine
   properties (and still supports eligible classes/objects).

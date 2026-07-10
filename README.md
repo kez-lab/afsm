@@ -109,7 +109,7 @@ sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-val DraftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmMachine<
     DraftState,
     DraftEvent,
     DraftCommand,
@@ -201,7 +201,7 @@ class DraftViewModel(
     private val repository: DraftRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = DraftStateMachine,
+        machine = draftStateMachine,
         commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
                 is DraftCommand.SaveDraft -> repository.save(command.title).fold(
@@ -232,7 +232,7 @@ If the starting state comes from navigation arguments, a deep link, repository r
 
 ```kotlin
 private val host = afsmHost(
-    machine = DraftStateMachine,
+    machine = draftStateMachine,
     initialState = restoredDraftState,
     commandHandler = draftCommandHandler,
 )
@@ -348,7 +348,7 @@ import org.junit.Test
 
 @Test
 fun `SaveClicked enters Saving and emits SaveDraft`() {
-    val result = DraftStateMachine.transition(
+    val result = draftStateMachine.transition(
         state = DraftState(
             phase = DraftPhase.Editing,
             data = DraftData(title = "Plan"),
@@ -449,7 +449,7 @@ See [docs/graph-generation.md](docs/graph-generation.md) for the full setup.
     id = "Draft",
     fileName = "DraftStateMachine.mmd",
 )
-val DraftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmMachine<
     DraftState,
     DraftEvent,
     DraftCommand,

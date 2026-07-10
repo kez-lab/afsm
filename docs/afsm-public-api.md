@@ -19,7 +19,7 @@ property:
 
 ```kotlin
 typealias ScreenState = AfsmState<ScreenPhase, ScreenData>
-val ScreenStateMachine:
+val screenStateMachine:
     AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect> =
     afsmMachine {
         // initial state and phase rules
@@ -31,7 +31,7 @@ their `Command` type. Machines that do not emit UI one-shot output should use
 `AfsmNoEffect` as their `Effect` type.
 
 ```kotlin
-val ToggleStateMachine:
+val toggleStateMachine:
     AfsmMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect> =
     afsmMachine {
         // no command or effect output
@@ -42,7 +42,7 @@ The ViewModel hosts that machine:
 
 ```kotlin
 private val host = afsmHost(
-    machine = ScreenStateMachine,
+    machine = screenStateMachine,
     commandHandler = { command: ScreenCommand, dispatch ->
         // repository/use-case work
         // dispatch(result event)
@@ -176,7 +176,7 @@ Use this at feature boundaries once the state type has been named.
 typealias ProductEditorState =
     AfsmState<ProductEditorPhase, ProductEditorData>
 
-val ProductEditorStateMachine:
+val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // initial state and phase rules
@@ -468,7 +468,7 @@ consumer-owned test fixtures.
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-val ProductEditorStateMachine:
+val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body

@@ -103,7 +103,7 @@ dependencies {
     id = "Checkout",
     fileName = "CheckoutStateMachine.mmd",
 )
-internal val CheckoutStateMachine:
+internal val checkoutStateMachine:
     AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
     afsmMachine {
         // executable machine body

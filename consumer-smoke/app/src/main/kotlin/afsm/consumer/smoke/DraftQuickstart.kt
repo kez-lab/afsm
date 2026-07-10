@@ -40,7 +40,7 @@ sealed interface DraftCommand {
     id = "DraftQuickstart",
     fileName = "DraftQuickstart.mmd",
 )
-val DraftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmMachine<
     DraftState,
     DraftEvent,
     DraftCommand,
@@ -117,10 +117,10 @@ fun draftStateFromSavedState(savedStateHandle: SavedStateHandle): DraftState {
 
 class DraftViewModel(
     private val repository: DraftRepository,
-    initialState: DraftState = DraftStateMachine.initialState,
+    initialState: DraftState = draftStateMachine.initialState,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = DraftStateMachine,
+        machine = draftStateMachine,
         initialState = initialState,
         commandHandler = { command: DraftCommand, dispatch ->
             when (command) {

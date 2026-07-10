@@ -15,7 +15,7 @@ class CheckoutViewModel(
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = CheckoutStateMachine,
+        machine = checkoutStateMachine,
         initialState = checkoutState(productId = productId),
         commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {

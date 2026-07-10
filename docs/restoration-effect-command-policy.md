@@ -219,7 +219,7 @@ class CheckoutViewModel(
     private val initialState = restoreCheckoutState(savedStateHandle)
 
     private val host = afsmHost(
-        machine = CheckoutStateMachine,
+        machine = checkoutStateMachine,
         initialState = initialState,
         commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {

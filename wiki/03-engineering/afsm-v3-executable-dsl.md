@@ -239,7 +239,7 @@ Omitting an event handler is not the same as `ignore(...)`.
 Target developer experience:
 
 ```kotlin
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
     initial(
@@ -348,7 +348,7 @@ data class ProductEditorData(
 Graphable machine excerpt:
 
 ```kotlin
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
     initial(ProductEditorPhase.EditingDraft, ProductEditorData())
@@ -517,7 +517,7 @@ fun productEditorState(
     data: ProductEditorData = ProductEditorData(),
 ): ProductEditorState = AfsmState(phase = phase, data = data)
 
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
@@ -547,7 +547,7 @@ class ProductEditorViewModel(
     private val productRepository: ProductRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = ProductEditorStateMachine,
+        machine = productEditorStateMachine,
         commandHandler = { command, dispatch ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
@@ -692,7 +692,7 @@ Update on 2026-05-10:
 - ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>`.
 - ProductEditor no longer needs phase/data adapter mapping. The later
   2026-07-10 first-use cleanup also removed the delegated object/factory;
-  `ProductEditorStateMachine` is now the executable machine property itself.
+  `productEditorStateMachine` is now the executable machine property itself.
 - Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.
 
 ### Step 5: Public API Decision

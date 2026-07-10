@@ -12,7 +12,7 @@ class AuthViewModel(
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = AuthStateMachine,
+        machine = authStateMachine,
         commandHandler = { command: AuthCommand, dispatch ->
             when (command) {
                 is AuthCommand.Login -> {

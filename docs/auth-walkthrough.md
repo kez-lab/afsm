@@ -95,7 +95,7 @@ Read `SubmitClicked` as one ordered branch:
 ```text
 AuthScreen
 -> AuthViewModel.onEvent(SubmitClicked)
--> AuthStateMachine validates the current data
+-> authStateMachine validates the current data
 -> updateData normalizes the form
 -> command(Login/Register) is emitted
 -> transitionTo(Submitting)
@@ -152,7 +152,7 @@ class AuthViewModel(
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = AuthStateMachine,
+        machine = authStateMachine,
         commandHandler = { command: AuthCommand, dispatch ->
             when (command) {
                 is AuthCommand.Login -> {

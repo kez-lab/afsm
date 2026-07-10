@@ -35,7 +35,7 @@ Use a property annotation plus the normal machine contract.
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
@@ -77,7 +77,7 @@ Current sample-shop usage is:
 
 ```kotlin
 @AfsmGraph
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         // executable machine body
@@ -94,7 +94,7 @@ With a second property:
 
 ```kotlin
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
-internal val CheckoutStateMachine:
+internal val checkoutStateMachine:
     AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
     afsmMachine {
         // executable machine body
@@ -107,7 +107,7 @@ The same task should also generate:
 sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 ```
 
-No Gradle task should need to know `ProductEditorStateMachine` by name.
+No Gradle task should need to know `productEditorStateMachine` by name.
 
 ## KSP Role
 
@@ -204,7 +204,7 @@ internal object AfsmGeneratedGraphRegistry : AfsmGraphRegistry {
         AfsmGraphEntry(
             id = "ProductEditor",
             fileName = "ProductEditorStateMachine.mmd",
-            createTopology = { afsm.sample.shop.feature.editor.ProductEditorStateMachine.topology },
+            createTopology = { afsm.sample.shop.feature.editor.productEditorStateMachine.topology },
         ),
     )
 }
@@ -324,7 +324,7 @@ task:
 
 ```text
 generateAfsmMmd
--> ProductEditorStateMachine.topology.toMmd()
+-> productEditorStateMachine.topology.toMmd()
 ```
 
 That spike has been replaced by the plugin-driven flow:
@@ -390,7 +390,7 @@ Avoid cross-module KSP aggregation at first. KSP should stay module-local.
 
 Implementation status:
 
-- Done: `@AfsmGraph` on `AuthStateMachine` and `ProductEditorStateMachine` compiles.
+- Done: `@AfsmGraph` on `authStateMachine` and `productEditorStateMachine` compiles.
 - Done: stable top-level machine properties generate direct registry references;
   private/member/mutable/computed/non-machine properties fail with focused
   diagnostics.

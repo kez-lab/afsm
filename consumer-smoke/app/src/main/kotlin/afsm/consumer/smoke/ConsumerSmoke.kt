@@ -35,7 +35,7 @@ internal typealias SmokeState = AfsmState<SmokePhase, SmokeData>
     id = "ConsumerSmoke",
     fileName = "ConsumerSmoke.mmd",
 )
-internal val ConsumerSmokeMachine:
+internal val consumerSmokeMachine:
     AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect> =
     afsmMachine {
         initial(
@@ -73,7 +73,7 @@ internal val ConsumerSmokeMachine:
 
 internal class ConsumerSmokeViewModel : ViewModel() {
     val host = afsmHost(
-        machine = ConsumerSmokeMachine,
+        machine = consumerSmokeMachine,
         commandHandler = { command: SmokeCommand, dispatch ->
             when (command) {
                 is SmokeCommand.SaveTitle -> dispatch(SmokeEvent.Saved)

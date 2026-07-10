@@ -1217,3 +1217,14 @@
   `wiki/03-engineering/afsm-first-use-api-experiment.md`,
   `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] implementation | Lower-camel machine properties
+
+- Source: Direct-property fresh-use review and Kotlin value naming decision.
+- Action: Renamed every graphable sample/consumer machine value and all current
+  code/document references to lower camel case, retained graph ids/file names,
+  and reran the full local release gate.
+- Updated: `afsm-graph-ksp/`, `sample-shop/`, `consumer-smoke/`, `README.md`,
+  `docs/`, `raw/verification/2026-07-10-graphable-machine-properties/README.md`,
+  `wiki/00-context/current-state.md`, `wiki/03-engineering/`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

@@ -18,7 +18,7 @@ class AfsmGraphProcessorFunctionalTest {
             import afsm.core.AfsmGraph
 
             @AfsmGraph(id = "Direct", fileName = "DirectMachine.mmd")
-            internal val DirectMachine: TestMachine = testMachine("Direct")
+            internal val directMachine: TestMachine = testMachine("Direct")
             """.trimIndent(),
         )
 
@@ -33,7 +33,7 @@ class AfsmGraphProcessorFunctionalTest {
         val registrySource = registry.readText()
         assertContains(registrySource, "id = \"Direct\"")
         assertContains(registrySource, "fileName = \"DirectMachine.mmd\"")
-        assertContains(registrySource, "createTopology = { example.DirectMachine.topology }")
+        assertContains(registrySource, "createTopology = { example.directMachine.topology }")
     }
 
     @Test

@@ -11,7 +11,7 @@ import org.junit.Test
 class DraftQuickstartTest {
     @Test
     fun saveClickedEntersSavingAndEmitsSaveDraft() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Editing,
                 data = DraftData(title = "Plan"),
@@ -27,7 +27,7 @@ class DraftQuickstartTest {
 
     @Test
     fun saveClickedWithMissingTitleStaysEditingWithMessage() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Editing,
                 data = DraftData(title = ""),
@@ -44,7 +44,7 @@ class DraftQuickstartTest {
 
     @Test
     fun saveFailureReturnsToEditingWithMessage() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Saving,
                 data = DraftData(title = "Plan"),

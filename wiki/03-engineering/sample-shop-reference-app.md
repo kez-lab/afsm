@@ -62,8 +62,8 @@ Auth files:
 Current implementation:
 
 - `AuthState` is a feature-local typealias for `AfsmState<AuthPhase, AuthData>`.
-- `AuthStateMachine` directly delegates to the executable DSL machine.
-- `AuthStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
+- `authStateMachine` is the executable DSL machine property directly.
+- `authStateMachine` is annotated with `@AfsmGraph` and writes `AuthStateMachine.mmd` through the generated registry.
 - `ignore(...)` and `invalid(...)` preserve existing ignored/invalid transition decisions without adding graph edges.
 - Route-level effects are collected with `CollectAfsmEffects(...)` from `afsm-compose`.
 
@@ -78,7 +78,7 @@ Flow:
 ```text
 User input
 -> AuthEvent
--> AuthStateMachine
+-> authStateMachine
 -> AuthCommand.Login/Register
 -> AuthViewModel command handler
 -> AuthRepository
@@ -136,7 +136,8 @@ The ProductEditor sample now uses the v3 executable DSL:
 - Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform data, not hide phase movement.
 - Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data; it should not be represented as a second competing `transitionTo`.
 - `onEnter` owns phase-entry command emission.
-- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL chart, which implements `AfsmGraphSource`.
+- `productEditorStateMachine` is the annotated DSL machine property and
+  implements `AfsmGraphSource` through `AfsmMachine`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - MMD output now includes the initial node, meaningful guard labels, command/effect labels, and entry-command notes.
@@ -190,8 +191,8 @@ events after completion are ignored.
 Checkout is now a graphable DSL machine:
 
 - `CheckoutState` is `AfsmState<CheckoutPhase, CheckoutData>`.
-- `CheckoutStateMachine` is an `@AfsmGraph` singleton `AfsmMachine`.
-- `CheckoutViewModel` uses `afsmHost(machine = CheckoutStateMachine, initialState = checkoutState(productId))`.
+- `checkoutStateMachine` is an `@AfsmGraph` top-level `AfsmMachine` property.
+- `CheckoutViewModel` uses `afsmHost(machine = checkoutStateMachine, initialState = checkoutState(productId))`.
 - `ProductLoading` emits `LoadProduct` from `onEnter`.
 - `PaymentInProgress(requestId)` emits `SubmitPayment` from `onEnter`.
 - `CheckoutState.toRenderState()` keeps Compose rendering independent from internal phase details.

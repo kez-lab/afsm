@@ -75,7 +75,8 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   `ignore`, and `invalid`.
 - A 2026-07-10 first-use experiment rejected partial generic calls and inferred
   generic feature superclasses, then implemented the smallest viable shape:
-  graphable features expose one explicitly typed top-level `val` machine.
+  graphable features expose one explicitly typed lower-camel top-level `val`
+  machine.
   Draft, Auth, Checkout, ProductEditor, and consumer fixtures no longer need a
   machine alias, delegated object, or factory. Fresh human preference remains
   unverified, so this is a pre-release authoring candidate rather than an API

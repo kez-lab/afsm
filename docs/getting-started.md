@@ -207,7 +207,7 @@ sealed interface DraftCommand {
 6. Write the machine in phase order.
 
 ```kotlin
-val DraftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmMachine<
     DraftState,
     DraftEvent,
     DraftCommand,
@@ -314,7 +314,7 @@ import org.junit.Test
 class DraftStateMachineTest {
     @Test
     fun saveClickedEntersSavingAndEmitsSaveDraft() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Editing,
                 data = DraftData(title = "Plan"),
@@ -330,7 +330,7 @@ class DraftStateMachineTest {
 
     @Test
     fun saveClickedWithMissingTitleStaysEditingWithMessage() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Editing,
                 data = DraftData(title = ""),
@@ -347,7 +347,7 @@ class DraftStateMachineTest {
 
     @Test
     fun saveFailureReturnsToEditingWithMessage() {
-        val result = DraftStateMachine.transition(
+        val result = draftStateMachine.transition(
             state = DraftState(
                 phase = DraftPhase.Saving,
                 data = DraftData(title = "Plan"),
@@ -388,10 +388,10 @@ interface DraftRepository {
 
 class DraftViewModel(
     private val repository: DraftRepository,
-    initialState: DraftState = DraftStateMachine.initialState,
+    initialState: DraftState = draftStateMachine.initialState,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = DraftStateMachine,
+        machine = draftStateMachine,
         initialState = initialState,
         commandHandler = { command: DraftCommand, dispatch ->
             when (command) {
@@ -548,7 +548,7 @@ sealed interface DraftEffect {
     data object CloseEditor : DraftEffect
 }
 
-val DraftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmMachine<
     DraftState,
     DraftEvent,
     DraftCommand,

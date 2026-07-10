@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ProductEditorStateMachineTest {
-    private val machine = ProductEditorStateMachine
+    private val machine = productEditorStateMachine
     private val validDraft = ProductDraft(
         form = ProductDraftForm(
             title = "Travel Mug",

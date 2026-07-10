@@ -2734,3 +2734,25 @@ Conclusion:
 - Candidate E is coherent across core, graph tooling, Android sample flows,
   ViewModel dynamic initial state, and a clean external consumer. Human
   first-use preference remains a separate evidence gap.
+
+## [2026-07-10] Lower-camel machine property names
+
+Change:
+
+- Renamed direct machine values to `draftStateMachine`, `authStateMachine`,
+  `checkoutStateMachine`, `productEditorStateMachine`, and
+  `consumerSmokeMachine`.
+- Updated ViewModels, transition tests, KSP generated-reference expectations,
+  public docs, and canonical wiki examples while retaining PascalCase source
+  file names, graph ids, and MMD output file names.
+
+Verification:
+
+```bash
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- The current declaration reads as Kotlin value composition without changing
+  runtime behavior or graph output.

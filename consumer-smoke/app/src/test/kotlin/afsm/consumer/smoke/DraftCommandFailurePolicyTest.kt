@@ -28,7 +28,7 @@ class DraftCommandFailurePolicyTest {
                 phase = DraftPhase.Editing,
                 data = DraftData(title = "Plan"),
             ),
-            reducer = DraftStateMachine,
+            reducer = draftStateMachine,
             commandHandler = AfsmCommandHandler { _: DraftCommand, _ ->
                 error("writer misconfigured")
             },

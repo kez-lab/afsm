@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CheckoutStateMachineTest {
-    private val machine = CheckoutStateMachine
+    private val machine = checkoutStateMachine
     private val product = Product(
         id = 7,
         title = "Studio Headphones",

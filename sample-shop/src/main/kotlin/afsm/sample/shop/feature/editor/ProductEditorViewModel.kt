@@ -13,7 +13,7 @@ class ProductEditorViewModel(
     private val sessionRepository: SessionRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = ProductEditorStateMachine,
+        machine = productEditorStateMachine,
         commandHandler = { command: ProductEditorCommand, dispatch ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {

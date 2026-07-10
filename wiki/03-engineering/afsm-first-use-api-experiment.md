@@ -80,7 +80,7 @@ Let initial phase/data values infer their types and declare event, command, and
 effect roots once:
 
 ```kotlin
-val DraftStateMachine = afsmMachine<
+val draftStateMachine = afsmMachine<
     DraftEvent,
     DraftCommand,
     AfsmNoEffect,
@@ -119,7 +119,7 @@ Infer phase/data from initial values and make the other roots named arguments
 instead of a generic tuple:
 
 ```kotlin
-val DraftStateMachine = afsmMachine(
+val draftStateMachine = afsmMachine(
     initialPhase = DraftPhase.Editing,
     initialData = DraftData(),
     events = afsmEvents<DraftEvent>(),

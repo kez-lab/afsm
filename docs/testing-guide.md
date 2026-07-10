@@ -125,7 +125,7 @@ feature's failure branch.
 ```kotlin
 @Test
 fun `save failure returns to Editing with message`() {
-    val result = DraftStateMachine.transition(
+    val result = draftStateMachine.transition(
         state = DraftState(
             phase = DraftPhase.Saving,
             data = DraftData(title = "Plan"),

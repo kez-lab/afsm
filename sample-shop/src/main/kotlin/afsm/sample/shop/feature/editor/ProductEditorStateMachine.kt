@@ -8,7 +8,7 @@ import afsm.core.afsmMachine
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-internal val ProductEditorStateMachine:
+internal val productEditorStateMachine:
     AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         initial(
