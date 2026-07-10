@@ -128,6 +128,12 @@ Before starting a pilot, record:
 - Upgrade command: `./scripts/verify-release-local.sh --warning-mode all` in
   this repository plus the pilot app's affected test suite.
 
+Use the canonical
+[production-like pilot protocol](../wiki/06-project/production-like-pilot-protocol.md)
+to pre-register the comparator, reviewer task, safety matrix, stop criteria,
+and measured rollback drill. A completed checklist without raw baseline and
+reviewer evidence is not a pilot result.
+
 Before counting repository readability as user evidence, run the no-coaching
 [Checkout first-use participant task](checkout-first-use-participant-task.md)
 with the facilitator rubric in

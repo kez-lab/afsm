@@ -185,6 +185,7 @@ that proof; they do not replace it.
 
 ## Current Evidence
 
+- [[production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]]
 - [[goal-evidence-baseline-2026-07-11|Goal Evidence Baseline 2026-07-11]]
 - [[goal-evidence-baseline-2026-07-10|Goal Evidence Baseline 2026-07-10]]
   (historical starting baseline)

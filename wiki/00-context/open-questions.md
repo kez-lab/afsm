@@ -74,7 +74,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Which Android developer will run the first no-prior-Afsm Checkout
   comprehension session, and who will facilitate without coaching?
 - Which production-like complex screen and owning team will serve as the first
-  isolated pilot, with an agreed comparison baseline and rollback owner?
+  isolated pilot, with an agreed comparison baseline and rollback owner? The
+  execution contract is ready in
+  [[../06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]],
+  but target, roles, commits, thresholds, and evidence permission remain open.
 
 ## Resolved Current Policies
 

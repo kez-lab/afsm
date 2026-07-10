@@ -1476,3 +1476,17 @@
   `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review.md`,
   `docs/release-readiness.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] planning | Production-like pilot evidence contract
+
+- Source: Long-term real-usability outcome, existing Checkout comprehension
+  protocol, release-readiness fragments, and absence of a pilot runbook beyond
+  repository fixtures.
+- Action: Defined same-feature baseline and reviewer comparison, safety matrix,
+  pre-registered success/stop gates, measured rollback, raw evidence layout,
+  and the external roles still required before a valid result exists.
+- Updated: `wiki/06-project/production-like-pilot-protocol.md`,
+  `wiki/06-project/long-term-goal.md`,
+  `wiki/06-project/decision-log.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `docs/release-readiness.md`,
+  `wiki/index.md`, `wiki/log.md`.

@@ -1548,3 +1548,29 @@ Consequences:
 - The mock uses a demo-only visibility delay; it is not runtime policy.
 - Machine topology and public Afsm APIs remain unchanged.
 - Real remote/SDK cancellation remains pilot evidence, not a repository claim.
+
+## [2026-07-11] Pre-register production-like pilot evidence
+
+Decision: Compare one isolated complex feature against its real pre-Afsm
+baseline using fixed requirements, pre-registered success and stop criteria,
+the same reviewer questions and safety scenarios, and a measured rollback
+drill. Repository fixtures and AI reviews cannot populate the result.
+
+Rationale:
+
+- A sample can prove behavior but cannot establish adoption benefit, authoring
+  friction, reviewer comprehension, or rollback feasibility for a real team.
+- Post-hoc success criteria and intentionally weak comparators would make a
+  pilot appear favorable without testing the product goal.
+- Safety and Android integration need scenario evidence, not line-count claims.
+- A failed or stopped pilot is valuable evidence when its baseline and reasons
+  are preserved.
+
+Consequences:
+
+- A target, owner, reviewer, rollback owner, baseline commit, thresholds, and
+  evidence permission must exist before implementation is counted as a pilot.
+- The result is classified as keep, revise, reject-for-feature, or invalid-pilot
+  only after immutable raw evidence exists.
+- One successful pilot does not freeze the API; repeated external evidence is
+  still needed for broad confidence.

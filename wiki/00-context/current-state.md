@@ -160,6 +160,10 @@ copy/paste source and is mirrored by the external consumer fixture.
   real Android developer session has been recorded yet. The post-restoration
   facilitator setup check passes; provisional time and score gates remain
   assumptions until the first human run.
+- A production-like pilot protocol now defines same-feature baseline capture,
+  pre-registered success/stop gates, reviewer comparison, safety evidence, and
+  a measured rollback drill. No target feature, owner, reviewer, baseline
+  commit, or pilot result has been recorded yet.
 - `CheckoutViewModelTest` now proves dynamic product id, product loading,
   repository command-result events, session failure, durable completion, and
   active effect delivery through the real sample ViewModel and production
