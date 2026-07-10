@@ -1332,3 +1332,14 @@
   `wiki/03-engineering/sample-shop-reference-app.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-07-10] experiment | Checkout process restoration
+
+- Source: Accepted stable-state restoration policy, current unconditional
+  Checkout startup event, missing SavedStateHandle integration, and payment
+  duplicate-work risk after process death.
+- Action: Compared four restoration shapes and selected a bounded feature-owned
+  prototype using minimal product/completed/pending keys plus an explicit
+  `PaymentStatusUnknown` phase.
+- Updated: `wiki/03-engineering/checkout-process-restoration-experiment.md`,
+  `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.

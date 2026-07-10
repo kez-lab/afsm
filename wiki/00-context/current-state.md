@@ -145,6 +145,10 @@ copy/paste source and is mirrored by the external consumer fixture.
   repository command-result events, session failure, durable completion, and
   active effect delivery through the real sample ViewModel and production
   repositories over fake DAO boundaries.
+- Checkout still lacks representative process-restoration behavior. A bounded
+  experiment now specifies minimal stable/pending `SavedStateHandle` keys and an
+  explicit `PaymentStatusUnknown` phase instead of serializing the full machine
+  state or silently retrying interrupted payment work.
 
 ## Remaining Decisions
 
