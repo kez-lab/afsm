@@ -23,6 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -195,8 +196,10 @@ class AfsmHostTest {
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmCommandQueueOverflowException>(exceptions.single())
-        assertEquals(PressureCommand.Third, thrown.diagnostic.command)
-        assertEquals("commandQueueCapacity=1", thrown.diagnostic.reason)
+        assertEquals(AfsmDiagnosticCode.CommandQueueOverflow, thrown.diagnostic.code)
+        assertEquals("PressureCommand", thrown.diagnostic.commandType)
+        assertEquals(mapOf("capacity" to "1"), thrown.diagnostic.metadata)
+        assertNull(thrown.diagnostic.values)
         assertEquals(PressureState.Queued, host.state.value)
         hostScope.cancel()
     }
@@ -244,9 +247,11 @@ class AfsmHostTest {
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmEventQueueOverflowException>(exceptions.single())
-        assertEquals(PressureEvent.ResultThree, thrown.diagnostic.event)
-        assertEquals(PressureCommand.First, thrown.diagnostic.command)
-        assertEquals("eventQueueCapacity=1", thrown.diagnostic.reason)
+        assertEquals(AfsmDiagnosticCode.CommandResultQueueOverflow, thrown.diagnostic.code)
+        assertEquals("PressureEvent", thrown.diagnostic.eventType)
+        assertEquals("PressureCommand", thrown.diagnostic.commandType)
+        assertEquals(mapOf("capacity" to "1"), thrown.diagnostic.metadata)
+        assertNull(thrown.diagnostic.values)
         assertEquals(PressureState.Queued, host.state.value)
         hostScope.cancel()
     }
@@ -306,9 +311,13 @@ class AfsmHostTest {
             "Expected no coroutine exceptions, got $exceptions",
         )
         assertEquals(PressureState.Queued, host.state.value)
-        assertEquals("eventQueueClosed", diagnostics.single().reason)
-        assertEquals(PressureEvent.ResultOne, diagnostics.single().event)
-        assertEquals(PressureCommand.First, diagnostics.single().command)
+        assertEquals(
+            AfsmDiagnosticCode.CommandResultDroppedHostClosed,
+            diagnostics.single().code,
+        )
+        assertEquals("PressureEvent", diagnostics.single().eventType)
+        assertEquals("PressureCommand", diagnostics.single().commandType)
+        assertNull(diagnostics.single().values)
         hostScope.cancel()
     }
 
@@ -453,7 +462,10 @@ class AfsmHostTest {
 
         assertEquals(DecisionState("current"), host.state.value)
         assertTrue(handledCommands.isEmpty())
-        assertEquals("result before request", diagnostics.single().reason)
+        assertEquals(AfsmDiagnosticCode.InvalidTransition, diagnostics.single().code)
+        assertEquals(AfsmDiagnosticDecision.Invalid, diagnostics.single().decision)
+        assertEquals("Invalid Afsm transition.", diagnostics.single().message)
+        assertNull(diagnostics.single().values)
         hostScope.cancel()
     }
 
@@ -484,7 +496,9 @@ class AfsmHostTest {
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmInvalidTransitionException>(exceptions.single())
-        assertEquals("programmer error", thrown.diagnostic.reason)
+        assertEquals(AfsmDiagnosticCode.InvalidTransition, thrown.diagnostic.code)
+        assertEquals("Invalid Afsm transition.", thrown.diagnostic.message)
+        assertNull(thrown.diagnostic.values)
         hostScope.cancel()
     }
 
@@ -523,8 +537,10 @@ class AfsmHostTest {
         advanceUntilIdle()
 
         assertEquals(DecisionState("afterSecond"), host.state.value)
-        assertEquals(DecisionCommand.ShouldNotRun, diagnostics.single().command)
-        assertEquals("command boom", diagnostics.single().reason)
+        assertEquals(AfsmDiagnosticCode.CommandFailure, diagnostics.single().code)
+        assertEquals("DecisionCommand", diagnostics.single().commandType)
+        assertEquals("IllegalStateException", diagnostics.single().failureType)
+        assertNull(diagnostics.single().values)
         hostScope.cancel()
     }
 

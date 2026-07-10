@@ -47,7 +47,15 @@ public class AfsmConfig(
      */
     public val commandQueueCapacity: Int = 64,
     /**
-     * Receives diagnostics for recorded invalid transitions and defensive drops.
+     * Controls whether diagnostics retain raw domain values.
+     *
+     * [AfsmDiagnosticDataPolicy.TypesOnly] is the privacy-safe default.
+     */
+    public val diagnosticDataPolicy: AfsmDiagnosticDataPolicy =
+        AfsmDiagnosticDataPolicy.TypesOnly,
+    /**
+     * Receives diagnostics for recorded invalid transitions, command failures,
+     * queue failures, and defensive drops.
      */
     public val logger: AfsmLogger =
         AfsmLogger.None,

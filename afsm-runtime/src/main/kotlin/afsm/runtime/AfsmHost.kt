@@ -167,13 +167,17 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
             return
         }
 
-        val diagnostic = AfsmDiagnostic(
+        val diagnostic = createDiagnostic(
+            code = AfsmDiagnosticCode.CommandQueueOverflow,
             state = state,
             event = event,
             decision = transition.decision,
             reason = "commandQueueCapacity=${config.commandQueueCapacity}",
             message = "Afsm command queue rejected a command.",
             command = command,
+            metadata = mapOf(
+                "capacity" to config.commandQueueCapacity.toString(),
+            ),
         )
 
         throw AfsmCommandQueueOverflowException(diagnostic)
@@ -210,7 +214,8 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         } catch (throwable: AfsmEventQueueOverflowException) {
             throw throwable
         } catch (throwable: Throwable) {
-            val diagnostic = AfsmDiagnostic(
+            val diagnostic = createDiagnostic(
+                code = AfsmDiagnosticCode.CommandFailure,
                 state = state,
                 event = event,
                 decision = transition.decision,
@@ -240,7 +245,8 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
 
         if (result.isClosed) {
             config.logger.log(
-                AfsmDiagnostic(
+                createDiagnostic(
+                    code = AfsmDiagnosticCode.CommandResultDroppedHostClosed,
                     state = state,
                     event = event,
                     decision = transition.decision,
@@ -252,13 +258,17 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
             return
         }
 
-        val diagnostic = AfsmDiagnostic(
+        val diagnostic = createDiagnostic(
+            code = AfsmDiagnosticCode.CommandResultQueueOverflow,
             state = state,
             event = event,
             decision = transition.decision,
             reason = "eventQueueCapacity=${config.eventQueueCapacity}",
             message = "Afsm event queue rejected a command result event.",
             command = command,
+            metadata = mapOf(
+                "capacity" to config.eventQueueCapacity.toString(),
+            ),
         )
 
         throw AfsmEventQueueOverflowException(diagnostic)
@@ -278,7 +288,8 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         }
 
         config.logger.log(
-            AfsmDiagnostic(
+            createDiagnostic(
+                code = AfsmDiagnosticCode.IgnoredTransitionOutputDropped,
                 state = state,
                 event = event,
                 decision = transition.decision,
@@ -294,12 +305,13 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         transition: AfsmTransition<S, C, F>,
     ) {
         val decision = transition.decision as AfsmDecision.Invalid
-        val diagnostic = AfsmDiagnostic(
+        val diagnostic = createDiagnostic(
+            code = AfsmDiagnosticCode.InvalidTransition,
             state = state,
             event = event,
             decision = decision,
             reason = decision.reason,
-            message = decision.reason ?: "Invalid Afsm transition.",
+            message = "Invalid Afsm transition.",
         )
 
         when (config.invalidTransitionPolicy) {
@@ -307,6 +319,52 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
             AfsmInvalidTransitionPolicy.Throw -> throw AfsmInvalidTransitionException(diagnostic)
         }
     }
+
+    private fun createDiagnostic(
+        code: AfsmDiagnosticCode,
+        state: S,
+        event: E,
+        decision: AfsmDecision,
+        message: String,
+        command: C? = null,
+        throwable: Throwable? = null,
+        reason: String? = null,
+        metadata: Map<String, String> = emptyMap(),
+    ): AfsmDiagnostic {
+        val values = when (config.diagnosticDataPolicy) {
+            AfsmDiagnosticDataPolicy.TypesOnly -> null
+            AfsmDiagnosticDataPolicy.IncludeValues -> AfsmDiagnosticValues(
+                state = state,
+                event = event,
+                command = command,
+                reason = reason,
+                throwable = throwable,
+            )
+        }
+
+        return AfsmDiagnostic(
+            code = code,
+            decision = decision.toDiagnosticDecision(),
+            message = message,
+            stateType = state.safeTypeName(),
+            eventType = event.safeTypeName(),
+            commandType = command?.safeTypeName(),
+            failureType = throwable?.safeTypeName(),
+            metadata = metadata.toMap(),
+            values = values,
+        )
+    }
+}
+
+private fun AfsmDecision.toDiagnosticDecision(): AfsmDiagnosticDecision = when (this) {
+    AfsmDecision.Transitioned -> AfsmDiagnosticDecision.Transitioned
+    is AfsmDecision.Handled -> AfsmDiagnosticDecision.Handled
+    is AfsmDecision.Ignored -> AfsmDiagnosticDecision.Ignored
+    is AfsmDecision.Invalid -> AfsmDiagnosticDecision.Invalid
+}
+
+private fun Any.safeTypeName(): String {
+    return this::class.simpleName ?: "Unknown"
 }
 
 private data class PendingCommand<S : Any, E : Any, C : Any, F : Any>(

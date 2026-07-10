@@ -5,6 +5,7 @@ import afsm.runtime.AfsmCommandFailurePolicy
 import afsm.runtime.AfsmCommandHandler
 import afsm.runtime.AfsmConfig
 import afsm.runtime.AfsmDiagnostic
+import afsm.runtime.AfsmDiagnosticCode
 import afsm.runtime.AfsmHost
 import afsm.runtime.AfsmLogger
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +16,8 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -46,8 +49,12 @@ class DraftCommandFailurePolicyTest {
 
         assertEquals(DraftPhase.Saving, host.state.value.phase)
         assertEquals(DraftData(title = "Plan"), host.state.value.data)
-        assertEquals(DraftCommand.SaveDraft("Plan"), diagnostics.single().command)
-        assertEquals("writer misconfigured", diagnostics.single().reason)
+        assertEquals(AfsmDiagnosticCode.CommandFailure, diagnostics.single().code)
+        assertEquals("SaveDraft", diagnostics.single().commandType)
+        assertEquals("IllegalStateException", diagnostics.single().failureType)
+        assertNull(diagnostics.single().values)
+        assertFalse(diagnostics.single().toString().contains("Plan"))
+        assertFalse(diagnostics.single().message.contains("writer misconfigured"))
         hostScope.cancel()
     }
 

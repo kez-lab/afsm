@@ -29,11 +29,12 @@ public final class afsm/runtime/AfsmCommandQueueOverflowException : java/lang/Il
 
 public final class afsm/runtime/AfsmConfig {
 	public fun <init> ()V
-	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmLogger;)V
-	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)V
+	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCommandExecutionPolicy ()Lafsm/runtime/AfsmCommandExecutionPolicy;
 	public final fun getCommandFailurePolicy ()Lafsm/runtime/AfsmCommandFailurePolicy;
 	public final fun getCommandQueueCapacity ()I
+	public final fun getDiagnosticDataPolicy ()Lafsm/runtime/AfsmDiagnosticDataPolicy;
 	public final fun getEffectDelivery ()Lafsm/runtime/AfsmEffectDelivery;
 	public final fun getEventQueueCapacity ()I
 	public final fun getInvalidTransitionPolicy ()Lafsm/runtime/AfsmInvalidTransitionPolicy;
@@ -41,12 +42,50 @@ public final class afsm/runtime/AfsmConfig {
 }
 
 public final class afsm/runtime/AfsmDiagnostic {
-	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Lafsm/core/AfsmDecision;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;)V
-	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Object;Lafsm/core/AfsmDecision;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getCommand ()Ljava/lang/Object;
-	public final fun getDecision ()Lafsm/core/AfsmDecision;
-	public final fun getEvent ()Ljava/lang/Object;
+	public final fun getCode ()Lafsm/runtime/AfsmDiagnosticCode;
+	public final fun getCommandType ()Ljava/lang/String;
+	public final fun getDecision ()Lafsm/runtime/AfsmDiagnosticDecision;
+	public final fun getEventType ()Ljava/lang/String;
+	public final fun getFailureType ()Ljava/lang/String;
 	public final fun getMessage ()Ljava/lang/String;
+	public final fun getMetadata ()Ljava/util/Map;
+	public final fun getStateType ()Ljava/lang/String;
+	public final fun getValues ()Lafsm/runtime/AfsmDiagnosticValues;
+}
+
+public final class afsm/runtime/AfsmDiagnosticCode : java/lang/Enum {
+	public static final field CommandFailure Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field CommandQueueOverflow Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field CommandResultDroppedHostClosed Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field CommandResultQueueOverflow Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field IgnoredTransitionOutputDropped Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field InvalidTransition Lafsm/runtime/AfsmDiagnosticCode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmDiagnosticCode;
+	public static fun values ()[Lafsm/runtime/AfsmDiagnosticCode;
+}
+
+public final class afsm/runtime/AfsmDiagnosticDataPolicy : java/lang/Enum {
+	public static final field IncludeValues Lafsm/runtime/AfsmDiagnosticDataPolicy;
+	public static final field TypesOnly Lafsm/runtime/AfsmDiagnosticDataPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmDiagnosticDataPolicy;
+	public static fun values ()[Lafsm/runtime/AfsmDiagnosticDataPolicy;
+}
+
+public final class afsm/runtime/AfsmDiagnosticDecision : java/lang/Enum {
+	public static final field Handled Lafsm/runtime/AfsmDiagnosticDecision;
+	public static final field Ignored Lafsm/runtime/AfsmDiagnosticDecision;
+	public static final field Invalid Lafsm/runtime/AfsmDiagnosticDecision;
+	public static final field Transitioned Lafsm/runtime/AfsmDiagnosticDecision;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmDiagnosticDecision;
+	public static fun values ()[Lafsm/runtime/AfsmDiagnosticDecision;
+}
+
+public final class afsm/runtime/AfsmDiagnosticValues {
+	public final fun getCommand ()Ljava/lang/Object;
+	public final fun getEvent ()Ljava/lang/Object;
 	public final fun getReason ()Ljava/lang/String;
 	public final fun getState ()Ljava/lang/Object;
 	public final fun getThrowable ()Ljava/lang/Throwable;
