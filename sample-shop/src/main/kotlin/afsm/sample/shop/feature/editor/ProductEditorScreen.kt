@@ -39,6 +39,7 @@ fun ProductEditorRoute(
             ProductEditorViewModel(
                 productRepository = container.productRepository,
                 sessionRepository = container.sessionRepository,
+                imageUploader = MockProductImageUploader(),
             )
         }
     }

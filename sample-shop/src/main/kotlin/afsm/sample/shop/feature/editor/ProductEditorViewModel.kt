@@ -7,10 +7,12 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.coroutines.cancellation.CancellationException
 
 class ProductEditorViewModel(
     private val productRepository: ProductRepository,
     private val sessionRepository: SessionRepository,
+    private val imageUploader: ProductImageUploader,
 ) : ViewModel() {
     private val host = afsmHost(
         machine = productEditorStateMachine,
@@ -22,8 +24,18 @@ class ProductEditorViewModel(
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {
-                    delay(250)
-                    dispatch(ProductEditorEvent.ImageUploadSucceeded("mock-upload-token"))
+                    try {
+                        val uploadToken = imageUploader.upload(command.draft)
+                        dispatch(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
+                    } catch (cancellation: CancellationException) {
+                        throw cancellation
+                    } catch (_: Exception) {
+                        dispatch(
+                            ProductEditorEvent.ImageUploadFailed(
+                                message = "Image upload failed.",
+                            ),
+                        )
+                    }
                 }
 
                 is ProductEditorCommand.StartReviewSubmission -> {
