@@ -1148,3 +1148,14 @@
   `wiki/01-product/android-fsm-library-strategy.md`,
   `wiki/00-context/current-state.md`, `AGENTS.md`, `wiki/index.md`,
   `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-07-10] goal | Evidence baseline and first redesign cycle
+
+- Source: Current APIs, Draft/Auth/Checkout fixtures, public getting-started
+  path, consumer smoke, graph/runtime verification, and prior usability review
+  findings.
+- Action: Audited all eight long-term outcomes, separated compile/test evidence
+  from unproven real usability, and selected repeated first-use generic/
+  typealias/delegation ceremony as the first redesign experiment.
+- Updated: `wiki/06-project/goal-evidence-baseline-2026-07-10.md`,
+  `wiki/06-project/long-term-goal.md`, `wiki/index.md`, `wiki/log.md`.

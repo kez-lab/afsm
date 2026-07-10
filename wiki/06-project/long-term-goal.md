@@ -182,3 +182,7 @@ developers can use Afsm to express representative complex flows more readably
 and safely than the practical alternatives, with acceptable authoring cost and
 idiomatic Android integration. API stabilization and release preparation follow
 that proof; they do not replace it.
+
+## Current Evidence
+
+- [[goal-evidence-baseline-2026-07-10|Goal Evidence Baseline 2026-07-10]]
