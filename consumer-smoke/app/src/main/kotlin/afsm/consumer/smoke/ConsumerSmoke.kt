@@ -31,16 +31,13 @@ internal sealed interface SmokeCommand {
 
 internal typealias SmokeState = AfsmState<SmokePhase, SmokeData>
 
-private typealias SmokeMachine = AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect>
-
 @AfsmGraph(
     id = "ConsumerSmoke",
     fileName = "ConsumerSmoke.mmd",
 )
-internal object ConsumerSmokeMachine : SmokeMachine by smokeMachine()
-
-private fun smokeMachine(): SmokeMachine {
-    return afsmMachine {
+internal val ConsumerSmokeMachine:
+    AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect> =
+    afsmMachine {
         initial(
             phase = SmokePhase.Editing,
             data = SmokeData(),
@@ -72,7 +69,6 @@ private fun smokeMachine(): SmokeMachine {
 
         phase(SmokePhase.Saved) {
         }
-    }
 }
 
 internal class ConsumerSmokeViewModel : ViewModel() {

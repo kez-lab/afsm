@@ -4,17 +4,13 @@ import afsm.core.AfsmGraph
 import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
 
-private typealias ProductEditorMachine =
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
-
 @AfsmGraph(
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-internal object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
-
-private fun productEditorMachine(): ProductEditorMachine {
-    return afsmMachine {
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
         initial(
             phase = ProductEditorPhase.EditingDraft,
             data = ProductEditorData(),
@@ -260,7 +256,6 @@ private fun productEditorMachine(): ProductEditorMachine {
                 effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
             }
         }
-    }
 }
 
 private fun ProductEditorData.updateDraft(
