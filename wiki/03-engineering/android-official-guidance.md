@@ -1,6 +1,6 @@
 ---
 title: Android Official Guidance
-updated: 2026-05-01
+updated: 2026-07-11
 ---
 
 # Android Official Guidance
@@ -29,7 +29,7 @@ The official direction is:
 | State production rule engine | Plain Kotlin `StateMachine` |
 | User event | External `Event` |
 | Repository/use case response | Internal `Event` |
-| Async work request | `Command` |
+| Async work request | Sequential `Command` or phase-owned command invocation |
 | UI-renderable output | `StateFlow<State>` |
 | One-shot UI behavior | Optional `Effect` or UI-local state |
 
@@ -41,7 +41,7 @@ The official direction is:
 
 - expose screen state,
 - receive events,
-- execute commands in `viewModelScope`,
+- provide command execution through an `AfsmHost` owned by `viewModelScope`,
 - integrate `SavedStateHandle`,
 - call use cases or repositories,
 - feed results back to the FSM as events.
@@ -108,13 +108,16 @@ Do not move animation or UI element state operations into `viewModelScope` when 
 
 Command execution in this project should follow Android coroutine guidance:
 
-- `ViewModel` creates coroutines for business work triggered by UI events.
+- The ViewModel-owned `AfsmHost` creates coroutines for business work triggered
+  by UI events.
 - Use `viewModelScope` for work that should live as long as the screen-level state holder.
 - Use lifecycle-aware collection such as `collectAsStateWithLifecycle` in Compose or `repeatOnLifecycle` in Views/Fragments.
 - Inject dispatchers into data/domain classes instead of hardcoding them.
 - Suspend functions exposed by data/domain layers should be main-safe.
 - Do not use `GlobalScope` for screen-bound work.
 - Do not swallow `CancellationException`; rethrow it if caught.
+- Phase-owned `invoke` work may use cooperative cancellation on phase exit, but
+  local coroutine cancellation does not prove a remote operation stopped.
 
 ## Testing Rule
 

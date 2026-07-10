@@ -1420,3 +1420,14 @@
   `wiki/03-engineering/`, `wiki/06-project/implementation-log.md`,
   `wiki/08-meetings/2026-07-11-afsm-phase-owned-invocation-fresh-use-review.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] lint | Architecture and invocation Wiki parity
+
+- Source: Current core/runtime/ViewModel source, API dumps, public API guide,
+  ProductEditor invocation evidence, and required architecture retrieval pages.
+- Action: Corrected the canonical transition/host boundary, synchronized
+  Android coroutine mapping with phase-owned invocation, preserved historical
+  pages as historical, and recorded the missing device/human evidence.
+- Updated: `wiki/03-engineering/android-fsm-architecture.md`,
+  `wiki/03-engineering/android-official-guidance.md`,
+  `wiki/07-llm/wiki-lint-2026-07-11.md`, `wiki/index.md`, `wiki/log.md`.

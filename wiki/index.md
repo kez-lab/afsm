@@ -67,6 +67,7 @@ updated: 2026-07-11
 - [[07-llm/ai-engineering-guardrails|AI Engineering Guardrails]] - Project-scoped software engineering, TDD, and verification integrity rules for AI agents.
 - [[07-llm/codex-project-workflow|Codex Project Workflow]] - Required LLM Wiki retrieval, current-evidence verification, and change synchronization workflow for all Codex project tasks.
 - [[07-llm/wiki-lint-2026-07-10|Wiki Lint 2026-07-10]] - Code-backed lint report for current state, open questions, CI policy drift, and index health.
+- [[07-llm/wiki-lint-2026-07-11|Wiki Lint 2026-07-11]] - Code-backed lint of canonical architecture, host/ViewModel ownership, phase-owned invocation, historical labeling, and device-evidence gaps.
 - [[07-llm/wiki-maintenance-guide|Wiki Maintenance Guide]] - How this project uses the LLM Wiki pattern.
 
 ## Meetings
