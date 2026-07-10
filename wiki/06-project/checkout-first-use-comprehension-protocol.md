@@ -1,7 +1,7 @@
 ---
 title: Checkout First-Use Comprehension Protocol
 updated: 2026-07-10
-status: ready-for-human-run
+status: dry-run-passed-awaiting-human
 ---
 
 # Checkout First-Use Comprehension Protocol
@@ -120,3 +120,11 @@ After the comprehension session, run a production-like pilot on one isolated
 complex feature module. Record the pre-Afsm mutation sites and flow tests,
 implementation effort, review comprehension, defects or missed transitions,
 rollback cost, and whether the team would keep the design.
+
+## Preparation Dry Run
+
+The facilitator setup passed on 2026-07-10 at `bdaf6a9`: graph generation
+succeeded, all three files were present, ten timed questions were detected, and
+every rubric area had evidence in the constrained artifacts. No human answers
+or scores were produced. See
+`raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/README.md`.

@@ -138,8 +138,9 @@ copy/paste source and is mirrored by the external consumer fixture.
   `raw/verification/`; it proves the dated sample journeys it records, not the
   state of every later commit.
 - A no-coaching Checkout first-use task and facilitator rubric are ready, but no
-  real Android developer session has been recorded yet. Their provisional time
-  and score gates remain assumptions until the first human run.
+  real Android developer session has been recorded yet. The facilitator setup
+  dry run passes; provisional time and score gates remain assumptions until the
+  first human run.
 
 ## Remaining Decisions
 

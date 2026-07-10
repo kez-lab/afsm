@@ -1294,3 +1294,15 @@
   `wiki/01-product/android-fsm-library-strategy.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] verification | First-use protocol dry run
+
+- Source: Facilitator graph-generation command, participant task file checks,
+  and rubric-evidence checks at `bdaf6a9`.
+- Action: Verified that the protocol can be prepared without changing the
+  worktree and explicitly recorded that no human result was produced.
+- Updated:
+  `raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/README.md`,
+  `raw/README.md`,
+  `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
+  `wiki/00-context/current-state.md`, `wiki/log.md`.
