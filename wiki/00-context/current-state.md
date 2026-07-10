@@ -141,6 +141,10 @@ copy/paste source and is mirrored by the external consumer fixture.
   real Android developer session has been recorded yet. The facilitator setup
   dry run passes; provisional time and score gates remain assumptions until the
   first human run.
+- Checkout machine behavior is covered, but the repository sample does not yet
+  have a `CheckoutViewModelTest` proving dynamic product id and command-result
+  wiring through the real Android adapter. A focused verification slice is
+  specified before adding tests.
 
 ## Remaining Decisions
 

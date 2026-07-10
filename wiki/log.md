@@ -1306,3 +1306,13 @@
   `raw/README.md`,
   `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
   `wiki/00-context/current-state.md`, `wiki/log.md`.
+
+## [2026-07-10] plan | Checkout ViewModel integration verification
+
+- Source: Long-term Android-integration outcome, dynamic initial-state type
+  split, sample Checkout ViewModel, and absence of a feature ViewModel test.
+- Action: Classified the gap as missing integration evidence and specified four
+  focused JVM scenarios over real repositories with fake DAO boundaries.
+- Updated:
+  `wiki/03-engineering/checkout-viewmodel-integration-verification.md`,
+  `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
