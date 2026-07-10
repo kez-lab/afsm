@@ -32,6 +32,8 @@ The smoke build covers:
 - Draft command failure policy coverage for unexpected handler exceptions
 - Published-runtime diagnostic privacy coverage: the default command-failure
   record exposes safe code/type fields and has no raw Draft values
+- Published `invoke` DSL, runtime phase-exit cancellation, and
+  `assertCommandInvocations` coverage from a separate upload fixture
 - A local ViewModel test fixture boundary: `afsm-test` supplies transition
   assertions, while dispatcher rules and fake repositories live in the
   consuming app's tests

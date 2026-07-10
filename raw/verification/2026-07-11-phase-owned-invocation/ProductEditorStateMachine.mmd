@@ -1,0 +1,47 @@
+stateDiagram-v2
+  [*] --> EditingDraft
+  state EditingDraft
+  state SavingDraft
+  note right of SavingDraft
+    entry / SaveDraft
+  end note
+  state DraftSaved
+  state ImageUploadInProgress
+  note right of ImageUploadInProgress
+    entry / invoke StartImageUpload
+    exit / cancel product-editor/image-upload
+  end note
+  state ReviewSubmissionInProgress
+  note right of ReviewSubmissionInProgress
+    entry / StartReviewSubmission
+  end note
+  state Rejected
+  state Approved
+  state PublishInProgress
+  note right of PublishInProgress
+    entry / StartProductPublish
+  end note
+  state Published
+  EditingDraft --> SavingDraft: SaveDraftClicked
+  EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]
+  EditingDraft --> EditingDraft: SubmitClicked [invalid draft]
+  SavingDraft --> DraftSaved: DraftSaveCompleted
+  DraftSaved --> EditingDraft: ContinueEditingClicked
+  DraftSaved --> ImageUploadInProgress: SubmitClicked [valid draft]
+  DraftSaved --> DraftSaved: SubmitClicked [invalid draft]
+  DraftSaved --> EditingDraft: TitleChanged
+  DraftSaved --> EditingDraft: DescriptionChanged
+  DraftSaved --> EditingDraft: PriceChanged
+  ImageUploadInProgress --> EditingDraft: CancelUploadClicked
+  ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded
+  ImageUploadInProgress --> EditingDraft: ImageUploadFailed
+  ReviewSubmissionInProgress --> Approved: ReviewApproved
+  ReviewSubmissionInProgress --> Rejected: ReviewRejected
+  Rejected --> ImageUploadInProgress: ResubmitClicked [valid draft]
+  Rejected --> Rejected: ResubmitClicked [invalid draft]
+  Rejected --> EditingDraft: ContinueEditingClicked
+  Approved --> PublishInProgress: PublishClicked
+  Approved --> EditingDraft: ContinueEditingClicked
+  PublishInProgress --> Published: PublishSucceeded
+  PublishInProgress --> Approved: PublishFailed
+  Published --> Published: DoneClicked ! CloseEditor

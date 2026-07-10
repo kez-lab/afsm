@@ -2876,3 +2876,34 @@ Conclusion:
 
 - Default diagnostics no longer contain raw domain values, and the full local
   release gate plus clean external consumer pass.
+
+## [2026-07-11] Phase-owned command invocation
+
+Change:
+
+- Added `AfsmInvocationKey`, `AfsmCommandInvocation.Start/Cancel`, and separate
+  `AfsmTransition.commandInvocations` output.
+- Added `onEnter { invoke(...) }` with automatic source-phase cancellation.
+- Tracked invocation jobs under host lifetime while ordinary commands remain
+  sequential.
+- Rejected cancelled invocation result callbacks and preserved cancellation as
+  a non-failure path.
+- Added invocation assertions, duplicate-key validation, ProductEditor cancel
+  UI/machine/ViewModel coverage, graph notes, and an external consumer test.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-test:test \
+  :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --no-daemon
+./gradlew :afsm-core:apiCheck :afsm-runtime:apiCheck \
+  :afsm-test:apiCheck --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Cooperative local phase-owned cancellation, graph visibility, API checks,
+  Maven Local publication, and the clean external consumer pass. Remote
+  cancellation and human preference remain outside repository proof.

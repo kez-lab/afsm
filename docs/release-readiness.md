@@ -13,7 +13,8 @@ Run:
 What this proves:
 
 - Core transition and executable machine APIs compile and pass unit tests.
-- Runtime dispatch, command execution, effects, invalid transitions, and command failure policies pass unit tests.
+- Runtime dispatch, sequential commands, phase-owned invocation cancellation,
+  effects, invalid transitions, and command failure policies pass unit tests.
 - Android ViewModel helper compiles and passes unit tests.
 - Compose effect helper compiles.
 - The sample app compiles and exports `.mmd` graphs from real annotated machines.
@@ -43,6 +44,8 @@ What this proves:
   values.
 - The separate consumer build also compiles a no-command machine using
   `AfsmNoCommand` and hosts it from a ViewModel without a command handler.
+- The separate consumer build uses the published `invoke` DSL, runtime, and
+  test helper to prove cooperative phase-owned work is cancelled on exit.
 - The separate consumer build is cleaned and dependency-refreshed by
   `verify-consumer-smoke.sh` so graph validation does not pass on stale outputs.
 - Kotlin explicit API mode is enabled for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, and `afsm-graph-ksp`.
@@ -101,10 +104,11 @@ transition tests for validation, command emission, and save failure recovery,
 plus Draft ViewModel tests for command execution and explicit initial state
 from `SavedStateHandle` using a reusable main dispatcher rule. The command
 failure fixture verifies types-only diagnostics from the published runtime and
-does not retain raw Draft values. It does not prove broader sample behavior,
-runtime
-correctness, or binary compatibility by itself; those remain covered by module
-tests, sample tests, graph generation, and `apiCheck` in the local release gate.
+does not retain raw Draft values. A separate upload fixture uses the published
+invocation DSL, runtime cancellation, and test helper. The consumer build does
+not prove broader sample behavior, remote-work cancellation, or binary
+compatibility by itself; those remain covered by module tests, sample tests,
+graph generation, and `apiCheck` in the local release gate.
 
 Before starting a pilot, record:
 

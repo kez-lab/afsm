@@ -74,7 +74,30 @@ The repository currently documents explicit cancel commands and request ids,
 but has not yet compared that approach with phase-owned invoked-service
 semantics using a realistic interruptible Android flow.
 
+## Invocation Cycle Result
+
+Completed in specification commit `8146e65` and implementation commit
+`b0fd60a`:
+
+- the ineffective queued cancel-command guidance was removed as a false
+  runtime promise,
+- bounded `onEnter { invoke(...) }` work is automatically cancelled on phase
+  exit and host closure,
+- ProductEditor exposes a visible cancel-upload edge without ViewModel job
+  plumbing,
+- machine, graph, runtime, ViewModel, API, Maven Local, and clean external
+  consumer verification pass,
+- the fresh-use review accepts the result provisionally while keeping explicit
+  key ceremony and real network/SDK cancellation unproven.
+
+After this cycle, the binding Goal gaps are human no-coaching comprehension and
+a production-like pilot. The next smaller API questions are whether an explicit
+invocation key earns its authoring cost and whether active invocation capacity
+needs a first-class bound. Neither should be changed without realistic authoring
+or workload evidence.
+
 ## External Evidence Boundary
 
-This repository audit can improve default safety. It cannot replace the human
-first-use session or production-like pilot still required for Goal completion.
+These repository cycles can improve default safety and executable evidence.
+They cannot replace the human first-use session or production-like pilot still
+required for Goal completion.

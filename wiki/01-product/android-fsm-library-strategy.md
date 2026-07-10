@@ -19,7 +19,7 @@ machine:
 - the current `Phase`,
 - which `Event` occurred and whether it is valid,
 - how `Phase` and durable `Data` change,
-- which host-executed `Command`s follow,
+- which sequential `Command`s or phase-owned command invocations follow,
 - and which optional UI `Effect`s are emitted.
 
 Android `ViewModel` remains the lifecycle and UI integration adapter. Afsm
@@ -80,6 +80,8 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
    - The executable definition and generated graph expose transition topology.
    - Runtime failures and invalid transitions are observable through
      types-only diagnostics that do not expose raw domain values by default.
+   - Long-running phase-owned work can be cancelled locally without ViewModel
+     job registries or cancel commands queued behind the work itself.
 
 2. Android alignment
    - ViewModel remains the screen-level state holder.

@@ -14,6 +14,7 @@ Auth first, then read ProductEditor when you want to see how the DSL scales.
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt`
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorScreen.kt`
 - `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachineTest.kt`
+- `sample-shop/src/test/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModelTest.kt`
 
 ## Graph
 
@@ -32,6 +33,7 @@ stateDiagram-v2
   SavingDraft --> DraftSaved: DraftSaveCompleted
   EditingDraft --> ImageUploadInProgress: SubmitClicked [valid draft]
   EditingDraft --> EditingDraft: SubmitClicked [invalid draft]
+  ImageUploadInProgress --> EditingDraft: CancelUploadClicked
   ImageUploadInProgress --> ReviewSubmissionInProgress: ImageUploadSucceeded
   ReviewSubmissionInProgress --> Rejected: ReviewRejected
   Rejected --> ImageUploadInProgress: ResubmitClicked [valid draft]
@@ -121,17 +123,24 @@ The important modeling choice: `ProductDraft` is not passed through every phase.
 It lives in data. Payload phases carry only data that belongs specifically to
 that phase, such as `uploadToken`, rejection reason, or published product id.
 
-## Entry Commands
+## Entry Commands And Phase-Owned Invocation
 
-Long-running work is phase-owned. Transition branches say where the flow moves;
-the target phase `onEnter` starts the command:
+Long-running cancellable work is phase-owned. Transition branches say where the
+flow moves; the target phase `onEnter` starts a keyed invocation:
 
 ```kotlin
 phase(ProductEditorPhase.ImageUploadInProgress) {
     onEnter {
-        command(label = "StartImageUpload") {
+        invoke(
+            key = productEditorImageUploadInvocationKey,
+            label = "StartImageUpload",
+        ) {
             ProductEditorCommand.StartImageUpload(data.draft)
         }
+    }
+
+    on<ProductEditorEvent.CancelUploadClicked> {
+        transitionTo(ProductEditorPhase.EditingDraft)
     }
 }
 ```
@@ -149,14 +158,21 @@ phase<ProductEditorPhase.ReviewSubmissionInProgress> {
 }
 ```
 
-This keeps transition branches focused on phase movement and data updates.
+Leaving `ImageUploadInProgress` automatically cancels the cooperative upload,
+including the explicit cancel edge. Success/failure exits also emit cancellation;
+it is a harmless no-op if the upload job already completed. The ViewModel does
+not own a `Job` map or `CancelImageUpload` command.
+
+Short sequential work such as review submission remains an ordinary entry
+command. This keeps transition branches focused on phase movement and data
+updates while making the different execution policies explicit.
 
 ## Transition Execution Order
 
 For a phase-changing branch, Afsm runs:
 
 ```text
-source onExit -> case actions -> target phase factory -> target onEnter
+source invocation cancel -> source onExit -> case actions -> target phase factory -> target onEnter
 ```
 
 If a source phase has no `onExit`, Afsm skips that step. For payload phases,

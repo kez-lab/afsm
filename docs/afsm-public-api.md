@@ -133,6 +133,9 @@ AfsmTransition.handled(state, commands, effects, reason) // low-level reducer es
 
 The constructor is intentionally not public so `Ignored` and `Invalid` decisions
 cannot accidentally carry commands, effects, or changed state output.
+`commands` contains ordinary sequential work. `commandInvocations` contains
+separate keyed `Start/Cancel` operations for phase-owned work; ignored and
+invalid transitions carry neither output kind.
 For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
 Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
 If one accepted event needs multiple actions, keep them in the same
@@ -245,9 +248,11 @@ val checkoutStateMachine:
     }
 ```
 
-Emit long-running work either from the accepted `case` or from the target
+Emit short sequential work either from the accepted `case` or from the target
 phase's `onEnter`, not both. Prefer `onEnter` when the work starts because the
-machine entered a work phase such as `Submitting`.
+machine entered a work phase such as `Submitting`. Use `invoke` instead of
+`command` when long-running work is owned by that phase and must be cancelled
+locally when the phase exits.
 
 | API | Meaning |
 |---|---|
@@ -273,6 +278,7 @@ machine entered a work phase such as `Submitting`.
 | `onEnter { ... }` | Declares actions that run after entering a phase |
 | `onExit { ... }` | Declares actions that run before leaving a phase |
 | `command(label = ...) { ... }` in `onEnter`/`onExit` | Host work plus optional graph label in one statement |
+| `invoke(key, label = ...) { ... }` in `onEnter` | Keyed phase-owned work, automatically cancelled on phase exit |
 | `effect(label = ...) { ... }` in `onEnter`/`onExit` | UI one-shot plus optional graph label in one statement |
 
 `case(...)` branches are evaluated in declaration order. The first branch whose
@@ -285,10 +291,10 @@ and current `data`. They cannot update data or emit outputs. Payload phase
 factories in `transitionTo<PayloadPhase> { ... }` are also read-only and should
 only create the target phase.
 
-Entry and exit blocks are declaration blocks. `command(label = ...) { ... }`
-and `effect(label = ...) { ... }` record graph labels when the machine is built,
-then run their value factories later with `phase` and `data` from
-`AfsmPhaseActionScope`.
+Entry and exit blocks are declaration blocks. `command`, `invoke`, and `effect`
+record graph labels when the machine is built, then run their value factories
+later with `phase` and `data` from `AfsmPhaseActionScope`. `invoke` is available
+only in `onEnter` in the current bounded contract.
 
 Use `phase(phase)` for singleton/data-object phases. For payload phase classes,
 prefer `phase<PayloadPhase>()` or `phase<PayloadPhase> { ... }` so the machine
@@ -297,8 +303,62 @@ matches any payload instance rather than one exact value.
 Phase-changing transition order:
 
 ```text
-onExit -> case actions -> target phase factory -> onEnter
+source invocation cancel -> onExit -> case actions -> target phase factory -> onEnter
 ```
+
+### Phase-Owned Invocation
+
+Ordinary `command(...)` output remains sequential and bounded. For a
+cooperative upload, timer, or polling loop whose lifetime belongs to one phase,
+declare a stable code-owned key and use `invoke`:
+
+```kotlin
+val ImageUpload = AfsmInvocationKey("product-editor/image-upload")
+
+phase(ProductEditorPhase.ImageUploadInProgress) {
+    onEnter {
+        invoke(
+            key = ImageUpload,
+            label = "StartImageUpload",
+        ) {
+            ProductEditorCommand.StartImageUpload(data.draft)
+        }
+    }
+
+    on<ProductEditorEvent.CancelUploadClicked> {
+        transitionTo(ProductEditorPhase.EditingDraft)
+    }
+}
+```
+
+Entering the phase adds
+`AfsmCommandInvocation.Start(ImageUpload, StartImageUpload(...))` to
+`transition.commandInvocations`. Every phase exit adds `Cancel(ImageUpload)`
+before target-phase starts. `AfsmHost` runs the start through the existing
+`AfsmCommandHandler` in a tracked child job; exit or host closure cancels it.
+Cancellation is requested before a target-phase invocation starts, but the
+runtime does not block the state transition waiting for a non-cancellable
+`finally` block or remote operation to finish.
+
+```kotlin
+result.assertCommandInvocations(
+    AfsmCommandInvocation.Cancel(ImageUpload),
+)
+```
+
+Cancellation is Kotlin cooperative cancellation and is not logged as command
+failure. Afsm also rejects dispatch through the cancelled invocation's callback.
+It cannot guarantee a remote server, callback API, SDK, or blocking call stopped
+work. Keep request ids, stale-result handling, and idempotency when work can
+outlive the local coroutine.
+
+Invocation starts do not consume the ordinary command queue. Keep the declared
+set small and phase-owned; do not use low-level transitions to create an
+unbounded dynamic job scheduler.
+
+`AfsmInvocationKey` values must be non-blank, stable code identifiers. Duplicate
+keys in one phase definition are rejected. Adjacent phases may reuse a key;
+the source cancel is ordered before the target start.
 
 ### Topology and MMD
 

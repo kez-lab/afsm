@@ -197,19 +197,41 @@ data class PaymentSucceeded(val requestId: String, val orderId: String)
 Then ignore stale result events when their `requestId` no longer matches the
 active phase.
 
-## 7. Cancellation Is Explicit in v1
+## 7. Use Invocation for Phase-Owned Local Cancellation
 
-Afsm does not automatically cancel commands when the phase changes.
+Ordinary commands are sequential. A cancel command emitted from `onExit` cannot
+interrupt the command ahead of it, so that pattern is not a valid cancellation
+contract.
 
-For v1, model cancellation explicitly:
+For a cooperative upload, timer, or polling loop owned by one phase, use:
 
-- emit a cancel command from `onExit`,
-- include request ids so stale results are ignored,
-- make command handlers cooperative with coroutine cancellation,
-- rethrow `CancellationException`.
+```kotlin
+val Upload = AfsmInvocationKey("editor/upload")
 
-Future versions may add invoked-service semantics, but the current runtime keeps
-this policy explicit.
+phase(EditorPhase.Uploading) {
+    onEnter {
+        invoke(Upload, label = "StartUpload") {
+            EditorCommand.StartUpload(data.draft)
+        }
+    }
+
+    on<EditorEvent.CancelUploadClicked> {
+        transitionTo(EditorPhase.Editing)
+    }
+}
+```
+
+The runtime starts a tracked child job and cancels it on every phase exit or
+host closure. `CancellationException` is not a command failure, and a cancelled
+invocation cannot dispatch through its Afsm callback.
+
+Cancellation is requested before target-phase invocation starts, but Afsm does
+not wait for non-cancellable cleanup or a remote operation to finish before
+publishing the next state.
+
+This is local cooperative cancellation only. Include request ids so stale
+results are ignored, use backend idempotency where required, and preserve an
+application/SDK cancellation contract when work can outlive the coroutine.
 
 ## 8. Command Queue Pressure Is a Modeling Signal
 

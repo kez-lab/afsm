@@ -19,7 +19,7 @@ updated: 2026-07-11
 - [[03-engineering/afsm-public-api-draft|Historical Afsm Public API Draft]] - Superseded initial API and module proposal retained as design history.
 - [[03-engineering/afsm-public-api-draft-v2|Historical Afsm Public API Draft v2]] - Superseded implementation-candidate draft retained to explain the path to v3.
 - [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Canonical v3 direction: a scoped executable statechart DSL that is runtime definition, graph source, and test target.
-- [[03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]] - Comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
+- [[03-engineering/afsm-reference-architecture-review|Historical Afsm Reference Architecture Review]] - May 2026 comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
 - [[03-engineering/afsm-example-catalog|Afsm Example Catalog]] - Canonical example ladder from minimal Draft to Auth, Checkout, ProductEditor, and non-Afsm data screens.
 - [[03-engineering/afsm-first-use-api-experiment|Afsm First-Use API Experiment]] - Breaking pre-release prototypes to reduce feature-boundary generic and declaration ceremony.
 - [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Afsm First-Use API Experiment Results 2026-07-10]] - Compile, behavior, and diagnostic findings that reject two invalid Kotlin shapes and advance direct graphable properties.
@@ -34,7 +34,7 @@ updated: 2026-07-11
 - [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
 - [[03-engineering/afsm-diagnostic-privacy-experiment|Afsm Diagnostic Privacy Experiment]] - Pre-release redesign of runtime diagnostics around types-only defaults and explicit raw-value opt-in.
-- [[03-engineering/afsm-phase-owned-invocation-experiment|Afsm Phase-Owned Invocation Experiment]] - Breaking prototype for keyed `onEnter` work that the runtime cancels automatically on phase exit.
+- [[03-engineering/afsm-phase-owned-invocation-experiment|Afsm Phase-Owned Invocation Experiment]] - Implemented keyed `onEnter` work that the runtime cancels automatically on phase exit, with explicit remote-work boundaries.
 - [[03-engineering/sample-shop-reference-app|Sample Shop Reference App]] - Complex Compose + Room sample app that validates where Afsm helps and where ordinary ViewModel state is preferable.
 - [[03-engineering/android-official-guidance|Android Official Guidance]] - Official Android documentation distilled into constraints for this FSM architecture.
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.
@@ -82,6 +82,7 @@ updated: 2026-07-11
 - [[08-meetings/2026-07-10-afsm-direct-property-first-use-review|Afsm Direct Property First-Use Review]] - Repository-based review of Candidate E that accepts direct properties provisionally and identifies Kotlin naming plus dynamic-initial-state safety gaps.
 - [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that now passes the main flow and graph-invisible safety-policy check.
 - [[08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review|Afsm Diagnostic Privacy Fresh-Use Review]] - Repository-based review of types-only diagnostics, explicit raw opt-in, and remaining pilot/logger evidence.
+- [[08-meetings/2026-07-11-afsm-phase-owned-invocation-fresh-use-review|Afsm Phase-Owned Invocation Fresh-Use Review]] - Repository-based review of ProductEditor upload ownership, cancellation readability, key ceremony, and remote-work boundaries.
 
 ## Raw Sources
 

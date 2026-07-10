@@ -1,11 +1,16 @@
 ---
 title: Afsm Reference Architecture Review
-updated: 2026-05-11
+updated: 2026-07-11
+reviewed: 2026-05-11
+status: historical-review
 ---
 
 # Afsm Reference Architecture Review
 
-This page compares the current Afsm structure against established state-machine, statechart, reducer, and Android UI-state references.
+This dated review compares the May 2026 Afsm structure against established
+state-machine, statechart, reducer, and Android UI-state references. Its old API
+names and gap table are design history; current contracts live in
+`current-state.md` and the canonical engineering pages.
 
 References:
 
@@ -223,4 +228,7 @@ The current `AfsmState<Phase, Context>` direction should remain.
 - `afsmMachine { ... }` now validates missing initial declarations, duplicate declarations, and undeclared transition targets.
 - `AfsmTopologyTransition` now carries guard, command, effect, kind, and fallback metadata.
 - `AfsmHost` now has `AfsmCommandFailurePolicy`; `CancellationException` is always rethrown.
-- MVP command cancellation remains explicit through feature commands/events; invoked-service cancellation is deferred.
+- Superseded on 2026-07-11: queued feature cancel commands cannot interrupt the
+  active sequential command. Bounded keyed `onEnter { invoke(...) }` now owns
+  local cooperative phase-exit cancellation; full actor/service semantics
+  remain deferred.

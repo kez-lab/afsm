@@ -36,10 +36,16 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   add hierarchical/parallel semantics? `AfsmTopologyState.parentId` exists as
   metadata, but the executable DSL and Mermaid renderer do not implement a
   nested runtime model.
-- After the bounded phase-owned invocation prototype, does real use justify
+- After the bounded phase-owned invocation implementation, does real use justify
   shipping it for uploads/timers/polling, or should Afsm document only
   lifecycle cancellation and stale-result rejection? Full actor/service
   semantics remain outside the selected prototype.
+- Can a phase-derived invocation key remove explicit string-key ceremony
+  without hiding ownership, preventing multiple invocations, or destabilizing
+  graph/test identity?
+- Does a real flow need an explicit active-invocation capacity, or is a small
+  statically declared key set plus host lifetime sufficient for the first
+  release? Ordinary command queue capacity does not count invocation jobs.
 
 ## Android Restoration
 
@@ -96,8 +102,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Diagnostics use `TypesOnly` by default. `IncludeValues` is an explicit
   privacy-risk opt-in; no raw value remains on the top-level diagnostic.
 - A queued `onExit` cancel command cannot interrupt the active sequential
-  command. Phase-owned keyed invocation is the selected prototype; it is not a
-  current runtime guarantee until implementation and verification pass.
+  command. `onEnter { invoke(...) }` is the current phase-owned path: exit and
+  host closure cancel its cooperative local job, while request ids/idempotency
+  still protect work that can outlive local cancellation.
 - Invalid hosted transitions throw by default; resilient hosts may opt into
   `AfsmInvalidTransitionPolicy.Record`.
 - Named no-transition condition cases appear in Flow graphs. `ignore(...)` and

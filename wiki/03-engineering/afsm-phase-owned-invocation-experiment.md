@@ -1,7 +1,7 @@
 ---
 title: Afsm Phase-Owned Invocation Experiment
 updated: 2026-07-11
-status: candidate-d-selected
+status: candidate-d-implemented
 ---
 
 # Afsm Phase-Owned Invocation Experiment
@@ -201,3 +201,26 @@ ownership in the reference flow. It cannot prove a remote server stopped work,
 an arbitrary SDK honors cancellation, or real Android developers prefer the
 new term. Request ids, idempotency, and a human fresh-use review remain required
 evidence.
+
+## Implementation Result
+
+Candidate D is implemented in `b0fd60a`:
+
+- `AfsmInvocationKey` and `AfsmCommandInvocation.Start/Cancel` are public core
+  types,
+- `AfsmTransition` separates ordinary `commands` from
+  `commandInvocations`,
+- `invoke` is limited to `onEnter`, and phase exit automatically emits cancel
+  before the next phase starts its invocation,
+- ordinary commands remain sequential while invocation jobs run concurrently,
+- cancellation and host closure stop cooperative jobs without failure
+  diagnostics,
+- cancelled jobs cannot dispatch through the Afsm-owned callback,
+- ProductEditor exposes `CancelUploadClicked` and a cancel UI action without a
+  ViewModel job registry,
+- topology notes show invocation start and automatic cancellation,
+- API checks and the full Maven Local external-consumer release gate pass.
+
+The result proves the bounded local contract, not remote cancellation. The
+fresh-use review accepts it provisionally and keeps key ceremony plus real
+upload integration open.

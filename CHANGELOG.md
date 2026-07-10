@@ -16,7 +16,8 @@ Initial pre-release candidate.
 
 - `afsm-core` pure Kotlin module.
 - `AfsmReducer<S, E, C, F>` low-level transition contract.
-- `AfsmTransition<S, C, F>` with state, commands, effects, and decision.
+- `AfsmTransition<S, C, F>` with state, ordinary commands, phase-owned command
+  invocations, effects, and decision.
 - `AfsmDecision` with `Transitioned`, `Handled`, `Ignored`, and `Invalid`.
 - `AfsmNoCommand` marker for machines that do not emit host-executed work.
 - `AfsmNoEffect` marker for machines that do not emit UI-side effects.
@@ -31,13 +32,17 @@ Initial pre-release candidate.
 - `afsmMachine(initialPhase = ...) { ... }` for graphable dynamic flows whose
   host must supply runtime data.
 - DSL helpers including `initial`, `phase`, `on`, `case`, `transitionTo`,
-  `ignore`, `invalid`, `onEnter`, `onExit`, `updateData`, `command`, and
-  `effect`.
+  `ignore`, `invalid`, `onEnter`, `onExit`, `updateData`, `command`, `invoke`,
+  and `effect`.
+- `AfsmInvocationKey` and `AfsmCommandInvocation.Start/Cancel` for tracked
+  long-running work owned by a phase.
 - `AfsmTopology`, `AfsmTopologyTransition`, `AfsmMmdOptions`, and Mermaid `.mmd` export support.
 - `@AfsmGraph`, `AfsmGraphSource`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
 - `afsm-runtime` coroutine host with serialized event dispatch.
 - `afsm-test` Kotlin test assertion helpers for Afsm transition behavior.
 - Sequential command execution that does not block later event reduction.
+- Cooperative phase-owned invocation cancellation on phase exit and host
+  closure, without requiring ViewModel `Job` maps or queued cancel commands.
 - `AfsmHost.tryDispatch(event)` for non-throwing event queue attempts.
 - Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
 - Bounded default command queue capacity through `AfsmConfig.commandQueueCapacity`.
@@ -60,6 +65,8 @@ Initial pre-release candidate.
   effect delivery.
 - Checkout feature-owned `SavedStateHandle` restoration for durable completion
   and explicit unresolved-payment protection through `PaymentStatusUnknown`.
+- ProductEditor upload cancellation with a visible machine/graph/UI edge and
+  no feature-level cancel command.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.
@@ -90,6 +97,9 @@ Initial pre-release candidate.
 - Raw top-level `AfsmDiagnostic` state, event, command, reason, and throwable
   getters, plus the public diagnostic constructor. Raw access now requires the
   explicit `IncludeValues` policy and `diagnostic.values`.
+- Pre-release guidance to interrupt active sequential work with an `onExit`
+  cancel command. Phase-owned `invoke` now provides the executable local
+  cancellation contract.
 - Hosted GitHub Actions CI workflow after the cost-control decision; local
   verification through `scripts/verify-release-local.sh` remains the release
   gate.

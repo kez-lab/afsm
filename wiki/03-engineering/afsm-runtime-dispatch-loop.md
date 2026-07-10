@@ -17,7 +17,7 @@ The module is Android-friendly but not Android-dependent:
 
 This keeps the runtime cohesive: it owns bounded event queueing, state
 publication, effect publication, sequential command execution, privacy-aware
-diagnostics, and host failure policies.
+diagnostics, phase-owned invocation jobs, and host failure policies.
 
 Android-specific lifetime ownership remains a caller concern for now. In ViewModel usage, the host should be attached to `viewModelScope`.
 
@@ -39,6 +39,10 @@ Android-specific lifetime ownership remains a caller concern for now. In ViewMod
 - `AfsmInvalidTransitionException`
 - `AfsmEventQueueOverflowException`
 - `AfsmCommandQueueOverflowException`
+
+Companion core output types used by the runtime are `AfsmInvocationKey` and
+`AfsmCommandInvocation.Start/Cancel` on
+`AfsmTransition.commandInvocations`.
 
 ## Dispatch Contract
 
@@ -76,7 +80,29 @@ Important behavior:
   `AfsmEventQueueOverflowException` instead of blocking the command processor.
 - A command result dispatched after host closure is dropped and recorded as a
   lifecycle diagnostic because the owning screen has ended.
-- Long-running loops should not be modeled as never-ending commands.
+- Long-running phase-owned loops should use `invoke`, not a never-ending
+  ordinary command.
+
+## Phase-Owned Invocation
+
+`onEnter { invoke(key, label) { command } }` emits a keyed start operation.
+When any accepted transition leaves that phase, the executable machine emits a
+cancel operation before source `onExit` and target `onEnter` work.
+
+The host starts invocation work through the same `AfsmCommandHandler`, but in a
+tracked child job rather than the ordinary sequential queue. Phase exit and
+host closure cancel that job. A cancelled job cannot dispatch through its
+Afsm-owned callback, and `CancellationException` is not recorded as command
+failure.
+
+Cancellation is a request, not a join barrier. The host can start the target
+phase invocation while old non-cancellable cleanup is still finishing. The
+ordinary command queue capacity also does not limit invocation jobs, so DSL
+machines should keep a small fixed set of phase-owned keys.
+
+Invocation is local cooperative cancellation. Request ids, stale-result
+handling, idempotency, and SDK-specific cancellation remain required when work
+can outlive the local coroutine.
 
 ## Decision Handling
 
@@ -203,6 +229,10 @@ Verified cases:
 - default effects are not replayed to late collectors
 - invalid event and command queue capacities are rejected at construction time
 - command handling remains sequential while later UI events can still be reduced
+- phase-owned invocation jobs run beside ordinary sequential commands and are
+  cancelled on phase exit or host closure
+- a cancelled invocation cannot dispatch a late result through its Afsm-owned
+  callback, even from non-cancellable cleanup
 
 ## Design Note
 
@@ -219,7 +249,8 @@ Command-result event overflow now fails fast with
 command result event. If the host has already closed, command result events are
 dropped and logged because the Android screen lifecycle has ended.
 
-The next runtime safety concern is evidence for command cancellation. Decide
-whether Afsm needs higher-level invoked-service semantics for automatic
-phase-owned cancellation or should continue with explicit feature-owned cancel
-commands and request ids. The current contract remains explicit cancellation.
+Bounded phase-owned invocation now covers local cooperative cancellation.
+Do not generalize it into actors, restart strategies, or hierarchy without
+pilot evidence. The remaining runtime evidence boundary is production-like
+remote/SDK work: request ids, idempotency, and application cancellation
+contracts are still required when local coroutine cancellation is insufficient.

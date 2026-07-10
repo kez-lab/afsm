@@ -121,6 +121,7 @@ Flow:
 EditingDraft
 -> SaveDraftClicked: SavingDraft -> DraftSaved
 -> SubmitClicked: ImageUploadInProgress
+-> CancelUploadClicked: EditingDraft (phase-owned upload is cancelled)
 -> ImageUploadSucceeded: ReviewSubmissionInProgress
 -> first ReviewRejected: Rejected
 -> ResubmitClicked: ImageUploadInProgress
@@ -139,7 +140,12 @@ Policy:
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
 - ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to data transformations so graph-relevant flow remains visible.
 - Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data, not as a second competing `transitionTo`.
-- `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
+- `onEnter` emits ordinary commands such as `SaveDraft`,
+  `StartReviewSubmission`, and `StartProductPublish`.
+- `ImageUploadInProgress.onEnter` uses keyed `invoke(StartImageUpload)`; every
+  exit cancels the cooperative upload, and the UI exposes
+  `CancelUploadClicked -> EditingDraft` without a cancel command or ViewModel
+  job registry.
 - `productEditorStateMachine` is the annotated executable machine property; no
   delegated object or separate factory is required.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated stable machine
@@ -147,7 +153,8 @@ Policy:
 - The `io.github.afsm.graph` Gradle plugin generates the export test and registers `./gradlew :sample-shop:generateAfsmMmd`.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Text changes inside `EditingDraft` and `Rejected` are no-transition handlers that update data with `updateData { data, event -> ... }`.
-- Long-running phases use phase names like `ImageUploadInProgress`; host work uses command names like `StartImageUpload`.
+- Long-running phases use phase names like `ImageUploadInProgress`; phase-owned
+  work uses `invoke`, while short sequential host work uses `command`.
 - Review attempt count is part of `ProductDraft`, so mock rejection/approval behavior is deterministic.
 - The product is inserted into Room only after `PublishSucceeded`.
 - `DoneClicked` emits a close effect instead of making navigation a state machine dependency.
@@ -229,6 +236,8 @@ State machine tests are plain JVM tests:
 - `CheckoutViewModelTest` for dynamic initialization and repository
   command-result wiring
 - `ProductEditorStateMachineTest`
+- `ProductEditorViewModelTest` for cooperative upload cancellation through the
+  real ViewModel host
 
 These tests are executable specs. If a test fails, treat it as a product behavior signal first. Do not weaken tests just to make implementation pass.
 

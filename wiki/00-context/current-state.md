@@ -62,8 +62,8 @@ external Maven Local consumer check.
 | `afsm-test` | Kotlin-only transition assertion helpers |
 | `afsm-graph-ksp` | `@AfsmGraph` discovery for stable top-level machine properties and eligible classes/objects, plus generated graph registry |
 | `io.github.afsm.graph` | Included-build Gradle plugin that wires KSP and `generateAfsmMmd` for one selected Android unit-test variant |
-| `sample-shop` | Compose + Room reference app using Afsm for Auth, Checkout, and ProductEditor while leaving simple data screens on ordinary ViewModels |
-| `consumer-smoke` | Separate Android Gradle build that consumes Maven Local artifacts, mirrors the Draft quickstart, runs machine/ViewModel tests, and exports a graph |
+| `sample-shop` | Compose + Room reference app using Afsm for Auth, Checkout, and cancellable ProductEditor upload while leaving simple data screens on ordinary ViewModels |
+| `consumer-smoke` | Separate Android Gradle build that consumes Maven Local artifacts, mirrors Draft, verifies diagnostics/invocation behavior, runs machine/ViewModel tests, and exports a graph |
 
 The six library modules tracked by explicit API mode and binary API validation
 are `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`,
@@ -72,8 +72,8 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 ## Authoring and Runtime Policy
 
 - The canonical DSL vocabulary is `phase`, `on`, named `case`, phase-only
-  `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, `effect`,
-  `ignore`, and `invalid`.
+  `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, phase-owned
+  `invoke`, `effect`, `ignore`, and `invalid`.
 - A 2026-07-10 first-use experiment rejected partial generic calls and inferred
   generic feature superclasses, then implemented the smallest viable shape:
   graphable features expose one explicitly typed lower-camel top-level `val`
@@ -99,11 +99,12 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   `AfsmCommandFailurePolicy.Throw` are the defaults. Event and command queues
   default to capacity `64` and fail fast on overflow.
 - Ordinary commands execute sequentially on a separate processor, so a
-  suspended command does not block later event reduction. The prior guidance
-  to emit an `onExit` cancel command is not effective because that command waits
-  behind the active sequential command. A bounded phase-owned `invoke` path is
-  now the selected pre-release prototype; request ids remain required for late
-  remote or non-cooperative results.
+  suspended command does not block later event reduction. Long-running work
+  owned by one phase can use `onEnter { invoke(key, label) { command } }`; the
+  runtime tracks it separately and cancels its cooperative coroutine on phase
+  exit or host closure. Cancelled invocation callbacks cannot dispatch late
+  results. Request ids and idempotency remain required for remote or
+  non-cooperative work.
 - Effects have no replay by default. Late collectors do not receive old effects.
 - Runtime diagnostics are types-only by default. They expose stable codes,
   decision categories, fixed messages, type names, and Afsm-owned metadata.
@@ -120,7 +121,8 @@ The supported learning order is:
 3. Checkout for dynamic initial state, loading, retry, request ids, stale result
    handling, durable completion, process restoration, and optional navigation
    effect.
-4. ProductEditor as the advanced graph and transition-order stress test.
+4. ProductEditor as the advanced graph, transition-order, and phase-owned upload
+   cancellation stress test.
 5. Ordinary catalog/detail/like/review screens as examples where Afsm is not
    needed.
 
@@ -141,7 +143,7 @@ copy/paste source and is mirrored by the external consumer fixture.
   runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
   Maven Local publication, and the clean external consumer smoke build.
 - The full local release gate passed on 2026-07-11 after the diagnostic privacy
-  redesign. The known Kotlin Gradle
+  and phase-owned invocation redesigns. The known Kotlin Gradle
   plugin POM rewriting deprecation warning remains non-blocking.
 - Hosted GitHub Actions CI was removed for cost control. No
   `.github/workflows/ci.yml` exists; maintainers run the relevant local checks

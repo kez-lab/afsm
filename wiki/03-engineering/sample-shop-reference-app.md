@@ -135,12 +135,17 @@ The ProductEditor sample now uses the v3 executable DSL:
 - Event branches use named `case(...)` blocks when there are domain alternatives; `transitionTo(...)` only changes phase.
 - Graph-relevant submit/resubmit transitions remain inline in event branches; helpers should transform data, not hide phase movement.
 - Validation failure uses an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data; it should not be represented as a second competing `transitionTo`.
-- `onEnter` owns phase-entry command emission.
+- `onEnter` owns phase-entry work. Image upload uses keyed `invoke`, while
+  shorter save/review/publish work remains ordinary sequential commands.
+- `CancelUploadClicked` returns to `EditingDraft`; runtime phase exit cancels
+  the cooperative upload without a cancel command or ViewModel `Job` map.
 - `productEditorStateMachine` is the annotated `AfsmDefaultMachine` property
   and implements `AfsmGraphSource` through `AfsmMachine`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
-- MMD output now includes the initial node, meaningful guard labels, command/effect labels, and entry-command notes.
+- MMD output includes the initial node, meaningful guard labels,
+  command/effect labels, and `invoke` entry plus automatic cancellation exit
+  notes.
 
 Text edits are handled branches inside editable phases, while submit/review/publish actions move between explicit phases.
 

@@ -95,16 +95,20 @@ escape hatch, not the primary onboarding style.
 
 | Emit command from | Use when |
 |---|---|
-| `onEnter` | work starts because a phase was entered |
-| `case(...)` | work belongs to one specific event branch |
-| `onExit` | cleanup/cancel work belongs to leaving a phase |
+| `onEnter { command(...) }` | short sequential work starts because a phase was entered |
+| `case(...)` | short sequential work belongs to one specific event branch |
+| `onExit { command(...) }` | short sequential cleanup belongs to leaving a phase |
+| `onEnter { invoke(...) }` | long-running cooperative work is owned by the phase and must cancel on exit |
 
-Example: entering `ImageUploadInProgress` can emit `StartImageUpload` from
-`onEnter`. Clicking login can emit `Login` from the transition when the screen
-does not need a distinct `SubmittingLogin` entry action.
+Example: entering `ImageUploadInProgress` invokes `StartImageUpload` from
+`onEnter`; leaving the phase cancels it automatically. Clicking login can emit
+an ordinary `Login` command from the transition when the screen does not need a
+distinct `SubmittingLogin` entry action.
 
-Long-running commands should carry a request or correlation id when stale
-results are possible.
+Do not emit a cancel command from `onExit` to interrupt an ordinary command: it
+waits behind the active sequential command. Use `invoke` for local cooperative
+cancellation. Long-running work should still carry a request or correlation id
+when remote or non-cooperative stale results are possible.
 
 Do not emit large bursts of tiny commands from a single transition. Afsm keeps
 the command queue bounded and throws `AfsmCommandQueueOverflowException` if it

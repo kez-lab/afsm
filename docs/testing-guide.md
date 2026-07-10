@@ -7,14 +7,14 @@ For the first copy-pasteable Draft tests, start with
 The machine is deterministic:
 
 ```text
-current state + event -> next state + commands + effects + decision
+current state + event -> next state + commands + command invocations + effects + decision
 ```
 
 That shape is the main reason to keep transition rules outside Android `ViewModel`.
 
 Add the optional test helper artifact when transition tests start repeating raw
-`result.state.phase`, `result.commands`, `result.effects`, and
-`result.decision` assertions:
+`result.state.phase`, `result.commands`, `result.commandInvocations`,
+`result.effects`, and `result.decision` assertions:
 
 ```kotlin
 testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
@@ -192,6 +192,32 @@ Do not add `AfsmConfig` to most ViewModel tests. Add it only when the test is
 about hosted runtime policy, such as recording invalid transitions or recording
 unexpected command handler exceptions. If the test is about feature behavior,
 prefer pure machine assertions and typed command result events.
+
+### Phase-owned invocation cancellation
+
+When a phase owns long-running cooperative work, assert both its start and its
+automatic exit cancellation as pure transition output:
+
+```kotlin
+val started = machine.transition(editingState, Event.StartUploadClicked)
+started.assertCommandInvocations(
+    AfsmCommandInvocation.Start(UploadKey, Command.StartUpload),
+)
+
+val cancelled = machine.transition(started.state, Event.CancelUploadClicked)
+cancelled.assertCommandInvocations(
+    AfsmCommandInvocation.Cancel(UploadKey),
+)
+```
+
+Add a host/ViewModel coroutine test for the execution contract: start a
+suspended cooperative handler, dispatch the exit event, prove cancellation ran,
+advance past the old completion time, and prove no result changed state.
+ProductEditor provides both the machine assertion and ViewModel example.
+
+Do not use this test as proof that remote or blocking work stopped. Keep a
+request id and stale-result assertion when work can outlive local coroutine
+cancellation.
 
 ## ViewModel Tests
 

@@ -516,6 +516,12 @@ internal edge:
   dropped and logged because the screen lifecycle has ended.
 - Commands execute sequentially without blocking later event reduction.
 - Commands also use a bounded queue, default `64`; if it fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor.
+- Long-running work owned by one phase can use
+  `onEnter { invoke(key, label) { command } }`. It runs in a tracked child job
+  and is cancelled automatically on phase exit or host closure.
+- Invocation cancellation is local and cooperative. Keep request ids and
+  idempotency when remote, callback, SDK, or blocking work can outlive the
+  coroutine.
 - Command results should dispatch typed events back into the host.
 - Domain failures should become domain events, not thrown exceptions.
 - Unexpected command exceptions use `AfsmCommandFailurePolicy`.
@@ -534,8 +540,8 @@ internal edge:
 
 | Module | Purpose | Android dependency |
 |---|---|---|
-| `afsm-core` | Pure Kotlin transition types, reducer contract, executable machine DSL, graph metadata | No |
-| `afsm-runtime` | Coroutine host, serialized dispatch loop, command execution, effect delivery | No |
+| `afsm-core` | Pure Kotlin transition types, reducer contract, executable machine DSL, invocation output, graph metadata | No |
+| `afsm-runtime` | Coroutine host, serialized dispatch loop, sequential commands, phase-owned invocation jobs, effect delivery | No |
 | `afsm-test` | Kotlin test assertion helpers for Afsm transition behavior | No |
 | `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
 | `afsm-compose` | Lifecycle-aware Compose effect collection helper | Yes |

@@ -141,6 +141,11 @@ sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ```
 
+ProductEditor also demonstrates phase-owned invocation metadata. Its upload
+state note contains `entry / invoke StartImageUpload` and
+`exit / cancel product-editor/image-upload`, while the cancel intent remains a
+normal `CancelUploadClicked` transition edge.
+
 ## 4. Plugin Options
 
 ```kotlin

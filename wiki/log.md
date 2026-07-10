@@ -1404,3 +1404,19 @@
 - Updated: `wiki/03-engineering/afsm-phase-owned-invocation-experiment.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] implementation | Phase-owned command invocation
+
+- Source: Candidate D spec, compile-red tests, core/runtime/sample tests,
+  generated ProductEditor graph, API checks, full local release gate, and clean
+  external consumer.
+- Action: Added keyed `onEnter` invocation with automatic phase-exit
+  cancellation, migrated ProductEditor upload, removed the ineffective queued
+  cancel-command guidance, and recorded proof boundaries.
+- Updated: `afsm-core/`, `afsm-runtime/`, `afsm-test/`, `sample-shop/`,
+  `consumer-smoke/`, `README.md`, `CHANGELOG.md`, `docs/`,
+  `raw/verification/2026-07-11-phase-owned-invocation/README.md`,
+  `raw/README.md`, `wiki/00-context/`, `wiki/01-product/`,
+  `wiki/03-engineering/`, `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-07-11-afsm-phase-owned-invocation-fresh-use-review.md`,
+  `wiki/index.md`, `wiki/log.md`.
