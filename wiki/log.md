@@ -1267,3 +1267,16 @@
   `raw/README.md`,
   `wiki/08-meetings/2026-07-10-checkout-product-goal-fit-review.md`,
   `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] verification | Checkout graph-invisible policies
+
+- Source: Focused Checkout transition tests and regenerated Mermaid output at
+  commit `aa7bf3b`.
+- Action: Covered the four negative-policy gaps without changing production
+  topology and upgraded the constrained repository review from conditional to
+  pass while retaining the human-evidence boundary.
+- Updated: `sample-shop/src/test/`,
+  `raw/verification/2026-07-10-checkout-product-goal-fit/follow-up.md`,
+  `wiki/08-meetings/2026-07-10-checkout-product-goal-fit-review.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/index.md`, `wiki/log.md`.

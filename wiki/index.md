@@ -74,7 +74,7 @@ updated: 2026-07-10
 - [[08-meetings/2026-05-23-afsm-6-agent-first-use-review|Afsm 6-Agent First-Use Review]] - First-time Android developer review that drove the phase/data/handled terminology cleanup and Android-first onboarding page.
 - [[08-meetings/2026-05-23-afsm-6-agent-second-first-use-review|Afsm 6-Agent Second First-Use Review]] - Follow-up review that moved onboarding to Draft-first docs, made DSL predicates read-only, reduced Checkout ignore usage, and clarified phase payload rules.
 - [[08-meetings/2026-07-10-afsm-direct-property-first-use-review|Afsm Direct Property First-Use Review]] - Repository-based review of Candidate E that accepts direct properties provisionally and identifies Kotlin naming plus dynamic-initial-state safety gaps.
-- [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that passes the main flow and identifies missing graph-invisible safety scenarios.
+- [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that now passes the main flow and graph-invisible safety-policy check.
 
 ## Raw Sources
 

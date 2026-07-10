@@ -1,7 +1,7 @@
 ---
 title: Checkout Product Goal Fit Review
 updated: 2026-07-10
-status: conditional-pass
+status: repository-pass
 ---
 
 # Checkout Product Goal Fit Review
@@ -48,14 +48,14 @@ walkthrough while reconstructing the flow.
 - Tests use business-language names and verify state, command, effect, and
   decision separately.
 
-## Gaps
+## Initial Gaps
 
-The result is a conditional pass, not a full pass.
+At the initial `56cda3b` baseline, the result was a conditional pass.
 
 The graph intentionally omits handled self-updates, `ignore(...)`, and invalid
 events because they are not phase transitions. That keeps the diagram useful,
 but it means the tests must carry the executable negative-policy explanation.
-Current tests do not yet demonstrate every important graph-invisible rule:
+Tests at that baseline did not demonstrate every important graph-invisible rule:
 
 - pay/retry before the product is loaded,
 - invalid input in terminal `ProductUnavailable`,
@@ -67,6 +67,19 @@ reading constraint, but they are not required to explain the business-flow
 topology. ViewModel command execution and lifecycle behavior remain separate
 integration concerns.
 
+## Follow-Up Result
+
+Commit `aa7bf3b` added focused transition tests for all four gaps without
+changing production code or the Mermaid graph. The focused Checkout suite and
+graph generation pass together.
+
+On a repeated constrained read, the test names and assertions now make these
+distinctions explicit:
+
+- state-preserving prerequisite feedback is `Handled`,
+- an event rejected by terminal `ProductUnavailable` is `Invalid`,
+- expected duplicate or stale work is `Ignored`.
+
 ## Product Verdict
 
 The artifact split is directionally correct:
@@ -75,15 +88,15 @@ The artifact split is directionally correct:
 - machine for executable rules and outputs,
 - tests for scenarios and graph-invisible decisions.
 
-Afsm currently meets the core readability goal for Checkout's main and recovery
-flows. It does not yet fully meet the stronger claim that all safety rules can
-be verified from the same three-artifact reading path.
+Afsm now passes this repository-based readability check for Checkout's main
+flow, recovery flow, and important safety rules. The graph remains concise
+while the machine and tests explain policies that do not produce graph edges.
 
 ## Next Acceptance Slice
 
-Add focused Checkout transition tests for the four missing negative-policy
-areas. Do not add noisy no-op edges to the main Mermaid graph. Re-run the same
-three-artifact review after the tests pass.
+The focused negative-policy slice is complete. The next product-evidence step
+is a real Android developer first-use session using the same three-artifact
+constraint and a recorded comprehension rubric.
 
 Human first-use preference remains unverified and must not be inferred from
 this repository review.

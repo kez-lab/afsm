@@ -2782,3 +2782,23 @@ Conclusion:
 
 - Dynamic features can no longer accidentally use a fake default through the
   concise host overload; the full local release gate and external consumer pass.
+
+## [2026-07-10] Checkout graph-invisible policy coverage
+
+Change:
+
+- Added focused transition tests for pre-load pay/retry handling, terminal
+  `ProductUnavailable` invalid input, duplicate in-flight actions, and late
+  post-completion payment results.
+- Kept the generated graph concise; no production behavior or topology changed.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.checkout.CheckoutStateMachineTest' :sample-shop:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- Checkout's machine, graph, and tests now explain both its macro flow and the
+  important graph-invisible handled/ignored/invalid policies.
