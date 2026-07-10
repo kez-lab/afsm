@@ -1159,3 +1159,13 @@
   typealias/delegation ceremony as the first redesign experiment.
 - Updated: `wiki/06-project/goal-evidence-baseline-2026-07-10.md`,
   `wiki/06-project/long-term-goal.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] experiment | First-use machine declaration API
+
+- Source: Goal evidence baseline, current Draft/Auth/Checkout declarations, and
+  the repeated heavy-generics finding from the 2026-05-19 usability review.
+- Action: Defined the current baseline and three breaking declaration
+  alternatives, protected behavior invariants, realistic prototype requirements,
+  and evidence-based acceptance criteria before changing production API.
+- Updated: `wiki/03-engineering/afsm-first-use-api-experiment.md`,
+  `wiki/index.md`, `wiki/log.md`.
