@@ -327,7 +327,9 @@ evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
 flows. Stable OSS/Maven Central publishing is intentionally blocked until
 license, final coordinates, SCM metadata, signing, and release ownership are
 decided. Internal pilot rules are documented in
-[docs/release-readiness.md](docs/release-readiness.md).
+[docs/release-readiness.md](docs/release-readiness.md). The no-prior-Afsm
+Checkout comprehension task is in
+[docs/checkout-first-use-participant-task.md](docs/checkout-first-use-participant-task.md).
 
 If you intentionally use a custom non-graphable `AfsmReducer`, name it as a
 reducer at the call site:

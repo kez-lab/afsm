@@ -113,6 +113,14 @@ Before starting a pilot, record:
 - Upgrade command: `./scripts/verify-release-local.sh --warning-mode all` in
   this repository plus the pilot app's affected test suite.
 
+Before counting repository readability as user evidence, run the no-coaching
+[Checkout first-use participant task](checkout-first-use-participant-task.md)
+with the facilitator rubric in
+[the Checkout first-use comprehension protocol](../wiki/06-project/checkout-first-use-comprehension-protocol.md).
+Preserve timing,
+answers, interventions, and confidence as immutable raw evidence. An AI review
+or green sample test is not a substitute for this session.
+
 ## Current Pre-Release Artifacts
 
 ```kotlin

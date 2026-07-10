@@ -53,6 +53,13 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   module, or support multi-variant and multi-module aggregation before broader
   external adoption?
 
+## Real Usability Evidence
+
+- Which Android developer will run the first no-prior-Afsm Checkout
+  comprehension session, and who will facilitate without coaching?
+- Which production-like complex screen and owning team will serve as the first
+  isolated pilot, with an agreed comparison baseline and rollback owner?
+
 ## Resolved Current Policies
 
 - Afsm targets controlled internal beta pilots on complex flow screens; it is

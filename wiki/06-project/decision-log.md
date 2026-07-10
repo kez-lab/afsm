@@ -1420,3 +1420,26 @@ Consequences:
 - API dumps, public docs, tests, graph fixtures, and external consumers change
   together before release; no compatibility shim is required.
 - The type split remains pre-release and may change after fresh-user evidence.
+
+## [2026-07-10] Measure first-use comprehension without coaching
+
+Decision: Use a fixed Checkout machine/graph/tests participant task and a
+separate facilitator-only rubric before claiming human readability evidence.
+
+Rationale:
+
+- Repository tests and AI reviews can prove coherence but cannot measure how a
+  new Android developer reads the product.
+- Showing the answer key, defining DSL terms, or changing the rubric after a
+  result would turn the session into guided documentation review.
+- Timing, misconceptions, artifact hops, and hesitation provide more actionable
+  redesign evidence than a general preference question alone.
+
+Consequences:
+
+- Initial 20-minute and 8/10 gates are explicitly assumptions until real data
+  validates or replaces them.
+- AI-assisted and unaided sessions are recorded separately.
+- Raw answers and interventions are preserved before Wiki conclusions change.
+- A comprehension pass is necessary but does not replace a production-like
+  feature pilot.

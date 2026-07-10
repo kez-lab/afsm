@@ -126,3 +126,7 @@ The first usable library version should include:
 - ViewModel integration is minimal and idiomatic.
 - The library works with Compose but is not Compose-only.
 - The public API is small enough to explain on one documentation page.
+- At least one Android developer with no prior Afsm context meets a pre-recorded
+  machine/graph/tests comprehension rubric without facilitator coaching.
+- At least one production-like feature pilot records comparative readability,
+  authoring friction, safety findings, and rollback feasibility.

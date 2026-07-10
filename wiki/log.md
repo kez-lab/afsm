@@ -1280,3 +1280,17 @@
   `wiki/08-meetings/2026-07-10-checkout-product-goal-fit-review.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] protocol | Human Checkout first use
+
+- Source: Long-term real-usability outcome, Checkout repository review, internal
+  beta contract, and the explicit boundary that AI evidence is not human proof.
+- Action: Added a participant-only task, facilitator rubric, provisional gates,
+  immutable evidence requirements, and open owner/target questions for the
+  first real session and production-like pilot.
+- Updated: `docs/checkout-first-use-participant-task.md`,
+  `docs/release-readiness.md`, `README.md`,
+  `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
