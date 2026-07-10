@@ -1320,3 +1320,30 @@ Consequences:
   not mandatory final concepts.
 - API freeze, ABI compatibility, and release preparation begin only after
   usability, safety, Android fit, and real-pilot evidence justify stabilization.
+
+## [2026-07-10] Advance direct graphable properties after declaration prototypes
+
+Decision: Reject the exact partial-generic function and inferred generic
+feature-superclass declaration shapes. Keep their compiling staged/token/value
+fallbacks as experiment evidence, but advance an explicitly typed top-level
+`AfsmMachine` property with `@AfsmGraph` property discovery as the next
+test-first hypothesis.
+
+Rationale:
+
+- Kotlin does not allow three explicit arguments on the proposed five-type
+  function and does not infer five generic superclass arguments for an object.
+- Staged type sets, named type tokens, and a feature container all compile and
+  preserve behavior, but they replace existing ceremony with new framework
+  concepts.
+- The current class-only graph processor is what forces delegated singleton
+  wrappers around an already executable `AfsmMachine` value.
+- An explicit property type uses ordinary Kotlin expected-type inference and
+  keeps the current ViewModel and transition-test boundaries unchanged.
+
+Consequences:
+
+- Candidate E must be specified and tested in KSP before any sample migration.
+- No production API or canonical example changes in this prototype round.
+- Draft, Auth, Checkout, graph generation, consumer smoke, diagnostics, and
+  dynamic host initialization are required acceptance evidence.

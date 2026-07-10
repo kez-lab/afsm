@@ -21,6 +21,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## API and Module Boundaries
 
+- Can `@AfsmGraph` support a non-private top-level `val` machine with useful
+  diagnostics and stable generated references, allowing Draft, Auth, and
+  Checkout to remove their delegated singleton and factory declarations without
+  adding type-token or feature-container concepts?
 - Before external publication, should the executable DSL, `@AfsmGraph`, topology
   types, and `AfsmGraphSource` remain in `afsm-core`, or should graph concerns
   move to a smaller annotation/API module? This includes deciding whether every

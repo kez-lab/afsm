@@ -73,6 +73,11 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 - The canonical DSL vocabulary is `phase`, `on`, named `case`, phase-only
   `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, `effect`,
   `ignore`, and `invalid`.
+- A 2026-07-10 test-only first-use experiment preserved Draft, Auth, and
+  Checkout behavior across three alternative declarations. It changed no
+  production API: partial generic function arguments and inferred generic
+  feature superclasses were rejected by Kotlin, and a direct typed top-level
+  machine property with graph discovery is the next hypothesis.
 - `case(condition = ...)` and payload phase factories are read-only scopes.
 - A handled event stays in its phase by omitting `transitionTo(...)`.
   `ignore(...)` is reserved for expected harmless no-ops; omitted impossible

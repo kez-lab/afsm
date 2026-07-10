@@ -1,7 +1,7 @@
 ---
 title: Afsm First-Use API Experiment
 updated: 2026-07-10
-status: experiment
+status: experiment-candidate-e
 ---
 
 # Afsm First-Use API Experiment
@@ -107,6 +107,12 @@ Questions:
   registry reference?
 - does a `val` machine have acceptable identity, visibility, and test ergonomics?
 
+Prototype finding: the shown syntax is not legal Kotlin. A function with five
+type parameters cannot be called by explicitly supplying only the first three;
+the compiler does not infer the remaining `Phase` and `Data` parameters. A
+staged `afsmTypes<Event, Command, Effect>().machine(...)` fallback compiles, but
+adds a new type-set concept and an extra call stage.
+
 ## Candidate C: Named Type Channels
 
 Infer phase/data from initial values and make the other roots named arguments
@@ -170,6 +176,54 @@ Risks:
 - can hide the ordinary `AfsmMachine` boundary,
 - may make multiple machines per feature awkward,
 - must not become a framework-owned ViewModel or DI container.
+
+Prototype finding: Kotlin also requires all five generic superclass arguments
+for `object DraftFeature : AfsmFeature(...)`; constructor values do not infer a
+generic supertype. A composed `afsmFeature(...)` value compiles, but the new
+feature container is not yet justified by a product capability.
+
+## Candidate E: Direct Typed Property
+
+Test the smallest language-native declaration that needs no new runtime type
+tokens or feature container:
+
+```kotlin
+@AfsmGraph(
+    id = "DraftQuickstart",
+    fileName = "DraftQuickstart.mmd",
+)
+val DraftStateMachine:
+    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> =
+    afsmMachine {
+        initial(
+            phase = DraftPhase.Editing,
+            data = DraftData(),
+        )
+
+        // product flow
+    }
+```
+
+Expected benefits:
+
+- removes the machine alias, delegated singleton, and factory function,
+- uses the existing `AfsmMachine` boundary and ordinary expected-type inference,
+- gives graph tooling a stable top-level symbol without adding token helpers,
+- preserves `machine = DraftStateMachine` in ViewModel and tests.
+
+Required proof:
+
+- extend `@AfsmGraph` and KSP discovery to a non-private top-level `val`,
+- reject local, member, mutable, private, or non-graph-source properties with
+  useful diagnostics,
+- generate a direct property reference rather than instantiate a wrapper,
+- migrate Draft, Auth, and Checkout and keep their graph, machine, ViewModel,
+  and external-consumer checks green,
+- verify Checkout dynamic initial state still comes from the host's explicit
+  `initialState`, not from rebuilding the machine.
+
+Candidate E is the next hypothesis, not an accepted production API. See
+[[afsm-first-use-api-experiment-results-2026-07-10|the first prototype results]].
 
 ## Prototype Requirements
 

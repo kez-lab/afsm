@@ -2684,3 +2684,27 @@ Conclusion:
 
 - Future pushes and PR updates should no longer start the previous remote
   `Verify release gate` job automatically.
+
+## [2026-07-10] First-use declaration prototypes
+
+Change:
+
+- Added test-only staged type-set, named-channel, and composed-feature machine
+  declarations for representative Draft, Auth, and Checkout flows.
+- Preserved guarded transitions, entry commands, failure/retry, invalid and
+  ignored results, UI effects, payload phases, dynamic initial data, request-id
+  matching, durable completion, and topology.
+- Reproduced and removed intentional compile failures for partial generic
+  arguments, inferred generic feature inheritance, and wrong type channels.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test --tests 'afsm.core.AfsmFirstUseApiExperimentTest'
+./gradlew :afsm-core:check
+```
+
+Conclusion:
+
+- The exact Candidate B/D syntax is not legal Kotlin; compiling fallbacks are
+  safe but introduce new concepts. Candidate E is the next test-first slice.

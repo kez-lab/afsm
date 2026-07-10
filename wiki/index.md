@@ -22,6 +22,7 @@ updated: 2026-07-10
 - [[03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]] - Comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
 - [[03-engineering/afsm-example-catalog|Afsm Example Catalog]] - Canonical example ladder from minimal Draft to Auth, Checkout, ProductEditor, and non-Afsm data screens.
 - [[03-engineering/afsm-first-use-api-experiment|Afsm First-Use API Experiment]] - Breaking pre-release prototypes to reduce feature-boundary generic and declaration ceremony.
+- [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Afsm First-Use API Experiment Results 2026-07-10]] - Compile, behavior, and diagnostic findings that reject two invalid Kotlin shapes and advance direct graphable properties.
 - [[03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] - KSP-based automatic discovery and `.mmd` generation design for multiple state machines.
 - [[03-engineering/afsm-v3-topology-first-api|Superseded Afsm v3 Phased State API]] - Historical phased-state helper direction superseded by the executable DSL plan.
 - [[03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]] - Historical compile/test validation for phased state helpers that were later removed from `afsm-core`.

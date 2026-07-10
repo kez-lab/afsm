@@ -1169,3 +1169,19 @@
   and evidence-based acceptance criteria before changing production API.
 - Updated: `wiki/03-engineering/afsm-first-use-api-experiment.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] verification | First-use declaration prototypes
+
+- Source: Test-only Draft, Auth, and Checkout declaration candidates plus
+  intentional Kotlin compiler-failure probes.
+- Action: Verified behavior parity for staged, named-channel, and composed
+  feature declarations; rejected partial generic and inferred generic
+  superclass syntax; selected a direct graphable property as the next
+  hypothesis without changing production API.
+- Updated: `afsm-core/src/test/kotlin/afsm/core/AfsmFirstUseApiExperimentTest.kt`,
+  `raw/verification/2026-07-10-first-use-api-experiment/README.md`,
+  `raw/README.md`, `wiki/03-engineering/afsm-first-use-api-experiment.md`,
+  `wiki/03-engineering/afsm-first-use-api-experiment-results-2026-07-10.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/index.md`, `wiki/log.md`.
