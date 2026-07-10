@@ -192,7 +192,7 @@ tokens or feature container:
     id = "DraftQuickstart",
     fileName = "DraftQuickstart.mmd",
 )
-val DraftStateMachine:
+val draftStateMachine:
     AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> =
     afsmMachine {
         initial(
@@ -209,7 +209,9 @@ Expected benefits:
 - removes the machine alias, delegated singleton, and factory function,
 - uses the existing `AfsmMachine` boundary and ordinary expected-type inference,
 - gives graph tooling a stable top-level symbol without adding token helpers,
-- preserves `machine = DraftStateMachine` in ViewModel and tests.
+- preserves `machine = draftStateMachine` in ViewModel and tests,
+- follows Kotlin property naming conventions so the machine reads as a value,
+  not a type or singleton declaration.
 
 Required proof:
 

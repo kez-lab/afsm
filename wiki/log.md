@@ -1204,3 +1204,16 @@
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/decision-log.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-10] review | Direct property first use
+
+- Source: README, Draft/Auth/Checkout machine + ViewModel + tests + graphs, KSP
+  contract, and Candidate E verification evidence.
+- Action: Preferred Candidate E over the previous wrapper shape, required Kotlin
+  lower-camel property names, and selected unsafe placeholder initial data in
+  dynamic features as the next API experiment; explicitly retained the missing
+  human-evidence boundary.
+- Updated: `wiki/08-meetings/2026-07-10-afsm-direct-property-first-use-review.md`,
+  `wiki/03-engineering/afsm-first-use-api-experiment.md`,
+  `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
+  `wiki/index.md`, `wiki/log.md`.

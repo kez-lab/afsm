@@ -1373,3 +1373,23 @@ Consequences:
   but are not the normal feature declaration.
 - This is not an API-freeze decision; fresh-user and real-pilot evidence may
   still replace the shape before release.
+
+## [2026-07-10] Name direct machine properties as Kotlin values
+
+Decision: Candidate E machine properties use lower camel case, for example
+`draftStateMachine`, `authStateMachine`, and `checkoutStateMachine`.
+
+Rationale:
+
+- The declaration is now an ordinary top-level `val`, not a class or `object`.
+- PascalCase preserves the visual shape of the removed singleton wrapper and
+  makes readers misclassify the symbol before reaching `: AfsmMachine<...>`.
+- Lower camel case keeps ViewModel hosting readable as value composition:
+  `machine = checkoutStateMachine`.
+
+Consequences:
+
+- Sample, consumer, tests, public docs, and generated KSP property references
+  move together before any API freeze.
+- Graph ids/file names remain explicit and keep their existing PascalCase
+  output names.
