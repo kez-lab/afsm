@@ -52,6 +52,7 @@ updated: 2026-07-11
 - [[06-project/long-term-goal|Afsm Long-Term Goal]] - Active usability-first product goal with full pre-release design freedom and an evidence-driven improvement loop.
 - [[06-project/goal-evidence-baseline-2026-07-10|Afsm Goal Evidence Baseline 2026-07-10]] - Outcome-by-outcome proof audit and first redesign-cycle selection.
 - [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Outcome audit after Checkout restoration, with the completed diagnostic-privacy cycle result and next runtime gap.
+- [[06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]] - Current requirement-by-requirement proof audit after diagnostics, invocation, upload integration, device verification, and pilot preparation.
 - [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Facilitator-only rubric for an unaided Android developer machine/graph/tests session.
 - [[06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]] - Same-feature baseline, review, safety, verification, stop, and rollback contract for the first real pilot beyond repository fixtures.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
@@ -87,7 +88,7 @@ updated: 2026-07-11
 - [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that now passes the main flow and graph-invisible safety-policy check.
 - [[08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review|Afsm Diagnostic Privacy Fresh-Use Review]] - Repository-based review of types-only diagnostics, explicit raw opt-in, and remaining pilot/logger evidence.
 - [[08-meetings/2026-07-11-afsm-phase-owned-invocation-fresh-use-review|Afsm Phase-Owned Invocation Fresh-Use Review]] - Repository-based review of ProductEditor upload ownership, cancellation readability, key ceremony, and remote-work boundaries.
-- [[08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review|ProductEditor Upload Boundary Fresh-Use Review]] - Android integration review of the injected suspend uploader, controllable fakes, safe failure mapping, and unverified device journey.
+- [[08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review|ProductEditor Upload Boundary Fresh-Use Review]] - Android integration and emulator review of the injected uploader, safe failure mapping, visible cancellation, and retained draft.
 
 ## Raw Sources
 

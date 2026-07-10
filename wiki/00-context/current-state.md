@@ -178,6 +178,10 @@ copy/paste source and is mirrored by the external consumer fixture.
   `Uploading mock images` state visibly exposes `Cancel upload`, and tapping it
   returns to `Editing draft` with the draft retained. This is demo-device
   evidence, not real transport, human, or production-pilot evidence.
+- The current completion audit reran the full local release gate and mapped all
+  named local safety requirements to tests. Repository and device evidence are
+  strong, but the Goal remains incomplete because no human first-use result or
+  production-like pilot exists. API freeze is therefore not yet eligible.
 
 ## Remaining Decisions
 

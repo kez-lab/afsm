@@ -1490,3 +1490,17 @@
   `wiki/06-project/decision-log.md`, `wiki/00-context/current-state.md`,
   `wiki/00-context/open-questions.md`, `docs/release-readiness.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] verification | Long-term Goal completion audit
+
+- Source: Current long-term Goal, code/test names, ProductEditor device
+  evidence, pilot/first-use protocols, raw evidence inventory, and full local
+  release gate at `dd54490`.
+- Action: Mapped every outcome and local safety requirement to authoritative
+  proof, classified human first-use and production-like pilot evidence as
+  missing, and kept API freeze ineligible rather than substituting sample or AI
+  evidence.
+- Updated: `raw/verification/2026-07-11-goal-completion-audit/README.md`,
+  `raw/README.md`, `wiki/06-project/goal-completion-audit-2026-07-11.md`,
+  `wiki/06-project/long-term-goal.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/index.md`, `wiki/log.md`.

@@ -79,6 +79,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   [[../06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]],
   but target, roles, commits, thresholds, and evidence permission remain open.
 
+These are completion blockers, not optional follow-ups. The current proof
+boundary is recorded in
+[[../06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]].
+
 ## Resolved Current Policies
 
 - Afsm targets controlled internal beta pilots on complex flow screens; it is
