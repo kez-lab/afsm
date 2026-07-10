@@ -1228,3 +1228,13 @@
   `docs/`, `raw/verification/2026-07-10-graphable-machine-properties/README.md`,
   `wiki/00-context/current-state.md`, `wiki/03-engineering/`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-10] experiment | Dynamic initial-state safety
+
+- Source: Direct-property fresh-use review, Checkout's `productId = 0` machine
+  default, and the two current `afsmHost(machine...)` overloads.
+- Action: Defined invariants and four API candidates for separating graph
+  initial phase from runtime initial data, with compile-time rejection of a
+  missing Checkout state as the primary gate.
+- Updated: `wiki/03-engineering/afsm-dynamic-initial-state-experiment.md`,
+  `wiki/index.md`, `wiki/log.md`.
