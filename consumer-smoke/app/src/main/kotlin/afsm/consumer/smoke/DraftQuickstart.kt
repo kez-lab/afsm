@@ -1,7 +1,7 @@
 package afsm.consumer.smoke
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -40,7 +40,7 @@ sealed interface DraftCommand {
     id = "DraftQuickstart",
     fileName = "DraftQuickstart.mmd",
 )
-val draftStateMachine: AfsmMachine<
+val draftStateMachine: AfsmDefaultMachine<
     DraftState,
     DraftEvent,
     DraftCommand,

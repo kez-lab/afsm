@@ -63,6 +63,10 @@ public final class afsm/core/AfsmDecision$Transitioned : afsm/core/AfsmDecision 
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class afsm/core/AfsmDefaultMachine : afsm/core/AfsmMachine {
+	public abstract fun getInitialState ()Ljava/lang/Object;
+}
+
 public final class afsm/core/AfsmDefinitionException : java/lang/IllegalArgumentException {
 	public fun <init> (Ljava/lang/String;)V
 }
@@ -145,7 +149,6 @@ public abstract interface class afsm/core/AfsmGraphSource {
 }
 
 public abstract interface class afsm/core/AfsmMachine : afsm/core/AfsmGraphSource, afsm/core/AfsmReducer {
-	public abstract fun getInitialState ()Ljava/lang/Object;
 }
 
 public final class afsm/core/AfsmMachineBuilder {
@@ -157,7 +160,8 @@ public final class afsm/core/AfsmMachineBuilder {
 }
 
 public final class afsm/core/AfsmMachineDslKt {
-	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmMachine;
+	public static final fun afsmMachine (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmMachine;
+	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmDefaultMachine;
 }
 
 public final class afsm/core/AfsmMmdOptions {

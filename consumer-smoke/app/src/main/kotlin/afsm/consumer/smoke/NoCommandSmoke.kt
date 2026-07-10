@@ -1,6 +1,6 @@
 package afsm.consumer.smoke
 
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmNoCommand
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
@@ -24,7 +24,7 @@ internal sealed interface NoCommandEvent {
 internal typealias NoCommandState = AfsmState<NoCommandPhase, NoCommandData>
 
 private typealias NoCommandMachine =
-    AfsmMachine<NoCommandState, NoCommandEvent, AfsmNoCommand, AfsmNoEffect>
+    AfsmDefaultMachine<NoCommandState, NoCommandEvent, AfsmNoCommand, AfsmNoEffect>
 
 internal object NoCommandSmokeMachine : NoCommandMachine by noCommandSmokeMachine()
 

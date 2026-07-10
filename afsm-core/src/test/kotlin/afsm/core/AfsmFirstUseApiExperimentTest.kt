@@ -147,7 +147,7 @@ private class ExperimentalMachineTypes<E : Any, C : Any, F : Any> {
     fun <P : Any, D : Any> machine(
         initialState: AfsmState<P, D>,
         build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
-    ): AfsmMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
+    ): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
         initialState = initialState,
         build = build,
     )
@@ -174,7 +174,7 @@ private fun <P : Any, D : Any, E : Any, C : Any, F : Any> namedAfsmMachine(
     commands: ExperimentalTypeChannel<C>,
     effects: ExperimentalTypeChannel<F>,
     build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
-): AfsmMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
+): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
     initialState = initialState,
     build = build,
 )
@@ -185,11 +185,11 @@ private class ExperimentalFeature<P : Any, D : Any, E : Any, C : Any, F : Any>(
     private val defaultInitialState: AfsmState<P, D>,
     private val build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
 ) {
-    val machine: AfsmMachine<AfsmState<P, D>, E, C, F> = machine(defaultInitialState)
+    val machine: AfsmDefaultMachine<AfsmState<P, D>, E, C, F> = machine(defaultInitialState)
 
     fun machine(
         initialState: AfsmState<P, D>,
-    ): AfsmMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
+    ): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> = experimentalMachine(
         initialState = initialState,
         build = build,
     )
@@ -210,7 +210,7 @@ private fun <P : Any, D : Any, E : Any, C : Any, F : Any> experimentalFeature(
 private fun <P : Any, D : Any, E : Any, C : Any, F : Any> experimentalMachine(
     initialState: AfsmState<P, D>,
     build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
-): AfsmMachine<AfsmState<P, D>, E, C, F> = afsmMachine {
+): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> = afsmMachine {
     initial(
         phase = initialState.phase,
         data = initialState.data,
@@ -255,7 +255,7 @@ private val DraftFeature = experimentalFeature(
 }
 
 private val draftCandidates: List<
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>,
+    AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>,
     > = listOf(
     draftCandidateB,
     draftCandidateC,
@@ -379,7 +379,7 @@ private val AuthFeature = experimentalFeature(
 }
 
 private val authCandidates: List<
-    AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect>,
+    AfsmDefaultMachine<AuthState, AuthEvent, AuthCommand, AuthEffect>,
     > = listOf(
     authCandidateB,
     authCandidateC,
@@ -517,7 +517,7 @@ private val CheckoutFeature = experimentalFeature(
 
 private fun checkoutCandidates(
     initialData: CheckoutData,
-): List<AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect>> = listOf(
+): List<AfsmDefaultMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect>> = listOf(
     checkoutCandidateB(initialData),
     checkoutCandidateC(initialData),
     CheckoutFeature.machine(

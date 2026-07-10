@@ -1,7 +1,7 @@
 package afsm.consumer.smoke
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
@@ -36,7 +36,7 @@ internal typealias SmokeState = AfsmState<SmokePhase, SmokeData>
     fileName = "ConsumerSmoke.mmd",
 )
 internal val consumerSmokeMachine:
-    AfsmMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect> =
+    AfsmDefaultMachine<SmokeState, SmokeEvent, SmokeCommand, AfsmNoEffect> =
     afsmMachine {
         initial(
             phase = SmokePhase.Editing,

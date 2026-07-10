@@ -1,6 +1,7 @@
 package afsm.viewmodel
 
 import afsm.core.Afsm
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmMachine
 import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
@@ -115,7 +116,7 @@ class AfsmViewModelTest {
         val handledCommands = mutableListOf<CounterCommand>()
 
         private val host = afsmHost(
-            machine = CounterStateMachine,
+            machine = DynamicCounterStateMachine,
             initialState = CounterState(count = initialCount),
             commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
                 handledCommands += command
@@ -135,7 +136,7 @@ class AfsmViewModelTest {
     }
 
     private object CounterStateMachine :
-        AfsmMachine<CounterState, CounterEvent, CounterCommand, CounterEffect> {
+        AfsmDefaultMachine<CounterState, CounterEvent, CounterCommand, CounterEffect> {
         override val initialState: CounterState = CounterState()
         override val topology: AfsmTopology = AfsmTopology(
             states = emptyList(),
@@ -164,6 +165,9 @@ class AfsmViewModelTest {
             )
         }
     }
+
+    private object DynamicCounterStateMachine :
+        AfsmMachine<CounterState, CounterEvent, CounterCommand, CounterEffect> by CounterStateMachine
 
     private data class CounterState(
         val count: Int = 0,

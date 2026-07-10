@@ -1,5 +1,6 @@
 package afsm.viewmodel
 
+import afsm.core.AfsmDefaultMachine
 import afsm.core.AfsmMachine
 import afsm.core.AfsmReducer
 import afsm.runtime.AfsmCommandHandler
@@ -11,16 +12,15 @@ import androidx.lifecycle.viewModelScope
 /**
  * Hosts a graphable Afsm machine in this [ViewModel].
  *
- * Use this overload for the standard `afsmMachine { ... }` path where the
- * machine already owns its initial state and reducer behavior. It keeps feature
- * ViewModels focused on command execution instead of repeating
- * `initialState = machine.initialState, reducer = machine`.
+ * Use this overload only when the machine owns a genuine default state. It
+ * keeps static feature ViewModels focused on command execution instead of
+ * repeating `initialState = machine.initialState, reducer = machine`.
  *
  * If the machine emits commands, pass [commandHandler]. The default command
  * handler is intended only for machines that never emit commands.
  */
 public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
+    machine: AfsmDefaultMachine<S, E, C, F>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
 ): AfsmHost<S, E, C, F> {
@@ -40,7 +40,8 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * navigation arguments, a deep link, repository restoration, or a
  * [androidx.lifecycle.SavedStateHandle].
  *
- * The supplied [initialState] wins over [machine]'s default initial state.
+ * The supplied [initialState] is the runtime start state. It is mandatory when
+ * [machine] has no default and may explicitly override a default machine.
  *
  * If the machine emits commands, pass [commandHandler]. The default command
  * handler is intended only for machines that never emit commands.

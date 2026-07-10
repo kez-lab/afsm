@@ -19,16 +19,36 @@ import kotlin.reflect.KClass
  *   or entry/exit handlers.
  * - [F]: effect type. Effects are optional UI-side one-shot outputs.
  *
- * The [build] block declares the initial state, phase scopes, event branches,
- * entry/exit handlers, and graph metadata. The returned [AfsmMachine] is both
- * executable transition logic and an [AfsmGraphSource].
+ * The [build] block declares the default initial state, phase scopes, event
+ * branches, entry/exit handlers, and graph metadata. The returned
+ * [AfsmDefaultMachine] is both executable transition logic and an
+ * [AfsmGraphSource]. Use the `initialPhase` overload below when runtime data
+ * must come from the host.
  */
 public fun <P : Any, D : Any, E : Any, C : Any, F : Any> afsmMachine(
+    build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
+): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> {
+    val builder = AfsmMachineBuilder<P, D, E, C, F>()
+    builder.build()
+    return builder.buildDefaultMachine()
+}
+
+/**
+ * Builds a graphable executable machine whose runtime state must be supplied by
+ * its host.
+ *
+ * Use this overload when the initial [phase][initialPhase] is known for graph
+ * topology, but durable data comes from navigation, a deep link, restoration,
+ * or another runtime source. The returned [AfsmMachine] intentionally has no
+ * default state, so Android hosting requires an explicit `initialState`.
+ */
+public fun <P : Any, D : Any, E : Any, C : Any, F : Any> afsmMachine(
+    initialPhase: P,
     build: AfsmMachineBuilder<P, D, E, C, F>.() -> Unit,
 ): AfsmMachine<AfsmState<P, D>, E, C, F> {
     val builder = AfsmMachineBuilder<P, D, E, C, F>()
     builder.build()
-    return builder.buildMachine()
+    return builder.buildMachine(initialPhase = initialPhase)
 }
 
 @AfsmDslMarker
@@ -39,7 +59,8 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
     /**
      * Sets the initial finite phase and extended data for the machine.
      *
-     * [phase] is the first graph state exposed through [AfsmMachine.initialState].
+     * [phase] is the first graph state exposed through
+     * [AfsmDefaultMachine.initialState].
      * [data] is the initial extended data associated with that phase.
      *
      * Calling [initial] does not run the target phase's `onEnter` handler.
@@ -154,25 +175,44 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
         states += builder.buildDefinition()
     }
 
-    internal fun buildMachine(): AfsmMachine<AfsmState<P, D>, E, C, F> {
+    internal fun buildDefaultMachine(): AfsmDefaultMachine<AfsmState<P, D>, E, C, F> {
         val initial = requireNotNull(initialState) {
             "Afsm machine requires an initial phase and data."
         }
         val builtStates = states.toList()
 
         validateDefinitions(
-            initial = initial,
+            initialPhase = initial.phase,
             states = builtStates,
         )
 
-        return AfsmDslMachine(
+        return AfsmDefaultDslMachine(
             initialState = initial,
             states = builtStates,
         )
     }
 
+    internal fun buildMachine(
+        initialPhase: P,
+    ): AfsmMachine<AfsmState<P, D>, E, C, F> {
+        require(initialState == null) {
+            "Afsm machine with initialPhase must not also declare initial phase and data."
+        }
+        val builtStates = states.toList()
+
+        validateDefinitions(
+            initialPhase = initialPhase,
+            states = builtStates,
+        )
+
+        return AfsmDslMachine(
+            initialPhase = initialPhase,
+            states = builtStates,
+        )
+    }
+
     private fun validateDefinitions(
-        initial: AfsmState<P, D>,
+        initialPhase: P,
         states: List<AfsmStateDefinition<P, D, E, C, F>>,
     ) {
         val errors = mutableListOf<String>()
@@ -188,8 +228,8 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any, F : Any> {
                 errors += "Duplicate phase declaration: $label."
             }
 
-        if (states.none { it.matcher(initial.phase) != null }) {
-            errors += "Initial phase ${afsmLabelForValue(initial.phase)} has no matching phase declaration."
+        if (states.none { it.matcher(initialPhase) != null }) {
+            errors += "Initial phase ${afsmLabelForValue(initialPhase)} has no matching phase declaration."
         }
 
         val stateLabels = states.map { it.label }.toSet()
@@ -1136,8 +1176,8 @@ internal typealias AfsmEntryHandler<P, D, C, F> =
 internal typealias AfsmExitHandler<P, D, C, F> =
     (phase: P, execution: AfsmDslExecution<P, D, C, F>) -> Unit
 
-private class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
-    override val initialState: AfsmState<P, D>,
+private open class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
+    initialPhase: P,
     private val states: List<AfsmStateDefinition<P, D, E, C, F>>,
 ) : AfsmMachine<AfsmState<P, D>, E, C, F> {
     override val topology: AfsmTopology = AfsmTopology(
@@ -1156,7 +1196,7 @@ private class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
             }
         }.distinct(),
         initialStateId = states.firstOrNull { state ->
-            state.matcher(initialState.phase) != null
+            state.matcher(initialPhase) != null
         }?.label,
     )
 
@@ -1279,6 +1319,14 @@ private class AfsmDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
         }
     }
 }
+
+private class AfsmDefaultDslMachine<P : Any, D : Any, E : Any, C : Any, F : Any>(
+    override val initialState: AfsmState<P, D>,
+    states: List<AfsmStateDefinition<P, D, E, C, F>>,
+) : AfsmDslMachine<P, D, E, C, F>(
+    initialPhase = initialState.phase,
+    states = states,
+), AfsmDefaultMachine<AfsmState<P, D>, E, C, F>
 
 internal class AfsmDslExecution<P : Any, D : Any, C : Any, F : Any>(
     var data: D,

@@ -10,12 +10,7 @@ import afsm.core.afsmMachine
 )
 internal val checkoutStateMachine:
     AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
-    afsmMachine {
-        initial(
-            phase = CheckoutPhase.Idle,
-            data = CheckoutData(productId = 0),
-        )
-
+    afsmMachine(initialPhase = CheckoutPhase.Idle) {
         phase(CheckoutPhase.Idle) {
             on<CheckoutEvent.ScreenEntered> {
                 transitionTo(CheckoutPhase.ProductLoading)

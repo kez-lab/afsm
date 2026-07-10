@@ -1,7 +1,7 @@
 package afsm.sample.shop.feature.editor
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.afsmMachine
 
 @AfsmGraph(
@@ -9,7 +9,7 @@ import afsm.core.afsmMachine
     fileName = "ProductEditorStateMachine.mmd",
 )
 internal val productEditorStateMachine:
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
     afsmMachine {
         initial(
             phase = ProductEditorPhase.EditingDraft,

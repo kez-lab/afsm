@@ -1,7 +1,7 @@
 package afsm.sample.shop.feature.auth
 
 import afsm.core.AfsmGraph
-import afsm.core.AfsmMachine
+import afsm.core.AfsmDefaultMachine
 import afsm.core.afsmMachine
 
 @AfsmGraph(
@@ -9,7 +9,7 @@ import afsm.core.afsmMachine
     fileName = "AuthStateMachine.mmd",
 )
 internal val authStateMachine:
-    AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect> =
+    AfsmDefaultMachine<AuthState, AuthEvent, AuthCommand, AuthEffect> =
     afsmMachine {
         initial(
             phase = AuthPhase.Editing,
