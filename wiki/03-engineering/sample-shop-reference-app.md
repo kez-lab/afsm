@@ -139,6 +139,9 @@ The ProductEditor sample now uses the v3 executable DSL:
   shorter save/review/publish work remains ordinary sequential commands.
 - `CancelUploadClicked` returns to `EditingDraft`; runtime phase exit cancels
   the cooperative upload without a cancel command or ViewModel `Job` map.
+- `ProductImageUploader` is a feature-owned suspend boundary injected by the
+  route. ViewModel tests use controllable start/cancel signals, map ordinary
+  failures to fixed safe UI data, and rethrow cancellation.
 - `productEditorStateMachine` is the annotated `AfsmDefaultMachine` property
   and implements `AfsmGraphSource` through `AfsmMachine`.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
@@ -264,3 +267,5 @@ Android CLI journey verification:
 
 - Add Android CLI smoke evidence for the latest API-hardening pass if visual regression confidence is needed.
 - Consider a public codelab that walks through ProductEditor from contract to graph output after Checkout onboarding is stable.
+- Retry the ProductEditor cancel journey when Android CLI can resolve the AVD it
+  starts; repository pass does not establish on-device visibility or tapping.

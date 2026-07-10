@@ -110,6 +110,7 @@ fun onEvent(event: AuthEvent) {
 Files:
 
 - `feature/editor/ProductEditorContract.kt`
+- `feature/editor/ProductImageUploader.kt`
 - `feature/editor/ProductEditorStateMachine.kt`
 - `feature/editor/ProductEditorViewModel.kt`
 - `feature/editor/ProductEditorScreen.kt`
@@ -146,6 +147,9 @@ Policy:
   exit cancels the cooperative upload, and the UI exposes
   `CancelUploadClicked -> EditingDraft` without a cancel command or ViewModel
   job registry.
+- The route injects a demo `ProductImageUploader`; controllable ViewModel fakes
+  prove start/cancel and fixed safe failure mapping without elapsed-time races.
+  The mock is not real network or SDK cancellation evidence.
 - `productEditorStateMachine` is the annotated executable machine property; no
   delegated object or separate factory is required.
 - KSP generates `AfsmGeneratedGraphRegistry` from annotated stable machine

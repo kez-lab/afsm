@@ -110,6 +110,12 @@ not prove broader sample behavior, remote-work cancellation, or binary
 compatibility by itself; those remain covered by module tests, sample tests,
 graph generation, and `apiCheck` in the local release gate.
 
+The 2026-07-11 ProductEditor upload-boundary attempt assembled the current APK
+and passed repository verification, but Android CLI could not install/launch it:
+the CLI reported `medium_phone` ready as `emulator-5554` and then could not find
+either serial/name or any online default device. Therefore no current
+layout/screenshot/cancel-tap claim is part of release readiness.
+
 Before starting a pilot, record:
 
 - Product/engineering owner.

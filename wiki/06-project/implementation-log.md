@@ -2907,3 +2907,30 @@ Conclusion:
 - Cooperative local phase-owned cancellation, graph visibility, API checks,
   Maven Local publication, and the clean external consumer pass. Remote
   cancellation and human preference remain outside repository proof.
+
+## [2026-07-11] ProductEditor injected upload boundary
+
+Change:
+
+- Added a feature-owned `ProductImageUploader` suspend interface and explicit
+  route-provided demo implementation.
+- Replaced the hardcoded ViewModel delay/token with injected upload execution.
+- Mapped ordinary exceptions to a fixed safe failure event and rethrew
+  cancellation.
+- Replaced elapsed-time cancellation testing with controllable start/cancel
+  signals and added failure/cancellation classification tests.
+
+Verification:
+
+```bash
+./gradlew :sample-shop:testDebugUnitTest \
+  :sample-shop:generateAfsmMmd \
+  :sample-shop:assembleDebug --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Repository integration, graph, APK, API, Maven Local, and external consumer
+  pass. Android CLI install/launch failed after its own emulator-start success,
+  so UI journey actions remain unverified.

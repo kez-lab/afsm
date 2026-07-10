@@ -10,6 +10,7 @@ Auth first, then read ProductEditor when you want to see how the DSL scales.
 ## Files
 
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorContract.kt`
+- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductImageUploader.kt`
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorStateMachine.kt`
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorViewModel.kt`
 - `sample-shop/src/main/kotlin/afsm/sample/shop/feature/editor/ProductEditorScreen.kt`
@@ -166,6 +167,38 @@ not own a `Job` map or `CancelImageUpload` command.
 Short sequential work such as review submission remains an ordinary entry
 command. This keeps transition branches focused on phase movement and data
 updates while making the different execution policies explicit.
+
+## Android Upload Boundary
+
+The machine owns when upload is active. The Android adapter owns how upload is
+performed:
+
+```kotlin
+fun interface ProductImageUploader {
+    suspend fun upload(draft: ProductDraft): String
+}
+
+is ProductEditorCommand.StartImageUpload -> {
+    try {
+        val uploadToken = imageUploader.upload(command.draft)
+        dispatch(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Exception) {
+        dispatch(ProductEditorEvent.ImageUploadFailed("Image upload failed."))
+    }
+}
+```
+
+`ProductEditorRoute` supplies `MockProductImageUploader`; the ViewModel has no
+hidden default and no `Job` map. The mock waits 2 seconds only so the advanced
+sample's cancel state can be observed. That delay is not an Afsm policy.
+
+`ProductEditorViewModelTest` injects a controllable uploader that signals start,
+suspends, and records cancellation in `finally`. Separate tests prove ordinary
+failure maps to fixed UI data and `CancellationException` is not converted to a
+domain failure. A real transport still needs its own remote abort, request-id,
+and idempotency contract.
 
 ## Transition Execution Order
 

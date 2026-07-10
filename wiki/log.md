@@ -1443,3 +1443,19 @@
 - Updated: `wiki/03-engineering/product-editor-upload-boundary-experiment.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] implementation+verification | ProductEditor upload boundary
+
+- Source: Candidate B spec, compile-red ViewModel tests, controllable uploader
+  fakes, sample/graph/APK/full release gates, and Android CLI 1.0.15433482.
+- Action: Injected a feature-owned suspend uploader, separated success/failure/
+  cancellation, preserved the device-discovery failure, and synchronized
+  repository versus on-device evidence boundaries.
+- Updated: `sample-shop/`, `CHANGELOG.md`, `docs/`,
+  `raw/verification/2026-07-11-product-editor-upload-boundary/`,
+  `raw/README.md`, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/product-editor-upload-boundary-experiment.md`,
+  `wiki/05-qa/verification-report-2026-07-11-product-editor-upload-boundary.md`,
+  `wiki/06-project/implementation-log.md`,
+  `wiki/08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review.md`,
+  `wiki/index.md`, `wiki/log.md`.

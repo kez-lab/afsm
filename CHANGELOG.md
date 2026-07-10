@@ -67,6 +67,9 @@ Initial pre-release candidate.
   and explicit unresolved-payment protection through `PaymentStatusUnknown`.
 - ProductEditor upload cancellation with a visible machine/graph/UI edge and
   no feature-level cancel command.
+- ProductEditor `ProductImageUploader` suspend boundary with explicit route
+  injection, controllable cancellation tests, fixed safe failure mapping, and a
+  demo-only visibility delay.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.

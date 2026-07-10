@@ -1,7 +1,7 @@
 ---
 title: ProductEditor Upload Boundary Experiment
 updated: 2026-07-11
-status: candidate-b-selected
+status: candidate-b-implemented
 ---
 
 # ProductEditor Upload Boundary Experiment
@@ -105,3 +105,20 @@ propagation. The default mock is not a real upload backend. It cannot prove a
 server stopped work, bytes stopped transferring, or an SDK callback obeyed
 cancellation. A production-like pilot still needs a real transport contract,
 request identity, and backend semantics.
+
+## Implementation Result
+
+Candidate B is implemented in `8b44656`:
+
+- ProductEditorRoute explicitly supplies `MockProductImageUploader`,
+- the ViewModel calls the injected suspend uploader from the existing
+  phase-owned invocation handler,
+- success, fixed safe failure, and cancellation paths are separated,
+- controllable tests prove start/cancel without timing races,
+- the mock's 2 second delay is labeled demo-only,
+- sample tests, graph, APK, API checks, full local release gate, Maven Local,
+  and external consumer pass.
+
+Android CLI device verification did not pass: the CLI started `medium_phone`
+as `emulator-5554` but `android run` could not find the serial, AVD name, or any
+online default device. No on-device UI claim is made.

@@ -213,7 +213,10 @@ cancelled.assertCommandInvocations(
 Add a host/ViewModel coroutine test for the execution contract: start a
 suspended cooperative handler, dispatch the exit event, prove cancellation ran,
 advance past the old completion time, and prove no result changed state.
-ProductEditor provides both the machine assertion and ViewModel example.
+ProductEditor provides both the machine assertion and ViewModel example. Its
+ViewModel test injects a controllable `ProductImageUploader`, so the test proves
+the Android suspend boundary started and cancelled rather than merely advancing
+a hardcoded delay.
 
 Do not use this test as proof that remote or blocking work stopped. Keep a
 request id and stale-result assertion when work can outlive local coroutine

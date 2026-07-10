@@ -111,10 +111,10 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   Raw state/event/command/reason/throwable values require explicit
   `AfsmDiagnosticDataPolicy.IncludeValues` and grouped `diagnostic.values`
   access.
-- ProductEditor phase-owned cancellation is proven against the runtime and a
-  ViewModel delay, but the Android adapter still hardcodes that delay. A
-  feature-owned suspend uploader is the selected next experiment so repository
-  cancellation/failure mapping can be tested without timing races.
+- ProductEditor injects a feature-owned `ProductImageUploader` suspend boundary.
+  Controllable ViewModel tests prove uploader start/cancel, fixed safe failure
+  mapping, and cancellation rethrow without timing races. The route supplies a
+  demo-only cooperative mock; it is not real transport evidence.
 
 ## Examples and Documentation
 
@@ -146,8 +146,9 @@ copy/paste source and is mirrored by the external consumer fixture.
 - `scripts/verify-release-local.sh` is the authoritative local release gate. It
   runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
   Maven Local publication, and the clean external consumer smoke build.
-- The full local release gate passed on 2026-07-11 after the diagnostic privacy
-  and phase-owned invocation redesigns. The known Kotlin Gradle
+- The full local release gate passed on 2026-07-11 after the diagnostic privacy,
+  phase-owned invocation, and injected ProductEditor uploader changes. The
+  known Kotlin Gradle
   plugin POM rewriting deprecation warning remains non-blocking.
 - Hosted GitHub Actions CI was removed for cost control. No
   `.github/workflows/ci.yml` exists; maintainers run the relevant local checks
@@ -167,8 +168,11 @@ copy/paste source and is mirrored by the external consumer fixture.
   minimal stable/pending `SavedStateHandle` keys and an explicit
   `PaymentStatusUnknown` phase instead of serializing the full machine state or
   silently retrying interrupted payment work. JVM, graph, APK assemble, and full
-  release gates pass; on-device launch is unverified because Android CLI could
-  not discover the booted emulator.
+  release gates pass.
+- Current ProductEditor Android CLI verification failed at installation/launch:
+  the CLI reported `medium_phone` started as `emulator-5554`, then could not
+  resolve the serial, AVD name, or any online default device. No current
+  layout/screenshot/cancel-tap result exists.
 
 ## Remaining Decisions
 

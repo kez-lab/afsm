@@ -96,6 +96,23 @@ invocation key earns its authoring cost and whether active invocation capacity
 needs a first-class bound. Neither should be changed without realistic authoring
 or workload evidence.
 
+## Upload Boundary Cycle Result
+
+Completed in specification commit `a3ef911` and implementation commit
+`8b44656`:
+
+- ProductEditor now invokes a feature-owned suspend uploader rather than a
+  hardcoded ViewModel delay,
+- controllable fakes prove start, cancellation, safe failure mapping, and
+  cancellation classification,
+- machine/graph remain unchanged while sample tests, APK, API checks, full
+  release gate, Maven Local, and external consumer pass,
+- Android CLI installation failed despite the CLI reporting its AVD ready, so
+  cancel-button visibility/tap remains unverified.
+
+This strengthens natural Android integration evidence without satisfying the
+human or production-like pilot outcomes.
+
 ## External Evidence Boundary
 
 These repository cycles can improve default safety and executable evidence.

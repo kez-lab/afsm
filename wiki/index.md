@@ -62,6 +62,7 @@ updated: 2026-07-11
 - [[05-qa/verification-report-2026-05-09-sample-shop-fsm-smoke|Sample Shop FSM Smoke Verification]] - Android CLI layout/screenshot verification for signup and product registration FSM flows.
 - [[05-qa/verification-report-2026-05-09-product-editor-transition-action-rename-smoke|ProductEditor Transition Action Rename Smoke Verification]] - Android CLI regression evidence after ProductEditor state/command naming cleanup.
 - [[05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke|ProductEditor Executable DSL Smoke Verification]] - Android CLI regression evidence after migrating ProductEditor to the executable DSL.
+- [[05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification 2026-07-11]] - Repository-pass uploader cancellation/failure evidence with Android CLI install/launch failure kept explicit.
 
 ## LLM Operations
 
@@ -85,6 +86,7 @@ updated: 2026-07-11
 - [[08-meetings/2026-07-10-checkout-product-goal-fit-review|Checkout Product Goal Fit Review]] - Constrained machine/graph/tests-only review that now passes the main flow and graph-invisible safety-policy check.
 - [[08-meetings/2026-07-11-afsm-diagnostic-privacy-fresh-use-review|Afsm Diagnostic Privacy Fresh-Use Review]] - Repository-based review of types-only diagnostics, explicit raw opt-in, and remaining pilot/logger evidence.
 - [[08-meetings/2026-07-11-afsm-phase-owned-invocation-fresh-use-review|Afsm Phase-Owned Invocation Fresh-Use Review]] - Repository-based review of ProductEditor upload ownership, cancellation readability, key ceremony, and remote-work boundaries.
+- [[08-meetings/2026-07-11-product-editor-upload-boundary-fresh-use-review|ProductEditor Upload Boundary Fresh-Use Review]] - Android integration review of the injected suspend uploader, controllable fakes, safe failure mapping, and unverified device journey.
 
 ## Raw Sources
 
