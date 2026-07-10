@@ -36,16 +36,16 @@ sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-typealias DraftMachine =
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
-
 @AfsmGraph(
     id = "DraftQuickstart",
     fileName = "DraftQuickstart.mmd",
 )
-object DraftStateMachine : DraftMachine by draftMachine()
-
-private fun draftMachine(): DraftMachine = afsmMachine {
+val DraftStateMachine: AfsmMachine<
+    DraftState,
+    DraftEvent,
+    DraftCommand,
+    AfsmNoEffect,
+    > = afsmMachine {
     initial(
         phase = DraftPhase.Editing,
         data = DraftData(),

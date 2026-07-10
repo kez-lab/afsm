@@ -4,17 +4,13 @@ import afsm.core.AfsmGraph
 import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
 
-private typealias CheckoutMachine =
-    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect>
-
 @AfsmGraph(
     id = "Checkout",
     fileName = "CheckoutStateMachine.mmd",
 )
-internal object CheckoutStateMachine : CheckoutMachine by checkoutMachine()
-
-private fun checkoutMachine(): CheckoutMachine {
-    return afsmMachine {
+internal val CheckoutStateMachine:
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    afsmMachine {
         initial(
             phase = CheckoutPhase.Idle,
             data = CheckoutData(productId = 0),
@@ -218,7 +214,6 @@ private fun checkoutMachine(): CheckoutMachine {
                 ignore(reason = "Checkout is already complete.")
             }
         }
-    }
 }
 
 private fun CheckoutData.hasLoadedProduct(): Boolean {

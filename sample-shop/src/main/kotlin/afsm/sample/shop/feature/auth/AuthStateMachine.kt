@@ -4,16 +4,13 @@ import afsm.core.AfsmGraph
 import afsm.core.AfsmMachine
 import afsm.core.afsmMachine
 
-private typealias AuthMachine = AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect>
-
 @AfsmGraph(
     id = "Auth",
     fileName = "AuthStateMachine.mmd",
 )
-internal object AuthStateMachine : AuthMachine by authMachine()
-
-private fun authMachine(): AuthMachine {
-    return afsmMachine {
+internal val AuthStateMachine:
+    AfsmMachine<AuthState, AuthEvent, AuthCommand, AuthEffect> =
+    afsmMachine {
         initial(
             phase = AuthPhase.Editing,
             data = AuthData(),
@@ -149,7 +146,6 @@ private fun authMachine(): AuthMachine {
         }
 
         phase<AuthPhase.Authenticated>()
-    }
 }
 
 private fun AuthData.normalized(): AuthData {
