@@ -21,10 +21,6 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## API and Module Boundaries
 
-- Can `@AfsmGraph` support a non-private top-level `val` machine with useful
-  diagnostics and stable generated references, allowing Draft, Auth, and
-  Checkout to remove their delegated singleton and factory declarations without
-  adding type-token or feature-container concepts?
 - Before external publication, should the executable DSL, `@AfsmGraph`, topology
   types, and `AfsmGraphSource` remain in `afsm-core`, or should graph concerns
   move to a smaller annotation/API module? This includes deciding whether every
@@ -66,6 +62,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   not.
 - The current public authoring direction is the phase/data executable DSL in
   `afsm-core`; older v1/v2 drafts and phased-helper proposals are historical.
+- Graphable features use a non-private stable top-level `val` machine. KSP
+  references that property directly; delegated object/factory wrappers are no
+  longer required, while eligible classes/objects remain supported.
 - `AfsmTransition` carries effects. Effects are best-effort with no replay by
   default, while required progress stays in state or state plus acknowledgement.
 - Retry and stale-result policy is feature-owned through explicit phases,

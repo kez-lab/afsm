@@ -40,6 +40,8 @@ Initial pre-release candidate.
 - `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including machine and dynamic initial state overloads.
 - `afsm-compose` with `CollectAfsmEffects(...)`.
 - `afsm-graph-ksp` KSP processor for automatic graph registry generation.
+- `@AfsmGraph` discovery for stable top-level machine properties, allowing
+  feature declarations to avoid delegated class/object wrappers and factories.
 - `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
 - `phase(phase)` DSL convenience for terminal or marker phases with no handlers.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.

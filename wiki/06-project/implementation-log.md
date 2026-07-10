@@ -2708,3 +2708,29 @@ Conclusion:
 
 - The exact Candidate B/D syntax is not legal Kotlin; compiling fallbacks are
   safe but introduce new concepts. Candidate E is the next test-first slice.
+
+## [2026-07-10] Direct graphable machine properties
+
+Change:
+
+- Extended `@AfsmGraph` and KSP registry generation to stable top-level machine
+  properties, including typealias resolution and focused unsafe-shape errors.
+- Migrated Draft, Auth, Checkout, ProductEditor, and external consumer graph
+  machines from aliases/delegated objects/factories to direct properties.
+- Updated first-use, public API, graph, sample, changelog, and canonical wiki
+  guidance to the same declaration shape.
+
+Verification:
+
+```bash
+./gradlew :afsm-graph-ksp:check :afsm-core:check
+./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.auth.AuthStateMachineTest' --tests 'afsm.sample.shop.feature.checkout.CheckoutStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --tests 'afsm.sample.shop.feature.graph.AfsmGraphRegistryTest' :sample-shop:generateAfsmMmd
+./scripts/verify-consumer-smoke.sh --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Candidate E is coherent across core, graph tooling, Android sample flows,
+  ViewModel dynamic initial state, and a clean external consumer. Human
+  first-use preference remains a separate evidence gap.

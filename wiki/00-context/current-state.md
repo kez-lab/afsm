@@ -59,7 +59,7 @@ external Maven Local consumer check.
 | `afsm-viewmodel` | `ViewModel.afsmHost(...)` integration using `viewModelScope`, including explicit initial-state overloads |
 | `afsm-compose` | Lifecycle-aware `CollectAfsmEffects(...)` route helper |
 | `afsm-test` | Kotlin-only transition assertion helpers |
-| `afsm-graph-ksp` | `@AfsmGraph` discovery and generated graph registry |
+| `afsm-graph-ksp` | `@AfsmGraph` discovery for stable top-level machine properties and eligible classes/objects, plus generated graph registry |
 | `io.github.afsm.graph` | Included-build Gradle plugin that wires KSP and `generateAfsmMmd` for one selected Android unit-test variant |
 | `sample-shop` | Compose + Room reference app using Afsm for Auth, Checkout, and ProductEditor while leaving simple data screens on ordinary ViewModels |
 | `consumer-smoke` | Separate Android Gradle build that consumes Maven Local artifacts, mirrors the Draft quickstart, runs machine/ViewModel tests, and exports a graph |
@@ -73,11 +73,13 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 - The canonical DSL vocabulary is `phase`, `on`, named `case`, phase-only
   `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, `effect`,
   `ignore`, and `invalid`.
-- A 2026-07-10 test-only first-use experiment preserved Draft, Auth, and
-  Checkout behavior across three alternative declarations. It changed no
-  production API: partial generic function arguments and inferred generic
-  feature superclasses were rejected by Kotlin, and a direct typed top-level
-  machine property with graph discovery is the next hypothesis.
+- A 2026-07-10 first-use experiment rejected partial generic calls and inferred
+  generic feature superclasses, then implemented the smallest viable shape:
+  graphable features expose one explicitly typed top-level `val` machine.
+  Draft, Auth, Checkout, ProductEditor, and consumer fixtures no longer need a
+  machine alias, delegated object, or factory. Fresh human preference remains
+  unverified, so this is a pre-release authoring candidate rather than an API
+  freeze.
 - `case(condition = ...)` and payload phase factories are read-only scopes.
 - A handled event stays in its phase by omitting `transitionTo(...)`.
   `ignore(...)` is reserved for expected harmless no-ops; omitted impossible

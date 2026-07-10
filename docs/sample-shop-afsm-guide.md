@@ -140,8 +140,10 @@ Policy:
 - ProductEditor keeps submit/resubmit phase transitions inline in each event branch; helper functions are limited to data transformations so graph-relevant flow remains visible.
 - Validation failure is modeled as an explicit no-transition `case(label = "invalid ...", condition = ...)` that updates data, not as a second competing `transitionTo`.
 - `onEnter` emits commands such as `SaveDraft`, `StartImageUpload`, `StartReviewSubmission`, and `StartProductPublish`.
-- `ProductEditorStateMachine` is annotated with `@AfsmGraph` and delegates to the DSL machine, which implements both `AfsmReducer` and `AfsmGraphSource`.
-- KSP generates `AfsmGeneratedGraphRegistry` from annotated state-machine classes.
+- `ProductEditorStateMachine` is the annotated executable machine property; no
+  delegated object or separate factory is required.
+- KSP generates `AfsmGeneratedGraphRegistry` from annotated stable machine
+  properties (and still supports eligible classes/objects).
 - The `io.github.afsm.graph` Gradle plugin generates the export test and registers `./gradlew :sample-shop:generateAfsmMmd`.
 - `./gradlew :sample-shop:generateAfsmMmd` writes registry entries such as `sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd`.
 - Text changes inside `EditingDraft` and `Rejected` are no-transition handlers that update data with `updateData { data, event -> ... }`.

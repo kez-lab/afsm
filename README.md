@@ -109,12 +109,12 @@ sealed interface DraftCommand {
     data class SaveDraft(val title: String) : DraftCommand
 }
 
-typealias DraftMachine =
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
-
-object DraftStateMachine : DraftMachine by draftMachine()
-
-private fun draftMachine(): DraftMachine = afsmMachine {
+val DraftStateMachine: AfsmMachine<
+    DraftState,
+    DraftEvent,
+    DraftCommand,
+    AfsmNoEffect,
+    > = afsmMachine {
     initial(
         phase = DraftPhase.Editing,
         data = DraftData(),
@@ -445,14 +445,18 @@ the small unit-test writer internally so app teams do not maintain export tests.
 See [docs/graph-generation.md](docs/graph-generation.md) for the full setup.
 
 ```kotlin
-private typealias DraftMachineType =
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
-
 @AfsmGraph(
     id = "Draft",
     fileName = "DraftStateMachine.mmd",
 )
-object DraftStateMachine : DraftMachineType by draftMachine()
+val DraftStateMachine: AfsmMachine<
+    DraftState,
+    DraftEvent,
+    DraftCommand,
+    AfsmNoEffect,
+    > = afsmMachine {
+    // same executable machine body
+}
 ```
 
 Pass `label = ...` to `command(...)` or `effect(...)` only when you want that

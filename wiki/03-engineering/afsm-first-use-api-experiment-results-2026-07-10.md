@@ -1,7 +1,7 @@
 ---
 title: Afsm First-Use API Experiment Results 2026-07-10
 updated: 2026-07-10
-status: prototype-results
+status: candidate-e-implemented
 ---
 
 # Afsm First-Use API Experiment Results 2026-07-10
@@ -69,19 +69,26 @@ authoring.
 - Transition test call sites are effectively identical after machine creation.
 - Checkout already proves that dynamic navigation data belongs in the host's
   explicit `initialState`; the graphable machine can keep a stable default.
-- The current `@AfsmGraph` processor only accepts classes and objects. This
-  constraint is the direct reason feature code needs delegation wrappers.
+- Before Candidate E, `@AfsmGraph` accepted only classes and objects. That
+  constraint was the direct reason feature code needed delegation wrappers.
 
-## Next Hypothesis
+## Candidate E Implementation
 
-Advance Candidate E: an explicitly typed, annotated top-level machine
-property. It removes the wrapper and factory with ordinary Kotlin expected-type
-inference and requires no new runtime concept. The next test-first slice is KSP
-property discovery plus Draft/Auth/Checkout migration.
+Candidate E is now implemented as an explicitly typed, annotated top-level
+machine property. It removes the wrapper and factory with ordinary Kotlin
+expected-type inference and requires no new runtime concept.
 
-Candidate E is accepted only if graph generation, dynamic host initialization,
-consumer compilation, tests, and fresh-use review remain coherent. Until then,
-the production API and current examples remain unchanged.
+Passing evidence now covers:
+
+- KSP direct-property discovery and generated registry references,
+- focused rejection diagnostics for unsafe property shapes,
+- Draft, Auth, Checkout, ProductEditor, and external consumer declarations,
+- graph generation and registry tests,
+- Checkout dynamic host initialization,
+- clean Maven Local external consumer compilation, tests, and MMD output.
+
+This makes Candidate E the current pre-release authoring candidate. A fresh-use
+review and real-user evidence remain necessary before API freeze.
 
 ## Evidence Boundary
 

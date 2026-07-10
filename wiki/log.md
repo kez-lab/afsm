@@ -1185,3 +1185,22 @@
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-10] implementation | Direct graphable machine properties
+
+- Source: Candidate E specification, KSP functional tests, sample machine
+  tests, generated graph registry tests, and clean Maven Local consumer smoke.
+- Action: Added safe top-level property discovery, migrated every graphable
+  sample/consumer machine away from delegated wrappers, and aligned public and
+  canonical documentation while leaving fresh-user preference open.
+- Updated: `afsm-core/`, `afsm-graph-ksp/`, `sample-shop/`, `consumer-smoke/`,
+  `README.md`, `CHANGELOG.md`, `docs/`,
+  `raw/verification/2026-07-10-graphable-machine-properties/README.md`,
+  `raw/README.md`, `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`,
+  `wiki/03-engineering/afsm-first-use-api-experiment.md`,
+  `wiki/03-engineering/afsm-first-use-api-experiment-results-2026-07-10.md`,
+  `wiki/03-engineering/afsm-ksp-mmd-generation.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

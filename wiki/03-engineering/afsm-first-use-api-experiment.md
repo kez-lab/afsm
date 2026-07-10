@@ -1,7 +1,7 @@
 ---
 title: Afsm First-Use API Experiment
 updated: 2026-07-10
-status: experiment-candidate-e
+status: candidate-e-implemented-review-pending
 ---
 
 # Afsm First-Use API Experiment
@@ -222,8 +222,22 @@ Required proof:
 - verify Checkout dynamic initial state still comes from the host's explicit
   `initialState`, not from rebuilding the machine.
 
-Candidate E is the next hypothesis, not an accepted production API. See
-[[afsm-first-use-api-experiment-results-2026-07-10|the first prototype results]].
+Implementation result:
+
+- `@AfsmGraph` now accepts a safe top-level machine property and generates a
+  direct registry reference,
+- focused KSP tests reject private, member, mutable, computed, and non-machine
+  properties,
+- Draft, Auth, Checkout, ProductEditor, and both external consumer graph
+  fixtures now use direct machine properties,
+- machine/ViewModel tests, graph generation, API checks, and the clean Maven
+  Local consumer build pass,
+- Checkout still supplies navigation data through `afsmHost(initialState =
+  ...)`.
+
+Candidate E is the current pre-release authoring candidate. Human first-use
+preference remains unverified, so this is not an API-freeze decision. See
+[[afsm-first-use-api-experiment-results-2026-07-10|the experiment results]].
 
 ## Prototype Requirements
 

@@ -14,13 +14,16 @@ setup, read [graph-generation.md](graph-generation.md).
 
 ## Android-First Path
 
-Most Android feature code only needs three public types:
+Most Android feature code needs one named state and one explicit machine
+property:
 
 ```kotlin
 typealias ScreenState = AfsmState<ScreenPhase, ScreenData>
-typealias ScreenMachine = AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect>
-
-object ScreenStateMachine : ScreenMachine by screenMachine()
+val ScreenStateMachine:
+    AfsmMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect> =
+    afsmMachine {
+        // initial state and phase rules
+    }
 ```
 
 Machines that do not emit host-executed work should use `AfsmNoCommand` as
@@ -28,8 +31,11 @@ their `Command` type. Machines that do not emit UI one-shot output should use
 `AfsmNoEffect` as their `Effect` type.
 
 ```kotlin
-typealias ToggleMachine =
-    AfsmMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect>
+val ToggleStateMachine:
+    AfsmMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect> =
+    afsmMachine {
+        // no command or effect output
+    }
 ```
 
 The ViewModel hosts that machine:
@@ -170,8 +176,11 @@ Use this at feature boundaries once the state type has been named.
 typealias ProductEditorState =
     AfsmState<ProductEditorPhase, ProductEditorData>
 
-private typealias ProductEditorMachine =
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
+val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
+        // initial state and phase rules
+    }
 ```
 
 ### AfsmState
@@ -459,13 +468,23 @@ consumer-owned test fixtures.
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
+val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
-KSP discovers annotated classes or objects that implement both `AfsmReducer`
-and `AfsmGraphSource`. `AfsmMachine` satisfies both automatically.
+KSP discovers annotated stable top-level properties, classes, or objects that
+implement both `AfsmReducer` and `AfsmGraphSource`. `AfsmMachine` satisfies
+both automatically. A top-level machine property is the normal feature shape.
 
-MVP constructor policy:
+Property policy:
+
+- the property must be a non-private, non-extension, top-level immutable `val`,
+- it must have a stable backing field rather than a computed getter or delegate.
+
+Class constructor policy:
 
 - annotated classes must be `object`s, or
 - classes must be constructible with no required constructor parameters.

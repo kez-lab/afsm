@@ -200,19 +200,19 @@ sealed interface DraftCommand {
 }
 ```
 
-5. Name the machine type.
-
-```kotlin
-typealias DraftMachine =
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, AfsmNoEffect>
-
-object DraftStateMachine : DraftMachine by draftMachine()
-```
+5. Keep one explicit machine boundary. The `DraftState` alias is useful to the
+   ViewModel and UI, but a separate machine alias, delegated wrapper, and
+   factory function are not needed.
 
 6. Write the machine in phase order.
 
 ```kotlin
-private fun draftMachine(): DraftMachine = afsmMachine {
+val DraftStateMachine: AfsmMachine<
+    DraftState,
+    DraftEvent,
+    DraftCommand,
+    AfsmNoEffect,
+    > = afsmMachine {
     initial(
         phase = DraftPhase.Editing,
         data = DraftData(),
@@ -548,8 +548,14 @@ sealed interface DraftEffect {
     data object CloseEditor : DraftEffect
 }
 
-typealias DraftMachine =
-    AfsmMachine<DraftState, DraftEvent, DraftCommand, DraftEffect>
+val DraftStateMachine: AfsmMachine<
+    DraftState,
+    DraftEvent,
+    DraftCommand,
+    DraftEffect,
+    > = afsmMachine {
+    // existing machine body
+}
 ```
 
 After this change, remove the `AfsmNoEffect` import from the machine file.

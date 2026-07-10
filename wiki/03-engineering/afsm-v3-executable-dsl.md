@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-05-23
+updated: 2026-07-10
 ---
 
 # Afsm v3 Executable DSL
@@ -239,10 +239,9 @@ Omitting an event handler is not the same as `ignore(...)`.
 Target developer experience:
 
 ```kotlin
-private typealias ProductEditorMachine =
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
-
-private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
     initial(
         phase = ProductEditorPhase.EditingDraft,
         data = ProductEditorData(),
@@ -349,10 +348,9 @@ data class ProductEditorData(
 Graphable machine excerpt:
 
 ```kotlin
-private typealias ProductEditorMachine =
-    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect>
-
-private fun productEditorMachine(): ProductEditorMachine = afsmMachine {
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
     initial(ProductEditorPhase.EditingDraft, ProductEditorData())
 
     phase(ProductEditorPhase.EditingDraft) {
@@ -508,7 +506,8 @@ data class AfsmState<P : Any, D : Any>(
 )
 ```
 
-For the normal phase/data screen shape, features can alias `AfsmState` and delegate the machine directly:
+For the normal phase/data screen shape, features can alias `AfsmState` and
+declare the machine directly:
 
 ```kotlin
 typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>
@@ -518,7 +517,11 @@ fun productEditorState(
     data: ProductEditorData = ProductEditorData(),
 ): ProductEditorState = AfsmState(phase = phase, data = data)
 
-object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
 If a feature needs a custom Android-facing sealed state, it can implement a feature-owned `AfsmReducer`; public examples should prefer `AfsmState<Phase, Data>` so topology, runtime state, and ViewModel state remain one model.
@@ -687,7 +690,9 @@ Update on 2026-05-10:
 - Added `AfsmState<P, D>` as the standard state value in `afsm-core`.
 - `afsmMachine` now returns `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
 - ProductEditor now defines `typealias ProductEditorState = AfsmState<ProductEditorPhase, ProductEditorData>`.
-- ProductEditor no longer needs phase/data adapter mapping; `ProductEditorStateMachine` delegates to the machine.
+- ProductEditor no longer needs phase/data adapter mapping. The later
+  2026-07-10 first-use cleanup also removed the delegated object/factory;
+  `ProductEditorStateMachine` is now the executable machine property itself.
 - Kotlin does not allow a same-named `ProductEditorState(...)` factory beside a typealias constructor, so the sample uses `productEditorState()` for default/initial construction.
 
 ### Step 5: Public API Decision

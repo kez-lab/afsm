@@ -20,7 +20,8 @@ the executable `afsmMachine { ... }` DSL.
 Check these first:
 
 - The screen machine already compiles and has focused transition tests.
-- The machine is exposed as an `object` or no-required-arg class.
+- The machine is exposed as a stable top-level `val`. Existing `object` or
+  no-required-arg class declarations remain supported.
 - The exposed type is `AfsmMachine<State, Event, Command, Effect>`.
 - For Maven Local snapshots, `mavenLocal()` is present in both
   `pluginManagement.repositories` and `dependencyResolutionManagement.repositories`.
@@ -102,10 +103,15 @@ dependencies {
     id = "Checkout",
     fileName = "CheckoutStateMachine.mmd",
 )
-object CheckoutStateMachine : CheckoutMachine by checkoutMachine()
+internal val CheckoutStateMachine:
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
-The annotated object must expose graph metadata. The normal
+The annotated property must be a non-private, top-level immutable `val` with a
+stable backing field. The normal
 `AfsmMachine<State, Event, Command, Effect>` path already does this because
 `AfsmMachine` is an `AfsmGraphSource`.
 

@@ -1,19 +1,21 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-05-19
+updated: 2026-07-10
 ---
 
 # Afsm KSP MMD Generation
 
-This page designs KSP + Gradle-plugin based automatic `.mmd` generation for
-Afsm state machines.
+This page defines the current KSP + Gradle-plugin based automatic `.mmd`
+generation for Afsm state machines.
 
-Correction: graph registration should happen on the `StateMachine` class, not on a separate machine-provider function.
+Current correction: graph registration should normally happen on the stable
+top-level machine property itself. Class/object discovery remains supported,
+but feature code no longer needs a delegated wrapper only for KSP discovery.
 
 Goal:
 
-- A developer defines a `StateMachine` class.
-- The developer adds one annotation to that class.
+- A developer defines a top-level `AfsmMachine` property.
+- The developer adds one annotation to that property.
 - The build discovers all annotated state machines.
 - The build writes one `.mmd` file per discovered machine.
 - No prose documentation is generated beside the graph.
@@ -26,20 +28,24 @@ References:
 
 ## Recommended API
 
-Use a class annotation plus a small topology contract.
+Use a property annotation plus the normal machine contract.
 
 ```kotlin
 @AfsmGraph(
     id = "ProductEditor",
     fileName = "ProductEditorStateMachine.mmd",
 )
-object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
 Core types:
 
 ```kotlin
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 public annotation class AfsmGraph(
     val id: String = "",
@@ -67,11 +73,15 @@ Why keep graphability separate from plain reducers:
 
 ## User Experience
 
-The desired sample-shop usage should become:
+Current sample-shop usage is:
 
 ```kotlin
 @AfsmGraph
-object ProductEditorStateMachine : ProductEditorMachine by productEditorMachine()
+internal val ProductEditorStateMachine:
+    AfsmMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
 Then this should generate:
@@ -80,11 +90,15 @@ Then this should generate:
 sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
 ```
 
-With a second class:
+With a second property:
 
 ```kotlin
 @AfsmGraph(fileName = "CheckoutStateMachine.mmd")
-object CheckoutStateMachine : CheckoutMachine by checkoutMachine()
+internal val CheckoutStateMachine:
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    afsmMachine {
+        // executable machine body
+    }
 ```
 
 The same task should also generate:
@@ -97,14 +111,15 @@ No Gradle task should need to know `ProductEditorStateMachine` by name.
 
 ## KSP Role
 
-KSP should discover classes and generate registry code. It should not interpret the state machine.
+KSP should discover stable properties/classes and generate registry code. It
+should not interpret the state machine.
 
 ```text
-KSP discovers @AfsmGraph classes
+KSP discovers @AfsmGraph machine properties or classes
 -> KSP validates they implement AfsmGraphSource
 -> KSP generates AfsmGeneratedGraphRegistry
 -> Gradle/test runner executes compiled registry code
--> registry instantiates each StateMachine
+-> registry reads each source topology
 -> topology.toMmd()
 -> write .mmd files
 ```
@@ -120,7 +135,19 @@ Reasons:
 
 The runtime machine already owns topology. KSP should only find graph sources.
 
-## Constructor Policy
+## Property And Constructor Policy
+
+The recommended property form must be:
+
+- top-level,
+- non-private,
+- immutable,
+- non-extension,
+- backed by a stable field rather than a computed getter or delegate,
+- typed as an `AfsmReducer` and `AfsmGraphSource` implementation.
+
+This lets generated code reference `packageName.PropertyName.topology`
+directly. KSP resolves machine type aliases before checking the graph contracts.
 
 KSP can generate code that instantiates annotated state-machine classes only if they are constructible.
 
@@ -233,8 +260,9 @@ Output convention:
 
 The KSP processor should fail compilation when:
 
-- `@AfsmGraph` is used on a non-class symbol.
-- The class does not implement `AfsmGraphSource`.
+- an annotated property is private, mutable, a member/extension, computed, or
+  delegated,
+- the property/class does not implement `AfsmReducer` and `AfsmGraphSource`,
 - The class is private.
 - The class has required constructor parameters.
 - `fileName` does not end with `.mmd`.
@@ -336,8 +364,7 @@ afsm-graph-gradle-plugin
   generateAfsmMmd task
 
 sample-shop
-  @AfsmGraph on ProductEditorStateMachine
-  @AfsmGraph on another sample state machine if graphable
+  @AfsmGraph on stable machine properties
   io.github.afsm.graph plugin
   generateAfsmMmd writes all registry entries
 ```
@@ -364,11 +391,15 @@ Avoid cross-module KSP aggregation at first. KSP should stay module-local.
 Implementation status:
 
 - Done: `@AfsmGraph` on `AuthStateMachine` and `ProductEditorStateMachine` compiles.
+- Done: stable top-level machine properties generate direct registry references;
+  private/member/mutable/computed/non-machine properties fail with focused
+  diagnostics.
 - Done: Auth, Checkout, and ProductEditor implement `AfsmGraphSource`.
 - Done: KSP generates `AfsmGeneratedGraphRegistry`.
 - Done: `generateAfsmMmd` no longer references ProductEditor directly.
 - Done: `generateAfsmMmd` writes `AuthStateMachine.mmd`, `CheckoutStateMachine.mmd`, and `ProductEditorStateMachine.mmd`.
-- Done: adding additional real annotated `StateMachine` objects writes additional `.mmd` files.
+- Done: adding additional real annotated machine properties writes additional
+  `.mmd` files; eligible objects/classes remain supported.
 - Done: invalid annotated classes fail compilation with useful messages in processor functional tests.
 - Done: `io.github.afsm.graph` removes app-maintained export test boilerplate.
 - Done: `consumer-smoke` applies the published graph Gradle plugin and generates `.mmd` output from Maven Local artifacts.
@@ -389,16 +420,19 @@ Initial test targets:
 
 ## Current Verdict
 
-Yes, annotating the `StateMachine` class is possible and preferable.
+Yes. Annotating the stable top-level `AfsmMachine` property is the preferred
+feature shape. It removes graph-only wrappers while keeping class/object support
+for custom integrations.
 
 The correct design is:
 
 ```text
-@AfsmGraph StateMachine class
+@AfsmGraph stable machine property
 + AfsmGraphSource topology contract
 + KSP-generated registry
 + generated unit-test writer from io.github.afsm.graph
 + runtime mmd writer
 ```
 
-KSP discovers graphable state-machine classes. The real machine topology still generates the `.mmd`.
+KSP discovers graphable machine properties and eligible classes/objects. The
+real executable topology still generates the `.mmd`.

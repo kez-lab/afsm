@@ -1347,3 +1347,29 @@ Consequences:
 - No production API or canonical example changes in this prototype round.
 - Draft, Auth, Checkout, graph generation, consumer smoke, diagnostics, and
   dynamic host initialization are required acceptance evidence.
+
+## [2026-07-10] Use direct machine properties as the current authoring candidate
+
+Decision: Adopt Candidate E for current pre-release examples and tooling:
+graphable features expose one explicitly typed, stable top-level `val`
+`AfsmMachine`, and `@AfsmGraph` annotates that property directly.
+
+Rationale:
+
+- It removes the machine alias, delegated singleton, and factory without adding
+  type tokens, staged builders, a feature base class, reflection, or generated
+  runtime APIs.
+- KSP can validate and reference the real machine property directly.
+- Draft, Auth, Checkout, ProductEditor, graph registry tests, and an external
+  Maven Local consumer preserve behavior and graph output.
+- Checkout dynamic initial state remains a ViewModel host concern, so the
+  graphable machine identity stays stable.
+
+Consequences:
+
+- Public learning material should teach one state alias and one explicit
+  machine property before the flow body.
+- Eligible class/object graph sources remain supported for custom integration,
+  but are not the normal feature declaration.
+- This is not an API-freeze decision; fresh-user and real-pilot evidence may
+  still replace the shape before release.
