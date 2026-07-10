@@ -62,8 +62,10 @@ Local release gate:
 
 Use narrower commands while developing, but run the full gate before release-facing commits.
 
-GitHub CI runs the same release gate from `.github/workflows/ci.yml` on pushes
-to `main`, pull requests, and manual dispatch.
+Hosted GitHub Actions CI is disabled for cost control. Run the relevant local
+checks before merge and run the full local release gate for release-facing
+changes. If hosted CI is deliberately restored, it should call this same script
+instead of duplicating the gate.
 
 ## Documentation
 

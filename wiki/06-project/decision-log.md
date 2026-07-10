@@ -1205,3 +1205,118 @@ Consequences:
 - Maintainers should run the relevant local checks before merge.
 - Broad release readiness should still use the local release gate or a
   deliberately re-enabled CI workflow when cost policy changes.
+
+## [2026-07-10] Route all Codex project work through the LLM Wiki
+
+Decision: Codex must use the LLM Wiki as the first retrieval and intent layer
+for every project task, including basic project questions and edits, then verify
+current implementation claims against code, tests, Git state, and command
+output.
+
+Rationale:
+
+- The previous `AGENTS.md` required wiki reading mainly for architecture and
+  Android/FSM topics, leaving ordinary project reading and modification without
+  a consistent entry path.
+- Starting from `wiki/index.md`, current state, and a task-specific canonical
+  page avoids rediscovering decisions from raw evidence or broad code search.
+- A change-type synchronization matrix makes it explicit when to update raw
+  evidence, canonical synthesis, current state, decisions, implementation logs,
+  QA pages, the index, and the chronological log.
+
+Consequences:
+
+- `AGENTS.md` now requires the common LLM Wiki reading path before broad search,
+  project-level answers, or edits.
+- `wiki/07-llm/codex-project-workflow.md` is the canonical Codex task-routing and
+  synchronization guide.
+- Purely mechanical edits still avoid wiki churn when they add no durable
+  behavior, decision, evidence, status change, or reusable learning.
+
+## [2026-07-10] Make explicit flow readability the primary product goal
+
+Decision: Afsm's primary product goal is to turn implicit business-flow state
+changes scattered across complex Android ViewModels into explicit `Phase` and
+`Event` transition rules that can be read, tested, graphed, and verified from
+the same executable machine definition.
+
+Rationale:
+
+- The user problem is not Kotlin `copy()` itself; it is the loss of locality and
+  traceability when valid events, state changes, async work, and resulting UI
+  behavior are distributed across ViewModel methods and UI collectors.
+- Framing Afsm as state storage abstraction or a `copy()` replacement would
+  encourage ceremonial adoption and hide the actual product value.
+- One executable definition already connects the runtime machine, pure
+  transition tests, and generated topology, making flow readability a concrete
+  and verifiable promise.
+
+Consequences:
+
+- Product and README language should lead with explicit flow rather than the
+  generic phrase "Android FSM toolkit."
+- The current vocabulary remains `Phase`, `Data`, `Event`, `Command`, and
+  optional `Effect`; host work must not be conflated with UI effects.
+- Android `ViewModel` remains the lifecycle/UI adapter, and simple screens stay
+  on ordinary `ViewModel + StateFlow` when an FSM would add ceremony.
+- Success criteria should test whether the machine, transition tests, and graph
+  make a complex flow understandable without reconstructing it from UI and
+  ViewModel files.
+
+## [2026-07-10] Operate Afsm as an outcome-based long-term goal
+
+Decision: Afsm development should run as a continuous evidence-driven goal
+covering product value, one executable definition, Android production fit,
+public API stability, developer experience, real adoption evidence, release
+readiness, and durable project knowledge.
+
+Rationale:
+
+- A single Checkout test pass or API slice is a milestone, not proof that the
+  product has achieved its purpose.
+- Feature-count and green-build completion criteria reward short-term output but
+  can leave product value, adoption, lifecycle risk, and public support unclear.
+- Outcome-based completion allows Codex to select bounded milestones while
+  preserving the same product direction across many cycles.
+
+Consequences:
+
+- `wiki/06-project/long-term-goal.md` is the canonical completion and loop
+  contract.
+- Every cycle audits current evidence, selects the largest safe gap, implements
+  and verifies one milestone, synchronizes durable knowledge, and re-audits.
+- AI review and sample verification remain supporting evidence, not substitutes
+  for a real or production-like pilot.
+- Push, merge, deployment, publication, and public release remain separately
+  authorized actions.
+
+## [2026-07-10] Let usability outrank pre-release API compatibility
+
+Decision: Because Afsm has not been publicly released, the current API, DSL,
+terminology, module boundaries, samples, tests, and tooling are product
+hypotheses rather than compatibility commitments. They may be broken or
+rewritten when evidence supports a more readable, useful, safe, or Android-
+idiomatic design.
+
+This decision supersedes any interpretation of the earlier long-term-goal
+decision that treated public API stability or preservation of the current
+surface as a present objective.
+
+Rationale:
+
+- Stabilizing an unproven API can preserve accidental complexity and turn
+  implementation investment into a false product constraint.
+- The final goal is not to release the current design; it is to make Afsm
+  genuinely useful to Android teams working on complex flows.
+- Existing tests protect accepted behavior, but they must not freeze a product
+  model that the user has intentionally replaced after usability review.
+
+Consequences:
+
+- Product/spec direction changes first, then tests, implementation, samples,
+  graphs, docs, API dumps, and consumer fixtures move together.
+- Compatibility aliases are not added by default during pre-release redesign.
+- `Phase`, `Data`, `Event`, `Command`, and `Effect` remain current vocabulary,
+  not mandatory final concepts.
+- API freeze, ABI compatibility, and release preparation begin only after
+  usability, safety, Android fit, and real-pilot evidence justify stabilization.

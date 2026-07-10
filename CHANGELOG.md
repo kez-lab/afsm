@@ -44,7 +44,6 @@ Initial pre-release candidate.
 - `phase(phase)` DSL convenience for terminal or marker phases with no handlers.
 - `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
 - `consumer-smoke` external Android build that verifies Maven Local consumption.
-- GitHub CI workflow that runs the local release gate.
 - Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
 - External app-module graph generation setup guide.
 - Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
@@ -71,6 +70,9 @@ Initial pre-release candidate.
   - `otherwise(...)`
 - Temporary `AfsmMachineAdapter` base before first publication; graphable
   machines now use `AfsmState<Phase, Data>` directly.
+- Hosted GitHub Actions CI workflow after the cost-control decision; local
+  verification through `scripts/verify-release-local.sh` remains the release
+  gate.
 
 ### Known Issues
 

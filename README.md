@@ -5,9 +5,12 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
-Afsm is an Android-focused finite state machine toolkit for complex `ViewModel`
-flows. It keeps `ViewModel` as the Android lifecycle adapter and moves screen
-flow rules into a plain Kotlin machine.
+Afsm is an Android-focused finite state machine toolkit that turns implicit
+business-flow state changes scattered across complex `ViewModel`s into explicit
+`Phase` and `Event` transition rules. From the same executable machine
+definition, developers can read and test which events are valid, how `Phase`
+and `Data` change, and which host-executed `Command`s or optional UI `Effect`s
+follow. `ViewModel` remains the Android lifecycle and UI integration adapter.
 
 Use Afsm when a screen has meaningful phases, retries, async results, invalid
 transitions, or multi-step behavior. Do not force it onto simple product lists,

@@ -1,6 +1,6 @@
 ---
 title: Wiki Maintenance Guide
-updated: 2026-05-09
+updated: 2026-07-10
 ---
 
 # Wiki Maintenance Guide
@@ -13,6 +13,7 @@ This project uses an LLM Wiki pattern.
 - `wiki/`: maintained synthesis pages.
 - `AGENTS.md`: instructions for Codex and other coding agents.
 - `wiki/07-llm/ai-engineering-guardrails.md`: project-scoped software engineering, TDD, and verification integrity rules for AI agents.
+- `wiki/07-llm/codex-project-workflow.md`: required retrieval, evidence, and synchronization workflow for all Codex project tasks.
 
 ## Ingest Workflow
 
@@ -38,15 +39,19 @@ When the user corrects an architecture direction or a design conclusion changes:
 
 Do not leave future agents to reconstruct the current answer from a chain of corrections. The canonical page should be readable on its own.
 
-## Query Workflow
+## Project Query Workflow
 
-When answering project architecture questions:
+When reading the project or answering any project question:
 
 1. Read `wiki/index.md`.
 2. Read `wiki/00-context/current-state.md`.
-3. Read the relevant engineering page.
-4. Answer from the wiki first, then inspect code if implementation details are needed.
-5. If the answer creates durable insight, file it back into `wiki/`.
+3. Read `wiki/07-llm/codex-project-workflow.md` and the relevant canonical page.
+4. Use the wiki for project intent and inspect current code, tests, Git state, or command output for implementation claims.
+5. Read `raw/` only when provenance, original evidence, or a contradiction must be checked.
+6. If the answer creates durable insight, file it back into `wiki/`.
+
+For the full task routing and change-type synchronization matrix, follow
+[[codex-project-workflow|Codex Project Workflow]].
 
 ## Task Handoff Workflow
 

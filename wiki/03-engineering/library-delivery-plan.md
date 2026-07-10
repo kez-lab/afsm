@@ -1,9 +1,17 @@
 ---
 title: Library Delivery Plan
-updated: 2026-05-11
+updated: 2026-07-10
 ---
 
 # Library Delivery Plan
+
+## Status
+
+Historical staged delivery plan. Most implementation and developer-experience
+stages are complete for internal beta. Use
+[[../00-context/current-state|Current State]] for the implemented surface,
+[[../00-context/open-questions|Open Questions]] for undecided scope, and
+`docs/release-readiness.md` for the active release and publication gates.
 
 ## Stage 0: Problem Definition
 

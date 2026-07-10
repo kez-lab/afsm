@@ -1,9 +1,16 @@
 ---
 title: Afsm Public API Draft
-updated: 2026-05-01
+updated: 2026-07-10
 ---
 
 # Afsm Public API Draft
+
+## Status
+
+Historical first draft. It is superseded by
+[[afsm-v3-executable-dsl|Afsm v3 Executable DSL]] and the implemented public
+surface documented in `docs/afsm-public-api.md`. Do not use names or module
+assumptions from this page as the current contract.
 
 ## Naming
 

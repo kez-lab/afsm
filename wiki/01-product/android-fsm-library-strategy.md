@@ -1,13 +1,39 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-05-23
+updated: 2026-07-10
 ---
 
 # Android FSM Library Strategy
 
 ## Product Goal
 
-Build `Afsm`, an Android-focused FSM library that helps teams make complex ViewModel-driven UI flows explicit, testable, and lifecycle-aware without fighting official Android architecture guidance.
+Afsm's primary goal is to turn implicit business-flow state changes scattered
+across complex Android `ViewModel`s into explicit `Phase` and `Event`
+transition rules that developers can read, test, graph, and verify from the
+same executable machine definition.
+
+Afsm does not try to hide Kotlin `copy()` or abstract state storage. It makes
+screen flow a first-class model so a developer can determine directly from the
+machine:
+
+- the current `Phase`,
+- which `Event` occurred and whether it is valid,
+- how `Phase` and durable `Data` change,
+- which host-executed `Command`s follow,
+- and which optional UI `Effect`s are emitted.
+
+Android `ViewModel` remains the lifecycle and UI integration adapter. Afsm
+makes complex flow rules explicit without fighting official Android
+architecture guidance or imposing FSM ceremony on simple screens.
+
+The active outcome-based execution plan is maintained in
+[[../06-project/long-term-goal|Afsm Long-Term Goal]].
+
+Afsm has not been publicly released. Every current API, DSL operation,
+terminology choice, module boundary, sample, and test fixture is provisional.
+Pre-release compatibility must not block a redesign that makes complex Android
+flows materially easier to read, author, or model safely. Stabilization begins
+only after evidence shows that the selected design is worth preserving.
 
 ## Target Users
 
@@ -51,7 +77,8 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 1. Explicit flow
    - State, Event, Command, and optional Effect are first-class types.
    - Invalid transitions are intentionally handled.
-   - Transition logs are easy to inspect in debug builds.
+   - The executable definition and generated graph expose transition topology.
+   - Runtime failures and invalid transitions are observable through diagnostics.
 
 2. Android alignment
    - ViewModel remains the screen-level state holder.
@@ -82,14 +109,17 @@ The first usable library version should include:
 - invalid transition policy
 - command handling abstraction
 - ViewModel runner/composition helper
-- debug transition logger
+- runtime diagnostics logger
 - coroutine test helpers
 - one or two reference sample flows
 - documentation explaining when not to use the library
 
 ## Success Criteria
 
-- A complex sample flow can be understood from its transition table/tests without jumping across UI/ViewModel files.
+- A complex sample flow can be understood from its machine, generated graph,
+  and transition tests without jumping across UI/ViewModel files.
+- Runtime behavior, transition tests, and generated topology are derived from
+  the same executable machine definition.
 - FSM transition tests are Android-free.
 - ViewModel integration is minimal and idiomatic.
 - The library works with Compose but is not Compose-only.

@@ -175,7 +175,9 @@ Required engineering gates:
 
 - Add remote publication metadata after final coordinates, license, SCM, and signing are decided.
 - Keep `consumer-smoke` green after every publication metadata change.
-- Keep `.github/workflows/ci.yml` aligned with `./scripts/verify-release-local.sh`.
+- Keep `./scripts/verify-release-local.sh` authoritative while hosted CI remains
+  disabled. If hosted CI is deliberately restored, make it call the same local
+  gate instead of maintaining a second verification sequence.
 - Keep `CONTRIBUTING.md` aligned with the current release gate and test policy.
 
 ## Known Warning

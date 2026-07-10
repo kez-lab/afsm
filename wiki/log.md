@@ -1083,3 +1083,68 @@
   `docs/release-readiness.md`, `wiki/00-context/current-state.md`,
   `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-10] schema | Codex project workflow
+
+- Source: User request to make Codex use the existing `raw/` and `wiki/` LLM
+  Wiki structure when reading or modifying ordinary project content.
+- Action: Added a common retrieval path, current-evidence verification rule,
+  task routing table, and change-type synchronization matrix; connected the
+  workflow to the Codex operating contract and maintained wiki entry points.
+- Updated: `AGENTS.md`, `wiki/07-llm/codex-project-workflow.md`,
+  `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/index.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`,
+  `wiki/log.md`.
+
+## [2026-07-10] lint | Current state and open questions
+
+- Source: Current source, tests, API dumps, Gradle configuration, public docs,
+  Git/GitHub state, and a successful full local release gate.
+- Action: Replaced accumulated implementation history in `current-state.md`
+  with a current synthesis; removed resolved questions; corrected hosted CI
+  contradictions; labeled superseded API/roadmap pages; added missing index
+  coverage and a durable lint report.
+- Updated: `wiki/00-context/current-state.md`,
+  `wiki/00-context/open-questions.md`, `wiki/index.md`,
+  `wiki/07-llm/wiki-lint-2026-07-10.md`,
+  `wiki/03-engineering/afsm-public-api-draft.md`,
+  `wiki/03-engineering/afsm-public-api-draft-v2.md`,
+  `wiki/03-engineering/fsm-runtime-roadmap.md`,
+  `wiki/03-engineering/library-delivery-plan.md`, `CHANGELOG.md`,
+  `CONTRIBUTING.md`, `docs/release-readiness.md`, `wiki/log.md`.
+
+## [2026-07-10] product | Primary Afsm goal
+
+- Source: User-approved refinement of the proposed goal to replace scattered
+  complex ViewModel flow mutations with explicit, readable, testable, and
+  graphable transition rules.
+- Action: Made explicit flow readability the primary product goal, clarified
+  that Afsm is not a `copy()` or state-storage abstraction, and aligned the
+  README opening, product pillars, success criteria, and current-state summary.
+- Updated: `wiki/01-product/android-fsm-library-strategy.md`, `README.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`,
+  `wiki/log.md`.
+
+## [2026-07-10] goal | Afsm long-term continuous improvement
+
+- Source: User request to replace a Checkout-sized short-term goal with a fully
+  long-running Afsm product goal.
+- Action: Defined eight completion outcomes, an evidence-driven improvement
+  loop, prioritization rules, approval boundaries, and Checkout as the first
+  bounded milestone under the larger goal.
+- Updated: `wiki/06-project/long-term-goal.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`, `wiki/index.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-07-10] correction | Usability-first pre-release goal
+
+- Source: User correction that Afsm has not been released and every current API
+  may change when a more useful or readable design is needed.
+- Action: Replaced the compatibility-oriented long-term goal with a product-
+  outcome goal that prioritizes complex-flow readability, authoring usefulness,
+  safety, and Android fit; explicitly authorized evidence-backed breaking
+  redesigns and deferred API freeze until product value is proven.
+- Updated: `wiki/06-project/long-term-goal.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/00-context/current-state.md`, `AGENTS.md`, `wiki/index.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.

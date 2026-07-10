@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-05-23
+updated: 2026-07-10
 ---
 
 # Wiki Index
@@ -16,8 +16,8 @@ updated: 2026-05-23
 
 ## Engineering
 
-- [[03-engineering/afsm-public-api-draft|Afsm Public API Draft]] - Initial public API proposal, naming, modules, dependency policy, runtime, ViewModel, and test APIs.
-- [[03-engineering/afsm-public-api-draft-v2|Afsm Public API Draft v2]] - Implementation-candidate API draft covering Stayed, AfsmNoEffect, effect delivery, and dispatch serialization.
+- [[03-engineering/afsm-public-api-draft|Historical Afsm Public API Draft]] - Superseded initial API and module proposal retained as design history.
+- [[03-engineering/afsm-public-api-draft-v2|Historical Afsm Public API Draft v2]] - Superseded implementation-candidate draft retained to explain the path to v3.
 - [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Canonical v3 direction: a scoped executable statechart DSL that is runtime definition, graph source, and test target.
 - [[03-engineering/afsm-reference-architecture-review|Afsm Reference Architecture Review]] - Comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
 - [[03-engineering/afsm-example-catalog|Afsm Example Catalog]] - Canonical example ladder from minimal Draft to Auth, Checkout, ProductEditor, and non-Afsm data screens.
@@ -31,8 +31,8 @@ updated: 2026-05-23
 - [[03-engineering/sample-shop-reference-app|Sample Shop Reference App]] - Complex Compose + Room sample app that validates where Afsm helps and where ordinary ViewModel state is preferable.
 - [[03-engineering/android-official-guidance|Android Official Guidance]] - Official Android documentation distilled into constraints for this FSM architecture.
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.
-- [[03-engineering/fsm-runtime-roadmap|FSM Runtime Roadmap]] - Suggested build order for the Android FSM foundation.
-- [[03-engineering/library-delivery-plan|Library Delivery Plan]] - End-to-end plan for turning the FSM architecture into a usable Android library.
+- [[03-engineering/fsm-runtime-roadmap|Historical FSM Runtime Roadmap]] - Superseded build-order plan retained as implementation history.
+- [[03-engineering/library-delivery-plan|Historical Library Delivery Plan]] - Staged plan retained as history; current gates live in release readiness and open questions.
 - [[03-engineering/reference-flow-signup-identity-retry|Reference Flow - Signup Identity Retry]] - First reference flow design with State/Event/Command/Effect policy.
 - [[03-engineering/signup-state-machine-pseudo-implementation|Signup StateMachine Pseudo Implementation]] - Kotlin-like pseudo implementation used to validate Afsm API ergonomics.
 - [[03-engineering/state-event-command-effect|State, Event, Command, Effect]] - Terms and boundaries for the FSM model.
@@ -41,8 +41,10 @@ updated: 2026-05-23
 
 ## Project
 
+- [[06-project/long-term-goal|Afsm Long-Term Goal]] - Active usability-first product goal with full pre-release design freedom and an evidence-driven improvement loop.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
 - [[06-project/implementation-log|Implementation Log]] - Chronological implementation changes and verification commands.
+- [[log|Wiki Log]] - Append-only chronological record of wiki operations and durable documentation changes.
 
 ## QA
 
@@ -53,6 +55,8 @@ updated: 2026-05-23
 ## LLM Operations
 
 - [[07-llm/ai-engineering-guardrails|AI Engineering Guardrails]] - Project-scoped software engineering, TDD, and verification integrity rules for AI agents.
+- [[07-llm/codex-project-workflow|Codex Project Workflow]] - Required LLM Wiki retrieval, current-evidence verification, and change synchronization workflow for all Codex project tasks.
+- [[07-llm/wiki-lint-2026-07-10|Wiki Lint 2026-07-10]] - Code-backed lint report for current state, open questions, CI policy drift, and index health.
 - [[07-llm/wiki-maintenance-guide|Wiki Maintenance Guide]] - How this project uses the LLM Wiki pattern.
 
 ## Meetings

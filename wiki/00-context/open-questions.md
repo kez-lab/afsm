@@ -1,137 +1,79 @@
 ---
 title: Open Questions
-updated: 2026-05-25
+updated: 2026-07-10
 ---
 
 # Open Questions
 
-## Architecture
+This page contains only decisions that are still open after comparison with the
+current code, tests, API dumps, public documentation, release checklist, and
+local verification. Historical alternatives and completed decisions belong in
+the engineering pages and `wiki/06-project/decision-log.md`.
 
-- Should state machines support hierarchical/nested state machines from the start?
+## Public Release and Compatibility
 
-## Android Integration
+- What exact remote publication identity should the first public release use:
+  final group/artifact ids, license, repository target, SCM metadata,
+  developer/organization metadata, signing credentials, and release owner?
+- What source and binary compatibility promise should the first external beta
+  make beyond the current pre-1.0 rule that breaking changes require API dumps,
+  docs, examples, changelog, and migration notes in the same change?
 
-- How should process restoration be handled: reconstruct from `SavedStateHandle`, persist only selected state, or require domain reload?
-- Which FSM states are safe to restore directly, and which should be reconstructed from a minimal key plus repository data?
+## API and Module Boundaries
 
-## Scope
+- Before external publication, should the executable DSL, `@AfsmGraph`, topology
+  types, and `AfsmGraphSource` remain in `afsm-core`, or should graph concerns
+  move to a smaller annotation/API module? This includes deciding whether every
+  `AfsmMachine` should continue to be graphable by extending
+  `AfsmGraphSource`.
+- Should the current regular `AfsmConfig` constructor remain the public
+  configuration surface at API freeze, or should a more evolution-friendly
+  shape be adopted before external consumers depend on it?
 
-- What should the first public API look like before it becomes too framework-like?
-- What sample flows best prove the library's value to external Android teams?
+## Advanced Runtime Scope
 
-Resolved:
+- Should the first public release explicitly remain flat-state only, or must it
+  add hierarchical/parallel semantics? `AfsmTopologyState.parentId` exists as
+  metadata, but the executable DSL and Mermaid renderer do not implement a
+  nested runtime model.
+- Should invoked-service semantics for timers, polling, uploads, or sockets be
+  part of the first public release? The current v1 policy represents this work
+  as commands and requires explicit cancellation commands plus request ids.
 
-- First real reference flow: signup + identity verification + retry.
-- The first complex app-level validation is a shopping sample with auth, product, review, like, and checkout retry flows.
-- Public example ladder: README minimal Draft, Auth, Checkout, ProductEditor, and non-Afsm data screens as anti-examples.
-- Checkout is now the mid-size graphable example for dynamic initial state, retry, stale command results, durable completion, and render-state mapping.
-- UI one-shot modeling is policy-based: durable product progress belongs in
-  state, disposable UI behavior can be an `Effect`, and UI behavior that must
-  survive lifecycle gaps should be state plus an acknowledgement event.
-- A dedicated `afsm-test` module exists because first-use testing repeatedly
-  exposed raw `AfsmTransition` structure. Keep it test-only and focused on
-  assertion helpers unless repeated helper needs prove more API is necessary.
+## Android Restoration
 
-## Product
+- Should v1 ship a reusable restoration helper beyond
+  `afsmHost(machine, initialState)`, minimal `SavedStateHandle` conversion, and
+  the documented stable-state restoration policy, or should restoration remain
+  feature-owned guidance?
 
-- Is the initial audience internal app teams, external OSS users, or both?
-- Should the first release optimize for minimum API surface or maximum developer convenience?
-- What is the distribution target: local module, Maven artifact, GitHub OSS library, or private package?
+## Graph Tooling
 
-## Reference Flow
+- Should graph generation remain one selected Android unit-test variant per
+  module, or support multi-variant and multi-module aggregation before broader
+  external adoption?
 
-- Should `AfsmTransition` carry effects directly, or should effects be a ViewModel integration concern?
-- Should retry policy be configured by the library or modeled by each feature state machine?
-- Should saved state restoration be implemented as a reusable helper in v1, or kept as sample guidance?
+## Resolved Current Policies
 
-## Public API
-
-- Should invalid transition `Throw` policy be core behavior or test/debug helper behavior?
-- Should `AfsmConfig` be a data class, regular class, or builder-like API for binary/API stability?
-- Should the executable DSL live in `afsm-core`, `afsm-dsl`, or another module before public release?
-- How should graph extraction represent invalid/ignored branches declared in the executable DSL?
-- Should graph labels default to type names, require explicit human labels, or support both?
-- Should the DSL support nested/hierarchical states in v3 MVP or defer them?
-- Should the DSL support invoked long-running services, cancellation, and timers in v3 MVP or model them as actions first?
-- How should `onEnter` actions interact with process restoration to avoid accidentally restarting non-idempotent work?
-- Should graph generation later support multi-variant and multi-module aggregation, or keep module-local `debug` output as the public MVP?
-- Should `@AfsmGraph` live in `afsm-core` long term, or move to a smaller graph annotations module before public release?
-- Should `AfsmMachine` remain graphable by extending `AfsmGraphSource`, or should public API split a plain machine type from a graphable machine type before broad release?
-- What exact restoration policy should be documented for phases whose `onEnter` would normally start non-idempotent work?
-
-Resolved:
-
-- `AfsmTransition<S, C, F>` is acceptable if feature-local typealiases are documented as the standard convention.
-- Pre-release compatibility aliases were removed before public documentation, so only current API names should be used in new source and docs.
-- `Ignored` is overloaded; the API added `AfsmDecision.Handled`, but the beginner-facing `Afsm.stay(...)` helper was later removed. Low-level reducers can return `AfsmTransition.handled(...)`; graphable DSL code stays by omitting `transitionTo(...)`.
-- Use `Afsm` as public type prefix because the product name is Android State Machine.
-- Use `AfsmNoEffect` sealed interface as the no-effect marker candidate.
-- Use non-suspending fire-and-queue `AfsmHost.dispatch(event)` with serialized FIFO event processing.
-- Use best-effort `Flow<F>` effect delivery with no replay by default.
-- `AfsmNoEffect` and `AfsmTransition<S, C, F>` compile cleanly in `afsm-core` when used with feature-local typealiases and both no-effect and effectful flows.
-- Provide a small reusable `afsm-runtime` module after `afsm-core`; keep Android ViewModel integration in a later module.
-- MVP command execution policy is sequential and verified by `afsm-runtime` tests.
-- MVP includes `afsm-runtime`.
-- `afsm-viewmodel` exists as a thin AndroidX integration module with `ViewModel.afsmHost(...)`.
-- `afsm-compose` exists as an optional thin Compose helper module; test helpers remain future work.
-- A Compose lifecycle-aware effect collection helper is now worth evaluating after the sample app showed repeated effect collection wiring in routes.
-- Product registration is now a stronger reference than simple auth for explaining extended FSM self-transitions versus phase transitions.
-- `Command` should be explained as host-executed transition output, not as a user interaction event.
-- ProductEditor naming cleanup has been applied and verified; graph generation now works through executable DSL topology and `.mmd` export.
-- KSP graph generation should discover annotated `StateMachine` classes, generate a registry, then execute compiled `AfsmGraphSource.topology.toMmd()`; it should not parse DSL bodies or create graph-only models.
-- The first `afsm-graph-ksp` slice now works for two real graphable state machines: `AuthStateMachine` and `ProductEditorStateMachine`.
-- The current v3 direction is a scoped executable DSL where the machine definition is both runtime behavior and graph source.
-- A minimal executable DSL and interpreter spike compiles and passes ProductEditor-like `afsm-core` tests.
-- `AfsmMachine.topology` and `.mmd` export now work without sample events for declared branches; condition labels, command labels, effect labels, transition kind, fallback flags, and duplicate declaration diagnostics exist. Entry node rendering remains future work.
-- Use `AfsmReducer<S, E, C, F>` for the low-level host contract and `AfsmMachine<S, E, C, F>` for graphable feature boundaries. The executable DSL builder `afsmMachine<P, D, E, C, F> { ... }` returns `AfsmMachine<AfsmState<P, D>, E, C, F>` directly.
-- Remove pre-release compatibility aliases before writing public docs; `AfsmStateMachine`, `AfsmStateChart`, `afsmStateChart`, `AfsmStateChartMachine`, and `AfsmChartState` should not appear in the public API surface.
-- Use `Command` consistently for host-executed transition outputs. Do not rename command outputs to action in the current API.
-- `AfsmState<Phase, Data>` is the current standard state value for executable machines. Features should use a typealias and delegate directly to the machine; custom sealed UI states require a feature-owned `AfsmReducer` instead of a core adapter base.
-- The DSL includes flat `onExit`; transition execution order is `onExit -> case actions -> onEnter` for phase-changing transitions.
-- Initial state construction does not run `onEnter`; startup work should be triggered by an explicit event such as `ScreenEntered` or by a future dedicated `initialTransition` API if needed.
-- `AfsmHost` command-handler exceptions use `AfsmCommandFailurePolicy`: `Throw` by default for programmer errors, `Record` when a resilient host should log and continue. `CancellationException` is always rethrown.
-- MVP commands are not automatically cancelled by later events. Cancellation is explicit through feature commands/events, while future invoked-service support can add structured cancellation semantics.
-- `ignore(...)` is intentional handled no-op behavior. Ordinary unhandled event/phase combinations should be omitted and become invalid decisions.
-- Real `sample-shop` ProductEditor has been migrated from the phased helper to the executable DSL and has focused unit coverage plus topology assertions.
-- The phased-state API was removed from `afsm-core` after the executable DSL migration; it remains only as historical learning.
-- In the phased profile, meaningful flow operations such as draft save should remain explicit phases like `SavingDraft` and `DraftSaved`; do not hide them as data-only flags just to reduce state count.
-- Data-only updates should be reserved for actual data updates; ProductEditor's current public style is executable DSL branches plus `updateData`, not entry-policy-driven reducers.
-- The phased-state helper is superseded as the public v3 recommendation because `when + PhaseEntryPolicy` remains too convention-heavy for graph-synchronized FSM authoring.
-- `AfsmChartState` has been removed before public API stabilization; use `AfsmState`.
-- Same-named factory functions conflict with Kotlin typealias constructors, so features should use lowercase factories such as `productEditorState()` when they need default initial state values.
-- Do not add a shared `AfsmStateFactory` API yet; the spike showed it needs explicit `<Phase, Data>` type arguments for singleton phase hierarchies and does not justify the extra public concept.
-- Invalid transitions should throw by default for public runtime use so flow bugs are visible during development. Resilient production hosts can opt into `AfsmInvalidTransitionPolicy.Record` with a logger.
-- Command execution remains sequential, but it no longer blocks later event reduction; commands run through a separate command processor and dispatch results back into the event queue.
-- Ten-agent POC review confirmed that Afsm should target complex transaction/flow screens, not simple data-display ViewModels.
-- `AfsmGraphReducer` was removed before public release docs; `AfsmMachine<State, Event, Command, Effect>` is now the graphable feature-boundary API.
-- `afsmHost(machine = ..., initialState = ...)` is the standard dynamic initial-state API for navigation arguments and `SavedStateHandle` reconstruction.
-- `AfsmConfig.commandQueueCapacity` is configurable and defaults to `64`.
-- The first documented stale command result pattern is request/correlation id; Checkout now models payment request ids and ignores stale results.
-- Generated MMD defaults to `AfsmMmdOptions.Flow`, which hides ordinary internal self-loops; `AfsmMmdOptions.Full` remains available for complete topology debugging.
-- `CollectAfsmEffects(...)` is the official optional Compose effect collection helper.
-- Public API/ABI hardening removed `addState`, `addBranch`, `addEventDefinition`, and `afsmLabelForClass` from the API dump.
-- `AfsmTransition` is factory-based; ignored/invalid transitions cannot carry public commands/effects.
-- Checkout completed-payment state is now durable and duplicate pay/retry after completion is ignored.
-- Required navigation should not rely on effect-only output. Checkout models
-  completion as durable state and emits the navigation effect only as a
-  convenience for the active route.
-- `.mmd` graph output file names must be safe relative `.mmd` paths.
-- Command queue overflow now fails fast with `AfsmCommandQueueOverflowException`; machines should emit fewer/coarser commands or increase `commandQueueCapacity`.
-- Default effect delivery has no replay; late collectors do not receive old one-shot effects.
-- Restoration/effect/command policy is documented in `docs/restoration-effect-command-policy.md`; implementation helpers remain future work.
-- KSP `.mmd` generation now ships through the first `io.github.afsm.graph` Gradle plugin slice; the plugin generates the export test and registers `generateAfsmMmd`.
-- KSP processor functional tests and Gradle plugin functional tests now cover the first graph-tooling hardening pass.
-- External `.mmd` generation ships first as the `io.github.afsm.graph` Gradle plugin; the documented task-template approach is superseded.
-- The graph Gradle plugin default `afsm-graph-ksp` processor dependency is generated from the shared Afsm version and covered by a plugin functional test.
-- `consumer-smoke` consumes the root `afsmVersion` through `-PafsmVersion=...`, so version bumps verify the current Maven Local artifacts instead of stale coordinates.
-- Command-result event overflow now fails fast with `AfsmEventQueueOverflowException` when a full bounded event queue rejects a command result event. Closed-host command results are dropped and logged as lifecycle completion.
-- Public DSL onboarding should now prefer named `case(...)` blocks, direct data updates, and `transitionTo` as phase change only. DSL-level `stay(...)` and `otherwise(...)` were removed from source; remaining historical docs should be treated as superseded context.
-- Public DSL `state(...)` was renamed to `phase(...)` because first-time Android developers read it as full UI state, not a finite graph node.
-- Standard extended state is now called `Data` and exposed as `AfsmState.data`, not `Context`, to avoid collision with `android.content.Context`.
-- `AfsmDecision.Stayed` and `AfsmTransition.stayed(...)` were renamed to `Handled` / `handled(...)`; graphable DSL users stay in phase by handling an event without `transitionTo(...)`.
-- `AfsmPhaseMachine` was removed from the public surface; the DSL returns ordinary `AfsmMachine<AfsmState<Phase, Data>, Event, Command, Effect>`.
-- `case(condition = ...)` and payload phase factories are read-only scopes, so predicates and phase constructors cannot accidentally update data or emit commands/effects.
-- First-use onboarding should start with the minimal Draft flow; Checkout is the production-style mid-size sample and ProductEditor is the advanced graph stress test.
-- Public docs should explain phase payloads as minimal phase-instance identifiers, while durable screen data stays in `Data`.
-- Use `AfsmNoCommand` as the standard marker command type for machines that
-  never emit host-executed work, mirroring `AfsmNoEffect`.
+- Afsm targets controlled internal beta pilots on complex flow screens; it is
+  not a general ViewModel replacement.
+- Current distribution is Maven Local snapshot or direct project modules.
+  Remote publication identity remains open, but the present delivery path does
+  not.
+- The current public authoring direction is the phase/data executable DSL in
+  `afsm-core`; older v1/v2 drafts and phased-helper proposals are historical.
+- `AfsmTransition` carries effects. Effects are best-effort with no replay by
+  default, while required progress stays in state or state plus acknowledgement.
+- Retry and stale-result policy is feature-owned through explicit phases,
+  request ids, result events, and narrowly used `ignore(...)`; the library does
+  not own a generic retry policy.
+- Restoration reconstructs minimal stable state, does not restore in-flight
+  work, and does not run `onEnter` during initial state construction.
+- Invalid hosted transitions throw by default; resilient hosts may opt into
+  `AfsmInvalidTransitionPolicy.Record`.
+- Named no-transition condition cases appear in Flow graphs. `ignore(...)` and
+  `invalid(...)` are runtime decisions without graph edges. State ids provide
+  default labels, while condition/command/effect labels are explicit where
+  useful.
+- The example ladder is Draft, Auth, Checkout, ProductEditor, followed by
+  ordinary non-Afsm data screens as anti-examples.

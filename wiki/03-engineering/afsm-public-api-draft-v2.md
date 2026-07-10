@@ -1,25 +1,18 @@
 ---
 title: Afsm Public API Draft v2
-updated: 2026-05-09
+updated: 2026-07-10
 ---
 
 # Afsm Public API Draft v2
 
 ## Status
 
-This is the implementation-candidate API draft.
-
-It incorporates the signup pseudo-implementation review:
-
-- keep the `Afsm` name,
-- keep `AfsmTransition<S, C, F>`,
-- add `AfsmDecision.Stayed`,
-- add `Afsm.stay(...)`,
-- define `AfsmNoEffect`,
-- define effect delivery semantics,
-- define dispatch serialization semantics.
-
-This is still the design source for the v2 API. The CEO has authorized a minimal `afsm-core` skeleton to validate the core type shape, but runtime/ViewModel implementation remains pending.
+Historical implementation-candidate draft. It is superseded by
+[[afsm-v3-executable-dsl|Afsm v3 Executable DSL]] and the implemented public
+surface in `docs/afsm-public-api.md`. In particular, `Stayed`, `stay(...)`, the
+older state/context vocabulary, and several temporary type names described here
+were removed before publication. The validation notes below explain the path to
+the current implementation; they are not the current API contract.
 
 Validation note:
 

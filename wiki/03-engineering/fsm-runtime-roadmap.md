@@ -1,9 +1,16 @@
 ---
 title: FSM Runtime Roadmap
-updated: 2026-05-01
+updated: 2026-07-10
 ---
 
 # FSM Runtime Roadmap
+
+## Status
+
+Historical build-order plan. The core/runtime/ViewModel/test/Compose and graph
+slices described here have since been implemented or superseded. Use
+[[../00-context/current-state|Current State]] for implemented scope and
+`docs/release-readiness.md` for the active release gate.
 
 This page defines a conservative build order for the Android-specific FSM foundation.
 
