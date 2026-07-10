@@ -192,6 +192,8 @@ internal val checkoutStateMachine:
 
         phase(CheckoutPhase.ProductUnavailable)
 
+        phase<CheckoutPhase.PaymentStatusUnknown>()
+
         phase<CheckoutPhase.Completed> {
             on<CheckoutEvent.PayClicked> {
                 ignore(reason = "Checkout is already complete.")

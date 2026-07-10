@@ -14,6 +14,9 @@ data class CheckoutData(
 
 typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutData>
 
+internal const val CheckoutPaymentStatusUnknownMessage =
+    "Payment status is unknown. Check your orders before trying again."
+
 fun checkoutState(
     productId: Long,
     phase: CheckoutPhase = CheckoutPhase.Idle,
@@ -39,6 +42,10 @@ sealed interface CheckoutPhase {
     data object PaymentFailed : CheckoutPhase
 
     data object ProductUnavailable : CheckoutPhase
+
+    data class PaymentStatusUnknown(
+        val requestId: Long,
+    ) : CheckoutPhase
 
     data class Completed(
         val orderId: Long,
@@ -153,6 +160,15 @@ fun CheckoutState.toRenderState(): CheckoutRenderState {
             isComplete = false,
             orderId = null,
             errorMessage = data.errorMessage ?: "Product is no longer available.",
+        )
+
+        is CheckoutPhase.PaymentStatusUnknown -> CheckoutRenderState(
+            product = null,
+            isLoadingProduct = false,
+            isPaying = false,
+            isComplete = false,
+            orderId = null,
+            errorMessage = data.errorMessage ?: CheckoutPaymentStatusUnknownMessage,
         )
 
         is CheckoutPhase.Completed -> CheckoutRenderState(

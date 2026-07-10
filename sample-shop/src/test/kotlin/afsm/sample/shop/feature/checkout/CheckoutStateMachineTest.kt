@@ -292,6 +292,31 @@ class CheckoutStateMachineTest {
     }
 
     @Test
+    fun `restored unknown payment status rejects automatic retry`() {
+        val state = checkoutState(
+            productId = product.id,
+            phase = CheckoutPhase.PaymentStatusUnknown(requestId = 9),
+            data = CheckoutData(
+                productId = product.id,
+                nextPaymentRequestId = 9,
+                errorMessage = "Payment status is unknown. Check your orders before trying again.",
+            ),
+        )
+
+        machine.transition(state, CheckoutEvent.RetryClicked)
+            .assertInvalid()
+            .assertPhase(CheckoutPhase.PaymentStatusUnknown(requestId = 9))
+            .assertNoOutputs()
+
+        val renderState = state.toRenderState()
+        assertEquals(null, renderState.primaryAction)
+        assertEquals(
+            "Payment status is unknown. Check your orders before trying again.",
+            renderState.errorMessage,
+        )
+    }
+
+    @Test
     fun `stale payment failure result is ignored`() {
         val result = machine.transition(
             state = checkoutState(
@@ -379,5 +404,6 @@ class CheckoutStateMachineTest {
         assertTrue("ProductReady --> PaymentInProgress: PayClicked [product loaded]" in mmd)
         assertTrue("ProductReady --> ProductReady: PayClicked [missing product]" in mmd)
         assertTrue("PaymentInProgress --> Completed: PaymentSucceeded [matching request]" in mmd)
+        assertTrue("state PaymentStatusUnknown" in mmd)
     }
 }

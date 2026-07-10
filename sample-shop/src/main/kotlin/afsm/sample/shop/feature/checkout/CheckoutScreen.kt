@@ -2,7 +2,7 @@ package afsm.sample.shop.feature.checkout
 
 import afsm.compose.CollectAfsmEffects
 import afsm.sample.shop.app.ShopAppContainer
-import afsm.sample.shop.app.sampleViewModelFactory
+import afsm.sample.shop.app.sampleSavedStateViewModelFactory
 import afsm.sample.shop.core.model.asPriceText
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +32,13 @@ fun CheckoutRoute(
     onPaymentComplete: () -> Unit,
 ) {
     val factory = remember(container, productId) {
-        sampleViewModelFactory {
+        sampleSavedStateViewModelFactory { savedStateHandle ->
             CheckoutViewModel(
                 productId = productId,
                 productRepository = container.productRepository,
                 paymentRepository = container.paymentRepository,
                 sessionRepository = container.sessionRepository,
+                savedStateHandle = savedStateHandle,
             )
         }
     }

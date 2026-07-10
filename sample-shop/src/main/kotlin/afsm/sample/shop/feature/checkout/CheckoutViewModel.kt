@@ -4,6 +4,7 @@ import afsm.sample.shop.core.data.PaymentRepository
 import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,10 +14,16 @@ class CheckoutViewModel(
     private val productRepository: ProductRepository,
     private val paymentRepository: PaymentRepository,
     private val sessionRepository: SessionRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    private val initialState = checkoutStateFromSavedState(
+        savedStateHandle = savedStateHandle,
+        navigationProductId = productId,
+    )
+
     private val host = afsmHost(
         machine = checkoutStateMachine,
-        initialState = checkoutState(productId = productId),
+        initialState = initialState,
         commandHandler = { command: CheckoutCommand, dispatch ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
@@ -38,11 +45,14 @@ class CheckoutViewModel(
                             ),
                         )
                     } else {
+                        savedStateHandle[CheckoutPendingPaymentRequestIdKey] = command.requestId
                         paymentRepository.submitPayment(
                             session = session,
                             product = command.product,
                         ).fold(
                             onSuccess = { receipt ->
+                                savedStateHandle[CheckoutCompletedOrderIdKey] = receipt.orderId
+                                savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
                                 dispatch(
                                     CheckoutEvent.PaymentSucceeded(
                                         requestId = command.requestId,
@@ -51,6 +61,7 @@ class CheckoutViewModel(
                                 )
                             },
                             onFailure = { error ->
+                                savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
                                 dispatch(
                                     CheckoutEvent.PaymentFailed(
                                         requestId = command.requestId,
@@ -69,7 +80,9 @@ class CheckoutViewModel(
     val effects: Flow<CheckoutEffect> = host.effects
 
     init {
-        host.dispatch(CheckoutEvent.ScreenEntered)
+        if (initialState.phase == CheckoutPhase.Idle) {
+            host.dispatch(CheckoutEvent.ScreenEntered)
+        }
     }
 
     fun onEvent(event: CheckoutEvent) {
