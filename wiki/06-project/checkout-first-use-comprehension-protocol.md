@@ -1,7 +1,7 @@
 ---
 title: Checkout First-Use Comprehension Protocol
-updated: 2026-07-10
-status: dry-run-passed-awaiting-human
+updated: 2026-07-11
+status: ai-review-recorded-awaiting-human
 ---
 
 # Checkout First-Use Comprehension Protocol
@@ -139,3 +139,27 @@ any participant session. The constrained artifacts passed the preparation check
 with three files, eleven timed questions, ten evidence patterns, and a 25-line
 graph. No human result was produced. See
 `raw/verification/2026-07-10-checkout-first-use-protocol-dry-run/restoration-follow-up.md`.
+
+## Constrained AI Review
+
+On 2026-07-11, one AI review using the participant task plus the three listed
+artifacts reported `40 seconds` and scored `11/11` with no critical
+misconception. It reconstructed the intended flow and identified three
+first-read hypotheses:
+
+- `command { ... }` did not immediately reveal whether it executes work or
+  produces host-executed work,
+- a payload `transitionTo { ... }` did not immediately reveal whether it sees
+  data from the preceding `updateData`,
+- the reader wanted contract type declarations in the same review unit.
+
+Tests resolved the first two correctly, and current core implementation/KDoc
+confirm the inferred contracts. Treat the findings as comparison inputs for the
+first human session, not as accepted redesign requirements. The exact AI
+tool/model, wrapper prompt, and session transport were not reported, so the
+environment claim remains self-reported. See
+`raw/verification/2026-07-11-checkout-first-use-ai-review/README.md` and
+[[../05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]].
+
+This review does not change the provisional human gates or the requirement for
+at least one no-AI Android developer session.

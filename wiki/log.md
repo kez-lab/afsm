@@ -1504,3 +1504,17 @@
   `raw/README.md`, `wiki/06-project/goal-completion-audit-2026-07-11.md`,
   `wiki/06-project/long-term-goal.md`, `wiki/00-context/current-state.md`,
   `wiki/00-context/open-questions.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] verification | Checkout constrained AI first-use review
+
+- Source: Four-file AI review submission with reported timing, eleven answers,
+  five ratings, hesitation notes, and requested context.
+- Action: Preserved the verbatim result, scored it `11/11` with no critical
+  misconception, recorded command ownership and update/transition ordering as
+  readability hypotheses, and kept AI evidence separate from the still-missing
+  unaided human gate.
+- Updated: `raw/verification/2026-07-11-checkout-first-use-ai-review/`,
+  `raw/README.md`,
+  `wiki/05-qa/verification-report-2026-07-11-checkout-first-use-ai-review.md`,
+  `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
+  `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.

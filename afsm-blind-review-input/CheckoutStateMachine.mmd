@@ -1,0 +1,25 @@
+stateDiagram-v2
+  [*] --> Idle
+  state Idle
+  state ProductLoading
+  note right of ProductLoading
+    entry / LoadProduct
+  end note
+  state ProductReady
+  state PaymentInProgress
+  note right of PaymentInProgress
+    entry / SubmitPayment
+  end note
+  state PaymentFailed
+  state ProductUnavailable
+  state PaymentStatusUnknown
+  state Completed
+  Idle --> ProductLoading: ScreenEntered
+  ProductLoading --> ProductReady: ProductLoaded
+  ProductLoading --> ProductUnavailable: ProductUnavailable
+  ProductReady --> PaymentInProgress: PayClicked [product loaded]
+  ProductReady --> ProductReady: PayClicked [missing product]
+  PaymentInProgress --> Completed: PaymentSucceeded [matching request] ! PaymentCompleted
+  PaymentInProgress --> PaymentFailed: PaymentFailed [matching request]
+  PaymentFailed --> PaymentInProgress: RetryClicked [product loaded]
+  PaymentFailed --> PaymentFailed: RetryClicked [missing product]

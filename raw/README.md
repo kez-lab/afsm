@@ -19,5 +19,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-11-product-editor-upload-boundary/`: injected suspend uploader red/green tests, safe failure/cancellation mapping, graph/APK/release gate, and exact Android CLI device-discovery failure.
 - `verification/2026-07-11-product-editor-cancel-device-journey/`: persistent-shell Android CLI install/launch plus layout/screenshot evidence that ProductEditor's mock upload is visibly cancellable and returns to the retained draft.
 - `verification/2026-07-11-goal-completion-audit/`: current full release gate, named safety-test mapping, and explicit absence of human first-use and production-like pilot completion evidence.
+- `verification/2026-07-11-checkout-first-use-ai-review/`: constrained four-file AI review submission, 11-point score, reported timing/ratings, and command/data-order readability hypotheses; not human first-use evidence.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

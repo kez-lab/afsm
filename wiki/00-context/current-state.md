@@ -130,11 +130,15 @@ The supported learning order is:
 5. Ordinary catalog/detail/like/review screens as examples where Afsm is not
    needed.
 
-A 2026-07-10 constrained Checkout review could reconstruct the main path,
-recovery, request-id safety, commands, and completion from only the machine,
-generated graph, and transition tests. Focused tests now cover the remaining
-graph-invisible handled/ignored/invalid policies, so the repository-based review
-passes. Real Android developer comprehension and preference remain unverified.
+A 2026-07-10 constrained Checkout repository review could reconstruct the main
+path, recovery, request-id safety, commands, and completion from only the
+machine, generated graph, and transition tests. Focused tests now cover the
+remaining graph-invisible handled/ignored/invalid policies. A separate
+2026-07-11 four-file AI review scored `11/11` and found no critical
+misconception, while surfacing local-readability hypotheses around command
+execution ownership, update/transition ordering, and contract-type locality.
+AI timing and preference are supporting evidence only; real Android developer
+comprehension and preference remain unverified.
 
 `README.md` is the quick map. `docs/getting-started.md` is the first-use
 copy/paste source and is mirrored by the external consumer fixture.
@@ -158,8 +162,8 @@ copy/paste source and is mirrored by the external consumer fixture.
   state of every later commit.
 - A no-coaching Checkout first-use task and facilitator rubric are ready, but no
   real Android developer session has been recorded yet. The post-restoration
-  facilitator setup check passes; provisional time and score gates remain
-  assumptions until the first human run.
+  facilitator setup check and one constrained AI review pass; provisional time
+  and score gates remain assumptions until the first human run.
 - A production-like pilot protocol now defines same-feature baseline capture,
   pre-registered success/stop gates, reviewer comparison, safety evidence, and
   a measured rollback drill. No target feature, owner, reviewer, baseline
