@@ -1518,3 +1518,17 @@
   `wiki/05-qa/verification-report-2026-07-11-checkout-first-use-ai-review.md`,
   `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
   `wiki/00-context/current-state.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-11] verification | Checkout AI review metadata supplement
+
+- Source: User-provided AI product/model, prompt confirmation, and local-folder
+  session method.
+- Action: Recorded `gpt 5.6 sol`, preserved the exact final prompt, and
+  reclassified the environment as prompt-constrained local-folder evidence
+  whose parent-repository isolation was not independently audited.
+- Updated:
+  `raw/verification/2026-07-11-checkout-first-use-ai-review/metadata-supplement.md`,
+  `raw/verification/2026-07-11-checkout-first-use-ai-review/README.md`,
+  `wiki/05-qa/verification-report-2026-07-11-checkout-first-use-ai-review.md`,
+  `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
+  `wiki/log.md`.

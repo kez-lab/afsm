@@ -156,8 +156,12 @@ first-read hypotheses:
 Tests resolved the first two correctly, and current core implementation/KDoc
 confirm the inferred contracts. Treat the findings as comparison inputs for the
 first human session, not as accepted redesign requirements. The exact AI
-tool/model, wrapper prompt, and session transport were not reported, so the
-environment claim remains self-reported. See
+product/model label was `gpt 5.6 sol`; the final prompt prohibited other
+repository/docs/internet access; and the input was a local folder under this
+repository. Parent context could therefore have been discoverable depending on
+the tool, and no access log proves isolation. Classify the result as a
+prompt-constrained local-folder AI review rather than an upload-isolated blind
+review. See
 `raw/verification/2026-07-11-checkout-first-use-ai-review/README.md` and
 [[../05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]].
 

@@ -43,8 +43,14 @@ artifact set.
 
 ## Boundary
 
-The exact AI tool/model, exact wrapper prompt, and session transport were not
-reported. The answer says only the four supplied files were used, but the
-environment was not independently audited. More importantly, AI timing and
-ratings do not satisfy the human first-use gate. The long-term Goal remains
-blocked on an unaided Android developer result and a production-like pilot.
+Follow-up metadata records the product/model label as `gpt 5.6 sol`, the exact
+prompt that prohibited other repository/docs/internet access, and a local-folder
+input method. Because that folder lived under the Afsm repository, parent
+repository context could have been discoverable depending on the tool. The
+answer reports using only the four supplied files, but no access log independently
+proves isolation. Classify this as a prompt-constrained local-folder AI review,
+not an upload-isolated blind review.
+
+AI timing and ratings do not satisfy the human first-use gate. The long-term
+Goal remains blocked on an unaided Android developer result and a
+production-like pilot.

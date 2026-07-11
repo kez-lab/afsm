@@ -11,10 +11,9 @@ first-use session. Its timing and ratings must not be combined with the human
 participant gates in the Checkout comprehension protocol.
 
 The submitted result reports that the AI used only the participant task and
-the three Checkout artifacts. The exact AI product/model, exact wrapper prompt,
-and whether the four files were uploaded or opened from a local folder were not
-included in the submitted metadata. Those fields remain unknown rather than
-being inferred from the answer.
+the three Checkout artifacts. Follow-up metadata identifies the product/model
+label as `gpt 5.6 sol`, confirms the exact final wrapper prompt, and states that
+the session opened a local folder. See `metadata-supplement.md`.
 
 ## Reported Timing
 
@@ -22,6 +21,8 @@ being inferred from the answer.
 - End: `2026-07-11 18:59:12 KST`
 - Duration: `40 seconds`
 - Participant type: AI
+- AI product/model label: `gpt 5.6 sol`
+- Input method: local folder
 - Human experience profile: not applicable
 - Facilitator intervention: not reported
 
@@ -35,8 +36,11 @@ being inferred from the answer.
 | Tests | `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt` | `bb1bdf75d1ae871cc0f6b060f7dc5253733279c0ca79b19b1945e5eed8c1443c` |
 
 The repository-local convenience copies under `afsm-blind-review-input/` had
-matching hashes when prepared. The answer's claim that no other context was
-used is self-reported; the session environment was not independently audited.
+matching hashes when prepared. The final prompt explicitly prohibited opening
+repository, Wiki, README, internet, or other files. Because the session opened
+a folder inside the Afsm repository, parent repository context could have been
+discoverable depending on the AI tool. The answer's claim that no other context
+was used is therefore self-reported rather than technically isolated.
 
 ## Evidence Files
 
@@ -44,11 +48,13 @@ used is self-reported; the session environment was not independently audited.
   requested-extra-context text preserved verbatim.
 - `score.md`: facilitator scoring and product-finding classification performed
   after the submitted answer was fixed.
+- `metadata-supplement.md`: follow-up product/model, exact prompt, input method,
+  and the resulting context-isolation boundary.
 
 ## Evidence Boundary
 
-The result proves that one constrained AI review reconstructed the intended
-Checkout semantics and surfaced two local-readability hypotheses. It does not
+The result proves that one prompt-constrained AI review reconstructed the
+intended Checkout semantics and surfaced three first-read hypotheses. It does not
 prove human comprehension time, human preference, first-author usability, or
 production-like adoption. The long-term Goal therefore remains blocked on a
 real no-coaching Android developer session and a production-like pilot.
