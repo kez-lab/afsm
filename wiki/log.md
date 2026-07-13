@@ -1573,3 +1573,14 @@
   `wiki/00-context/current-state.md`,
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-13] decision | Command result dispatcher naming
+
+- Source: User acceptance of the clearer `dispatchEvent` name after comparing
+  it with bare `dispatch` and generic `callback`.
+- Action: Defined `dispatchEvent` as the command handler's typed result-event
+  queueing capability while keeping `AfsmHost.dispatch(event)` unchanged for
+  external events.
+- Updated: `wiki/03-engineering/afsm-viewmodel-integration.md`,
+  `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.

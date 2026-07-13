@@ -5,6 +5,30 @@ updated: 2026-07-13
 
 # Decision Log
 
+## [2026-07-13] Name command result capability dispatchEvent
+
+Decision: Name the second `AfsmCommandHandler.handle` parameter and maintained
+command-handler lambda examples `dispatchEvent`.
+
+Rationale:
+
+- The function converts command results into typed FSM events and queues them
+  through the host; it is not merely a completion callback.
+- `callback` describes the implementation shape but not the state-machine
+  direction, and it incorrectly suggests a single terminal notification.
+- Bare `dispatch` is consistent with `AfsmHost.dispatch`, but `dispatchEvent`
+  is clearer on first read and avoids confusion with coroutine dispatchers.
+
+Consequences:
+
+- `AfsmCommandHandler.handle(command, dispatchEvent)` becomes the current
+  public source contract.
+- Maintained samples, tests, README files, and public documentation use
+  `dispatchEvent(...)` for command-produced events.
+- `AfsmHost.dispatch(event)` remains unchanged for external/UI event input.
+- This is an intentional pre-release source-name change; runtime queueing and
+  cancellation semantics do not change.
+
 ## [2026-07-13] Reserve case for conditional event branches
 
 Decision: Statements written directly in one `on<Event>` block compose one

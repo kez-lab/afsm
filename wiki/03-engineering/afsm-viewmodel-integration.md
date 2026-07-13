@@ -1,6 +1,6 @@
 ---
 title: Afsm ViewModel Integration
-updated: 2026-07-10
+updated: 2026-07-13
 ---
 
 # Afsm ViewModel Integration
@@ -54,11 +54,16 @@ Although the exact parameter type is `AfsmCommandHandler<C, E>`, Kotlin callers
 normally pass a direct SAM lambda:
 
 ```kotlin
-commandHandler = { command: SignupCommand, dispatch ->
+commandHandler = { command: SignupCommand, dispatchEvent ->
     // execute repository/use-case work
-    // dispatch(result event)
+    // dispatchEvent(result event)
 }
 ```
+
+The second parameter is named `dispatchEvent`, not `callback`. It sends a typed
+result event through the host's serialized event queue; it is not a generic
+completion callback and may be called zero, one, or multiple times by one
+handler. The host-facing `host.dispatch(event)` name remains unchanged.
 
 The default `AfsmCommandHandler.none()` intentionally ignores emitted commands.
 Use it only for machines that never emit commands; command-emitting machines

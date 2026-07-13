@@ -1,6 +1,6 @@
 ---
 title: Afsm Runtime Dispatch Loop
-updated: 2026-07-11
+updated: 2026-07-13
 ---
 
 # Afsm Runtime Dispatch Loop
@@ -47,6 +47,11 @@ Companion core output types used by the runtime are `AfsmInvocationKey` and
 ## Dispatch Contract
 
 `AfsmHost.dispatch(event)` is non-suspending.
+
+`AfsmCommandHandler.handle(command, dispatchEvent)` receives a result-event
+dispatcher. `dispatchEvent(event)` queues the typed event through the same
+serialized host event path. The explicit name distinguishes this capability
+from a generic callback and from coroutine dispatcher configuration.
 
 The host owns an internal FIFO event queue:
 
