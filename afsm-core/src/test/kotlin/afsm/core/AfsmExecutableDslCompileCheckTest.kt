@@ -122,7 +122,7 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
-    fun `top-level shorthand branches are alternatives not merged actions`() {
+    fun `direct event actions compose as one unconditional branch`() {
         val machine = afsmMachine<
             DslProductEditorPhase,
             DslProductEditorData,
@@ -137,7 +137,18 @@ class AfsmExecutableDslCompileCheckTest {
 
             phase(DslProductEditorPhase.EditingDraft) {
                 on<DslProductEditorEvent.SubmitClicked> {
-                    updateData { copy(errorMessage = "handled first") }
+                    updateData {
+                        copy(
+                            draft = draft.copy(title = "updated first"),
+                            errorMessage = "handled first",
+                        )
+                    }
+                    command(label = "SaveDraft") {
+                        DslProductEditorCommand.SaveDraft(data.draft)
+                    }
+                    effect(label = "CloseEditor") {
+                        DslProductEditorEffect.CloseEditor
+                    }
                     transitionTo(DslProductEditorPhase.SavingDraft)
                 }
             }
@@ -150,10 +161,59 @@ class AfsmExecutableDslCompileCheckTest {
             event = DslProductEditorEvent.SubmitClicked,
         )
 
-        assertEquals(DslProductEditorPhase.EditingDraft, result.state.phase)
+        assertEquals(DslProductEditorPhase.SavingDraft, result.state.phase)
         assertEquals("handled first", result.state.data.errorMessage)
-        assertEquals(emptyList(), result.commands)
-        assertIs<AfsmDecision.Handled>(result.decision)
+        assertEquals(
+            listOf(
+                DslProductEditorCommand.SaveDraft(
+                    DslProductDraft(title = "updated first"),
+                ),
+            ),
+            result.commands,
+        )
+        assertEquals(listOf(DslProductEditorEffect.CloseEditor), result.effects)
+        assertIs<AfsmDecision.Transitioned>(result.decision)
+        assertEquals(
+            AfsmTopologyTransition(
+                from = "EditingDraft",
+                event = "SubmitClicked",
+                to = "SavingDraft",
+                commandLabels = listOf("SaveDraft"),
+                effectLabels = listOf("CloseEditor"),
+            ),
+            machine.topology.transitions.single(),
+        )
+    }
+
+    @Test
+    fun `direct actions cannot mix with conditional cases`() {
+        val error = assertFailsWith<AfsmDefinitionException> {
+            afsmMachine<
+                DslProductEditorPhase,
+                DslProductEditorData,
+                DslProductEditorEvent,
+                DslProductEditorCommand,
+                DslProductEditorEffect,
+                > {
+                initial(
+                    phase = DslProductEditorPhase.EditingDraft,
+                    data = DslProductEditorData(),
+                )
+
+                phase(DslProductEditorPhase.EditingDraft) {
+                    on<DslProductEditorEvent.SubmitClicked> {
+                        updateData { copy(errorMessage = "ambiguous") }
+                        case(condition = { data.draft.title.isNotBlank() }) {
+                            transitionTo(DslProductEditorPhase.SavingDraft)
+                        }
+                    }
+                }
+
+                phase(DslProductEditorPhase.SavingDraft)
+            }
+        }
+
+        assertTrue("cannot mix direct actions" in error.message.orEmpty())
     }
 
     @Test
@@ -197,10 +257,8 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.SubmitClicked> {
-                    case {
-                        updateData { this + "transition;" }
-                        transitionTo(DslProductEditorPhase.SavingDraft)
-                    }
+                    updateData { this + "transition;" }
+                    transitionTo(DslProductEditorPhase.SavingDraft)
                 }
             }
 
@@ -239,13 +297,11 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
-                    case {
-                        updateData { this + "case;" }
-                        transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
-                            DslProductEditorPhase.ReviewSubmissionInProgress(
-                                uploadToken = data,
-                            )
-                        }
+                    updateData { this + "case;" }
+                    transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
+                        DslProductEditorPhase.ReviewSubmissionInProgress(
+                            uploadToken = data,
+                        )
                     }
                 }
             }
@@ -526,18 +582,16 @@ class AfsmExecutableDslCompileCheckTest {
                 }
 
                 on<DslProductEditorEvent.ImageUploadSucceeded> {
-                    case {
-                        updateData {
-                            copy(
-                                draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
-                                errorMessage = null,
-                            )
-                        }
-                        transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
-                            DslProductEditorPhase.ReviewSubmissionInProgress(
-                                uploadToken = event.uploadToken,
-                            )
-                        }
+                    updateData {
+                        copy(
+                            draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
+                            errorMessage = null,
+                        )
+                    }
+                    transitionTo<DslProductEditorPhase.ReviewSubmissionInProgress> {
+                        DslProductEditorPhase.ReviewSubmissionInProgress(
+                            uploadToken = event.uploadToken,
+                        )
                     }
                 }
             }

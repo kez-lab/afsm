@@ -286,7 +286,10 @@ private fun AfsmMachineBuilder<
             ) {
                 transitionTo(DraftPhase.Saving)
             }
-            case(label = "title missing") {
+            case(
+                label = "title missing",
+                condition = { data.title.isBlank() },
+            ) {
                 updateData { copy(error = "Title is required.") }
             }
         }
@@ -302,10 +305,8 @@ private fun AfsmMachineBuilder<
             transitionTo(DraftPhase.Saved)
         }
         on<DraftEvent.SaveFailed> {
-            case {
-                updateData { data, event -> data.copy(error = event.message) }
-                transitionTo(DraftPhase.Failed)
-            }
+            updateData { data, event -> data.copy(error = event.message) }
+            transitionTo(DraftPhase.Failed)
         }
     }
 
@@ -407,7 +408,10 @@ private fun AfsmMachineBuilder<
             ) {
                 transitionTo(AuthPhase.Submitting)
             }
-            case(label = "invalid credentials") {
+            case(
+                label = "invalid credentials",
+                condition = { !data.email.contains('@') || data.password.length < 8 },
+            ) {
                 updateData { copy(error = "Enter valid credentials.") }
             }
         }
@@ -431,10 +435,8 @@ private fun AfsmMachineBuilder<
             }
         }
         on<AuthEvent.LoginFailed> {
-            case {
-                updateData { data, event -> data.copy(error = event.message) }
-                transitionTo(AuthPhase.Editing)
-            }
+            updateData { data, event -> data.copy(error = event.message) }
+            transitionTo(AuthPhase.Editing)
         }
     }
 
@@ -548,17 +550,13 @@ private fun AfsmMachineBuilder<
             }
         }
         on<CheckoutEvent.CartLoaded> {
-            case {
-                updateData { data, event -> data.copy(items = event.items, error = null) }
-                transitionTo(CheckoutPhase.Ready)
-            }
+            updateData { data, event -> data.copy(items = event.items, error = null) }
+            transitionTo(CheckoutPhase.Ready)
         }
         on<CheckoutEvent.LoadFailed> {
-            case {
-                updateData { data, event -> data.copy(error = event.message) }
-                transitionTo<CheckoutPhase.Failed> {
-                    CheckoutPhase.Failed(message = event.message)
-                }
+            updateData { data, event -> data.copy(error = event.message) }
+            transitionTo<CheckoutPhase.Failed> {
+                CheckoutPhase.Failed(message = event.message)
             }
         }
     }

@@ -118,26 +118,22 @@ internal val authStateMachine:
 
         phase(AuthPhase.Submitting) {
             on<AuthEvent.AuthSucceeded> {
-                case {
-                    updateData {
-                        AuthData()
-                    }
-                    effect(label = "OpenCatalog") { AuthEffect.OpenCatalog }
-                    transitionTo<AuthPhase.Authenticated> {
-                        AuthPhase.Authenticated(
-                            session = event.session,
-                        )
-                    }
+                updateData {
+                    AuthData()
+                }
+                effect(label = "OpenCatalog") { AuthEffect.OpenCatalog }
+                transitionTo<AuthPhase.Authenticated> {
+                    AuthPhase.Authenticated(
+                        session = event.session,
+                    )
                 }
             }
 
             on<AuthEvent.AuthFailed> {
-                case {
-                    updateData { data, event ->
-                        data.copy(errorMessage = event.message)
-                    }
-                    transitionTo(AuthPhase.Editing)
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
                 }
+                transitionTo(AuthPhase.Editing)
             }
 
             on<AuthEvent.SubmitClicked> {

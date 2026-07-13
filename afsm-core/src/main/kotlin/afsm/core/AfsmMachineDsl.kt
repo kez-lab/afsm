@@ -431,9 +431,12 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
 ) {
     private val branches = mutableListOf<AfsmEventBranch<P, D, E, C, F>>()
     private val transitions = mutableListOf<AfsmTopologyTransition>()
+    private val directBranch = AfsmEventCaseScope<P, D, E, C, F, PS, EV>()
+    private var hasDirectActions = false
+    private var hasDecisionBranches = false
 
     /**
-     * Declares one named runtime case for this event in the current phase.
+     * Declares one conditional runtime case for this event in the current phase.
      *
      * Use `case` when an event has domain alternatives that should be explicit
      * in code and generated diagrams, for example `valid draft`, `invalid form`,
@@ -443,7 +446,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * rendered as the transition condition label. For non-transition cases it is
      * rendered as part of the internal transition label.
      *
-     * [condition] is evaluated at runtime with typed [phase], [event], and
+     * [condition] is required and evaluated at runtime with typed [phase], [event], and
      * [AfsmConditionScope.data]. Conditions are read-only: they can inspect the
      * current phase, event, and data, but cannot update data or emit outputs.
      * If [condition] returns `false`, Afsm tries the next declared case in this
@@ -457,30 +460,16 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      */
     public fun case(
         label: String? = null,
-        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean,
         build: AfsmEventCaseScope<P, D, E, C, F, PS, EV>.() -> Unit,
     ) {
+        hasDecisionBranches = true
         val builder = AfsmEventCaseScope<P, D, E, C, F, PS, EV>()
         builder.build()
-        val builtCase = builder.buildCase()
-        addBranch(
-            targetLabel = builtCase.targetLabel ?: stateLabel,
-            targetFactory = builtCase.targetFactory,
+        addBuiltCase(
+            builtCase = builder.buildCase(),
             conditionLabel = label,
-            commandLabels = builtCase.commandLabels,
-            effectLabels = builtCase.effectLabels,
-            kind = if (builtCase.targetLabel != null) {
-                AfsmTopologyTransitionKind.External
-            } else {
-                AfsmTopologyTransitionKind.Internal
-            },
-            isFallback = false,
             condition = condition,
-            block = {
-                builtCase.actions.forEach { action ->
-                    action()
-                }
-            },
         )
     }
 
@@ -491,21 +480,13 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * or errors. Because no phase target is declared, the machine remains in
      * the current phase.
      *
-     * This convenience creates a complete data-only case. If the same event
-     * must also change phase, emit a command, or emit an effect, use [case] and
-     * put all actions in that one case.
+     * Direct statements in the same `on<Event>` block compose one
+     * unconditional branch. Use [case] only when the update is conditional.
      */
     public fun updateData(
-        label: String? = null,
-        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
         update: D.() -> D,
     ) {
-        case(
-            label = label,
-            condition = condition,
-        ) {
-            updateData(update)
-        }
+        addDirectAction { updateData(update) }
     }
 
     /**
@@ -515,21 +496,26 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
      * first lambda parameter is the current data; the second is the typed
      * event payload.
      *
-     * This convenience creates a complete data-only case. If the same event
-     * must also change phase, emit a command, or emit an effect, use [case] and
-     * put all actions in that one case.
+     * Direct statements in the same `on<Event>` block compose one
+     * unconditional branch. Use [case] only when the update is conditional.
      */
     public fun updateData(
-        label: String? = null,
-        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
         update: (D, EV) -> D,
     ) {
-        case(
-            label = label,
-            condition = condition,
-        ) {
-            updateData(update)
-        }
+        addDirectAction { updateData(update) }
+    }
+
+    /**
+     * Emits host-executed work from the unconditional branch for this event.
+     *
+     * Direct statements in the same `on<Event>` block compose one branch and
+     * their actions execute in declaration order.
+     */
+    public fun command(
+        label: String? = null,
+        command: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> C,
+    ) {
+        addDirectAction { command(label = label, command = command) }
     }
 
     /**
@@ -542,29 +528,24 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
         label: String? = null,
         effect: AfsmTransitionScope<P, D, E, C, F, PS, EV>.() -> F,
     ) {
-        case {
-            effect(label = label, effect = effect)
-        }
+        addDirectAction { effect(label = label, effect = effect) }
     }
 
     /**
      * Handles this event by changing to [phase].
      *
-     * This convenience is for unconditional phase changes. If the event needs a
-     * named condition, data update, command, or effect, use [case] and call
-     * [AfsmEventCaseScope.transitionTo] inside that case.
+     * Other direct actions in the same `on<Event>` block are part of the same
+     * unconditional branch. Use [case] only for a conditional phase change.
      */
     public fun transitionTo(phase: P) {
-        case {
-            transitionTo(phase)
-        }
+        addDirectAction { transitionTo(phase) }
     }
 
     /**
      * Handles this event by changing to a payload phase created from runtime data.
      *
-     * This convenience is for unconditional phase changes. If the event needs a
-     * named condition, data update, command, or effect, use [case].
+     * Other direct actions in the same `on<Event>` block are part of the same
+     * unconditional branch. Use [case] only for a conditional phase change.
      */
     public inline fun <reified TP : P> transitionTo(
         noinline phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
@@ -583,7 +564,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
         phaseType: KClass<TP>,
         phase: AfsmPhaseFactoryScope<P, D, E, PS, EV>.() -> TP,
     ) {
-        case {
+        addDirectAction {
             transitionTo(
                 phaseType = phaseType,
                 phase = phase,
@@ -609,6 +590,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
         reason: String? = null,
         condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
     ) {
+        hasDecisionBranches = true
         addDecisionBranch(
             decision = AfsmDecision.Ignored(reason),
             condition = condition,
@@ -632,6 +614,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
         reason: String? = null,
         condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean = { true },
     ) {
+        hasDecisionBranches = true
         addDecisionBranch(
             decision = AfsmDecision.Invalid(reason),
             condition = condition,
@@ -697,6 +680,39 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
         }
     }
 
+    private fun addDirectAction(
+        action: AfsmEventCaseScope<P, D, E, C, F, PS, EV>.() -> Unit,
+    ) {
+        hasDirectActions = true
+        directBranch.action()
+    }
+
+    private fun addBuiltCase(
+        builtCase: AfsmBuiltEventCase<P, D, E, C, F, PS, EV>,
+        conditionLabel: String?,
+        condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean,
+    ) {
+        addBranch(
+            targetLabel = builtCase.targetLabel ?: stateLabel,
+            targetFactory = builtCase.targetFactory,
+            conditionLabel = conditionLabel,
+            commandLabels = builtCase.commandLabels,
+            effectLabels = builtCase.effectLabels,
+            kind = if (builtCase.targetLabel != null) {
+                AfsmTopologyTransitionKind.External
+            } else {
+                AfsmTopologyTransitionKind.Internal
+            },
+            isFallback = false,
+            condition = condition,
+            block = {
+                builtCase.actions.forEach { action ->
+                    action()
+                }
+            },
+        )
+    }
+
     internal fun addDecisionBranch(
         decision: AfsmDecision,
         condition: AfsmConditionScope<P, D, E, PS, EV>.() -> Boolean,
@@ -723,6 +739,21 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, F : Any, P
     }
 
     internal fun buildDefinition(): AfsmEventDefinition<P, D, E, C, F> {
+        if (hasDirectActions && hasDecisionBranches) {
+            throw AfsmDefinitionException(
+                "Event $eventLabel in phase $stateLabel cannot mix direct actions " +
+                    "with conditional case, ignore, or invalid branches.",
+            )
+        }
+
+        if (hasDirectActions) {
+            addBuiltCase(
+                builtCase = directBranch.buildCase(),
+                conditionLabel = null,
+                condition = { true },
+            )
+        }
+
         return AfsmEventDefinition(
             eventLabel = eventLabel,
             eventMatcher = { event -> eventMatcher(event) != null },

@@ -95,24 +95,18 @@ internal val productEditorStateMachine:
             }
 
             on<ProductEditorEvent.TitleChanged> {
-                case {
-                    updateData { data, event -> data.updateDraft(event) }
-                    transitionTo(ProductEditorPhase.EditingDraft)
-                }
+                updateData { data, event -> data.updateDraft(event) }
+                transitionTo(ProductEditorPhase.EditingDraft)
             }
 
             on<ProductEditorEvent.DescriptionChanged> {
-                case {
-                    updateData { data, event -> data.updateDraft(event) }
-                    transitionTo(ProductEditorPhase.EditingDraft)
-                }
+                updateData { data, event -> data.updateDraft(event) }
+                transitionTo(ProductEditorPhase.EditingDraft)
             }
 
             on<ProductEditorEvent.PriceChanged> {
-                case {
-                    updateData { data, event -> data.updateDraft(event) }
-                    transitionTo(ProductEditorPhase.EditingDraft)
-                }
+                updateData { data, event -> data.updateDraft(event) }
+                transitionTo(ProductEditorPhase.EditingDraft)
             }
         }
 
@@ -131,30 +125,26 @@ internal val productEditorStateMachine:
             }
 
             on<ProductEditorEvent.ImageUploadSucceeded> {
-                case {
-                    updateData {
-                        copy(
-                            draft = draft.copy(
-                                reviewAttempt = draft.reviewAttempt + 1,
-                            ),
-                            errorMessage = null,
-                        )
-                    }
-                    transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
-                        ProductEditorPhase.ReviewSubmissionInProgress(
-                            uploadToken = event.uploadToken,
-                        )
-                    }
+                updateData {
+                    copy(
+                        draft = draft.copy(
+                            reviewAttempt = draft.reviewAttempt + 1,
+                        ),
+                        errorMessage = null,
+                    )
+                }
+                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+                    ProductEditorPhase.ReviewSubmissionInProgress(
+                        uploadToken = event.uploadToken,
+                    )
                 }
             }
 
             on<ProductEditorEvent.ImageUploadFailed> {
-                case {
-                    updateData { data, event ->
-                        data.copy(errorMessage = event.message)
-                    }
-                    transitionTo(ProductEditorPhase.EditingDraft)
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
                 }
+                transitionTo(ProductEditorPhase.EditingDraft)
             }
         }
 
@@ -169,20 +159,16 @@ internal val productEditorStateMachine:
             }
 
             on<ProductEditorEvent.ReviewApproved> {
-                case {
-                    updateData { copy(errorMessage = null) }
-                    transitionTo(ProductEditorPhase.Approved)
-                }
+                updateData { copy(errorMessage = null) }
+                transitionTo(ProductEditorPhase.Approved)
             }
 
             on<ProductEditorEvent.ReviewRejected> {
-                case {
-                    updateData { copy(errorMessage = null) }
-                    transitionTo<ProductEditorPhase.Rejected> {
-                        ProductEditorPhase.Rejected(
-                            reason = event.reason,
-                        )
-                    }
+                updateData { copy(errorMessage = null) }
+                transitionTo<ProductEditorPhase.Rejected> {
+                    ProductEditorPhase.Rejected(
+                        reason = event.reason,
+                    )
                 }
             }
         }
@@ -241,24 +227,20 @@ internal val productEditorStateMachine:
             }
 
             on<ProductEditorEvent.PublishSucceeded> {
-                case {
-                    updateData { copy(errorMessage = null) }
-                    transitionTo<ProductEditorPhase.Published> {
-                        ProductEditorPhase.Published(
-                            productId = event.productId,
-                            title = data.draft.form.title.trim(),
-                        )
-                    }
+                updateData { copy(errorMessage = null) }
+                transitionTo<ProductEditorPhase.Published> {
+                    ProductEditorPhase.Published(
+                        productId = event.productId,
+                        title = data.draft.form.title.trim(),
+                    )
                 }
             }
 
             on<ProductEditorEvent.PublishFailed> {
-                case {
-                    updateData { data, event ->
-                        data.copy(errorMessage = event.message)
-                    }
-                    transitionTo(ProductEditorPhase.Approved)
+                updateData { data, event ->
+                    data.copy(errorMessage = event.message)
                 }
+                transitionTo(ProductEditorPhase.Approved)
             }
         }
 

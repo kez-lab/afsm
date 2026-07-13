@@ -90,12 +90,10 @@ val draftStateMachine: AfsmDefaultMachine<
         }
 
         on<DraftEvent.DraftSaveFailed> {
-            case {
-                updateData { data, event ->
-                    data.copy(errorMessage = event.message)
-                }
-                transitionTo(DraftPhase.Editing)
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
             }
+            transitionTo(DraftPhase.Editing)
         }
     }
 

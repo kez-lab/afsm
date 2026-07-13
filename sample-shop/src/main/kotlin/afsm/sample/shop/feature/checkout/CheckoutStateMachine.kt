@@ -42,29 +42,24 @@ internal val checkoutStateMachine:
             }
 
             on<CheckoutEvent.ProductLoaded> {
-                case {
-                    updateData { data, event ->
-                        data.copy(
-                            product = event.product,
-                            errorMessage = null,
-                        )
-                    }
-                    transitionTo(CheckoutPhase.ProductReady)
+                updateData { data, event ->
+                    data.copy(
+                        product = event.product,
+                        errorMessage = null,
+                    )
                 }
+                transitionTo(CheckoutPhase.ProductReady)
             }
 
             on<CheckoutEvent.ProductUnavailable> {
-                case {
-                    updateData {
-                        copy(
-                            product = null,
-                            errorMessage = "Product is no longer available.",
-                        )
-                    }
-                    transitionTo(CheckoutPhase.ProductUnavailable)
+                updateData {
+                    copy(
+                        product = null,
+                        errorMessage = "Product is no longer available.",
+                    )
                 }
+                transitionTo(CheckoutPhase.ProductUnavailable)
             }
-
         }
 
         phase(CheckoutPhase.ProductReady) {
