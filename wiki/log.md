@@ -1555,3 +1555,21 @@
   graph-visible alternatives instead of inferring arbitrary Kotlin `if`/`when`.
 - Updated: `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-07-13] implementation | Conditional-only case DSL
+
+- Source: Accepted conditional-only `case` contract and focused red tests for
+  direct action composition and mixed-branch rejection.
+- Action: Composed direct event actions into one unconditional branch, added
+  direct event `command`, required an explicit condition for `case`, migrated
+  maintained Kotlin and public examples, and preserved all three generated
+  sample graph hashes.
+- Verification: Focused core and sample tests, graph generation, API validation,
+  Maven Local publication, and the clean external consumer build passed through
+  `./scripts/verify-release-local.sh --no-daemon`. Auth, Checkout, and
+  ProductEditor graph hashes stayed byte-for-byte unchanged.
+- Updated: `afsm-core`, `sample-shop`, `consumer-smoke`, `README.md`,
+  `README.ko.md`, `docs/`, `CHANGELOG.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

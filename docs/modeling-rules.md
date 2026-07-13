@@ -133,8 +133,8 @@ the product flow, do not model it as effect-only.
 | API | Meaning |
 |---|---|
 | `transitionTo` | accepted phase change |
-| `case { updateData(...) }` | accepted event with no phase change |
-| `updateData { ... }` | shorthand for data-only event handling |
+| `case(condition = ...) { updateData(...) }` | conditionally accepted event with no phase change |
+| `updateData { ... }` | unconditional data-only event handling |
 | `ignore` | expected no-op event, such as duplicate submit while already submitting |
 | omitted handler | invalid by default because the event is not valid in that phase |
 | `invalid(reason)` | explicit invalid branch when a clearer diagnostic is worth writing |
@@ -155,15 +155,18 @@ Low-level reducers may still return `AfsmTransition.handled(...)`, but graphable
 DSL examples should model no-transition handling by omitting `transitionTo(...)`
 from the accepted case.
 
-Use `case(label, condition = ...)` like a graphable `if` branch. The label
-should describe the business condition, not the Kotlin expression. Prefer
-`label = "valid draft"` with `condition = { data.canSubmitDraft() }` over
+Use `case(label, condition = ...)` like a graphable `if` branch. Its condition
+is required. The label should describe the business condition, not the Kotlin
+expression. Prefer `label = "valid draft"` with
+`condition = { data.canSubmitDraft() }` over
 `label = "draft.form.validationError() == null"`.
 
-When one event needs multiple actions, put them in the same `case { ... }`.
-Top-level shorthand calls are complete alternatives, not a list of actions to
-merge. For example, use `case { updateData(...); transitionTo(Phase.X) }` when
-the event both changes data and changes phase.
+When an event has one unconditional path, write its actions directly in the
+same `on<Event>` block. Afsm composes `updateData`, `command`, `effect`, and
+`transitionTo` into one branch and runs the actions in declaration order. Use
+`case(condition = ...)` only when the event has conditional alternatives.
+Do not mix direct actions with `case`, `ignore`, or `invalid` decisions in the
+same handler; the machine rejects that ambiguous definition while building.
 
 ## First Reading Order
 

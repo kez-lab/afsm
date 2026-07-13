@@ -1,9 +1,38 @@
 ---
 title: Implementation Log
-updated: 2026-05-26
+updated: 2026-07-13
 ---
 
 # Implementation Log
+
+## [2026-07-13] Conditional-only case DSL
+
+Change:
+
+- Made `case` require a read-only condition and reserved it for graph-visible
+  alternatives.
+- Changed direct event-scope `updateData`, `command`, `effect`, and
+  `transitionTo` statements to accumulate into one unconditional branch.
+- Added direct event-scope `command`, removed the conditional/label parameters
+  from direct `updateData`, and rejected handlers that mix direct actions with
+  `case`, `ignore`, or `invalid` decisions.
+- Migrated maintained sample, external consumer, tests, README files, and public
+  guides away from anonymous unconditional cases.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :sample-shop:generateAfsmMmd --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Direct event actions now read and execute as one branch. The generated Auth,
+  Checkout, and ProductEditor graph hashes are byte-for-byte unchanged from the
+  pre-migration versions. API validation, Maven Local publication, and the clean
+  external consumer build all pass through the full release gate.
 
 ## [2026-05-26] No-command marker API
 

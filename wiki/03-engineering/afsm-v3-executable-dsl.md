@@ -361,9 +361,12 @@ Important properties:
 - `phase(Phase)` creates a structural state scope.
 - `on<Event>` creates a structural event scope.
 - `AfsmEventBranchScope` is the receiver behind `on<Event> { ... }`; its job is only to declare ordered graphable branches for that event.
-- `case(...)` creates a named graphable branch inside the event scope.
-- `transitionTo(...)` and `transitionTo<PayloadPhase> { ... }` change phase inside a case.
-- `updateData(...)`, `command(...)`, and `effect(...)` are explicit case actions.
+- `case(condition = ...)` creates a conditional graphable branch inside the
+  event scope.
+- Direct statements form one unconditional branch; `transitionTo(...)` and
+  `transitionTo<PayloadPhase> { ... }` change phase in the current branch.
+- `updateData(...)`, `command(...)`, and `effect(...)` are explicit branch
+  actions.
 - `ignore(...)` and `invalid(...)` handle events without adding state-diagram edges.
 - `onEnter` and `onExit` are state-local and visible.
 - `updateData` updates data immutably.
@@ -466,18 +469,16 @@ internal val productEditorStateMachine:
         }
 
         on<ProductEditorEvent.ImageUploadSucceeded> {
-            case {
-                updateData {
-                    copy(
-                        draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
-                        errorMessage = null,
-                    )
-                }
-                transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
-                    ProductEditorPhase.ReviewSubmissionInProgress(
-                        uploadToken = event.uploadToken,
-                    )
-                }
+            updateData {
+                copy(
+                    draft = draft.copy(reviewAttempt = draft.reviewAttempt + 1),
+                    errorMessage = null,
+                )
+            }
+            transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+                ProductEditorPhase.ReviewSubmissionInProgress(
+                    uploadToken = event.uploadToken,
+                )
             }
         }
     }
@@ -689,7 +690,10 @@ Result on 2026-05-09:
 - Added a minimal executable DSL in `afsm-core`: `afsmMachine`, `initial`, `phase`, `on`, `onEnter`, `case`, `transitionTo`, `updateData`, `command`, and `effect`.
 - Added `AfsmExecutableDslCompileCheckTest` with a ProductEditor-like flow.
 - Verified that event subtype access, typed payload phase access, named condition branches, entry command emission, and effect-only no-transition cases work in compiled Kotlin tests.
-- Superseded by the follow-up graphability spike and 2026-05-21 usability pass: branch targets now need to be declared through `case { transitionTo(...) }` or direct unconditional `transitionTo(...)` inside `on<Event>` so the machine can expose topology metadata without sample events.
+- Superseded by the follow-up graphability spike and later usability passes:
+  conditional targets are declared through `case(condition = ...)`, while one
+  unconditional path is declared directly inside `on<Event>` so the machine
+  can expose topology metadata without sample events.
 
 ### Step 2: Interpreter Spike
 
@@ -705,7 +709,10 @@ Implement enough interpreter behavior to execute one event:
 
 Current spike status:
 
-- Implemented current phase lookup, event handler lookup, ordered case matching, ordered `onExit -> case actions -> target phase factory -> onEnter`, ordered `updateData`, command collection, effect collection, and `Handled` versus `Transitioned` decisions.
+- Implemented current phase lookup, event handler lookup, ordered case matching,
+  ordered `onExit -> branch actions -> target phase factory -> onEnter`, ordered
+  `updateData`, command collection, effect collection, and `Handled` versus
+  `Transitioned` decisions.
 - Build-time validation rejects a missing static default declaration, duplicate state declarations, duplicate event handlers in a state, and transition targets that have no declared state. Dynamic machines declare `initialPhase` instead of fake runtime data.
 - `ignore(...)` and `invalid(...)` now preserve `AfsmDecision.Ignored` / `AfsmDecision.Invalid` for handled non-graph transitions.
 

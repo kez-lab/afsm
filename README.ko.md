@@ -186,12 +186,10 @@ val draftStateMachine: AfsmDefaultMachine<
         }
 
         on<DraftEvent.DraftSaveFailed> {
-            case {
-                updateData { data, event ->
-                    data.copy(errorMessage = event.message)
-                }
-                transitionTo(DraftPhase.Editing)
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
             }
+            transitionTo(DraftPhase.Editing)
         }
     }
 
@@ -204,16 +202,16 @@ val draftStateMachine: AfsmDefaultMachine<
 `AfsmMachine`과 `afsmMachine(initialPhase = ...)`를 사용하며, 이 경우 host가
 초기 상태를 명시적으로 전달해야 합니다.
 
-`case(...)` 분기는 선언 순서대로 검사됩니다. `condition`이 `true`인 첫
-분기가 이벤트를 처리하며, 어떤 분기도 일치하지 않으면 해당 이벤트는 현재
-phase에서 유효하지 않습니다. `transitionTo(...)`는 phase를 변경합니다.
-이벤트가 데이터나 출력만 변경한다면 `transitionTo(...)`를 호출하지 않고
-`updateData(...)` 또는 `effect(...)`로 처리하세요.
+`case(...)`는 조건부 대안에만 사용합니다. `condition`은 필수이며 선언
+순서대로 검사됩니다. 어떤 case도 일치하지 않으면 해당 이벤트는 현재
+phase에서 유효하지 않습니다. 하나의 `on<Event>` 안에 직접 쓴 `updateData`,
+`command`, `effect`, `transitionTo`는 하나의 무조건 branch로 합성됩니다.
+같은 이벤트 handler에서 direct action과 조건부 case를 섞을 수 없습니다.
 
 phase가 바뀌는 전이는 다음 순서로 실행됩니다.
 
 ```text
-onExit -> case actions -> target phase factory -> onEnter
+onExit -> branch actions -> target phase factory -> onEnter
 ```
 
 초기 상태 생성은 `onEnter`를 실행하지 않습니다. 시작 작업은

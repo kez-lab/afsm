@@ -138,10 +138,10 @@ separate keyed `Start/Cancel` operations for phase-owned work; ignored and
 invalid transitions carry neither output kind.
 For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
 Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
-If one accepted event needs multiple actions, keep them in the same
-`case { ... }`. Top-level shorthand calls such as `updateData(...)` and
-`transitionTo(...)` are separate alternatives; they are not merged into one
-transition.
+Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
+one `on<Event>` block compose one unconditional branch. Use
+`case(condition = ...)` only for conditional alternatives, and do not mix
+direct actions with decision branches in the same handler.
 
 ### AfsmDecision
 
@@ -265,26 +265,31 @@ locally when the phase exits.
 | `phase(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
 | `on<Event>()` | Event-specific branch scope |
 | `on(eventType = Event::class)` | Non-inline event-specific branch scope |
-| `case(label, condition = ...) { ... }` | Named branch for a domain condition |
+| `case(label, condition = ...) { ... }` | Conditional branch; `condition` is required |
 | `transitionTo(phase)` | Phase change only |
 | `transitionTo<PayloadPhase> { ... }` | Phase change to payload phase |
 | `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload phase change |
-| `updateData { ... }` | Handles event by immutably updating data |
+| `updateData { ... }` | Adds an immutable data update to the direct event branch |
 | `updateData { data, event -> ... }` | Data update that uses the typed event payload |
 | `ignore(reason)` | Expected no-op event; no graph edge |
 | `invalid(reason)` | Explicit invalid event; no graph edge |
-| `command(label = ...) { ... }` | Host-executed work output from a case |
-| `effect(label = ...) { ... }` | UI-side one-shot output from a case |
+| `command(label = ...) { ... }` | Host-executed work output from the current branch |
+| `effect(label = ...) { ... }` | UI-side one-shot output from the current branch |
 | `onEnter { ... }` | Declares actions that run after entering a phase |
 | `onExit { ... }` | Declares actions that run before leaving a phase |
 | `command(label = ...) { ... }` in `onEnter`/`onExit` | Host work plus optional graph label in one statement |
 | `invoke(key, label = ...) { ... }` in `onEnter` | Keyed phase-owned work, automatically cancelled on phase exit |
 | `effect(label = ...) { ... }` in `onEnter`/`onExit` | UI one-shot plus optional graph label in one statement |
 
-`case(...)` branches are evaluated in declaration order. The first branch whose
-`condition` returns `true` handles the event. If no branch matches, the event is
-invalid in the current phase. A named case becomes the generated transition's
-condition label, including no-transition cases such as validation failures.
+`case(...)` requires a condition. Cases are evaluated in declaration order.
+The first branch whose `condition` returns `true` handles the event. If no
+branch matches, the event is invalid in the current phase. A named case becomes
+the generated transition's condition label, including no-transition cases such
+as validation failures.
+
+An `on<Event>` handler with no cases instead accumulates its direct actions into
+one unconditional branch. Mixing this direct branch with `case`, `ignore`, or
+`invalid` decisions is rejected when the machine is built.
 
 Conditions run with a read-only scope containing typed `phase`, typed `event`,
 and current `data`. They cannot update data or emit outputs. Payload phase
@@ -303,7 +308,7 @@ matches any payload instance rather than one exact value.
 Phase-changing transition order:
 
 ```text
-source invocation cancel -> onExit -> case actions -> target phase factory -> onEnter
+source invocation cancel -> onExit -> branch actions -> target phase factory -> onEnter
 ```
 
 ### Phase-Owned Invocation

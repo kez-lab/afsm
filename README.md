@@ -182,12 +182,10 @@ val draftStateMachine: AfsmDefaultMachine<
         }
 
         on<DraftEvent.DraftSaveFailed> {
-            case {
-                updateData { data, event ->
-                    data.copy(errorMessage = event.message)
-                }
-                transitionTo(DraftPhase.Editing)
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
             }
+            transitionTo(DraftPhase.Editing)
         }
     }
 
@@ -199,16 +197,17 @@ val draftStateMachine: AfsmDefaultMachine<
 feature that needs navigation or restored data uses base `AfsmMachine` plus
 `afsmMachine(initialPhase = ...)`, which makes an explicit host state mandatory.
 
-`case(...)` branches are checked in declaration order. The first branch whose
-`condition` returns `true` handles the event; if none match, the event is
-invalid for the current phase. `transitionTo(...)` changes phase. If an event
-only updates data or emits an output, handle it with `updateData(...)` or
-`effect(...)` without calling `transitionTo(...)`.
+Use `case(...)` only for conditional alternatives. Its `condition` is required,
+and cases are checked in declaration order; if none match, the event is invalid
+for the current phase. Direct `updateData`, `command`, `effect`, and
+`transitionTo` statements inside one `on<Event>` block compose one
+unconditional branch. Do not mix direct actions and conditional cases in the
+same event handler.
 
 Phase-changing transitions run:
 
 ```text
-onExit -> case actions -> target phase factory -> onEnter
+onExit -> branch actions -> target phase factory -> onEnter
 ```
 
 Initial state construction does not run `onEnter`. Trigger startup work with an explicit event such as `ScreenEntered`.

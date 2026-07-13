@@ -77,6 +77,17 @@ Initial pre-release candidate.
 - Kotlin explicit API mode for public library modules.
 - Binary API validation baseline for public library modules.
 
+### Changed
+
+- Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
+  one `on<Event>` block now compose one unconditional branch instead of
+  competing as separate alternatives.
+- `case` now requires an explicit condition and is reserved for conditional
+  graph-visible alternatives. Mixing direct actions with `case`, `ignore`, or
+  `invalid` decisions in one handler is rejected at machine build time.
+- Event-scope `updateData` no longer accepts condition or label parameters;
+  conditional updates belong inside `case(condition = ...)`.
+
 ### Removed
 
 - Pre-release compatibility aliases before first publication:

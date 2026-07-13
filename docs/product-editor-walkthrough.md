@@ -205,15 +205,15 @@ and idempotency contract.
 For a phase-changing branch, Afsm runs:
 
 ```text
-source invocation cancel -> source onExit -> case actions -> target phase factory -> target onEnter
+source invocation cancel -> source onExit -> branch actions -> target phase factory -> target onEnter
 ```
 
 If a source phase has no `onExit`, Afsm skips that step. For payload phases,
-call `transitionTo<PayloadPhase> { ... }` inside a `case` to create the next
-phase value. Keep data updates, commands, and effects as separate statements
-in that case so `transitionTo` keeps one meaning: phase change.
-The payload phase factory runs after the case actions, so it sees data
-updates made earlier in the same case.
+call `transitionTo<PayloadPhase> { ... }` to create the next phase value. Keep
+data updates, commands, and effects as separate statements in the same branch
+so `transitionTo` keeps one meaning: phase change. The payload phase factory
+runs after the branch actions, so it sees data updates made earlier in that
+branch.
 
 That order matters when the target `onEnter` command reads updated data.
 For example, image upload success increments `reviewAttempt` in the transition
@@ -222,20 +222,18 @@ block, then `ReviewSubmissionInProgress.onEnter` submits the updated draft:
 ```kotlin
 phase(ProductEditorPhase.ImageUploadInProgress) {
     on<ProductEditorEvent.ImageUploadSucceeded> {
-        case {
-            updateData {
-                copy(
-                    draft = draft.copy(
-                        reviewAttempt = draft.reviewAttempt + 1,
-                    ),
-                    errorMessage = null,
-                )
-            }
-            transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
-                ProductEditorPhase.ReviewSubmissionInProgress(
-                    uploadToken = event.uploadToken,
-                )
-            }
+        updateData {
+            copy(
+                draft = draft.copy(
+                    reviewAttempt = draft.reviewAttempt + 1,
+                ),
+                errorMessage = null,
+            )
+        }
+        transitionTo<ProductEditorPhase.ReviewSubmissionInProgress> {
+            ProductEditorPhase.ReviewSubmissionInProgress(
+                uploadToken = event.uploadToken,
+            )
         }
     }
 }

@@ -259,12 +259,10 @@ val draftStateMachine: AfsmDefaultMachine<
         }
 
         on<DraftEvent.DraftSaveFailed> {
-            case {
-                updateData { data, event ->
-                    data.copy(errorMessage = event.message)
-                }
-                transitionTo(DraftPhase.Editing)
+            updateData { data, event ->
+                data.copy(errorMessage = event.message)
             }
+            transitionTo(DraftPhase.Editing)
         }
     }
 
@@ -290,13 +288,15 @@ an explicit event such as `ScreenEntered`, dispatch it after the ViewModel or UI
 is ready, and let that event transition to a loading phase whose `onEnter`
 emits the command.
 
-If a case does not call `transitionTo(...)`, it handles the event without a
-phase change. Use that for form text changes and validation errors.
+If a direct event branch or conditional case does not call `transitionTo(...)`,
+it handles the event without a phase change. Use that for form text changes and
+validation errors.
 
-If one event must update data and change phase, keep both statements inside the
-same `case { ... }`. Sibling calls such as `updateData(...)` followed by
-`transitionTo(...)` are separate alternatives; the first matching alternative
-handles the event.
+If one unconditional event must update data and change phase, write both
+statements directly in the same `on<Event>` block. They compose one branch in
+declaration order. Use `case(condition = ...)` only when the event has
+conditional alternatives, and do not mix direct actions with cases in one
+handler.
 
 ## Add First JVM Tests
 
@@ -567,10 +567,8 @@ progress in state:
 
 ```kotlin
 on<DraftEvent.DraftSaveCompleted> {
-    case {
-        transitionTo(DraftPhase.Saved)
-        effect(label = "CloseEditor") { DraftEffect.CloseEditor }
-    }
+    effect(label = "CloseEditor") { DraftEffect.CloseEditor }
+    transitionTo(DraftPhase.Saved)
 }
 ```
 

@@ -71,9 +71,14 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
 
 ## Authoring and Runtime Policy
 
-- The canonical DSL vocabulary is `phase`, `on`, named `case`, phase-only
+- The canonical DSL vocabulary is `phase`, `on`, conditional `case`, phase-only
   `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, phase-owned
   `invoke`, `effect`, `ignore`, and `invalid`.
+- Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
+  one `on<Event>` block form one unconditional branch. `case` requires a
+  condition and is used only for graph-visible alternatives. Mixing direct
+  actions with `case`, `ignore`, or `invalid` decisions in one handler fails
+  while the machine is built.
 - A 2026-07-10 first-use experiment rejected partial generic calls and inferred
   generic feature superclasses, then implemented the smallest viable shape:
   graphable features expose one explicitly typed lower-camel top-level `val`
@@ -90,7 +95,7 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   `ignore(...)` is reserved for expected harmless no-ops; omitted impossible
   handlers are invalid by default.
 - Phase-changing execution order is
-  `onExit -> case actions -> target phase factory -> onEnter`.
+  `onExit -> branch actions -> target phase factory -> onEnter`.
 - Initial state construction does not run `onEnter`. Restoration reconstructs
   minimal stable state and deliberately starts work through an event only when
   safe. Checkout restores unresolved payment to `PaymentStatusUnknown` rather
@@ -153,9 +158,9 @@ consumer fixture.
 - `scripts/verify-release-local.sh` is the authoritative local release gate. It
   runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
   Maven Local publication, and the clean external consumer smoke build.
-- The full local release gate passed on 2026-07-11 after the diagnostic privacy,
-  phase-owned invocation, and injected ProductEditor uploader changes. The
-  known Kotlin Gradle
+- The full local release gate passed again on 2026-07-13 after the
+  conditional-only `case` DSL migration, including API validation, Maven Local
+  publication, and the clean external consumer build. The known Kotlin Gradle
   plugin POM rewriting deprecation warning remains non-blocking.
 - Hosted GitHub Actions CI was removed for cost control. No
   `.github/workflows/ci.yml` exists; maintainers run the relevant local checks

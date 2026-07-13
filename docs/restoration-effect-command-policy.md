@@ -98,7 +98,7 @@ Do not use effect-only output for required product progress.
 Bad:
 
 ```kotlin
-effect(CheckoutEffect.NavigateToReceipt(orderId))
+effect { CheckoutEffect.NavigateToReceipt(orderId) }
 ```
 
 if that is the only place the completed order is represented.
@@ -106,10 +106,8 @@ if that is the only place the completed order is represented.
 Good:
 
 ```kotlin
-case {
-    transitionTo(CheckoutPhase.Completed(orderId))
-    effect(CheckoutEffect.NavigateToReceipt(orderId))
-}
+effect { CheckoutEffect.NavigateToReceipt(orderId) }
+transitionTo(CheckoutPhase.Completed(orderId))
 ```
 
 The state is durable. The effect is only a convenience for the currently active
