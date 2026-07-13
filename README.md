@@ -5,6 +5,8 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
+**English** | [한국어](README.ko.md)
+
 Afsm is an Android-focused finite state machine toolkit that turns implicit
 business-flow state changes scattered across complex `ViewModel`s into explicit
 `Phase` and `Event` transition rules. From the same executable machine
@@ -16,6 +18,27 @@ Use Afsm when a screen has meaningful phases, retries, async results, invalid
 transitions, or multi-step behavior. Do not force it onto simple product lists,
 detail pages, likes, review lists, or basic loading/content/error screens where
 ordinary `ViewModel + StateFlow` is clearer.
+
+## Why I Started Afsm
+
+I started Afsm because complex Android screens often reach a point where their
+business flow exists everywhere and nowhere at once. Each individual
+`state.copy(...)`, event handler, coroutine launch, and repository callback may
+be reasonable, but understanding the whole screen means reconstructing rules
+across a `ViewModel`, UI collectors, async result handlers, and tests.
+
+At that point, simple questions become expensive: What phase is the screen in?
+Which events are valid now? What starts external work? What happens on failure
+or retry? Can a stale result overwrite newer state? Which completion is durable,
+and which output is only a one-shot UI action?
+
+Afsm began as an attempt to make those answers local and executable. The goal
+is not to replace Android `ViewModel`, hide Kotlin `copy()`, or impose an entire
+application architecture. The goal is to move the business-flow rules of a
+complex screen into one plain Kotlin machine that the runtime executes, tests
+verify, and graph tooling visualizes. `ViewModel` still owns lifecycle,
+`StateFlow`, repositories, saved state, and the UI bridge. Simple screens should
+continue to use ordinary Android state handling when it is clearer.
 
 ## First Use Path
 

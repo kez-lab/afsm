@@ -1532,3 +1532,14 @@
   `wiki/05-qa/verification-report-2026-07-11-checkout-first-use-ai-review.md`,
   `wiki/06-project/checkout-first-use-comprehension-protocol.md`,
   `wiki/log.md`.
+
+## [2026-07-13] documentation | Korean README and creator motivation
+
+- Source: Product strategy, long-term Goal, current English README, and user
+  request for a Korean entry point and explicit creator motivation.
+- Action: Added a full Korean README counterpart, linked both language entry
+  points, and explained that Afsm began to make scattered complex ViewModel flow
+  rules local, executable, testable, and graphable without replacing Android
+  architecture or forcing FSMs onto simple screens.
+- Updated: `README.md`, `README.ko.md`,
+  `wiki/00-context/current-state.md`, `wiki/log.md`.

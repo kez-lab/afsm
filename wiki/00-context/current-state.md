@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-07-11
+updated: 2026-07-13
 ---
 
 # Current State
@@ -140,8 +140,11 @@ execution ownership, update/transition ordering, and contract-type locality.
 AI timing and preference are supporting evidence only; real Android developer
 comprehension and preference remain unverified.
 
-`README.md` is the quick map. `docs/getting-started.md` is the first-use
-copy/paste source and is mirrored by the external consumer fixture.
+`README.md` is the English quick map and `README.ko.md` is its Korean-language
+counterpart. Both explain the creator motivation and keep the same code,
+commands, links, and feature order. `docs/getting-started.md` remains the
+authoritative first-use copy/paste source and is mirrored by the external
+consumer fixture.
 
 ## Verification and Distribution
 
