@@ -1543,3 +1543,15 @@
   architecture or forcing FSMs onto simple screens.
 - Updated: `README.md`, `README.ko.md`,
   `wiki/00-context/current-state.md`, `wiki/log.md`.
+
+## [2026-07-13] design | Conditional-only case DSL contract
+
+- Source: User acceptance of keeping `case` only where an event branch has a
+  condition, compared with the current executable DSL behavior and public
+  authoring rules.
+- Action: Defined direct `on<Event>` statements as one ordered unconditional
+  branch, made an explicit condition mandatory for `case`, rejected mixing
+  implicit actions with decision branches, and retained declarative cases for
+  graph-visible alternatives instead of inferring arbitrary Kotlin `if`/`when`.
+- Updated: `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.

@@ -1,9 +1,38 @@
 ---
 title: Decision Log
-updated: 2026-05-25
+updated: 2026-07-13
 ---
 
 # Decision Log
+
+## [2026-07-13] Reserve case for conditional event branches
+
+Decision: Statements written directly in one `on<Event>` block compose one
+unconditional branch. `case` requires an explicit condition and is used only
+when the event has graph-visible alternatives.
+
+Rationale:
+
+- A single unconditional event path should read in source order without an
+  anonymous `case { ... }` wrapper.
+- Treating top-level statements as separate alternative branches makes
+  `updateData { ... }; transitionTo(...)` silently stop after the data update,
+  which conflicts with ordinary Kotlin reading.
+- Afsm still needs a declarative conditional construct because arbitrary
+  `if`/`when` control flow cannot produce reliable topology without source
+  inference or duplicate graph metadata.
+
+Consequences:
+
+- Direct `updateData`, `command`, `effect`, and `transitionTo` statements are
+  accumulated and executed as one implicit branch.
+- `case(condition = ...)` has no unconditional default.
+- Direct implicit actions cannot be mixed with `case`, `ignore`, or `invalid`
+  decisions in the same handler; ambiguous definitions fail at machine build.
+- Existing anonymous unconditional cases in maintained samples, consumer
+  fixtures, tests, and public documentation must migrate to direct statements.
+- This is an intentional pre-release source/API change with no compatibility
+  obligation.
 
 ## [2026-05-25] Add AfsmNoCommand marker for no-command machines
 

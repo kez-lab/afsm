@@ -1,6 +1,6 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-07-10
+updated: 2026-07-13
 ---
 
 # Afsm v3 Executable DSL
@@ -193,6 +193,68 @@ Accepted direction:
 - Phase payloads should be minimal phase-instance identifiers such as
   `requestId`, `uploadToken`, or `orderId`. Durable form/product/error data
   belongs in `Data`.
+
+## 2026-07-13 Conditional-Only `case` Decision
+
+Unconditional event handling should read like ordinary sequential Kotlin. A
+`case` is reserved for a real branch whose acceptance depends on a condition.
+
+Accepted direction:
+
+- Statements written directly inside one `on<Event> { ... }` block form one
+  implicit unconditional branch. `updateData`, `command`, `effect`, and
+  `transitionTo` execute in declaration order as one handled transition.
+- `case(condition = { ... }) { ... }` requires an explicit read-only
+  condition. Its optional label names that business decision in code and the
+  generated graph.
+- Use multiple conditional cases when the event has alternatives. Afsm still
+  evaluates them in declaration order and selects the first matching case.
+- Do not mix direct implicit-branch actions and conditional cases in the same
+  `on<Event>` block. Such a definition is ambiguous about fallback and ordering
+  and must fail while the machine is built.
+- `ignore(...)` and `invalid(...)` remain explicit decision outcomes. A handler
+  that uses them may combine them with conditional cases, but not with direct
+  implicit-branch actions.
+- A handled implicit branch may omit `transitionTo`, in which case it stays in
+  the current phase after applying its actions.
+- Plain Kotlin `if` or `when` may still be used inside a data or output factory,
+  but not as a replacement for graph-visible event alternatives. Conditional
+  topology must remain declared through `case(condition = ...)` so runtime,
+  tests, and generated diagrams share the same branch model.
+
+Unconditional event:
+
+```kotlin
+on<SubmitClicked> {
+    updateData { copy(errorMessage = null) }
+    command(label = "SaveDraft") { data -> SaveDraft(data.draft) }
+    transitionTo(SavingDraft)
+}
+```
+
+Conditional event:
+
+```kotlin
+on<SubmitClicked> {
+    case(
+        label = "valid draft",
+        condition = { data.canSubmit() },
+    ) {
+        updateData { copy(errorMessage = null) }
+        transitionTo(SavingDraft)
+    }
+
+    case(
+        label = "invalid draft",
+        condition = { !data.canSubmit() },
+    ) {
+        updateData { copy(errorMessage = data.validationMessage()) }
+    }
+}
+```
+
+This removes ceremony from the common single-path event without making graph
+generation depend on parsing arbitrary Kotlin control flow.
 
 ## Current Naming Decision
 
