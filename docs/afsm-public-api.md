@@ -43,9 +43,9 @@ The ViewModel hosts that machine:
 ```kotlin
 private val host = afsmHost(
     machine = screenStateMachine,
-    commandHandler = { command: ScreenCommand, dispatch ->
+    commandHandler = { command: ScreenCommand, dispatchEvent ->
         // repository/use-case work
-        // dispatch(result event)
+        // dispatchEvent(result event)
     },
 )
 ```
@@ -352,7 +352,8 @@ result.assertCommandInvocations(
 ```
 
 Cancellation is Kotlin cooperative cancellation and is not logged as command
-failure. Afsm also rejects dispatch through the cancelled invocation's callback.
+failure. Afsm also rejects dispatch through the cancelled invocation's
+`dispatchEvent` capability.
 It cannot guarantee a remote server, callback API, SDK, or blocking call stopped
 work. Keep request ids, stale-result handling, and idempotency when work can
 outlive the local coroutine.
@@ -398,6 +399,13 @@ Set `afsmGraph { mmdOptions.set("Full") }` or run with
 ## afsm-runtime
 
 ```kotlin
+fun interface AfsmCommandHandler<C : Any, E : Any> {
+    suspend fun handle(
+        command: C,
+        dispatchEvent: suspend (E) -> Unit,
+    )
+}
+
 class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     initialState: S,
     reducer: AfsmReducer<S, E, C, F>,
@@ -541,9 +549,9 @@ The signatures show `AfsmCommandHandler<C, E>` because that is the exact API
 type. Kotlin callers should usually pass a direct lambda:
 
 ```kotlin
-commandHandler = { command: ScreenCommand, dispatch ->
+commandHandler = { command: ScreenCommand, dispatchEvent ->
     // execute host work
-    // dispatch(result event)
+    // dispatchEvent(result event)
 }
 ```
 

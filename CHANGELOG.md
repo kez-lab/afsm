@@ -79,6 +79,10 @@ Initial pre-release candidate.
 
 ### Changed
 
+- Renamed the second `AfsmCommandHandler.handle` parameter and maintained
+  command-handler examples from `dispatch` to `dispatchEvent`. The name now
+  makes typed result-event queueing explicit; runtime behavior and
+  `AfsmHost.dispatch(event)` are unchanged.
 - Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
   one `on<Event>` block now compose one unconditional branch instead of
   competing as separate alternatives.

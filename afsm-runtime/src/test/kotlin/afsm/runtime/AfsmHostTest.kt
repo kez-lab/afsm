@@ -29,6 +29,21 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class AfsmHostTest {
     @Test
+    fun `command handler exposes dispatchEvent as the result event capability`() = runTest {
+        val dispatchedEvents = mutableListOf<String>()
+        val handler = AfsmCommandHandler<String, String> { _, dispatchEvent ->
+            dispatchEvent("saved")
+        }
+
+        handler.handle(
+            command = "save",
+            dispatchEvent = { event -> dispatchedEvents += event },
+        )
+
+        assertEquals(listOf("saved"), dispatchedEvents)
+    }
+
+    @Test
     fun `dispatch processes external and command events in FIFO order without reentrancy`() = runTest {
         val hostScope = newHostScope()
         val host: AfsmHost<TraceState, TraceEvent, TraceCommand, AfsmNoEffect> = AfsmHost(
@@ -49,9 +64,9 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: TraceCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: TraceCommand, dispatchEvent ->
                 when (command) {
-                    TraceCommand.DispatchC -> dispatch(TraceEvent.C)
+                    TraceCommand.DispatchC -> dispatchEvent(TraceEvent.C)
                 }
             },
             scope = hostScope,
@@ -86,11 +101,11 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: EffectCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: EffectCommand, dispatchEvent ->
                 when (command) {
                     EffectCommand.Complete -> {
                         timeline += "command:${host.state.value}"
-                        dispatch(EffectEvent.Completed)
+                        dispatchEvent(EffectEvent.Completed)
                     }
                 }
             },
@@ -139,11 +154,11 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: ResponsiveCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: ResponsiveCommand, dispatchEvent ->
                 when (command) {
                     ResponsiveCommand.LongRunning -> {
                         commandGate.await()
-                        dispatch(ResponsiveEvent.Done)
+                        dispatchEvent(ResponsiveEvent.Done)
                     }
                 }
             },
@@ -234,10 +249,10 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatch ->
-                dispatch(PressureEvent.ResultOne)
-                dispatch(PressureEvent.ResultTwo)
-                dispatch(PressureEvent.ResultThree)
+            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatchEvent ->
+                dispatchEvent(PressureEvent.ResultOne)
+                dispatchEvent(PressureEvent.ResultTwo)
+                dispatchEvent(PressureEvent.ResultThree)
             },
             scope = hostScope,
             config = AfsmConfig(eventQueueCapacity = 1),
@@ -283,11 +298,11 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatchEvent ->
                 commandStarted.complete(Unit)
                 withContext(NonCancellable) {
                     releaseCommand.await()
-                    dispatch(PressureEvent.ResultOne)
+                    dispatchEvent(PressureEvent.ResultOne)
                 }
             },
             scope = hostScope,

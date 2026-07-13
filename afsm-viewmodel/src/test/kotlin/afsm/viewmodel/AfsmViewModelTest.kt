@@ -92,11 +92,11 @@ class AfsmViewModelTest {
 
         private val host = afsmHost(
             machine = CounterStateMachine,
-            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatchEvent ->
                 handledCommands += command
                 when (command) {
                     is CounterCommand.PersistCount -> {
-                        dispatch(CounterEvent.CountPersisted)
+                        dispatchEvent(CounterEvent.CountPersisted)
                     }
                 }
             },
@@ -118,11 +118,11 @@ class AfsmViewModelTest {
         private val host = afsmHost(
             machine = DynamicCounterStateMachine,
             initialState = CounterState(count = initialCount),
-            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatchEvent ->
                 handledCommands += command
                 when (command) {
                     is CounterCommand.PersistCount -> {
-                        dispatch(CounterEvent.CountPersisted)
+                        dispatchEvent(CounterEvent.CountPersisted)
                     }
                 }
             },

@@ -5,6 +5,33 @@ updated: 2026-07-13
 
 # Implementation Log
 
+## [2026-07-13] Command result dispatcher naming
+
+Change:
+
+- Renamed the second `AfsmCommandHandler.handle` parameter from `dispatch` to
+  `dispatchEvent` and made the runtime call it by name.
+- Added a named-argument compile check so the public Kotlin source name cannot
+  silently drift back.
+- Migrated maintained sample, consumer, test, README, walkthrough, public API,
+  and canonical Wiki examples while leaving `AfsmHost.dispatch(event)` intact.
+
+Verification:
+
+```bash
+./gradlew :afsm-runtime:test :afsm-viewmodel:testDebugUnitTest \
+  :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :afsm-runtime:apiDump --no-daemon
+./scripts/verify-release-local.sh --no-daemon
+```
+
+Conclusion:
+
+- Command-result direction is explicit at first read. The JVM binary API dump
+  remains unchanged, while Kotlin named calls now expose `dispatchEvent`.
+  Runtime behavior, API checks, Maven Local publication, and the clean external
+  consumer build all pass.
+
 ## [2026-07-13] Conditional-only case DSL
 
 Change:

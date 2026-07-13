@@ -159,8 +159,8 @@ command(CheckoutCommand.SubmitPayment(requestId, payload))
 
 // command handler
 submitPayment(command).fold(
-    onSuccess = { dispatch(CheckoutEvent.PaymentSucceeded(command.requestId, it.orderId)) },
-    onFailure = { dispatch(CheckoutEvent.PaymentFailed(command.requestId, it.message)) },
+    onSuccess = { dispatchEvent(CheckoutEvent.PaymentSucceeded(command.requestId, it.orderId)) },
+    onFailure = { dispatchEvent(CheckoutEvent.PaymentFailed(command.requestId, it.message)) },
 )
 ```
 
@@ -221,7 +221,7 @@ phase(EditorPhase.Uploading) {
 
 The runtime starts a tracked child job and cancels it on every phase exit or
 host closure. `CancellationException` is not a command failure, and a cancelled
-invocation cannot dispatch through its Afsm callback.
+invocation cannot dispatch through its Afsm-owned `dispatchEvent` capability.
 
 Cancellation is requested before target-phase invocation starts, but Afsm does
 not wait for non-cancellable cleanup or a remote operation to finish before
@@ -270,7 +270,7 @@ class CheckoutViewModel(
     private val host = afsmHost(
         machine = checkoutStateMachine,
         initialState = initialState,
-        commandHandler = { command: CheckoutCommand, dispatch ->
+        commandHandler = { command: CheckoutCommand, dispatchEvent ->
             when (command) {
                 is CheckoutCommand.SubmitPayment -> {
                     savedStateHandle[CheckoutPendingPaymentRequestIdKey] =
@@ -282,7 +282,7 @@ class CheckoutViewModel(
                             savedStateHandle.remove<Long>(
                                 CheckoutPendingPaymentRequestIdKey,
                             )
-                            dispatch(
+                            dispatchEvent(
                                 CheckoutEvent.PaymentSucceeded(
                                     requestId = command.requestId,
                                     receipt = receipt,
@@ -293,7 +293,7 @@ class CheckoutViewModel(
                             savedStateHandle.remove<Long>(
                                 CheckoutPendingPaymentRequestIdKey,
                             )
-                            dispatch(
+                            dispatchEvent(
                                 CheckoutEvent.PaymentFailed(
                                     requestId = command.requestId,
                                     message = error.message ?: "Payment failed.",

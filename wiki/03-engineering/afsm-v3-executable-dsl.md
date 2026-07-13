@@ -611,16 +611,16 @@ class ProductEditorViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = productEditorStateMachine,
-        commandHandler = { command, dispatch ->
+        commandHandler = { command, dispatchEvent ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     productRepository.saveDraft(command.draft)
-                    dispatch(ProductEditorEvent.DraftSaveCompleted)
+                    dispatchEvent(ProductEditorEvent.DraftSaveCompleted)
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {
                     val token = productRepository.uploadImages(command.draft)
-                    dispatch(ProductEditorEvent.ImageUploadSucceeded(token))
+                    dispatchEvent(ProductEditorEvent.ImageUploadSucceeded(token))
                 }
             }
         },

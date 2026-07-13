@@ -146,7 +146,7 @@ class CheckoutViewModel(
     private val host = afsmHost(
         machine = checkoutStateMachine,
         initialState = initialState,
-        commandHandler = { command: CheckoutCommand, dispatch ->
+        commandHandler = { command: CheckoutCommand, dispatchEvent ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
                     // Load and dispatch ProductLoaded/ProductUnavailable.

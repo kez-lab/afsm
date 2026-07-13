@@ -92,8 +92,8 @@ Key usage shape:
 ```kotlin
 private val host = afsmHost(
     machine = authStateMachine,
-    commandHandler = { command: AuthCommand, dispatch ->
-        // Execute repository work, then dispatch result events.
+    commandHandler = { command: AuthCommand, dispatchEvent ->
+        // Execute repository work, then dispatchEvent(result event).
     },
 )
 

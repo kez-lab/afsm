@@ -107,9 +107,13 @@ and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
   suspended command does not block later event reduction. Long-running work
   owned by one phase can use `onEnter { invoke(key, label) { command } }`; the
   runtime tracks it separately and cancels its cooperative coroutine on phase
-  exit or host closure. Cancelled invocation callbacks cannot dispatch late
-  results. Request ids and idempotency remain required for remote or
-  non-cooperative work.
+  exit or host closure. A cancelled invocation cannot send a late result through
+  its Afsm-owned `dispatchEvent` capability. Request ids and idempotency remain
+  required for remote or non-cooperative work.
+- `AfsmCommandHandler.handle(command, dispatchEvent)` names the command-result
+  direction explicitly: `dispatchEvent(event)` queues a typed result event
+  through the serialized host path. External/UI input continues to use
+  `AfsmHost.dispatch(event)`.
 - Effects have no replay by default. Late collectors do not receive old effects.
 - Runtime diagnostics are types-only by default. They expose stable codes,
   decision categories, fixed messages, type names, and Afsm-owned metadata.
@@ -159,9 +163,10 @@ consumer fixture.
   runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
   Maven Local publication, and the clean external consumer smoke build.
 - The full local release gate passed again on 2026-07-13 after the
-  conditional-only `case` DSL migration, including API validation, Maven Local
-  publication, and the clean external consumer build. The known Kotlin Gradle
-  plugin POM rewriting deprecation warning remains non-blocking.
+  conditional-only `case` DSL and `dispatchEvent` source-name migrations,
+  including API validation, Maven Local publication, and the clean external
+  consumer build. The known Kotlin Gradle plugin POM rewriting deprecation
+  warning remains non-blocking.
 - Hosted GitHub Actions CI was removed for cost control. No
   `.github/workflows/ci.yml` exists; maintainers run the relevant local checks
   before merge and the full local gate for release-facing work.

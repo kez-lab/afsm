@@ -4,14 +4,15 @@ public fun interface AfsmCommandHandler<C : Any, E : Any> {
     /**
      * Executes one command emitted by a state machine transition.
      *
-     * Command results should be converted back into events through [dispatch].
-     * The runtime queues dispatched events instead of re-entering the state
-     * machine recursively. The same handler executes phase-owned invocations;
-     * those implementations must cooperate with coroutine cancellation.
+     * Command results should be converted back into events through
+     * [dispatchEvent]. The runtime queues dispatched events instead of
+     * re-entering the state machine recursively. The same handler executes
+     * phase-owned invocations; those implementations must cooperate with
+     * coroutine cancellation.
      */
     public suspend fun handle(
         command: C,
-        dispatch: suspend (E) -> Unit,
+        dispatchEvent: suspend (E) -> Unit,
     )
 
     public companion object {

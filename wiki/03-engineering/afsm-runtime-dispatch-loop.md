@@ -96,9 +96,9 @@ cancel operation before source `onExit` and target `onEnter` work.
 
 The host starts invocation work through the same `AfsmCommandHandler`, but in a
 tracked child job rather than the ordinary sequential queue. Phase exit and
-host closure cancel that job. A cancelled job cannot dispatch through its
-Afsm-owned callback, and `CancellationException` is not recorded as command
-failure.
+host closure cancel that job. A cancelled job cannot send a result through its
+Afsm-owned `dispatchEvent` capability, and `CancellationException` is not
+recorded as command failure.
 
 Cancellation is a request, not a join barrier. The host can start the target
 phase invocation while old non-cancellable cleanup is still finishing. The
@@ -237,7 +237,7 @@ Verified cases:
 - phase-owned invocation jobs run beside ordinary sequential commands and are
   cancelled on phase exit or host closure
 - a cancelled invocation cannot dispatch a late result through its Afsm-owned
-  callback, even from non-cancellable cleanup
+  `dispatchEvent` capability, even from non-cancellable cleanup
 
 ## Design Note
 

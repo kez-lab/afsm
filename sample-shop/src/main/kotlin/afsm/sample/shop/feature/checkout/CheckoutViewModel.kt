@@ -24,21 +24,21 @@ class CheckoutViewModel(
     private val host = afsmHost(
         machine = checkoutStateMachine,
         initialState = initialState,
-        commandHandler = { command: CheckoutCommand, dispatch ->
+        commandHandler = { command: CheckoutCommand, dispatchEvent ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
                     val product = productRepository.findProduct(command.productId)
                     if (product == null) {
-                        dispatch(CheckoutEvent.ProductUnavailable)
+                        dispatchEvent(CheckoutEvent.ProductUnavailable)
                     } else {
-                        dispatch(CheckoutEvent.ProductLoaded(product))
+                        dispatchEvent(CheckoutEvent.ProductLoaded(product))
                     }
                 }
 
                 is CheckoutCommand.SubmitPayment -> {
                     val session = sessionRepository.currentSession()
                     if (session == null) {
-                        dispatch(
+                        dispatchEvent(
                             CheckoutEvent.PaymentFailed(
                                 requestId = command.requestId,
                                 message = "Login is required.",
@@ -53,7 +53,7 @@ class CheckoutViewModel(
                             onSuccess = { receipt ->
                                 savedStateHandle[CheckoutCompletedOrderIdKey] = receipt.orderId
                                 savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
-                                dispatch(
+                                dispatchEvent(
                                     CheckoutEvent.PaymentSucceeded(
                                         requestId = command.requestId,
                                         receipt = receipt,
@@ -62,7 +62,7 @@ class CheckoutViewModel(
                             },
                             onFailure = { error ->
                                 savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
-                                dispatch(
+                                dispatchEvent(
                                     CheckoutEvent.PaymentFailed(
                                         requestId = command.requestId,
                                         message = error.message ?: "Payment failed.",

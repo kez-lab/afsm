@@ -219,19 +219,22 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         dispatchAllowed: () -> Boolean = { true },
     ) {
         try {
-            commandHandler.handle(command) { nextEvent ->
-                if (!dispatchAllowed()) {
-                    throw CancellationException(
-                        "Afsm invocation result was rejected after cancellation.",
+            commandHandler.handle(
+                command = command,
+                dispatchEvent = { nextEvent ->
+                    if (!dispatchAllowed()) {
+                        throw CancellationException(
+                            "Afsm invocation result was rejected after cancellation.",
+                        )
+                    }
+                    enqueueCommandResultEvent(
+                        state = state,
+                        event = nextEvent,
+                        command = command,
+                        transition = transition,
                     )
-                }
-                enqueueCommandResultEvent(
-                    state = state,
-                    event = nextEvent,
-                    command = command,
-                    transition = transition,
-                )
-            }
+                },
+            )
         } catch (throwable: CancellationException) {
             throw throwable
         } catch (throwable: AfsmEventQueueOverflowException) {

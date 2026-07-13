@@ -1584,3 +1584,20 @@
 - Updated: `wiki/03-engineering/afsm-viewmodel-integration.md`,
   `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
   `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-07-13] implementation | Command result dispatcher naming
+
+- Source: Accepted `dispatchEvent` naming decision and the existing command
+  result FIFO/cancellation contract.
+- Action: Renamed the public Kotlin handler parameter, added a named-argument
+  compile check, migrated maintained code and documentation, and kept external
+  `AfsmHost.dispatch(event)` unchanged.
+- Verification: Runtime, ViewModel, and sample tests passed; the binary API dump
+  remained unchanged; the full local release gate passed API validation, Maven
+  Local publication, and the clean external consumer build.
+- Updated: `afsm-runtime`, `afsm-viewmodel`, `sample-shop`, `consumer-smoke`,
+  `README.md`, `README.ko.md`, `docs/`, `CHANGELOG.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

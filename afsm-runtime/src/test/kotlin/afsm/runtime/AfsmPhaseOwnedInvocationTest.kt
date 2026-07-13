@@ -35,7 +35,7 @@ class AfsmPhaseOwnedInvocationTest {
         val host = AfsmHost(
             initialState = InvocationState.Editing,
             reducer = invocationReducer(),
-            commandHandler = AfsmCommandHandler { command: InvocationCommand, dispatch ->
+            commandHandler = AfsmCommandHandler { command: InvocationCommand, dispatchEvent ->
                 when (command) {
                     InvocationCommand.Upload -> {
                         uploadStarted.complete(Unit)
@@ -45,7 +45,7 @@ class AfsmPhaseOwnedInvocationTest {
                             uploadCancelled.complete(Unit)
                             withContext(NonCancellable) {
                                 lateResultAttempted.complete(Unit)
-                                dispatch(InvocationEvent.UploadCompleted)
+                                dispatchEvent(InvocationEvent.UploadCompleted)
                             }
                         }
                     }

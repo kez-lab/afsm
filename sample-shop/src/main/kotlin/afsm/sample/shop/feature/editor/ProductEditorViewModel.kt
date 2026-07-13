@@ -16,21 +16,21 @@ class ProductEditorViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = productEditorStateMachine,
-        commandHandler = { command: ProductEditorCommand, dispatch ->
+        commandHandler = { command: ProductEditorCommand, dispatchEvent ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     delay(120)
-                    dispatch(ProductEditorEvent.DraftSaveCompleted)
+                    dispatchEvent(ProductEditorEvent.DraftSaveCompleted)
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {
                     try {
                         val uploadToken = imageUploader.upload(command.draft)
-                        dispatch(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
+                        dispatchEvent(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
                     } catch (cancellation: CancellationException) {
                         throw cancellation
                     } catch (_: Exception) {
-                        dispatch(
+                        dispatchEvent(
                             ProductEditorEvent.ImageUploadFailed(
                                 message = "Image upload failed.",
                             ),
@@ -41,13 +41,13 @@ class ProductEditorViewModel(
                 is ProductEditorCommand.StartReviewSubmission -> {
                     delay(250)
                     if (command.draft.reviewAttempt == 1) {
-                        dispatch(
+                        dispatchEvent(
                             ProductEditorEvent.ReviewRejected(
                                 "Mock reviewer asks for one resubmission.",
                             ),
                         )
                     } else {
-                        dispatch(ProductEditorEvent.ReviewApproved)
+                        dispatchEvent(ProductEditorEvent.ReviewApproved)
                     }
                 }
 
@@ -55,7 +55,7 @@ class ProductEditorViewModel(
                     val form = command.draft.form
                     val priceCents = form.priceCentsOrNull()
                     if (priceCents == null) {
-                        dispatch(ProductEditorEvent.PublishFailed("Enter a valid price."))
+                        dispatchEvent(ProductEditorEvent.PublishFailed("Enter a valid price."))
                     } else {
                         val productId = productRepository.addProduct(
                             title = form.title,
@@ -63,7 +63,7 @@ class ProductEditorViewModel(
                             priceCents = priceCents,
                             sellerUserId = sessionRepository.currentSession()?.userId,
                         )
-                        dispatch(ProductEditorEvent.PublishSucceeded(productId))
+                        dispatchEvent(ProductEditorEvent.PublishSucceeded(productId))
                     }
                 }
             }

@@ -181,11 +181,11 @@ fun interface ProductImageUploader {
 is ProductEditorCommand.StartImageUpload -> {
     try {
         val uploadToken = imageUploader.upload(command.draft)
-        dispatch(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
+        dispatchEvent(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (_: Exception) {
-        dispatch(ProductEditorEvent.ImageUploadFailed("Image upload failed."))
+        dispatchEvent(ProductEditorEvent.ImageUploadFailed("Image upload failed."))
     }
 }
 ```

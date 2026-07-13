@@ -153,7 +153,7 @@ class AuthViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = authStateMachine,
-        commandHandler = { command: AuthCommand, dispatch ->
+        commandHandler = { command: AuthCommand, dispatchEvent ->
             when (command) {
                 is AuthCommand.Login -> {
                     authRepository.login(
@@ -162,10 +162,10 @@ class AuthViewModel(
                     ).fold(
                         onSuccess = { session ->
                             sessionRepository.setSession(session)
-                            dispatch(AuthEvent.AuthSucceeded(session))
+                            dispatchEvent(AuthEvent.AuthSucceeded(session))
                         },
                         onFailure = { error ->
-                            dispatch(AuthEvent.AuthFailed(error.message ?: "Login failed."))
+                            dispatchEvent(AuthEvent.AuthFailed(error.message ?: "Login failed."))
                         },
                     )
                 }
@@ -178,10 +178,10 @@ class AuthViewModel(
                     ).fold(
                         onSuccess = { session ->
                             sessionRepository.setSession(session)
-                            dispatch(AuthEvent.AuthSucceeded(session))
+                            dispatchEvent(AuthEvent.AuthSucceeded(session))
                         },
                         onFailure = { error ->
-                            dispatch(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
+                            dispatchEvent(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
                         },
                     )
                 }
