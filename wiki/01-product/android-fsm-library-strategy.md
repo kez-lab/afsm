@@ -20,7 +20,7 @@ machine:
 - which `Event` occurred and whether it is valid,
 - how `Phase` and durable `Data` change,
 - which sequential `Command`s or phase-owned command invocations follow,
-- and which host-executed `Command`s follow.
+- and which Android host owns and executes that work.
 
 Android `ViewModel` remains the lifecycle and UI integration adapter. Afsm
 makes complex flow rules explicit without fighting official Android
@@ -109,9 +109,9 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 
 The first usable library version should include:
 
-- `AfsmReducer<S, E, C, F>`
+- `AfsmReducer<S, E, C>`
 - `AfsmMachine<S, E, C>` for graphable machines without an assumed default
-- `AfsmDefaultMachine<S, E, C, F>` for graphable machines with a genuine
+- `AfsmDefaultMachine<S, E, C>` for graphable machines with a genuine
   reusable default state
 - `afsmMachine<P, D, E, C> { ... }` for static phase/data machines, plus its
   `initialPhase` overload for machines whose initial data comes from the host

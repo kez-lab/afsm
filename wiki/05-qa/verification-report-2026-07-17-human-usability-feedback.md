@@ -1,7 +1,7 @@
 ---
 title: Informal Human Usability Feedback 2026-07-17
 updated: 2026-07-17
-status: product-findings-recorded-controlled-review-still-required
+status: redesign-implemented-controlled-review-still-required
 ---
 
 # Informal Human Usability Feedback 2026-07-17
@@ -45,11 +45,16 @@ should preserve the participant profile, immutable inputs, timing, facilitator
 intervention, answers, and debrief separately from the resulting design
 decisions.
 
-## Selected Next Cycle
+## Resulting Redesign Cycle
 
-Audit the public and sample concept surface around `State`, `Phase`, `Data`,
-`Event`, `Command`, and optional `Effect`. Compare the current output split with
-at least one smaller alternative on Checkout, including durable completion,
-one-shot navigation, command execution, tests, and graph labels. Treat graph
-role documentation and MVI sample framing as acceptance criteria rather than as
-a substitute for reducing unnecessary concepts.
+The selected redesign was implemented on 2026-07-17. Afsm removed the Effect
+generic, DSL, runtime channel, Compose helper, and feature Effect types; kept
+Command as the host-work boundary; documented the machine/graph/tests reading
+contract; and changed samples to verb-named ViewModel methods with no feature
+Event construction in screen files.
+
+Repository verification is recorded in
+[[verification-report-2026-07-17-effect-free-output-model|Effect-Free Output
+Model Verification 2026-07-17]]. A controlled human session on the new revision
+is still required to determine whether the original learning-curve and MVI
+framing problems are actually resolved.

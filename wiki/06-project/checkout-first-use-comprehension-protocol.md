@@ -1,7 +1,7 @@
 ---
 title: Checkout First-Use Comprehension Protocol
-updated: 2026-07-11
-status: ai-review-recorded-awaiting-human
+updated: 2026-07-17
+status: effect-free-revision-awaiting-human
 ---
 
 # Checkout First-Use Comprehension Protocol
@@ -59,7 +59,7 @@ Score eleven points before discussing the answers:
 |---|---:|---|
 | Initialization | 1 | Starts in `Idle`; real product id is supplied with runtime initial state from outside the machine. Naming the host API is not required. |
 | Main path | 2 | `Idle -> ProductLoading -> ProductReady -> PaymentInProgress -> Completed`, including product-unavailable and payment-failure branches. |
-| Work and outputs | 2 | `LoadProduct` and `SubmitPayment` are entry commands; completion is durable `Completed(orderId)` state plus one-shot `PaymentCompleted`. |
+| Work and outputs | 2 | `LoadProduct` and `SubmitPayment` are entry commands executed by the host; completion is durable `Completed(orderId)` state and there is no separate one-shot completion output in the three files. |
 | Retry identity | 2 | Retry increments the request id; success/failure changes state only when its id matches; stale results are ignored. |
 | Decision policy | 2 | Correct examples and meanings for state-preserving `Handled`, expected no-op `Ignored`, and impossible `Invalid`. |
 | Restoration | 1 | `PaymentStatusUnknown` is restoration-only, has no ordinary incoming edge, and blocks automatic submit/retry until backend status is resolved. |
@@ -68,7 +68,7 @@ Score eleven points before discussing the answers:
 Critical misconceptions override the numeric score:
 
 - claiming the machine executes repository work itself,
-- claiming an effect is durable completion state,
+- claiming Checkout requires a separate one-shot output for durable completion,
 - claiming Checkout owns a valid default product id,
 - claiming stale payment results are accepted or treated as fatal invalid
   transitions,
@@ -142,8 +142,9 @@ graph. No human result was produced. See
 
 ## Constrained AI Review
 
-On 2026-07-11, one AI review using the participant task plus the three listed
-artifacts reported `40 seconds` and scored `11/11` with no critical
+On 2026-07-11, before the Effect-free redesign, one AI review using the
+participant task plus the three listed artifacts reported `40 seconds` and
+scored `11/11` with no critical
 misconception. It reconstructed the intended flow and identified three
 first-read hypotheses:
 
@@ -165,5 +166,8 @@ review. See
 `raw/verification/2026-07-11-checkout-first-use-ai-review/README.md` and
 [[../05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]].
 
-This review does not change the provisional human gates or the requirement for
-at least one no-AI Android developer session.
+That bundle is preserved as historical evidence and must not be reused as the
+current participant input because it contains the removed Effect API. This
+review does not validate the Effect-free revision, change the provisional human
+gates, or remove the requirement for at least one no-AI Android developer
+session.

@@ -223,7 +223,7 @@ class CheckoutStateMachineTest {
     }
 
     @Test
-    fun `payment success completes checkout and emits completion effect`() {
+    fun `payment success completes checkout as durable state`() {
         val receipt = OrderReceipt(
             orderId = 42,
             productId = product.id,

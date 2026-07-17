@@ -1653,3 +1653,9 @@
   `wiki/05-qa/verification-report-2026-07-17-effect-free-output-model.md`.
 - Remaining: Controlled first-use review on this revision and a production-like
   Android pilot.
+
+## [2026-07-17] wiki-lint | Align current strategy and review protocol with Effect-free API
+
+- Source: Current `afsm-core` API declarations, Checkout machine/tests, and the accepted output-model redesign.
+- Action: Removed stale four-generic API notation from the product strategy, corrected the human first-use rubric and historical AI-review boundary, updated the pilot safety wording, and removed the obsolete completion-effect wording from the current Checkout test name.
+- Updated: `wiki/01-product/android-fsm-library-strategy.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `wiki/06-project/production-like-pilot-protocol.md`, `wiki/05-qa/verification-report-2026-07-17-human-usability-feedback.md`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`.

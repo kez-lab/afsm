@@ -2,7 +2,7 @@
 title: Afsm Production-Like Pilot Protocol
 type: planning
 created: 2026-07-11
-updated: 2026-07-11
+updated: 2026-07-17
 status: ready-needs-target
 ---
 
@@ -144,7 +144,7 @@ and link to the executable test or runtime evidence:
 | Command or phase-owned cancellation | | | |
 | Process recreation | | | |
 | Durable completion | | | |
-| Effect delivery loss | | | |
+| Durable outcome or one-shot UI action delivery loss | | | |
 | Command failure | | | |
 | Event/command pressure | | | |
 | Result after lifecycle end | | | |
