@@ -1689,3 +1689,27 @@ Consequences:
   graph, and ordinary-Android ratings must each be at least 4/5.
 - The historical Effect-bearing AI bundle remains immutable and cannot validate
   the current revision.
+
+## [2026-07-17] Require direct-page historical markers for removed APIs
+
+Decision: A wiki page that preserves a removed public API or superseded design
+must be marked Historical/Superseded both in `wiki/index.md` and within its
+title, status, or first visible section. Canonical current pages may name a
+removed symbol only to explain its removal explicitly.
+
+Rationale:
+
+- Codex and human readers may arrive through a direct link without seeing the
+  index description.
+- A dated experiment can retain valuable compiler, usability, or decision
+  evidence while its API is no longer valid.
+- Rewriting historical evidence into current syntax would destroy provenance;
+  visible routing preserves both evidence and current clarity.
+
+Consequences:
+
+- Legacy-symbol lint classifies the page before treating a hit as drift.
+- Logs, dated meetings, and verification records keep original wording when
+  their time boundary is clear.
+- Current synthesis is corrected directly rather than relying on a later log
+  entry to override stale guidance.

@@ -1,6 +1,6 @@
 ---
 title: Wiki Maintenance Guide
-updated: 2026-07-10
+updated: 2026-07-17
 ---
 
 # Wiki Maintenance Guide
@@ -87,3 +87,13 @@ Periodically check:
 - open questions that have been resolved,
 - decisions not reflected in engineering pages,
 - implementation that diverges from documented architecture.
+
+When a page preserves a removed API or superseded design, mark it in both
+places:
+
+- the `wiki/index.md` entry, so retrieval routes it as history;
+- the page title/status/first screen, so a direct link cannot look current.
+
+Canonical current pages may name a removed symbol when they explicitly explain
+its removal. Otherwise a legacy symbol hit is drift that must be corrected or
+reclassified, not silently ignored.

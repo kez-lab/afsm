@@ -123,6 +123,10 @@ artifact, not manually maintained decoration.
 - A commit-pinned two-stage Effect-free Checkout input now separates
   machine/graph/tests comprehension from README/Android-boundary review. Its
   manifest and preparation checks pass, but no human has completed it.
+- The 2026-07-17 Wiki lint reports zero legacy API hits in canonical current
+  pages/public docs, zero ambiguous historical page heads, zero unindexed or
+  broken wiki pages, and preserves old APIs only in explicitly historical or
+  removal-explanation contexts.
 
 ## Goal Status
 

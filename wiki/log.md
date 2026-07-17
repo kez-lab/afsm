@@ -1697,3 +1697,9 @@
 - Source: Current transition decision helpers, phase-owned invocation coverage, verb-named sample ViewModels, zero-Event sample screens, and Effect-free durable completion.
 - Action: Updated FSM, ViewModel, and UI test responsibilities to cover decision policy, stale results, invocation/restoration, feature verbs, internal result Events, and direct/state-driven UI behavior without the removed Effect stream.
 - Updated: `wiki/03-engineering/testing-strategy.md`, `wiki/log.md`.
+
+## [2026-07-17] llm-ops | Complete the Effect-free current/historical Wiki lint
+
+- Source: Current core/runtime/ViewModel/sample code, public docs, API arity, all indexed engineering pages, and the prepared first-use manifest.
+- Action: Published the post-correction lint, made direct-page historical marking a durable maintenance rule, and recorded the zero-legacy-current, zero-ambiguous-history, zero-unindexed, zero-broken-link result in current state.
+- Updated: `wiki/07-llm/wiki-lint-2026-07-17.md`, `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
