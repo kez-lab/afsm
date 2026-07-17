@@ -10,12 +10,23 @@ status: effect-free-revision-awaiting-human
 
 Measure whether an Android developer with no prior Afsm experience can recover
 Checkout's important business flow from only its machine, generated graph, and
-transition tests. This tests the product claim directly; it is not a Kotlin or
-FSM theory exam.
+transition tests, then determine whether the Effect-free Android boundary and
+its documentation resolve the learning-cost, graph-role, and MVI-framing
+problems reported on 2026-07-17. This tests the product claim directly; it is
+not a Kotlin or FSM theory exam.
 
-The participant receives
-`docs/checkout-first-use-participant-task.md`. The facilitator keeps this page
-private until scoring is complete because it contains the answer rubric.
+The session has two separately timed stages:
+
+1. Flow comprehension: the participant receives
+   `docs/checkout-first-use-participant-task.md` plus only the machine, generated
+   graph, and transition tests.
+2. Android boundary review: after the first answers are fixed, the participant
+   receives `docs/checkout-android-integration-participant-task.md`, README,
+   `CheckoutFlow.kt`, `CheckoutViewModel.kt`, `CheckoutRestoration.kt`, and
+   `CheckoutScreen.kt`. The first-stage artifacts remain available.
+
+The facilitator keeps this page private until both stages and ratings are
+complete because it contains the answer rubric and acceptance gates.
 
 ## Participant Profile
 
@@ -41,12 +52,16 @@ Confirm that all three task files exist, then hide the setup terminal so it
 does not reveal a preferred artifact or command.
 
 1. Use that prepared checkout without making further source changes.
-2. Give only the participant task and the three listed files.
-3. Start timing when the participant opens the first artifact.
+2. Give only the Stage 1 task and its three listed artifacts.
+3. Start Stage 1 timing when the participant opens the first artifact.
 4. Do not define Afsm terms, suggest a reading order, or point to lines.
 5. Neutral clarification of the written task is allowed and must be logged.
-6. Stop timing when the participant submits the eleven answers.
-7. Run the confidence/debrief questions only after the timed answers are fixed.
+6. Stop Stage 1 timing when the participant submits the eleven answers.
+7. Lock those answers before revealing any Stage 2 file.
+8. Give the Stage 2 task and its five listed files; start a separate timer.
+9. Keep the same no-coaching rule and stop timing when the participant submits
+   the Android-boundary answers and ratings.
+10. Run the open debrief only after both timed answer sets are fixed.
 
 Screen recording is optional. Preserve no proprietary app data or personal
 identifiers in repository evidence.
@@ -89,6 +104,33 @@ These thresholds are experiment gates, not validated customer benchmarks. Keep
 raw scores and timing even when the participant fails; do not tune the rubric
 after seeing a result.
 
+## Stage 2 Android-Boundary Gate
+
+The second stage is qualitative but has pre-registered acceptance checks. A
+successful session must:
+
+- identify Command as a value emitted by the pure machine and executed by the
+  ViewModel-owned host handler;
+- trace a payment result back as an Event and identify `Completed(orderId)` as
+  the durable business outcome;
+- identify that `CheckoutScreen` constructs no `CheckoutEvent` and that the
+  ViewModel exposes `pay()`/`retry()` rather than a generic `onEvent` surface;
+- explain that route navigation reacts to durable completion state while the
+  machine does not own navigation;
+- explain why graph, machine, and tests are complementary rather than treating
+  the graph as manually maintained documentation;
+- rate Command ownership clarity, graph-purpose clarity, and ordinary-Android
+  sample fit at least 4/5;
+- complete without an Afsm explanation from the facilitator.
+
+Assumption: record Stage 2 elapsed time but do not set a pass/fail time threshold
+until at least one no-AI human session establishes a realistic baseline.
+
+Critical Stage 2 misconceptions are: repository work runs inside the pure
+machine; `Command` is a navigation/UI-output type; completion depends on a
+best-effort one-shot stream; or the UI must construct and expose a generic
+`CheckoutEvent`/`onEvent` boundary.
+
 ## Evidence Record
 
 For each session, add a new immutable raw evidence directory containing:
@@ -97,9 +139,9 @@ For each session, add a new immutable raw evidence directory containing:
 - experience profile,
 - repository commit,
 - start/end time and whether AI was used,
-- verbatim written answers,
+- verbatim Stage 1 and Stage 2 written answers,
 - score sheet and critical misconceptions,
-- confidence ratings and debrief notes,
+- both sets of confidence ratings and debrief notes,
 - facilitator interventions,
 - accepted product finding or reason no change is justified.
 

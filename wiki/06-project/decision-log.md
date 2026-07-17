@@ -1661,3 +1661,31 @@ Consequences:
   phase-local executable rules; tests retain graph-invisible policy proof.
 - This is an intentional breaking pre-release change with no compatibility
   aliases.
+
+## [2026-07-17] Split the Effect-free first-use review into two controlled stages
+
+Decision: Preserve the existing machine/graph/tests comprehension task as a
+separately timed first stage, then reveal README and the Checkout Android
+boundary as a second no-coaching stage. Score the original eleven-point flow
+rubric unchanged and evaluate Command ownership, graph purpose, state-driven UI
+reaction, and non-MVI sample fit with pre-registered Stage 2 checks.
+
+Rationale:
+
+- Changing the first artifact boundary would destroy comparison with the prior
+  constrained review and make a comprehension improvement hard to interpret.
+- The 2026-07-17 human findings also concern README discoverability and sample
+  Android shape, which cannot be tested from machine/graph/tests alone.
+- Revealing Android files only after Stage 1 answers are fixed prevents the
+  ViewModel or README from coaching the pure-flow result.
+- Separate timers and raw answers distinguish flow readability from integration
+  and onboarding friction.
+
+Consequences:
+
+- A valid Effect-free session produces two answer sets and two timing records.
+- Stage 1 keeps the existing 9/11 provisional gate and critical misconceptions.
+- Stage 2 has no time threshold until real human timing exists, but Command,
+  graph, and ordinary-Android ratings must each be at least 4/5.
+- The historical Effect-bearing AI bundle remains immutable and cannot validate
+  the current revision.

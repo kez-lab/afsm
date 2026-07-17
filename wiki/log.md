@@ -1659,3 +1659,9 @@
 - Source: Current `afsm-core` API declarations, Checkout machine/tests, and the accepted output-model redesign.
 - Action: Removed stale four-generic API notation from the product strategy, corrected the human first-use rubric and historical AI-review boundary, updated the pilot safety wording, and removed the obsolete completion-effect wording from the current Checkout test name.
 - Updated: `wiki/01-product/android-fsm-library-strategy.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `wiki/06-project/production-like-pilot-protocol.md`, `wiki/05-qa/verification-report-2026-07-17-human-usability-feedback.md`, `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`.
+
+## [2026-07-17] qa-decision | Add a second controlled Android-boundary review stage
+
+- Source: Effect-free output-model success criteria and the 2026-07-17 human findings about Command/Effect, graph discoverability, and MVI framing.
+- Action: Kept the comparable machine/graph/tests stage intact, then added a separately timed no-coaching README/Flow/ViewModel/restoration/screen stage with pre-registered Command, graph, state-driven UI, and ordinary-Android checks.
+- Updated: `docs/checkout-android-integration-participant-task.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
