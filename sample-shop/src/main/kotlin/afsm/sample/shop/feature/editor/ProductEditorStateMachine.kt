@@ -13,7 +13,7 @@ internal val productEditorImageUploadInvocationKey =
     fileName = "ProductEditorStateMachine.mmd",
 )
 internal val productEditorStateMachine:
-    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
+    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand> =
     afsmMachine {
         initial(
             phase = ProductEditorPhase.EditingDraft,
@@ -244,11 +244,7 @@ internal val productEditorStateMachine:
             }
         }
 
-        phase<ProductEditorPhase.Published> {
-            on<ProductEditorEvent.DoneClicked> {
-                effect(label = "CloseEditor") { ProductEditorEffect.CloseEditor }
-            }
-        }
+        phase<ProductEditorPhase.Published>()
 }
 
 private fun ProductEditorData.updateDraft(

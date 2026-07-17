@@ -40,7 +40,6 @@ afsmGraph {
 
 dependencies {
     implementation(project(":afsm-core"))
-    implementation(project(":afsm-compose"))
     implementation(project(":afsm-runtime"))
     implementation(project(":afsm-viewmodel"))
 

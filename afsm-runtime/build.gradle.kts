@@ -34,7 +34,7 @@ publishing {
 
             pom {
                 name.set("Afsm Runtime")
-                description.set("Coroutine Afsm host with serialized dispatch, command execution, effects, and diagnostics.")
+                description.set("Coroutine Afsm host with serialized dispatch, command execution, and diagnostics.")
             }
         }
     }

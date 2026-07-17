@@ -54,7 +54,7 @@ class ProductEditorViewModelTest {
             viewModel.state.value.toRenderState().secondaryAction,
         )
 
-        viewModel.onEvent(ProductEditorEvent.CancelUploadClicked)
+        viewModel.cancelUpload()
         mainDispatcher.scheduler.runCurrent()
 
         assertTrue(uploader.cancelled.isCompleted)
@@ -108,12 +108,10 @@ class ProductEditorViewModelTest {
     }
 
     private fun enterValidUpload(viewModel: ProductEditorViewModel) {
-        viewModel.onEvent(ProductEditorEvent.TitleChanged("Travel Mug"))
-        viewModel.onEvent(
-            ProductEditorEvent.DescriptionChanged("Leakproof mug for commuting."),
-        )
-        viewModel.onEvent(ProductEditorEvent.PriceChanged("24.50"))
-        viewModel.onEvent(ProductEditorEvent.SubmitClicked)
+        viewModel.updateTitle("Travel Mug")
+        viewModel.updateDescription("Leakproof mug for commuting.")
+        viewModel.updatePrice("24.50")
+        viewModel.submitForReview()
     }
 
     private class ControllableProductImageUploader : ProductImageUploader {

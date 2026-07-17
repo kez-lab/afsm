@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.editor
 
-import afsm.compose.CollectAfsmEffects
 import afsm.sample.shop.app.ShopAppContainer
 import afsm.sample.shop.app.sampleViewModelFactory
 import androidx.compose.foundation.layout.Arrangement
@@ -46,22 +45,34 @@ fun ProductEditorRoute(
     val viewModel: ProductEditorViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    CollectAfsmEffects(viewModel.effects) { effect ->
-        when (effect) {
-            ProductEditorEffect.CloseEditor -> onDone()
-        }
-    }
-
     ProductEditorScreen(
         state = state.toRenderState(),
-        onEvent = viewModel::onEvent,
+        onTitleChange = viewModel::updateTitle,
+        onDescriptionChange = viewModel::updateDescription,
+        onPriceChange = viewModel::updatePrice,
+        onSaveDraft = viewModel::saveDraft,
+        onContinueEditing = viewModel::continueEditing,
+        onSubmitForReview = viewModel::submitForReview,
+        onResubmitForReview = viewModel::resubmitForReview,
+        onPublish = viewModel::publish,
+        onCancelUpload = viewModel::cancelUpload,
+        onDone = onDone,
     )
 }
 
 @Composable
 fun ProductEditorScreen(
     state: ProductEditorRenderState,
-    onEvent: (ProductEditorEvent) -> Unit,
+    onTitleChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onPriceChange: (String) -> Unit,
+    onSaveDraft: () -> Unit,
+    onContinueEditing: () -> Unit,
+    onSubmitForReview: () -> Unit,
+    onResubmitForReview: () -> Unit,
+    onPublish: () -> Unit,
+    onCancelUpload: () -> Unit,
+    onDone: () -> Unit,
 ) {
     Surface {
         Column(
@@ -86,9 +97,9 @@ fun ProductEditorScreen(
                 ProductDraftFields(
                     form = state.form,
                     enabled = state.fieldsEnabled,
-                    onTitleChange = { onEvent(ProductEditorEvent.TitleChanged(it)) },
-                    onDescriptionChange = { onEvent(ProductEditorEvent.DescriptionChanged(it)) },
-                    onPriceChange = { onEvent(ProductEditorEvent.PriceChanged(it)) },
+                    onTitleChange = onTitleChange,
+                    onDescriptionChange = onDescriptionChange,
+                    onPriceChange = onPriceChange,
                 )
             }
 
@@ -119,7 +130,21 @@ fun ProductEditorScreen(
             Spacer(modifier = Modifier.height(18.dp))
             ProductEditorActions(
                 state = state,
-                onEvent = onEvent,
+                onPrimaryAction = { action ->
+                    when (action) {
+                        ProductEditorPrimaryAction.SubmitForReview -> onSubmitForReview()
+                        ProductEditorPrimaryAction.ResubmitForReview -> onResubmitForReview()
+                        ProductEditorPrimaryAction.Publish -> onPublish()
+                        ProductEditorPrimaryAction.Done -> onDone()
+                    }
+                },
+                onSecondaryAction = { action ->
+                    when (action) {
+                        ProductEditorSecondaryAction.SaveDraft -> onSaveDraft()
+                        ProductEditorSecondaryAction.ContinueEditing -> onContinueEditing()
+                        ProductEditorSecondaryAction.CancelUpload -> onCancelUpload()
+                    }
+                },
             )
         }
     }
@@ -165,7 +190,8 @@ private fun ProductDraftFields(
 @Composable
 private fun ProductEditorActions(
     state: ProductEditorRenderState,
-    onEvent: (ProductEditorEvent) -> Unit,
+    onPrimaryAction: (ProductEditorPrimaryAction) -> Unit,
+    onSecondaryAction: (ProductEditorSecondaryAction) -> Unit,
 ) {
     val secondaryAction = state.secondaryAction
     if (state.isProcessing) {
@@ -183,7 +209,7 @@ private fun ProductEditorActions(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
-                    onClick = { onEvent(secondaryAction.toEvent()) },
+                    onClick = { onSecondaryAction(secondaryAction) },
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(secondaryAction.label)
@@ -204,7 +230,7 @@ private fun ProductEditorActions(
 
     if (secondaryAction == null) {
         Button(
-            onClick = { onEvent(primaryAction.toEvent()) },
+            onClick = { onPrimaryAction(primaryAction) },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(primaryAction.label)
@@ -215,13 +241,13 @@ private fun ProductEditorActions(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
-                onClick = { onEvent(secondaryAction.toEvent()) },
+                onClick = { onSecondaryAction(secondaryAction) },
                 modifier = Modifier.weight(1f),
             ) {
                 Text(secondaryAction.label)
             }
             Button(
-                onClick = { onEvent(primaryAction.toEvent()) },
+                onClick = { onPrimaryAction(primaryAction) },
                 modifier = Modifier.weight(1f),
             ) {
                 Text(primaryAction.label)
@@ -244,20 +270,3 @@ private val ProductEditorSecondaryAction.label: String
         ProductEditorSecondaryAction.ContinueEditing -> "Continue editing"
         ProductEditorSecondaryAction.CancelUpload -> "Cancel upload"
     }
-
-private fun ProductEditorPrimaryAction.toEvent(): ProductEditorEvent {
-    return when (this) {
-        ProductEditorPrimaryAction.SubmitForReview -> ProductEditorEvent.SubmitClicked
-        ProductEditorPrimaryAction.ResubmitForReview -> ProductEditorEvent.ResubmitClicked
-        ProductEditorPrimaryAction.Publish -> ProductEditorEvent.PublishClicked
-        ProductEditorPrimaryAction.Done -> ProductEditorEvent.DoneClicked
-    }
-}
-
-private fun ProductEditorSecondaryAction.toEvent(): ProductEditorEvent {
-    return when (this) {
-        ProductEditorSecondaryAction.SaveDraft -> ProductEditorEvent.SaveDraftClicked
-        ProductEditorSecondaryAction.ContinueEditing -> ProductEditorEvent.ContinueEditingClicked
-        ProductEditorSecondaryAction.CancelUpload -> ProductEditorEvent.CancelUploadClicked
-    }
-}

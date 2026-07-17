@@ -9,7 +9,7 @@ import afsm.core.afsmMachine
     fileName = "AuthStateMachine.mmd",
 )
 internal val authStateMachine:
-    AfsmDefaultMachine<AuthState, AuthEvent, AuthCommand, AuthEffect> =
+    AfsmDefaultMachine<AuthState, AuthEvent, AuthCommand> =
     afsmMachine {
         initial(
             phase = AuthPhase.Editing,
@@ -121,7 +121,6 @@ internal val authStateMachine:
                 updateData {
                     AuthData()
                 }
-                effect(label = "OpenCatalog") { AuthEffect.OpenCatalog }
                 transitionTo<AuthPhase.Authenticated> {
                     AuthPhase.Authenticated(
                         session = event.session,

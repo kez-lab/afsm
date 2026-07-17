@@ -168,16 +168,15 @@ class AfsmGraphProcessorFunctionalTest {
             package example
 
             import afsm.core.AfsmGraph
-            import afsm.core.AfsmNoEffect
             import afsm.core.AfsmReducer
             import afsm.core.AfsmTransition
 
             @AfsmGraph
-            object ReducerOnlyMachine : AfsmReducer<String, TestEvent, TestCommand, AfsmNoEffect> {
+            object ReducerOnlyMachine : AfsmReducer<String, TestEvent, TestCommand> {
                 override fun transition(
                     state: String,
                     event: TestEvent,
-                ): AfsmTransition<String, TestCommand, AfsmNoEffect> {
+                ): AfsmTransition<String, TestCommand> {
                     return AfsmTransition.handled(state)
                 }
             }
@@ -360,8 +359,7 @@ class AfsmGraphProcessorFunctionalTest {
             """
             package example
 
-            import afsm.core.AfsmMachine
-            import afsm.core.AfsmNoEffect
+            import afsm.core.AfsmDefaultMachine
             import afsm.core.AfsmTopology
             import afsm.core.AfsmTopologyState
             import afsm.core.AfsmTransition
@@ -369,7 +367,7 @@ class AfsmGraphProcessorFunctionalTest {
             sealed interface TestEvent
             sealed interface TestCommand
 
-            typealias TestMachine = AfsmMachine<String, TestEvent, TestCommand, AfsmNoEffect>
+            typealias TestMachine = AfsmDefaultMachine<String, TestEvent, TestCommand>
 
             fun testMachine(id: String): TestMachine {
                 return object : TestMachine {
@@ -383,7 +381,7 @@ class AfsmGraphProcessorFunctionalTest {
                     override fun transition(
                         state: String,
                         event: TestEvent,
-                    ): AfsmTransition<String, TestCommand, AfsmNoEffect> {
+                    ): AfsmTransition<String, TestCommand> {
                         return AfsmTransition.handled(state)
                     }
                 }

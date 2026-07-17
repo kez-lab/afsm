@@ -80,10 +80,6 @@ sealed interface AuthCommand {
     ) : AuthCommand
 }
 
-sealed interface AuthEffect {
-    data object OpenCatalog : AuthEffect
-}
-
 fun AuthState.toRenderState(): AuthRenderState {
     return when (val currentPhase = phase) {
         AuthPhase.Editing -> AuthRenderState(

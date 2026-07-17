@@ -9,7 +9,7 @@ import afsm.core.afsmMachine
     fileName = "CheckoutStateMachine.mmd",
 )
 internal val checkoutStateMachine:
-    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
+    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand> =
     afsmMachine(initialPhase = CheckoutPhase.Idle) {
         phase(CheckoutPhase.Idle) {
             on<CheckoutEvent.ScreenEntered> {
@@ -120,9 +120,6 @@ internal val checkoutStateMachine:
                     condition = { phase.requestId == event.requestId },
                 ) {
                     updateData { copy(errorMessage = null) }
-                    effect(label = "PaymentCompleted") {
-                        CheckoutEffect.PaymentCompleted(event.receipt.orderId)
-                    }
                     transitionTo<CheckoutPhase.Completed> {
                         CheckoutPhase.Completed(
                             orderId = event.receipt.orderId,

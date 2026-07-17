@@ -11,7 +11,6 @@ GRADLE_ARGS=("$@")
 
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" \
   :afsm-core:test \
-  :afsm-compose:compileDebugKotlin \
   :afsm-graph-ksp:test \
   :afsm-runtime:test \
   :afsm-test:test \

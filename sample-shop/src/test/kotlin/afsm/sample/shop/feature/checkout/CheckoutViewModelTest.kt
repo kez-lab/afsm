@@ -12,11 +12,8 @@ import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -69,7 +66,7 @@ class CheckoutViewModelTest {
     }
 
     @Test
-    fun `payment command reaches durable completion and active effect collector`() = runTest {
+    fun `payment command reaches durable completion state`() = runTest {
         val orderDao = RecordingOrderDao(nextOrderId = 42)
         val savedStateHandle = SavedStateHandle()
         val sessionRepository = SessionRepository().apply {
@@ -88,14 +85,9 @@ class CheckoutViewModelTest {
             sessionRepository = sessionRepository,
             savedStateHandle = savedStateHandle,
         )
-        val effects = mutableListOf<CheckoutEffect>()
-
         mainDispatcher.scheduler.advanceUntilIdle()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.effects.collect { effect -> effects += effect }
-        }
 
-        viewModel.onEvent(CheckoutEvent.PayClicked)
+        viewModel.pay()
         mainDispatcher.scheduler.runCurrent()
 
         assertEquals(1L, savedStateHandle.get<Long>(CheckoutPendingPaymentRequestIdKey))
@@ -104,10 +96,6 @@ class CheckoutViewModelTest {
 
         val completed = assertIs<CheckoutPhase.Completed>(viewModel.state.value.phase)
         assertEquals(42, completed.orderId)
-        assertEquals(
-            listOf<CheckoutEffect>(CheckoutEffect.PaymentCompleted(orderId = 42)),
-            effects,
-        )
         assertEquals(1, orderDao.insertedOrders.size)
         assertEquals(11, orderDao.insertedOrders.single().userId)
         assertEquals(productEntity.id, orderDao.insertedOrders.single().productId)
@@ -127,7 +115,7 @@ class CheckoutViewModelTest {
         )
 
         mainDispatcher.scheduler.advanceUntilIdle()
-        viewModel.onEvent(CheckoutEvent.PayClicked)
+        viewModel.pay()
         mainDispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(CheckoutPhase.PaymentFailed, viewModel.state.value.phase)
@@ -159,7 +147,7 @@ class CheckoutViewModelTest {
         )
 
         mainDispatcher.scheduler.advanceUntilIdle()
-        viewModel.onEvent(CheckoutEvent.PayClicked)
+        viewModel.pay()
         mainDispatcher.scheduler.runCurrent()
 
         assertEquals(1L, savedStateHandle.get<Long>(CheckoutPendingPaymentRequestIdKey))
@@ -188,7 +176,7 @@ class CheckoutViewModelTest {
     }
 
     @Test
-    fun `restored completion starts durable state without commands or effect replay`() = runTest {
+    fun `restored completion starts durable state without commands`() = runTest {
         val productDao = RecordingProductDao(productEntity)
         val orderDao = RecordingOrderDao()
         val savedStateHandle = SavedStateHandle(
@@ -198,7 +186,6 @@ class CheckoutViewModelTest {
                 CheckoutPendingPaymentRequestIdKey to 1L,
             ),
         )
-        val effects = mutableListOf<CheckoutEffect>()
         val viewModel = checkoutViewModel(
             productId = productEntity.id,
             productDao = productDao,
@@ -206,15 +193,11 @@ class CheckoutViewModelTest {
             savedStateHandle = savedStateHandle,
         )
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.effects.collect { effect -> effects += effect }
-        }
         mainDispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(CheckoutPhase.Completed(orderId = 42), viewModel.state.value.phase)
         assertEquals(emptyList(), productDao.requestedProductIds)
         assertEquals(emptyList(), orderDao.insertedOrders)
-        assertEquals(emptyList(), effects)
         assertEquals(null, savedStateHandle.get<Long>(CheckoutPendingPaymentRequestIdKey))
     }
 

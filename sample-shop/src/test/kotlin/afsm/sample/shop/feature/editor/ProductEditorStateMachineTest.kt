@@ -5,7 +5,6 @@ import afsm.core.AfsmTopologyTransition
 import afsm.core.toMmd
 import afsm.test.assertCommandInvocations
 import afsm.test.assertCommands
-import afsm.test.assertEffects
 import afsm.test.assertHandled
 import afsm.test.assertNoCommands
 import afsm.test.assertPhase
@@ -285,22 +284,6 @@ class ProductEditorStateMachineTest {
             .assertPhase(ProductEditorPhase.PublishInProgress)
             .assertCommands(ProductEditorCommand.StartProductPublish(reviewedDraft))
         assertEquals(reviewedDraft, result.state.data.draft)
-    }
-
-    @Test
-    fun `done after published emits close editor effect`() {
-        val state = productEditorState(
-            phase = ProductEditorPhase.Published(
-                productId = 100,
-                title = "Travel Mug",
-            ),
-        )
-
-        val result = machine.transition(state, ProductEditorEvent.DoneClicked)
-
-        result
-            .assertHandled()
-            .assertEffects(ProductEditorEffect.CloseEditor)
     }
 
     @Test

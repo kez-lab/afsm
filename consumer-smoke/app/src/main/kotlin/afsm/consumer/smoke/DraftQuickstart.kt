@@ -2,7 +2,6 @@ package afsm.consumer.smoke
 
 import afsm.core.AfsmGraph
 import afsm.core.AfsmDefaultMachine
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
 import afsm.viewmodel.afsmHost
@@ -40,12 +39,8 @@ sealed interface DraftCommand {
     id = "DraftQuickstart",
     fileName = "DraftQuickstart.mmd",
 )
-val draftStateMachine: AfsmDefaultMachine<
-    DraftState,
-    DraftEvent,
-    DraftCommand,
-    AfsmNoEffect,
-    > = afsmMachine {
+val draftStateMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
+    afsmMachine {
     initial(
         phase = DraftPhase.Editing,
         data = DraftData(),
@@ -140,7 +135,7 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun onEvent(event: DraftEvent) {
-        host.dispatch(event)
-    }
+    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
+
+    fun save() = host.dispatch(DraftEvent.SaveClicked)
 }

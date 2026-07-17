@@ -101,8 +101,6 @@ sealed interface ProductEditorEvent {
 
     data object PublishClicked : ProductEditorEvent
 
-    data object DoneClicked : ProductEditorEvent
-
     data object CancelUploadClicked : ProductEditorEvent
 
     data object DraftSaveCompleted : ProductEditorEvent
@@ -133,12 +131,8 @@ sealed interface ProductEditorCommand {
     data class StartProductPublish(val draft: ProductDraft) : ProductEditorCommand
 }
 
-sealed interface ProductEditorEffect {
-    data object CloseEditor : ProductEditorEffect
-}
-
 typealias ProductEditorTransition =
-    AfsmTransition<ProductEditorState, ProductEditorCommand, ProductEditorEffect>
+    AfsmTransition<ProductEditorState, ProductEditorCommand>
 
 fun ProductEditorState.draftOrNull(): ProductDraft? {
     return when (phase) {

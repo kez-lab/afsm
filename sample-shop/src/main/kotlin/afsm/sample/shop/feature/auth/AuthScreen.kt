@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.auth
 
-import afsm.compose.CollectAfsmEffects
 import afsm.sample.shop.app.ShopAppContainer
 import afsm.sample.shop.app.sampleViewModelFactory
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,22 +47,28 @@ fun AuthRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val renderState = state.toRenderState()
 
-    CollectAfsmEffects(viewModel.effects) { effect ->
-        when (effect) {
-            AuthEffect.OpenCatalog -> onAuthenticated()
-        }
+    LaunchedEffect(renderState.isAuthenticated) {
+        if (renderState.isAuthenticated) onAuthenticated()
     }
 
     AuthScreen(
         state = renderState,
-        onEvent = viewModel::onEvent,
+        onModeChange = viewModel::selectMode,
+        onNameChange = viewModel::updateName,
+        onEmailChange = viewModel::updateEmail,
+        onPasswordChange = viewModel::updatePassword,
+        onSubmit = viewModel::submit,
     )
 }
 
 @Composable
 fun AuthScreen(
     state: AuthRenderState,
-    onEvent: (AuthEvent) -> Unit,
+    onModeChange: (AuthMode) -> Unit,
+    onNameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
 ) {
     Surface {
         Column(
@@ -99,13 +105,13 @@ fun AuthScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(
                         enabled = state.mode != AuthMode.Login && !state.isLoading,
-                        onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Login)) },
+                        onClick = { onModeChange(AuthMode.Login) },
                     ) {
                         Text("Login")
                     }
                     TextButton(
                         enabled = state.mode != AuthMode.Register && !state.isLoading,
-                        onClick = { onEvent(AuthEvent.ModeChanged(AuthMode.Register)) },
+                        onClick = { onModeChange(AuthMode.Register) },
                     ) {
                         Text("Register")
                     }
@@ -115,7 +121,7 @@ fun AuthScreen(
                     OutlinedTextField(
                         value = state.form.name,
                         enabled = !state.isLoading,
-                        onValueChange = { onEvent(AuthEvent.NameChanged(it)) },
+                        onValueChange = onNameChange,
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         label = { Text("Name") },
@@ -126,7 +132,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = state.form.email,
                     enabled = !state.isLoading,
-                    onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+                    onValueChange = onEmailChange,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     label = { Text("Email") },
@@ -136,7 +142,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = state.form.password,
                     enabled = !state.isLoading,
-                    onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                    onValueChange = onPasswordChange,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     label = { Text("Password") },
@@ -155,7 +161,7 @@ fun AuthScreen(
                 Spacer(modifier = Modifier.height(18.dp))
                 Button(
                     enabled = !state.isLoading,
-                    onClick = { onEvent(AuthEvent.SubmitClicked) },
+                    onClick = onSubmit,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     if (state.isLoading) {

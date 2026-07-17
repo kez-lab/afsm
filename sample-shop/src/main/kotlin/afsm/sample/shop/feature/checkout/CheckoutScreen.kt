@@ -1,6 +1,5 @@
 package afsm.sample.shop.feature.checkout
 
-import afsm.compose.CollectAfsmEffects
 import afsm.sample.shop.app.ShopAppContainer
 import afsm.sample.shop.app.sampleSavedStateViewModelFactory
 import afsm.sample.shop.core.model.asPriceText
@@ -17,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -44,18 +44,17 @@ fun CheckoutRoute(
     }
     val viewModel: CheckoutViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val renderState = state.toRenderState()
 
-    CollectAfsmEffects(viewModel.effects) { effect ->
-        when (effect) {
-            is CheckoutEffect.PaymentCompleted -> onPaymentComplete()
-        }
+    LaunchedEffect(renderState.orderId) {
+        if (renderState.isComplete) onPaymentComplete()
     }
 
     CheckoutScreen(
-        state = state.toRenderState(),
+        state = renderState,
         onBack = onBack,
-        onPayClick = { viewModel.onEvent(CheckoutEvent.PayClicked) },
-        onRetryClick = { viewModel.onEvent(CheckoutEvent.RetryClicked) },
+        onPayClick = viewModel::pay,
+        onRetryClick = viewModel::retry,
     )
 }
 

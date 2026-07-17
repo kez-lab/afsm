@@ -98,11 +98,7 @@ sealed interface CheckoutCommand {
     ) : CheckoutCommand
 }
 
-sealed interface CheckoutEffect {
-    data class PaymentCompleted(val orderId: Long) : CheckoutEffect
-}
-
-typealias CheckoutTransition = AfsmTransition<CheckoutState, CheckoutCommand, CheckoutEffect>
+typealias CheckoutTransition = AfsmTransition<CheckoutState, CheckoutCommand>
 
 fun CheckoutState.toRenderState(): CheckoutRenderState {
     return when (val currentPhase = phase) {

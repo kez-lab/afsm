@@ -24,8 +24,8 @@ class DraftViewModelTest {
         val repository = RecordingDraftRepository(Result.success(Unit))
         val viewModel = DraftViewModel(repository)
 
-        viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
-        viewModel.onEvent(DraftEvent.SaveClicked)
+        viewModel.updateTitle("Plan")
+        viewModel.save()
         mainDispatcherRule.advanceUntilIdle()
 
         assertEquals(listOf("Plan"), repository.savedTitles)
@@ -40,8 +40,8 @@ class DraftViewModelTest {
         )
         val viewModel = DraftViewModel(repository)
 
-        viewModel.onEvent(DraftEvent.TitleChanged("Plan"))
-        viewModel.onEvent(DraftEvent.SaveClicked)
+        viewModel.updateTitle("Plan")
+        viewModel.save()
         mainDispatcherRule.advanceUntilIdle()
 
         assertEquals(listOf("Plan"), repository.savedTitles)

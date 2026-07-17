@@ -29,7 +29,6 @@ android {
 
 dependencies {
     implementation("io.github.afsm:afsm-core:$afsmVersion")
-    implementation("io.github.afsm:afsm-compose:$afsmVersion")
     implementation("io.github.afsm:afsm-runtime:$afsmVersion")
     implementation("io.github.afsm:afsm-viewmodel:$afsmVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0")

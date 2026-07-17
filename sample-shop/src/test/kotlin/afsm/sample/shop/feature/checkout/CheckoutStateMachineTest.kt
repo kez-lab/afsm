@@ -5,11 +5,9 @@ import afsm.core.toMmd
 import afsm.sample.shop.core.model.OrderReceipt
 import afsm.sample.shop.core.model.Product
 import afsm.test.assertCommands
-import afsm.test.assertEffects
 import afsm.test.assertHandled
 import afsm.test.assertIgnored
 import afsm.test.assertInvalid
-import afsm.test.assertNoEffects
 import afsm.test.assertNoOutputs
 import afsm.test.assertPhase
 import afsm.test.assertTransitioned
@@ -251,7 +249,6 @@ class CheckoutStateMachineTest {
         result
             .assertTransitioned()
             .assertPhase(CheckoutPhase.Completed(orderId = 42))
-            .assertEffects(CheckoutEffect.PaymentCompleted(orderId = 42))
 
         val duplicatePay = machine.transition(result.state, CheckoutEvent.PayClicked)
         val duplicateRetry = machine.transition(result.state, CheckoutEvent.RetryClicked)
@@ -282,7 +279,6 @@ class CheckoutStateMachineTest {
             CheckoutEvent.PaymentSucceeded(requestId = 1, receipt = receipt),
         ).assertIgnored()
             .assertPhase(CheckoutPhase.Completed(orderId = 42))
-            .assertNoEffects()
         machine.transition(
             completed,
             CheckoutEvent.PaymentFailed(requestId = 1, message = "late failure"),
@@ -366,7 +362,6 @@ class CheckoutStateMachineTest {
         result
             .assertIgnored()
             .assertPhase(CheckoutPhase.PaymentInProgress(requestId = 2))
-            .assertNoEffects()
     }
 
     @Test
@@ -394,7 +389,6 @@ class CheckoutStateMachineTest {
                 event = "PaymentSucceeded",
                 to = "Completed",
                 conditionLabel = "matching request",
-                effectLabels = listOf("PaymentCompleted"),
             ) in transitions,
         )
 

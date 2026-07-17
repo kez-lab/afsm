@@ -5,7 +5,6 @@ import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -71,9 +70,24 @@ class ProductEditorViewModel(
     )
 
     val state: StateFlow<ProductEditorState> = host.state
-    val effects: Flow<ProductEditorEffect> = host.effects
 
-    fun onEvent(event: ProductEditorEvent) {
-        host.dispatch(event)
-    }
+    fun updateTitle(value: String) = dispatch(ProductEditorEvent.TitleChanged(value))
+
+    fun updateDescription(value: String) = dispatch(ProductEditorEvent.DescriptionChanged(value))
+
+    fun updatePrice(value: String) = dispatch(ProductEditorEvent.PriceChanged(value))
+
+    fun saveDraft() = dispatch(ProductEditorEvent.SaveDraftClicked)
+
+    fun continueEditing() = dispatch(ProductEditorEvent.ContinueEditingClicked)
+
+    fun submitForReview() = dispatch(ProductEditorEvent.SubmitClicked)
+
+    fun resubmitForReview() = dispatch(ProductEditorEvent.ResubmitClicked)
+
+    fun publish() = dispatch(ProductEditorEvent.PublishClicked)
+
+    fun cancelUpload() = dispatch(ProductEditorEvent.CancelUploadClicked)
+
+    private fun dispatch(event: ProductEditorEvent) = host.dispatch(event)
 }

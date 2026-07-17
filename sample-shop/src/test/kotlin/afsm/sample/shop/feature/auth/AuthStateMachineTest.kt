@@ -3,7 +3,6 @@ package afsm.sample.shop.feature.auth
 import afsm.sample.shop.core.model.UserSession
 import afsm.test.assertCommands
 import afsm.test.assertData
-import afsm.test.assertEffects
 import afsm.test.assertHandled
 import afsm.test.assertInvalid
 import afsm.test.assertNoCommands
@@ -85,7 +84,7 @@ class AuthStateMachineTest {
     }
 
     @Test
-    fun `auth success moves from submitting to authenticated and emits catalog effect`() {
+    fun `auth success moves from submitting to durable authenticated state`() {
         val session = UserSession(
             userId = 1,
             name = "Mina",
@@ -115,7 +114,6 @@ class AuthStateMachineTest {
                     data = AuthData(),
                 ),
             )
-            .assertEffects(AuthEffect.OpenCatalog)
     }
 
     @Test

@@ -6,7 +6,6 @@ import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class CheckoutViewModel(
@@ -77,7 +76,6 @@ class CheckoutViewModel(
     )
 
     val state: StateFlow<CheckoutState> = host.state
-    val effects: Flow<CheckoutEffect> = host.effects
 
     init {
         if (initialState.phase == CheckoutPhase.Idle) {
@@ -85,7 +83,7 @@ class CheckoutViewModel(
         }
     }
 
-    fun onEvent(event: CheckoutEvent) {
-        host.dispatch(event)
-    }
+    fun pay() = host.dispatch(CheckoutEvent.PayClicked)
+
+    fun retry() = host.dispatch(CheckoutEvent.RetryClicked)
 }

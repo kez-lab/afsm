@@ -4,7 +4,6 @@ import afsm.sample.shop.core.data.AuthRepository
 import afsm.sample.shop.core.data.SessionRepository
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthViewModel(
@@ -50,9 +49,16 @@ class AuthViewModel(
     )
 
     val state: StateFlow<AuthState> = host.state
-    val effects: Flow<AuthEffect> = host.effects
 
-    fun onEvent(event: AuthEvent) {
-        host.dispatch(event)
-    }
+    fun selectMode(mode: AuthMode) = dispatch(AuthEvent.ModeChanged(mode))
+
+    fun updateName(value: String) = dispatch(AuthEvent.NameChanged(value))
+
+    fun updateEmail(value: String) = dispatch(AuthEvent.EmailChanged(value))
+
+    fun updatePassword(value: String) = dispatch(AuthEvent.PasswordChanged(value))
+
+    fun submit() = dispatch(AuthEvent.SubmitClicked)
+
+    private fun dispatch(event: AuthEvent) = host.dispatch(event)
 }

@@ -2,7 +2,6 @@ package afsm.consumer.smoke
 
 import afsm.core.AfsmCommandInvocation
 import afsm.core.AfsmInvocationKey
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmState
 import afsm.core.afsmMachine
 import afsm.runtime.AfsmCommandHandler
@@ -23,13 +22,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class PhaseOwnedInvocationConsumerTest {
     private val uploadKey = AfsmInvocationKey("consumer/image-upload")
-    private val machine = afsmMachine<
-        UploadPhase,
-        Unit,
-        UploadEvent,
-        UploadCommand,
-        AfsmNoEffect,
-        > {
+    private val machine = afsmMachine<UploadPhase, Unit, UploadEvent, UploadCommand> {
         initial(UploadPhase.Editing, Unit)
 
         phase(UploadPhase.Editing) {

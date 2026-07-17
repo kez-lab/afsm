@@ -1,6 +1,5 @@
 package afsm.consumer.smoke
 
-import afsm.core.AfsmNoEffect
 import afsm.runtime.AfsmCommandFailurePolicy
 import afsm.runtime.AfsmCommandHandler
 import afsm.runtime.AfsmConfig
@@ -26,7 +25,7 @@ class DraftCommandFailurePolicyTest {
     fun unexpectedCommandHandlerExceptionIsRecordedWithoutCreatingDomainFailureEvent() = runTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
-        val host: AfsmHost<DraftState, DraftEvent, DraftCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<DraftState, DraftEvent, DraftCommand> = AfsmHost(
             initialState = DraftState(
                 phase = DraftPhase.Editing,
                 data = DraftData(title = "Plan"),
