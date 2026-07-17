@@ -1,6 +1,6 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-07-11
+updated: 2026-07-17
 ---
 
 # Android FSM Library Strategy
@@ -20,11 +20,17 @@ machine:
 - which `Event` occurred and whether it is valid,
 - how `Phase` and durable `Data` change,
 - which sequential `Command`s or phase-owned command invocations follow,
-- and which optional UI `Effect`s are emitted.
+- and which host-executed `Command`s follow.
 
 Android `ViewModel` remains the lifecycle and UI integration adapter. Afsm
 makes complex flow rules explicit without fighting official Android
 architecture guidance or imposing FSM ceremony on simple screens.
+
+Afsm does not own a one-shot UI `Effect` channel. Business outcomes are state;
+UI-originated UI actions are direct callbacks; UI behavior following an async
+outcome reacts to state, with feature-owned acknowledgement only when needed.
+This keeps Afsm focused on business flow instead of expanding into a full MVI
+UI framework.
 
 The active outcome-based execution plan is maintained in
 [[../06-project/long-term-goal|Afsm Long-Term Goal]].
@@ -49,7 +55,7 @@ The library should make this flow easy to model, inspect, test, and run:
 UI event
 -> ViewModel
 -> AfsmReducer.transition(state, event)
--> new state + commands/effects
+-> new state + commands
 -> ViewModel executes commands
 -> results feed back as events
 -> UI renders state
@@ -75,7 +81,7 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 ## Product Pillars
 
 1. Explicit flow
-   - State, Event, Command, and optional Effect are first-class types.
+   - State, Event, and Command are the first-class flow types.
    - Invalid transitions are intentionally handled.
    - The executable definition and generated graph expose transition topology.
    - Runtime failures and invalid transitions are observable through
@@ -104,13 +110,13 @@ The intended position is a small, typed, Android-aligned FSM toolkit.
 The first usable library version should include:
 
 - `AfsmReducer<S, E, C, F>`
-- `AfsmMachine<S, E, C, F>` for graphable machines without an assumed default
+- `AfsmMachine<S, E, C>` for graphable machines without an assumed default
 - `AfsmDefaultMachine<S, E, C, F>` for graphable machines with a genuine
   reusable default state
-- `afsmMachine<P, D, E, C, F> { ... }` for static phase/data machines, plus its
+- `afsmMachine<P, D, E, C> { ... }` for static phase/data machines, plus its
   `initialPhase` overload for machines whose initial data comes from the host
 - `AfsmState<P, D>` as the standard `phase + data` state value
-- `AfsmTransition<S, C, F>`
+- `AfsmTransition<S, C>`
 - invalid transition policy
 - command handling abstraction
 - ViewModel runner/composition helper

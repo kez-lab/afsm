@@ -1,11 +1,18 @@
 ---
 title: Afsm v3 Executable DSL
-updated: 2026-07-13
+updated: 2026-07-17
 ---
 
 # Afsm v3 Executable DSL
 
 This page is the canonical current direction for Afsm v3.
+
+> Accepted 2026-07-17: the public model removes `Effect`. The current target is
+> `AfsmMachine<State, Event, Command>`, `AfsmTransition<State, Command>`, and
+> `afsmMachine<Phase, Data, Event, Command>`. UI behavior comes from state or
+> direct UI callbacks. Earlier Effect snippets below are retained only as
+> historical experiment context until the implementation migration is complete.
+> See [[afsm-output-model-simplification|Afsm Output Model Simplification]].
 
 Afsm v3 should move from `when`-based helper APIs to a scoped executable statechart DSL.
 
@@ -94,7 +101,6 @@ This matches standard statechart vocabulary while keeping Android execution in `
 | `Condition` | Named boolean decision before a case is accepted | Validation, retry allowance, auth requirement |
 | `updateData` | Explicit data update | Immutable state data update |
 | `Command` | Host-executed work emitted by transition or entry | Repository/use case call, timer, local DB write |
-| `Effect` | UI-side one-shot output | Close screen, launch permission, optional navigation signal |
 | `Entry` | Work when entering a phase | Start async command, clear error |
 | `Exit` | Work when leaving a phase | Cancel timer, clear transient data |
 

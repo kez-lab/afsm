@@ -1627,3 +1627,37 @@ Consequences:
   only after immutable raw evidence exists.
 - One successful pilot does not freeze the API; repeated external evidence is
   still needed for broad confidence.
+
+## [2026-07-17] Remove Effect and the MVI-shaped sample boundary
+
+Decision: Remove the Effect type parameter, DSL operation, runtime channel,
+delivery config, topology metadata, test helpers, Compose collector, and
+`afsm-compose` module. Keep Command as the single typed host-work output. Make
+sample UI call verb-named ViewModel functions instead of constructing sealed
+machine Event values; use durable state or direct UI callbacks for navigation
+and close behavior.
+
+Rationale:
+
+- One human reader could not justify Command versus Effect and reported a steep
+  vocabulary cost; the current docs did not prevent that confusion.
+- Auth, Checkout, and ProductEditor all teach Effect, but each effect duplicates
+  an existing successful phase or sends a UI-originated click back through the
+  machine only to return a UI action.
+- Current official Android guidance says ViewModel-originated UI actions should
+  update UI state and recommends verb-named ViewModel functions for user events.
+- Renaming Effect preserves the cost, while merging it with Command hides
+  incompatible execution and lifecycle delivery semantics inside one output.
+
+Consequences:
+
+- Public machine/reducer arity drops from four types to three; transition arity
+  drops from three to two; `AfsmNoEffect` disappears.
+- Teams needing acknowledgement-sensitive UI behavior model it explicitly in
+  feature state rather than relying on best-effort stream delivery.
+- The sample stops presenting a generic MVI `onEvent` UI boundary and removes
+  the `Contract.kt` naming convention.
+- The Mermaid graph is documented as the whole-flow view that complements
+  phase-local executable rules; tests retain graph-invisible policy proof.
+- This is an intentional breaking pre-release change with no compatibility
+  aliases.

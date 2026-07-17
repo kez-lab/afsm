@@ -1,6 +1,6 @@
 ---
 title: Android Official Guidance
-updated: 2026-07-11
+updated: 2026-07-17
 ---
 
 # Android Official Guidance
@@ -31,7 +31,7 @@ The official direction is:
 | Repository/use case response | Internal `Event` |
 | Async work request | Sequential `Command` or phase-owned command invocation |
 | UI-renderable output | `StateFlow<State>` |
-| One-shot UI behavior | Optional `Effect` or UI-local state |
+| UI behavior after a business outcome | UI reacts to durable state; acknowledge in feature state only when needed |
 
 ## Design Constraints
 
@@ -56,7 +56,7 @@ It should not hold references to Views, `Context`, `Resources`, or lifecycle-sco
 - be deterministic,
 - avoid Android dependencies,
 - avoid direct use case/repository calls,
-- return `AfsmTransition<State, Command, Effect>`.
+- return `AfsmTransition<State, Command>`.
 
 ### UI owns UI behavior
 
@@ -65,7 +65,7 @@ Compose/View code should:
 - collect state lifecycle-aware,
 - render state,
 - expose user events upward,
-- perform navigation and UI effects when appropriate,
+- perform navigation and other UI behavior from UI callbacks or observed state,
 - keep UI element state local unless business logic needs it.
 
 ## Event and State Rule
@@ -88,7 +88,11 @@ Navigation is generally UI behavior logic.
 
 FSM/ViewModel may expose a state such as `LoggedIn`, `CheckoutCompleted`, or `DobValidated`. The UI decides whether and how to navigate from that state, especially when back stack behavior or form factor affects navigation.
 
-Use an explicit `Effect` only when the team intentionally chooses one-shot UI delivery and accepts its lifecycle semantics.
+Afsm does not provide a best-effort Effect stream. If a business outcome should
+change navigation, represent the outcome in state and let the UI decide how to
+navigate. If a UI-originated action only changes UI behavior, handle it directly
+in the UI. Model pending/acknowledged state explicitly when repeated handling
+would be unsafe.
 
 ## Compose Side-Effect Rule
 

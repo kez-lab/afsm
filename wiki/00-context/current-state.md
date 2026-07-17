@@ -210,6 +210,13 @@ consumer fixture.
 
 ## Remaining Decisions
 
+The 2026-07-17 output-model redesign is accepted but not yet implemented at
+this commit. It will remove the Effect generic/channel and `afsm-compose`, move
+the three sample UI behaviors to state/direct callbacks, expose verb-named
+ViewModel methods to UI, and document graph/machine/tests as complementary
+views. Until that migration lands, the implemented-surface sections above
+accurately describe the older runtime.
+
 The unresolved release, module-boundary, advanced-runtime, restoration-helper,
 and graph-aggregation decisions are maintained in
 [[open-questions|Open Questions]]. Public release gates and metadata blockers

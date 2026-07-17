@@ -30,6 +30,7 @@ updated: 2026-07-17
 - [[03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]] - Clarifies Command as a transition action, separates Event/Action/Effect directionality, and defines ProductEditor naming policy.
 - [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.
 - [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Current bounded dispatch, sequential command, decision, effect, overflow, and privacy-aware diagnostic contract.
+- [[03-engineering/afsm-output-model-simplification|Afsm Output Model Simplification]] - Accepted pre-release redesign that removes Effect, keeps Command as the only host-work output, and makes sample UI state/callback based rather than MVI-shaped.
 - [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
 - [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
@@ -43,7 +44,7 @@ updated: 2026-07-17
 - [[03-engineering/library-delivery-plan|Historical Library Delivery Plan]] - Staged plan retained as history; current gates live in release readiness and open questions.
 - [[03-engineering/reference-flow-signup-identity-retry|Reference Flow - Signup Identity Retry]] - First reference flow design with State/Event/Command/Effect policy.
 - [[03-engineering/signup-state-machine-pseudo-implementation|Signup StateMachine Pseudo Implementation]] - Kotlin-like pseudo implementation used to validate Afsm API ergonomics.
-- [[03-engineering/state-event-command-effect|State, Event, Command, Effect]] - Terms and boundaries for the FSM model.
+- [[03-engineering/state-event-command-effect|Historical State, Event, Command, Effect]] - Superseded explanation of the four-concept output model retained as design history.
 - [[03-engineering/viewmodel-fsm-boundaries|ViewModel and FSM Boundaries]] - Responsibility split across View, ViewModel, FSM, and UseCase layers.
 - [[03-engineering/testing-strategy|Testing Strategy]] - How to test transitions, ViewModel command execution, and UI rendering.
 

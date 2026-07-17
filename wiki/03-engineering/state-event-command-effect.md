@@ -1,9 +1,15 @@
 ---
-title: State, Event, Command, Effect
-updated: 2026-05-09
+title: Historical State, Event, Command, Effect
+updated: 2026-07-17
 ---
 
 # State, Event, Command, Effect
+
+> Superseded on 2026-07-17. Afsm's accepted pre-release model removes the
+> Effect generic, DSL operation, runtime channel, and Compose helper. This page
+> preserves why the earlier four-concept model existed. Use
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]] for the
+> current decision.
 
 ## State
 

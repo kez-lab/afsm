@@ -1616,3 +1616,23 @@
   `wiki/05-qa/verification-report-2026-07-17-human-usability-feedback.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/long-term-goal.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] decision | Remove Effect and the MVI-shaped sample boundary
+
+- Source: Informal human feedback, repository output-surface audit at
+  `be910de`, and refreshed official Android UI event/state guidance.
+- Action: Selected the breaking pre-release design that removes Effect and
+  `afsm-compose`, keeps Command as the only host-work output, moves UI behavior
+  to state/direct callbacks, exposes verb-named sample ViewModel methods, and
+  defines graph/machine/tests as complementary reading views.
+- Updated: `raw/sources/2026-07-17-android-ui-event-guidance-refresh.md`,
+  `raw/verification/2026-07-17-output-model-audit/README.md`, `raw/README.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/03-engineering/afsm-output-model-simplification.md`,
+  `wiki/03-engineering/android-official-guidance.md`,
+  `wiki/03-engineering/android-fsm-architecture.md`,
+  `wiki/03-engineering/afsm-v3-executable-dsl.md`,
+  `wiki/03-engineering/afsm-example-catalog.md`,
+  `wiki/03-engineering/state-event-command-effect.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.

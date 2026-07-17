@@ -1,6 +1,6 @@
 ---
 title: Android FSM Architecture
-updated: 2026-07-11
+updated: 2026-07-17
 ---
 
 # Android FSM Architecture
@@ -15,11 +15,11 @@ Make user interaction -> business logic -> state update -> view rendering easier
 
 ```text
 View / Compose
--> sends Event
--> ViewModel.onEvent(event)
+-> calls a verb-named ViewModel function
+-> ViewModel translates the call into an Event
 -> AfsmReducer.transition(currentState, event)
--> AfsmTransition(newState, commands, commandInvocations, effects, decision)
--> AfsmHost publishes StateFlow/effects
+-> AfsmTransition(newState, commands, commandInvocations, decision)
+-> AfsmHost publishes StateFlow
 -> AfsmHost executes ordinary commands or tracks phase-owned invocations
 -> command result is fed back as Event
 -> View renders State
@@ -28,16 +28,15 @@ View / Compose
 ## Recommended Interfaces
 
 ```kotlin
-class AfsmTransition<S : Any, C : Any, F : Any> {
+class AfsmTransition<S : Any, C : Any> {
     val state: S
     val commands: List<C>
     val commandInvocations: List<AfsmCommandInvocation<C>>
-    val effects: List<F>
     val decision: AfsmDecision
 }
 
-fun interface AfsmReducer<S, E, C, F> {
-    fun transition(state: S, event: E): AfsmTransition<S, C, F>
+fun interface AfsmReducer<S, E, C> {
+    fun transition(state: S, event: E): AfsmTransition<S, C>
 }
 ```
 
@@ -47,7 +46,7 @@ public constructor. `commands` are bounded sequential work. An
 work owned by a phase.
 
 For graphable phase/data flows, expose static defaults as
-`AfsmDefaultMachine<State, Event, Command, Effect>` and dynamic flows as the
+`AfsmDefaultMachine<State, Event, Command>` and dynamic flows as the
 base `AfsmMachine` with host-supplied state:
 
 ```kotlin
@@ -59,7 +58,7 @@ data class AfsmState<P : Any, D : Any>(
 typealias LoginState = AfsmState<LoginPhase, LoginData>
 
 val loginStateMachine:
-    AfsmDefaultMachine<LoginState, LoginEvent, LoginCommand, LoginEffect> =
+    AfsmDefaultMachine<LoginState, LoginEvent, LoginCommand> =
     afsmMachine {
         initial(LoginPhase.Editing, LoginData())
         // phase rules
@@ -67,7 +66,7 @@ val loginStateMachine:
 ```
 
 At feature boundaries, collapse `Phase + Data` into a feature state type and
-refer to graphable machines through `AfsmMachine<State, Event, Command, Effect>`
+refer to graphable machines through `AfsmMachine<State, Event, Command>`
 and opt into `AfsmDefaultMachine` only when a real default exists.
 
 ## Screen File Layout
@@ -77,18 +76,24 @@ feature/login/
   LoginRoute.kt
   LoginScreen.kt
   LoginViewModel.kt
-  LoginContract.kt
+  LoginFlow.kt
   LoginStateMachine.kt
 ```
 
 ## Responsibilities
 
-- `LoginContract.kt`: `State`, `Event`, `Command`, optional `Effect`.
+- `LoginFlow.kt`: feature phases, durable data, machine events, commands, and
+  render mapping. This grouping is a sample choice, not an MVI contract.
 - `LoginStateMachine.kt`: pure transition rules.
 - `LoginViewModel.kt`: host creation, command handler, `StateFlow`,
   `viewModelScope`, and saved-state integration.
-- `LoginRoute.kt`: collect state with lifecycle, connect navigation/effects.
+- `LoginRoute.kt`: collect state with lifecycle and connect state-driven or
+  direct UI navigation.
 - `LoginScreen.kt`: stateless UI rendering and user event callbacks.
+
+Sample UI calls verb-named ViewModel functions and does not construct machine
+Event values. The ViewModel translates UI callbacks and command results into
+events at the machine boundary.
 
 ## Adoption Rule
 

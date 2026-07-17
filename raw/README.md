@@ -4,6 +4,7 @@ This directory stores immutable source material for the project wiki.
 
 - `conversations/2026-05-01-android-viewmodel-fsm-discussion.md`: source conversation that led to the Android FSM direction.
 - `sources/2026-05-01-llm-wiki-pattern.md`: user-provided LLM Wiki pattern used to structure this project knowledge base.
+- `sources/2026-07-17-android-ui-event-guidance-refresh.md`: refreshed official Android guidance on ViewModel functions, state-produced UI actions, and UI-owned navigation used by the Effect-removal decision.
 - `verification/2026-05-09-sample-shop-fsm-smoke/`: Android CLI layout/screenshot evidence for the sample-shop auth and product registration FSM smoke test.
 - `verification/2026-05-09-product-editor-transition-action-rename-smoke/`: Android CLI layout/screenshot evidence after renaming ProductEditor phase states and transition action commands.
 - `verification/2026-05-09-product-editor-executable-dsl-smoke/`: Android CLI layout/screenshot evidence after migrating ProductEditor to the executable DSL.
@@ -21,5 +22,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-11-goal-completion-audit/`: current full release gate, named safety-test mapping, and explicit absence of human first-use and production-like pilot completion evidence.
 - `verification/2026-07-11-checkout-first-use-ai-review/`: constrained four-file AI review submission, 11-point score, reported timing/ratings, and command/data-order readability hypotheses; not human first-use evidence.
 - `verification/2026-07-17-human-usability-feedback/`: relayed human feedback about Command/Effect learning cost, phase-local transition visibility, graph explanation, and MVI-heavy sample framing; useful product evidence but not a controlled first-use result.
+- `verification/2026-07-17-output-model-audit/`: repository measurements, sample redundancy findings, alternative comparison, and success criteria for removing the Effect channel and MVI-shaped UI event surface.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

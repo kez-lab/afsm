@@ -21,13 +21,6 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## API and Module Boundaries
 
-- Can Afsm expose fewer first-use concepts than `State`/`Phase`/`Data`/`Event`/
-  `Command`/optional `Effect` while preserving the materially different host-work
-  and best-effort UI-delivery contracts? One human reader could not justify the
-  current output split, so documentation alone must not be assumed sufficient.
-- Which sample structure makes Afsm's focused flow-model role clear without
-  leaving the impression that adopting Afsm requires a full MVI architecture?
-
 - Before external publication, should the executable DSL, `@AfsmGraph`, topology
   types, and `AfsmGraphSource` remain in `afsm-core`, or should graph concerns
   move to a smaller annotation/API module? This includes deciding whether every
@@ -65,11 +58,6 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   same snapshot shape?
 
 ## Graph Tooling
-
-- How should the public learning path state the intentional division of labor:
-  the machine contains executable phase-local rules, while the generated graph
-  provides the whole-flow scan? One human understood this only after a verbal
-  explanation.
 - Should graph generation remain one selected Android unit-test variant per
   module, or support multi-variant and multi-module aggregation before broader
   external adoption?
@@ -98,6 +86,14 @@ boundary is recorded in
 
 ## Resolved Current Policies
 
+- The accepted pre-release output model removes Effect rather than renaming or
+  merging it with Command. Business outcomes are state, UI-only actions stay in
+  UI callbacks, and Command remains the single typed host-work output.
+- Sample UI uses verb-named ViewModel functions rather than a generic `onEvent`
+  boundary, and the MVI-style `Contract.kt` file convention is removed.
+- The public reading contract gives the generated graph the whole-flow view,
+  the phase-local machine the exact-rule view, and tests the executable
+  graph-invisible-policy view.
 - Afsm targets controlled internal beta pilots on complex flow screens; it is
   not a general ViewModel replacement.
 - Current distribution is Maven Local snapshot or direct project modules.
