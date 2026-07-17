@@ -1691,3 +1691,9 @@
 - Source: Effect-free core/runtime API declarations, current KSP/DSL pages, and index routing audit of legacy symbols.
 - Action: Preserved older declaration experiments, Signup reference/pseudo code, v2 compile evidence, and four-channel Checkout verification while adding direct-page historical warnings and current-contract routes; updated index labels so legacy Effect APIs cannot appear current.
 - Updated: `wiki/03-engineering/afsm-first-use-api-experiment.md`, `wiki/03-engineering/afsm-first-use-api-experiment-results-2026-07-10.md`, `wiki/03-engineering/reference-flow-signup-identity-retry.md`, `wiki/03-engineering/signup-state-machine-pseudo-implementation.md`, `wiki/03-engineering/afsm-core-compile-validation.md`, `wiki/03-engineering/checkout-viewmodel-integration-verification.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] wiki-lint | Align the current testing strategy with the Android boundary
+
+- Source: Current transition decision helpers, phase-owned invocation coverage, verb-named sample ViewModels, zero-Event sample screens, and Effect-free durable completion.
+- Action: Updated FSM, ViewModel, and UI test responsibilities to cover decision policy, stale results, invocation/restoration, feature verbs, internal result Events, and direct/state-driven UI behavior without the removed Effect stream.
+- Updated: `wiki/03-engineering/testing-strategy.md`, `wiki/log.md`.

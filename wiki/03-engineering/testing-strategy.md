@@ -1,6 +1,6 @@
 ---
 title: Testing Strategy
-updated: 2026-05-09
+updated: 2026-07-17
 ---
 
 # Testing Strategy
@@ -29,11 +29,14 @@ FSM tests should be plain JVM tests with no Android dependency.
 Test:
 
 - valid transitions,
-- invalid transitions,
+- `Handled`, `Ignored`, and `Invalid` decisions,
 - command emission,
+- phase-owned invocation start/cancellation when used,
 - retry behavior,
+- duplicate and stale-result behavior,
 - failure behavior,
-- terminal state behavior,
+- durable terminal state behavior,
+- restoration-only phase behavior when defined,
 - preservation of useful data across states.
 
 Example scenario name:
@@ -48,11 +51,13 @@ ViewModel tests should verify Android integration behavior.
 
 Test:
 
-- events are passed into the FSM,
-- returned state is exposed through `StateFlow`,
+- feature verb methods translate UI calls into the expected internal machine
+  events,
+- accepted machine state is exposed through host `StateFlow`,
 - commands call the correct use case,
 - use case success feeds back success event,
 - use case failure feeds back failure event,
+- completion and restoration remain correct without a one-shot Effect stream,
 - coroutine cancellation behavior if defined,
 - coroutine command execution uses test dispatchers deterministically,
 - `CancellationException` is not accidentally consumed,
@@ -68,13 +73,15 @@ Use official coroutine testing patterns:
 
 ## UI Tests
 
-UI tests should focus on rendering and event mapping.
+UI tests should focus on rendering and the Android feature boundary.
 
 Test:
 
 - each state renders the expected UI,
-- user interactions call the expected event callback,
-- navigation/snackbar behavior is triggered according to the chosen state/effect policy.
+- user interactions call the expected feature verb callback,
+- UI composables do not need to construct machine Event values,
+- navigation or other UI behavior follows direct UI callbacks or durable
+  business state as specified by the feature.
 
 ## Documentation Value
 
