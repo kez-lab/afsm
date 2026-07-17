@@ -20,5 +20,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-11-product-editor-cancel-device-journey/`: persistent-shell Android CLI install/launch plus layout/screenshot evidence that ProductEditor's mock upload is visibly cancellable and returns to the retained draft.
 - `verification/2026-07-11-goal-completion-audit/`: current full release gate, named safety-test mapping, and explicit absence of human first-use and production-like pilot completion evidence.
 - `verification/2026-07-11-checkout-first-use-ai-review/`: constrained four-file AI review submission, 11-point score, reported timing/ratings, and command/data-order readability hypotheses; not human first-use evidence.
+- `verification/2026-07-17-human-usability-feedback/`: relayed human feedback about Command/Effect learning cost, phase-local transition visibility, graph explanation, and MVI-heavy sample framing; useful product evidence but not a controlled first-use result.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

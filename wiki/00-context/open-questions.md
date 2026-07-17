@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-07-11
+updated: 2026-07-17
 ---
 
 # Open Questions
@@ -20,6 +20,13 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   docs, examples, changelog, and migration notes in the same change?
 
 ## API and Module Boundaries
+
+- Can Afsm expose fewer first-use concepts than `State`/`Phase`/`Data`/`Event`/
+  `Command`/optional `Effect` while preserving the materially different host-work
+  and best-effort UI-delivery contracts? One human reader could not justify the
+  current output split, so documentation alone must not be assumed sufficient.
+- Which sample structure makes Afsm's focused flow-model role clear without
+  leaving the impression that adopting Afsm requires a full MVI architecture?
 
 - Before external publication, should the executable DSL, `@AfsmGraph`, topology
   types, and `AfsmGraphSource` remain in `afsm-core`, or should graph concerns
@@ -59,6 +66,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## Graph Tooling
 
+- How should the public learning path state the intentional division of labor:
+  the machine contains executable phase-local rules, while the generated graph
+  provides the whole-flow scan? One human understood this only after a verbal
+  explanation.
 - Should graph generation remain one selected Android unit-test variant per
   module, or support multi-variant and multi-module aggregation before broader
   external adoption?
@@ -71,8 +82,10 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 
 ## Real Usability Evidence
 
-- Which Android developer will run the first no-prior-Afsm Checkout
-  comprehension session, and who will facilitate without coaching?
+- The first relayed human feedback exists, but participant background, exact
+  inputs, timing, and facilitator intervention are missing. Which Android
+  developer will run the first measured no-prior-Afsm Checkout comprehension
+  session, and who will facilitate without coaching?
 - Which production-like complex screen and owning team will serve as the first
   isolated pilot, with an agreed comparison baseline and rollback owner? The
   execution contract is ready in

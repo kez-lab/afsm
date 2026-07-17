@@ -1601,3 +1601,18 @@
   `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
   `wiki/03-engineering/afsm-v3-executable-dsl.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-17] verification | Informal human usability feedback
+
+- Source: Project-owner-relayed feedback from one person who reviewed Afsm;
+  participant background, exact inputs, timing, coaching, and reviewed commit
+  were not recorded.
+- Action: Preserved the feedback as human product evidence without classifying
+  it as a controlled first-use pass; reopened the Command/Effect concept split,
+  machine-versus-graph discoverability, and MVI-heavy sample framing as the
+  next usability cycle.
+- Updated: `raw/verification/2026-07-17-human-usability-feedback/README.md`,
+  `raw/README.md`,
+  `wiki/05-qa/verification-report-2026-07-17-human-usability-feedback.md`,
+  `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
+  `wiki/06-project/long-term-goal.md`, `wiki/index.md`, `wiki/log.md`.

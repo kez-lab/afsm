@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-07-11
+updated: 2026-07-17
 ---
 
 # Wiki Index
@@ -66,6 +66,7 @@ updated: 2026-07-11
 - [[05-qa/verification-report-2026-05-09-product-editor-executable-dsl-smoke|ProductEditor Executable DSL Smoke Verification]] - Android CLI regression evidence after migrating ProductEditor to the executable DSL.
 - [[05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification 2026-07-11]] - Repository and emulator evidence for visible, tappable ProductEditor upload cancellation with retained draft state.
 - [[05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]] - Constrained four-file AI review score and first-read readability hypotheses, kept separate from human evidence.
+- [[05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]] - Relayed human findings about vocabulary cost, machine/graph visibility, and MVI-heavy sample framing, kept separate from controlled first-use proof.
 
 ## LLM Operations
 

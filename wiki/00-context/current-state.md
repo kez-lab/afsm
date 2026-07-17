@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-07-13
+updated: 2026-07-17
 ---
 
 # Current State
@@ -146,8 +146,13 @@ remaining graph-invisible handled/ignored/invalid policies. A separate
 2026-07-11 four-file AI review scored `11/11` and found no critical
 misconception, while surfacing local-readability hypotheses around command
 execution ownership, update/transition ordering, and contract-type locality.
-AI timing and preference are supporting evidence only; real Android developer
-comprehension and preference remain unverified.
+AI timing and preference are supporting evidence only. On 2026-07-17 the
+project owner relayed the first human usability feedback: the reader could not
+justify the `Command`/`Effect` split, found the vocabulary costly, needed a
+verbal explanation of the machine-versus-Mermaid-graph trade-off, and felt the
+samples read too much like MVI. Participant context, reviewed inputs, timing,
+and coaching were not recorded, so this reopens product hypotheses but does not
+count as the controlled first-use result or a pilot.
 
 `README.md` is the English quick map and `README.ko.md` is its Korean-language
 counterpart. Both explain the creator motivation and keep the same code,
@@ -173,10 +178,12 @@ consumer fixture.
 - Historical Android CLI layout/screenshot evidence remains under
   `raw/verification/`; it proves the dated sample journeys it records, not the
   state of every later commit.
-- A no-coaching Checkout first-use task and facilitator rubric are ready, but no
-  real Android developer session has been recorded yet. The post-restoration
-  facilitator setup check and one constrained AI review pass; provisional time
-  and score gates remain assumptions until the first human run.
+- A no-coaching Checkout first-use task and facilitator rubric are ready. One
+  informal human response now identifies vocabulary, graph-role, and MVI
+  positioning problems, but no controlled Android developer session has been
+  recorded. The post-restoration facilitator setup check and one constrained AI
+  review pass; provisional time and score gates remain assumptions until the
+  first measured human run.
 - A production-like pilot protocol now defines same-feature baseline capture,
   pre-registered success/stop gates, reviewer comparison, safety evidence, and
   a measured rollback drill. No target feature, owner, reviewer, baseline
@@ -197,8 +204,9 @@ consumer fixture.
   evidence, not real transport, human, or production-pilot evidence.
 - The current completion audit reran the full local release gate and mapped all
   named local safety requirements to tests. Repository and device evidence are
-  strong, but the Goal remains incomplete because no human first-use result or
-  production-like pilot exists. API freeze is therefore not yet eligible.
+  strong, but the Goal remains incomplete because the new human feedback is not
+  a controlled first-use result and no production-like pilot exists. API freeze
+  is therefore not yet eligible.
 
 ## Remaining Decisions
 

@@ -1,6 +1,6 @@
 ---
 title: Afsm Long-Term Goal
-updated: 2026-07-11
+updated: 2026-07-17
 status: active
 ---
 
@@ -185,6 +185,7 @@ that proof; they do not replace it.
 
 ## Current Evidence
 
+- [[../05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]]
 - [[goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]]
 - [[production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]]
 - [[goal-evidence-baseline-2026-07-11|Goal Evidence Baseline 2026-07-11]]
