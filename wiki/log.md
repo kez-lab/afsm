@@ -1673,3 +1673,9 @@
 - Evidence: `raw/verification/2026-07-17-effect-free-first-use-preparation/README.md` and `wiki/05-qa/verification-report-2026-07-17-effect-free-first-use-preparation.md`.
 - Boundary: Preparation passed; no human participant result or production-like pilot exists.
 - Updated: `afsm-first-use-review-input-effect-free/`, `raw/README.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-output-model-simplification.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `docs/release-readiness.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] wiki-lint | Align current ViewModel and restoration boundaries
+
+- Source: Current `AfsmHost`, `ViewModel.afsmHost(...)`, Auth/Checkout/ProductEditor ViewModels and screens, and the accepted Effect-free output decision.
+- Action: Replaced the stale generic `onEvent`/UI Effect boundary with verb-named UI methods, ViewModel-internal Event translation, host-owned state/command execution, durable completion, and direct/state-driven UI behavior; removed obsolete completion-effect restoration wording and corrected the first-use protocol index route.
+- Updated: `wiki/03-engineering/viewmodel-fsm-boundaries.md`, `wiki/03-engineering/checkout-process-restoration-experiment.md`, `wiki/index.md`, `wiki/log.md`.

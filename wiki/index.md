@@ -54,7 +54,7 @@ updated: 2026-07-17
 - [[06-project/goal-evidence-baseline-2026-07-10|Afsm Goal Evidence Baseline 2026-07-10]] - Outcome-by-outcome proof audit and first redesign-cycle selection.
 - [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Outcome audit after Checkout restoration, with the completed diagnostic-privacy cycle result and next runtime gap.
 - [[06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]] - Dated requirement-by-requirement proof audit after diagnostics, invocation, upload integration, device verification, and pilot preparation.
-- [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Facilitator-only rubric for an unaided Android developer machine/graph/tests session.
+- [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Two-stage facilitator rubric for unaided machine/graph/tests comprehension followed by Effect-free Android-boundary review.
 - [[06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]] - Same-feature baseline, review, safety, verification, stop, and rollback contract for the first real pilot beyond repository fixtures.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
 - [[06-project/implementation-log|Implementation Log]] - Chronological implementation changes and verification commands.

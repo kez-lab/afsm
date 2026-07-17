@@ -1,6 +1,6 @@
 ---
 title: Checkout Process Restoration Experiment
-updated: 2026-07-10
+updated: 2026-07-17
 status: candidate-b-implemented
 ---
 
@@ -25,10 +25,10 @@ representative non-idempotent flow.
 ## Invariants
 
 - Persist minimal business keys, not a serialized `CheckoutState`, product
-  object, coroutine, command, or effect.
+  object, coroutine, or command.
 - A restored state must not run `onEnter` implicitly.
 - Durable completion must render after recreation without loading a product or
-  replaying `PaymentCompleted`.
+  relying on a separate one-shot completion output.
 - An interrupted payment must not be retried or converted to a harmless-looking
   ready state automatically.
 - Cold navigation still loads the requested product through the explicit
@@ -53,7 +53,7 @@ Persist only:
 
 Restoration priority:
 
-1. `completedOrderId` -> `Completed(orderId)` with no startup event or effect,
+1. `completedOrderId` -> `Completed(orderId)` with no startup event or command,
 2. pending request -> `PaymentStatusUnknown(requestId)` with no automatic load,
    retry, or submit,
 3. otherwise -> `Idle`, followed by explicit `ScreenEntered` product loading.
@@ -98,8 +98,8 @@ repeated boilerplate before a library abstraction is justified.
 ## Acceptance Criteria
 
 - Cold navigation still loads exactly once with the route product id.
-- Restored completion starts in `Completed`, emits no effect, and executes no
-  product/payment command.
+- Restored completion starts in `Completed` and executes no product/payment
+  command or separate one-shot output.
 - A saved pending request starts in `PaymentStatusUnknown`, executes no command,
   and exposes no pay/retry action.
 - Successful payment leaves `completedOrderId` and no pending key.
