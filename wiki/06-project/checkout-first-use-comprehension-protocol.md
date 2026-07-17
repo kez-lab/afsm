@@ -213,3 +213,17 @@ current participant input because it contains the removed Effect API. This
 review does not validate the Effect-free revision, change the provisional human
 gates, or remove the requirement for at least one no-AI Android developer
 session.
+
+## Effect-Free Revision Preparation
+
+The two-stage input for source commit
+`a28bc6e9647f6c9c6e70d18aa791b61785077d90` is prepared under
+`afsm-first-use-review-input-effect-free/`. Its manifest, copied-source parity,
+generated graph, question counts, removed-Effect boundary, zero-Event screen,
+verb-named ViewModel methods, and README graph explanation passed the
+preparation check.
+
+This establishes only that the protocol is executable on a fixed current
+revision. See
+`raw/verification/2026-07-17-effect-free-first-use-preparation/README.md` and
+[[../05-qa/verification-report-2026-07-17-effect-free-first-use-preparation|Effect-Free First-Use Preparation 2026-07-17]].

@@ -65,8 +65,10 @@ first-use session. The prior constrained AI review also remains AI evidence.
 Before claiming product-goal completion, run:
 
 1. a controlled no-coaching
-   [Checkout first-use task](checkout-first-use-participant-task.md) against the
-   current Effect-free revision,
+   [Checkout flow-comprehension task](checkout-first-use-participant-task.md)
+   followed by the separately timed
+   [Android-boundary task](checkout-android-integration-participant-task.md)
+   against the commit-pinned current Effect-free revision,
 2. the canonical
    [production-like pilot protocol](../wiki/06-project/production-like-pilot-protocol.md)
    with a real Android feature and comparator.

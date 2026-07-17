@@ -53,7 +53,7 @@ updated: 2026-07-17
 - [[06-project/long-term-goal|Afsm Long-Term Goal]] - Active usability-first product goal with full pre-release design freedom and an evidence-driven improvement loop.
 - [[06-project/goal-evidence-baseline-2026-07-10|Afsm Goal Evidence Baseline 2026-07-10]] - Outcome-by-outcome proof audit and first redesign-cycle selection.
 - [[06-project/goal-evidence-baseline-2026-07-11|Afsm Goal Evidence Baseline 2026-07-11]] - Outcome audit after Checkout restoration, with the completed diagnostic-privacy cycle result and next runtime gap.
-- [[06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]] - Current requirement-by-requirement proof audit after diagnostics, invocation, upload integration, device verification, and pilot preparation.
+- [[06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]] - Dated requirement-by-requirement proof audit after diagnostics, invocation, upload integration, device verification, and pilot preparation.
 - [[06-project/checkout-first-use-comprehension-protocol|Checkout First-Use Comprehension Protocol]] - Facilitator-only rubric for an unaided Android developer machine/graph/tests session.
 - [[06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]] - Same-feature baseline, review, safety, verification, stop, and rollback contract for the first real pilot beyond repository fixtures.
 - [[06-project/decision-log|Decision Log]] - Durable architecture decisions.
@@ -69,6 +69,7 @@ updated: 2026-07-17
 - [[05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]] - Constrained four-file AI review score and first-read readability hypotheses, kept separate from human evidence.
 - [[05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]] - Relayed human findings about vocabulary cost, machine/graph visibility, and MVI-heavy sample framing, kept separate from controlled first-use proof.
 - [[05-qa/verification-report-2026-07-17-effect-free-output-model|Effect-Free Output Model Verification 2026-07-17]] - Passing repository/API/graph/external-consumer evidence for the implemented three-concept redesign.
+- [[05-qa/verification-report-2026-07-17-effect-free-first-use-preparation|Effect-Free First-Use Preparation 2026-07-17]] - Commit-pinned two-stage Checkout input and passed integrity/coverage checks; no human result yet.
 
 ## LLM Operations
 

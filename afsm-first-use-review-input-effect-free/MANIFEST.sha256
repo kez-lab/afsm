@@ -1,0 +1,12 @@
+a443b278eb77ab5dcdfd25d2946ae89699fdc3ac3961a9443148d7b4831ac5c6  ./README.md
+25dd5cc58a2459e3fb8a78c4cee85c56876cf8f376dc2c76f8ea070ab434db87  ./facilitator-session-record.md
+be945843e668974a0e24d310098090e0727d45436b245e76b9c1dffce2de1514  ./stage-1/checkout-first-use-participant-task.md
+db239326251123e67ff1a7c53c895e72e9bb7e62b3396137c5e2c7ae5214fa8d  ./stage-1/sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
+a23633e18b5d0baff5e758fa5a739e9e01566eb2a9e3aa7ded29181b3564b0bc  ./stage-1/sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt
+3192f8b90fcd0b51bd713d6d62d805d49cd20cb4241d4b96ff0c6f7a38189e59  ./stage-1/sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt
+a12a31b9e45977c91035aab503d1da64b9fca7eafa60e573d974cbe260232ae8  ./stage-2/README.md
+e2182fa25e6a25b314276144045a1225ef8b994b52b01c45cc32e4997860b2a0  ./stage-2/checkout-android-integration-participant-task.md
+ad00d5701ce05bc66f8efddc458fc6e07d8820435fd3805817ebcd16244430f5  ./stage-2/sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutFlow.kt
+fc3aae72b294b6e8905e30883152aef789530fe601f5755afe5726d4b996ae0c  ./stage-2/sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutRestoration.kt
+7c71160eb3a586d227396d874c2a4fd470d37886e51e99319590dd12a8d1ce82  ./stage-2/sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutScreen.kt
+29d3b3e0ffada7f727cc7e2a3e0ec6f99a4025b53b791a22522ff7e9b5987fea  ./stage-2/sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt

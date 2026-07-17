@@ -120,12 +120,16 @@ artifact, not manually maintained decoration.
   graph-role discoverability problem, and MVI-heavy samples. Metadata is
   insufficient to classify it as a controlled first-use session.
 - Prior constrained Checkout review is AI evidence, not human evidence.
+- A commit-pinned two-stage Effect-free Checkout input now separates
+  machine/graph/tests comprehension from README/Android-boundary review. Its
+  manifest and preparation checks pass, but no human has completed it.
 
 ## Goal Status
 
-This redesign cycle is implemented and locally verified. The long-term product
-goal is still incomplete because no controlled Effect-free human first-use
-session and no production-like Android pilot exist.
+This redesign cycle is implemented, locally verified, and ready for a
+controlled two-stage human review. The long-term product goal is still
+incomplete because no controlled Effect-free human result and no
+production-like Android pilot exist.
 
 ## Canonical References
 

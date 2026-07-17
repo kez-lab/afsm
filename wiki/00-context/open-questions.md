@@ -71,18 +71,21 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 ## Real Usability Evidence
 
 - The first relayed human feedback exists, but participant background, exact
-  inputs, timing, and facilitator intervention are missing. Which Android
-  developer will run the first measured no-prior-Afsm Checkout comprehension
-  session, and who will facilitate without coaching?
+  inputs, timing, and facilitator intervention are missing. The current
+  two-stage input and session record are prepared under
+  `afsm-first-use-review-input-effect-free/`; which Android developer will run
+  it without prior Afsm context, and who will facilitate without coaching?
 - Which production-like complex screen and owning team will serve as the first
   isolated pilot, with an agreed comparison baseline and rollback owner? The
   execution contract is ready in
   [[../06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]],
   but target, roles, commits, thresholds, and evidence permission remain open.
 
-These are completion blockers, not optional follow-ups. The current proof
-boundary is recorded in
-[[../06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]].
+These are completion blockers, not optional follow-ups. The dated full
+requirement audit remains
+[[../06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]];
+the later repository redesign and prepared-but-unrun human gate are recorded in
+the 2026-07-17 Effect-free verification and preparation QA reports.
 
 ## Resolved Current Policies
 

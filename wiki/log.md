@@ -1665,3 +1665,11 @@
 - Source: Effect-free output-model success criteria and the 2026-07-17 human findings about Command/Effect, graph discoverability, and MVI framing.
 - Action: Kept the comparable machine/graph/tests stage intact, then added a separately timed no-coaching README/Flow/ViewModel/restoration/screen stage with pre-registered Command, graph, state-driven UI, and ordinary-Android checks.
 - Updated: `docs/checkout-android-integration-participant-task.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-07-17] verification | Prepare the Effect-free two-stage first-use input
+
+- Source: Checkout source and generated graph at `a28bc6e9647f6c9c6e70d18aa791b61785077d90` plus the accepted two-stage protocol.
+- Action: Created separately releasable flow-comprehension and Android-boundary inputs, added a SHA-256 manifest and facilitator record, and verified source/graph parity, question counts, zero removed-Effect surface, zero screen Event construction, ViewModel verbs, and README graph explanation.
+- Evidence: `raw/verification/2026-07-17-effect-free-first-use-preparation/README.md` and `wiki/05-qa/verification-report-2026-07-17-effect-free-first-use-preparation.md`.
+- Boundary: Preparation passed; no human participant result or production-like pilot exists.
+- Updated: `afsm-first-use-review-input-effect-free/`, `raw/README.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/03-engineering/afsm-output-model-simplification.md`, `wiki/06-project/checkout-first-use-comprehension-protocol.md`, `docs/release-readiness.md`, `wiki/index.md`, `wiki/log.md`.

@@ -175,3 +175,5 @@ Implemented on 2026-07-17:
   Local publication, and clean external consumer tasks pass.
 
 A new controlled human first-use session remains the next evidence gate.
+The commit-pinned two-stage participant input is prepared and verified in
+[[../05-qa/verification-report-2026-07-17-effect-free-first-use-preparation|Effect-Free First-Use Preparation 2026-07-17]], but no human result exists yet.
