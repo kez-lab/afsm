@@ -1,7 +1,7 @@
 ---
 title: Afsm Dynamic Initial State Experiment
-updated: 2026-07-10
-status: candidate-b-implemented
+updated: 2026-07-17
+status: implemented-current
 ---
 
 # Afsm Dynamic Initial State Experiment
@@ -50,13 +50,13 @@ makes topology needs dictate fake business data.
 
 ## Candidate B: Split Rules From Optional Default
 
-Make `AfsmMachine<State, Event, Command, Effect>` own reducer behavior and
+Make `AfsmMachine<State, Event, Command>` own reducer behavior and
 topology only. Add a subtype for machines that genuinely own a default state:
 
 ```kotlin
-interface AfsmMachine<S, E, C, F> : AfsmReducer<S, E, C, F>, AfsmGraphSource
+interface AfsmMachine<S, E, C> : AfsmReducer<S, E, C>, AfsmGraphSource
 
-interface AfsmDefaultMachine<S, E, C, F> : AfsmMachine<S, E, C, F> {
+interface AfsmDefaultMachine<S, E, C> : AfsmMachine<S, E, C> {
     val initialState: S
 }
 ```

@@ -1679,3 +1679,9 @@
 - Source: Current `AfsmHost`, `ViewModel.afsmHost(...)`, Auth/Checkout/ProductEditor ViewModels and screens, and the accepted Effect-free output decision.
 - Action: Replaced the stale generic `onEvent`/UI Effect boundary with verb-named UI methods, ViewModel-internal Event translation, host-owned state/command execution, durable completion, and direct/state-driven UI behavior; removed obsolete completion-effect restoration wording and corrected the first-use protocol index route.
 - Updated: `wiki/03-engineering/viewmodel-fsm-boundaries.md`, `wiki/03-engineering/checkout-process-restoration-experiment.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] wiki-lint | Refresh the current dynamic-initial-state contract
+
+- Source: Current three-generic `AfsmMachine`, `AfsmDefaultMachine`, and `AfsmReducer` declarations plus the implemented explicit-state Checkout host path.
+- Action: Kept the implemented dynamic-initial-state experiment canonical while replacing its obsolete four-channel type signature and marking the selected split as current.
+- Updated: `wiki/03-engineering/afsm-dynamic-initial-state-experiment.md`, `wiki/index.md`, `wiki/log.md`.
