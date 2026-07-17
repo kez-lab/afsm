@@ -18,21 +18,21 @@ updated: 2026-07-17
 
 - [[03-engineering/afsm-public-api-draft|Historical Afsm Public API Draft]] - Superseded initial API and module proposal retained as design history.
 - [[03-engineering/afsm-public-api-draft-v2|Historical Afsm Public API Draft v2]] - Superseded implementation-candidate draft retained to explain the path to v3.
-- [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Canonical v3 direction: a scoped executable statechart DSL that is runtime definition, graph source, and test target.
+- [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Implemented scoped State/Event/Command DSL that is runtime definition, graph source, and test target.
 - [[03-engineering/afsm-reference-architecture-review|Historical Afsm Reference Architecture Review]] - May 2026 comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
 - [[03-engineering/afsm-example-catalog|Afsm Example Catalog]] - Canonical example ladder from minimal Draft to Auth, Checkout, ProductEditor, and non-Afsm data screens.
 - [[03-engineering/afsm-first-use-api-experiment|Afsm First-Use API Experiment]] - Breaking pre-release prototypes to reduce feature-boundary generic and declaration ceremony.
 - [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Afsm First-Use API Experiment Results 2026-07-10]] - Compile, behavior, and diagnostic findings that reject two invalid Kotlin shapes and advance direct graphable properties.
 - [[03-engineering/afsm-dynamic-initial-state-experiment|Afsm Dynamic Initial State Experiment]] - Compares type-safe ways to remove fake default business data from graphable features with Android runtime inputs.
-- [[03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] - KSP-based automatic discovery and `.mmd` generation design for multiple state machines.
+- [[03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] - Current KSP discovery and Gradle `.mmd` generation contract.
 - [[03-engineering/afsm-v3-topology-first-api|Superseded Afsm v3 Phased State API]] - Historical phased-state helper direction superseded by the executable DSL plan.
 - [[03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]] - Historical compile/test validation for phased state helpers that were later removed from `afsm-core`.
-- [[03-engineering/afsm-v3-terminology-transition-actions|Afsm v3 Terminology and Transition Actions]] - Clarifies Command as a transition action, separates Event/Action/Effect directionality, and defines ProductEditor naming policy.
-- [[03-engineering/afsm-core-compile-validation|Afsm Core Compile Validation]] - Minimal `afsm-core` Kotlin project setup and compile validation for `AfsmNoEffect` and `AfsmTransition<S, C, F>`.
-- [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Current bounded dispatch, sequential command, decision, effect, overflow, and privacy-aware diagnostic contract.
-- [[03-engineering/afsm-output-model-simplification|Afsm Output Model Simplification]] - Accepted pre-release redesign that removes Effect, keeps Command as the only host-work output, and makes sample UI state/callback based rather than MVI-shaped.
+- [[03-engineering/afsm-v3-terminology-transition-actions|Historical Afsm v3 Terminology and Transition Actions]] - Superseded terminology exploration retained as design history.
+- [[03-engineering/afsm-core-compile-validation|Historical Afsm Core Compile Validation]] - Superseded four-type core compile evidence retained as design history.
+- [[03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]] - Current bounded dispatch, sequential command, invocation, overflow, and privacy-aware diagnostic contract.
+- [[03-engineering/afsm-output-model-simplification|Afsm Output Model Simplification]] - Implemented pre-release redesign that removes Effect, keeps Command as host work, and makes sample UI Android-style.
 - [[03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]] - Thin AndroidX Lifecycle module that wires `AfsmHost` to `viewModelScope` through `ViewModel.afsmHost(...)`.
-- [[03-engineering/checkout-viewmodel-integration-verification|Checkout ViewModel Integration Verification]] - Focused plan for runtime product id, repository command-result, completion effect, and failure wiring in the Android reference flow.
+- [[03-engineering/checkout-viewmodel-integration-verification|Historical Checkout ViewModel Integration Verification]] - Dated four-type integration evidence retained as history; current behavior lives in the Checkout sample and QA report.
 - [[03-engineering/checkout-process-restoration-experiment|Checkout Process Restoration Experiment]] - Bounded feature-owned snapshot prototype for durable completion and explicit unknown in-flight payment status.
 - [[03-engineering/afsm-diagnostic-privacy-experiment|Afsm Diagnostic Privacy Experiment]] - Pre-release redesign of runtime diagnostics around types-only defaults and explicit raw-value opt-in.
 - [[03-engineering/afsm-phase-owned-invocation-experiment|Afsm Phase-Owned Invocation Experiment]] - Implemented keyed `onEnter` work that the runtime cancels automatically on phase exit, with explicit remote-work boundaries.
@@ -68,6 +68,7 @@ updated: 2026-07-17
 - [[05-qa/verification-report-2026-07-11-product-editor-upload-boundary|ProductEditor Upload Boundary Verification 2026-07-11]] - Repository and emulator evidence for visible, tappable ProductEditor upload cancellation with retained draft state.
 - [[05-qa/verification-report-2026-07-11-checkout-first-use-ai-review|Checkout First-Use AI Review 2026-07-11]] - Constrained four-file AI review score and first-read readability hypotheses, kept separate from human evidence.
 - [[05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]] - Relayed human findings about vocabulary cost, machine/graph visibility, and MVI-heavy sample framing, kept separate from controlled first-use proof.
+- [[05-qa/verification-report-2026-07-17-effect-free-output-model|Effect-Free Output Model Verification 2026-07-17]] - Passing repository/API/graph/external-consumer evidence for the implemented three-concept redesign.
 
 ## LLM Operations
 

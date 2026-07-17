@@ -1636,3 +1636,20 @@
   `wiki/03-engineering/state-event-command-effect.md`,
   `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`,
   `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] implementation | Effect-free output model and Android-style samples
+
+- Source: Accepted output-model simplification following informal human
+  usability feedback and the repository output-surface audit.
+- Action: Removed Effect and `afsm-compose`, kept Command as the only typed
+  host-work output, moved completion to state/direct UI callbacks, exposed
+  verb-named sample ViewModel methods, renamed `Contract.kt` to `Flow.kt`, and
+  made graph/machine/tests responsibilities explicit in README and docs.
+- Verification: Core/runtime/ViewModel/test/KSP/sample tests, API checks, graph
+  generation, Maven Local publication, and clean external Android consumer
+  compile/tests/graph generation passed. Static audit found zero maintained
+  Effect surface and zero feature Event construction in sample screens.
+- Evidence: `raw/verification/2026-07-17-effect-free-output-model/README.md` and
+  `wiki/05-qa/verification-report-2026-07-17-effect-free-output-model.md`.
+- Remaining: Controlled first-use review on this revision and a production-like
+  Android pilot.

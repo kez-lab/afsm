@@ -39,8 +39,8 @@ Answer these questions and record the end time:
    why the three decisions are different.
 8. Why does `PaymentStatusUnknown` have no normal incoming graph edge, and what
    automatic work or user action is intentionally unavailable there?
-9. Which completion output is durable state, and which output is a one-shot UI
-   notification?
+9. Which value represents durable completion? Can you find any separate
+   one-shot completion output in these files?
 10. Which artifact was most useful for the overview, exact rule details, and
    executable proof?
 11. List anything you still cannot determine from these three files.
@@ -51,7 +51,7 @@ Rate each statement from 1 (strongly disagree) to 5 (strongly agree):
 
 - I could find the main flow quickly.
 - I could predict failure, retry, duplicate, and stale-result behavior.
-- Commands and effects were distinguishable from state changes.
+- Commands were distinguishable from state changes.
 - The machine, graph, and tests agreed with one another.
 - I would prefer this representation over tracing the same rules across a
   complex ViewModel and its callbacks.

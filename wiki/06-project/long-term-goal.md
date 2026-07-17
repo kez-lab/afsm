@@ -100,7 +100,7 @@ repository changes when evidence shows a meaningful improvement, including:
 
 - renaming or replacing public types, DSL operations, and terminology,
 - changing the `State`/`Phase`/`Data` model,
-- changing how Event, Command, Effect, ignore, invalid, or entry/exit behavior
+- changing how Event, Command, output boundaries, ignore, invalid, or entry/exit behavior
   is expressed,
 - restructuring, splitting, merging, adding, or removing modules,
 - replacing graph-generation or test-helper APIs,

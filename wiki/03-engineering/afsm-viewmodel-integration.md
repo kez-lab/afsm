@@ -1,174 +1,90 @@
 ---
 title: Afsm ViewModel Integration
-updated: 2026-07-13
+updated: 2026-07-17
 ---
 
 # Afsm ViewModel Integration
 
-## Summary
+## Responsibility Split
 
-`afsm-viewmodel` is the first AndroidX-specific module.
+Plain Kotlin machine:
 
-It is intentionally thin:
+- transition validity,
+- phase/data changes,
+- command values,
+- duplicate/stale/invalid policy.
 
-- depends on `afsm-runtime`
-- depends on AndroidX Lifecycle ViewModel
-- does not add a base `AfsmViewModel`
-- does not own DI, `SavedStateHandle`, navigation, or Compose policy
+Android `ViewModel`:
 
-The standard graphable-machine helper is:
+- `viewModelScope`,
+- `StateFlow`,
+- repositories, databases, SDKs, and timers,
+- command execution and result-event mapping,
+- `SavedStateHandle` conversion,
+- verb-named UI methods.
+
+Compose/UI:
+
+- lifecycle-aware state collection,
+- rendering,
+- navigation and UI-only callbacks,
+- focus, scroll, animation, sheet, and snackbar host state.
+
+## Host Overloads
+
+Static default:
 
 ```kotlin
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmDefaultMachine<S, E, C, F>,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
+val host = afsmHost(
+    machine = authStateMachine,
+    commandHandler = ...,
+)
 ```
 
-Only a machine with a genuine default state receives that overload. Use the
-explicit initial-state overload for a base `AfsmMachine` when the state is
-dynamic:
+Runtime/restored initial state:
 
 ```kotlin
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
-    initialState: S,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
+val host = afsmHost(
+    machine = checkoutStateMachine,
+    initialState = checkoutStateFromSavedState(...),
+    commandHandler = ...,
+)
 ```
 
-Use the lower-level reducer overload for custom non-graphable reducers:
+The type split prevents a dynamic machine from pretending placeholder runtime
+data is a usable default.
+
+## Intended UI Shape
 
 ```kotlin
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    reducer: AfsmReducer<S, E, C, F>,
-    initialState: S,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
-```
+class CheckoutViewModel(...) : ViewModel() {
+    private val host = afsmHost(...)
 
-Although the exact parameter type is `AfsmCommandHandler<C, E>`, Kotlin callers
-normally pass a direct SAM lambda:
+    val state: StateFlow<CheckoutState> = host.state
 
-```kotlin
-commandHandler = { command: SignupCommand, dispatchEvent ->
-    // execute repository/use-case work
-    // dispatchEvent(result event)
+    fun pay() = host.dispatch(CheckoutEvent.PayClicked)
+    fun retry() = host.dispatch(CheckoutEvent.RetryClicked)
 }
 ```
 
-The second parameter is named `dispatchEvent`, not `callback`. It sends a typed
-result event through the host's serialized event queue; it is not a generic
-completion callback and may be called zero, one, or multiple times by one
-handler. The host-facing `host.dispatch(event)` name remains unchanged.
+Compose calls `pay()` and `retry()`, not `onEvent(CheckoutEvent)`. Event types
+remain the internal language between ViewModel and machine.
 
-The default `AfsmCommandHandler.none()` intentionally ignores emitted commands.
-Use it only for machines that never emit commands; command-emitting machines
-should always pass an explicit handler.
+Async command results remain typed events because that boundary needs explicit
+correlation and serialized reduction.
 
-## Intended ViewModel Shape
+## Completion Policy
 
-```kotlin
-class SignupViewModel(
-    machine: SignupMachine,
-    commandHandler: SignupCommandHandler,
-) : ViewModel() {
-    private val host = afsmHost(
-        machine = machine,
-        commandHandler = commandHandler,
-    )
+- Authentication completion: `Authenticated(session)` state.
+- Checkout completion: `Completed(orderId)` state.
+- ProductEditor Done: direct route callback.
 
-    val state: StateFlow<SignupState> = host.state
-    val effects: Flow<SignupEffect> = host.effects
-
-    fun onEvent(event: SignupEvent) {
-        host.dispatch(event)
-    }
-}
-```
-
-This keeps the Android developer's mental model small:
-
-- define a pure state machine
-- define command handling near ViewModel/use case wiring
-- expose `state` and `effects`
-- forward UI events to `host.dispatch(event)`
-
-## Build Shape
-
-`afsm-viewmodel` is an Android library module, not a plain JVM module.
-
-Reason:
-
-- `androidx.lifecycle:lifecycle-viewmodel-ktx` is distributed as an Android artifact.
-- A plain Kotlin/JVM module cannot consume the AAR variant correctly.
-- The helper's purpose is explicitly AndroidX Lifecycle integration, so Android library module boundaries are appropriate.
-
-Build choices:
-
-- Android Gradle Plugin: `8.10.1`
-- Gradle wrapper: `8.11.1`
-- compile SDK: `36`
-- AndroidX Lifecycle: `2.10.0`
-- Kotlin plugin: `2.0.21`
-
-Official dependency note:
-
-- AndroidX Lifecycle release docs list `2.10.0` as the stable Lifecycle version and show `lifecycle-viewmodel-ktx` as the ViewModel Kotlin dependency.
-- AGP 8.10 release docs list Gradle `8.11.1` as the minimum/default compatible Gradle version and API 36 as supported.
+Routes may use `LaunchedEffect` on durable completion state to invoke navigation
+callbacks. Repeated handling that is unsafe must be modeled explicitly in
+feature state.
 
 ## Verification
 
-Commands:
-
-```bash
-./gradlew :afsm-viewmodel:testDebugUnitTest --no-daemon
-./gradlew test --no-daemon
-./gradlew test --warning-mode all --no-daemon
-```
-
-Result:
-
-```text
-BUILD SUCCESSFUL
-```
-
-Verified cases:
-
-- a real `ViewModel` subclass can create `private val host = afsmHost(...)`
-- a graphable machine can be hosted with `afsmHost(machine = StateMachine, ...)`
-- a base graphable machine requires `afsmHost(machine = stateMachine, initialState = ...)`
-- an `AfsmDefaultMachine` may still override its default explicitly with the same overload
-- the ViewModel can expose `StateFlow<State>` and `Flow<Effect>` directly from the host
-- `onEvent(event)` can delegate to `host.dispatch(event)`
-- command handling can dispatch follow-up events through the runtime queue
-- effects emitted by the state machine are visible through the ViewModel
-- no-command use compiles through the default `AfsmCommandHandler.none()`, while
-  command-emitting machines should pass an explicit handler
-
-## Ergonomics Assessment
-
-The helper is natural enough for MVP.
-
-Good:
-
-- no inheritance requirement
-- no custom base class
-- no Android UI object references
-- `viewModelScope` is supplied automatically
-- existing runtime semantics remain unchanged
-
-Still verbose:
-
-- feature code still declares `State`, `Event`, `Command`, and `Effect`
-- no `SavedStateHandle` convenience exists yet
-
-Conclusion:
-
-Keep this module thin. The graphable-machine overload is the standard path;
-dynamic state screens should use `machine + initialState` when they still want
-graph metadata and the lower-level `initialState + reducer` overload only when
-they intentionally opt out of graphability.
+ViewModel tests call the public verbs, advance the test dispatcher, assert
+repository calls and resulting state, and avoid duplicating the full pure
+machine test matrix.

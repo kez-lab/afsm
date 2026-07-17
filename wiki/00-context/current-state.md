@@ -6,235 +6,133 @@ updated: 2026-07-17
 # Current State
 
 Afsm is an implemented Android/Kotlin FSM toolkit in private internal beta. It
-is no longer a proposal or a project that is merely preparing to build a
-library. The current repository contains the runtime, Android integrations,
-graph tooling, test helpers, reference app, public documentation, and an
-external Maven Local consumer check.
+has not been publicly released, so APIs remain redesignable when usability or
+safety evidence supports a better shape.
 
 ## Product Position
 
-- Afsm's primary product goal is to turn implicit business-flow state changes
-  scattered across complex Android ViewModels into explicit `Phase`/`Event`
-  rules that can be read, tested, graphed, and verified from one executable
-  machine definition.
-- Afsm targets complex Android transaction and multi-step flows with meaningful
-  phases, async results, retries, and invalid transitions.
-- It is not a general `ViewModel` replacement and should not be added to simple
-  data-display or loading/content/error screens when `ViewModel + StateFlow` is
-  clearer.
-- The current audience is controlled internal beta pilots. No public artifact
-  has been released, so every API, DSL term, module boundary, sample, and test
-  fixture remains redesignable. Usability, readability, safety, and Android fit
-  take priority over compatibility with the current implementation.
-- The source repository is the private GitHub repository `kez-lab/afsm`.
-- Current distribution is Maven Local snapshot or direct project-module use.
-  Stable OSS/Maven Central publication is not configured.
+- Afsm helps real Android teams make complex screen flows easier to read,
+  verify, and change safely.
+- It moves business-flow rules scattered across `ViewModel` state mutations,
+  coroutines, callbacks, and tests into one plain Kotlin machine.
+- Android `ViewModel` remains the lifecycle, `StateFlow`, `SavedStateHandle`,
+  repository/SDK work, and UI adapter.
+- Afsm targets meaningful multi-step flows, retries, async result correlation,
+  and phase-dependent validity. Simple screens should keep ordinary Android
+  state handling when clearer.
+- Distribution is Maven Local snapshot or direct project modules. Public
+  coordinates, license, signing, and release ownership remain undecided.
 
-## Architecture Contract
+## Current Architecture
 
-- A feature machine is plain Kotlin and owns deterministic flow rules.
-- Graphable feature code uses
-  `AfsmMachine<State, Event, Command, Effect>`. Static flows use the
-  `AfsmDefaultMachine` subtype with a genuine default state; dynamic flows use
-  `afsmMachine(initialPhase = ...)` and require host-supplied runtime state.
-- `AfsmState<Phase, Data>` separates finite business phases from durable data.
-- `Event` represents user input or an async result. `Command` represents
-  host-executed work. `Effect` is optional best-effort UI output.
-- Android `ViewModel` remains the lifecycle adapter and owns `StateFlow`,
-  `viewModelScope`, `SavedStateHandle` conversion, command execution, and the
-  bridge from UI events to the machine.
-- Required product progress belongs in state. Navigation, snackbar, focus,
-  scroll, and animation behavior stays in the UI unless it changes business
-  flow; lifecycle-sensitive UI work uses state plus acknowledgement when it
-  must survive a collection gap.
-- Afsm is recommended only when the state diagram improves flow readability or
-  verification. Ordinary ViewModel state remains the preferred anti-example
-  for simple screens.
+The public flow vocabulary is:
+
+```text
+State = current Phase plus durable Data
+Event = user intent or external-work result entering the machine
+Command = typed host-work request emitted by an accepted transition
+```
+
+- `AfsmMachine<State, Event, Command>` owns transition behavior and topology.
+- `AfsmDefaultMachine` adds a genuine static default state.
+- Dynamic features such as Checkout supply runtime initial state to
+  `afsmHost(machine, initialState)`.
+- The pure machine emits command values; `ViewModel` executes them and returns
+  typed result events through the command handler's `dispatchEvent` capability.
+- Product completion is state. UI-originated UI-only actions are direct UI
+  callbacks. Routes may react to durable completion state for navigation.
+- There is no Effect type/channel or `afsm-compose` module.
 
 ## Implemented Surface
 
 | Surface | Current role |
 |---|---|
-| `afsm-core` | Pure Kotlin reducer/machine contracts, executable phase/data DSL, decisions, topology, and Mermaid output |
-| `afsm-runtime` | Serialized bounded event processing, sequential command execution that does not block later reduction, effects, diagnostics, and host policies |
-| `afsm-viewmodel` | `ViewModel.afsmHost(...)` integration using `viewModelScope`, including explicit initial-state overloads |
-| `afsm-compose` | Lifecycle-aware `CollectAfsmEffects(...)` route helper |
-| `afsm-test` | Kotlin-only transition assertion helpers |
-| `afsm-graph-ksp` | `@AfsmGraph` discovery for stable top-level machine properties and eligible classes/objects, plus generated graph registry |
-| `io.github.afsm.graph` | Included-build Gradle plugin that wires KSP and `generateAfsmMmd` for one selected Android unit-test variant |
-| `sample-shop` | Compose + Room reference app using Afsm for Auth, Checkout, and cancellable ProductEditor upload while leaving simple data screens on ordinary ViewModels |
-| `consumer-smoke` | Separate Android Gradle build that consumes Maven Local artifacts, mirrors Draft, verifies diagnostics/invocation behavior, runs machine/ViewModel tests, and exports a graph |
+| `afsm-core` | Pure machine contracts, phase/data DSL, decisions, topology, Mermaid rendering |
+| `afsm-runtime` | Serialized bounded event processing, sequential commands, phase-owned invocation cancellation, diagnostics |
+| `afsm-viewmodel` | `ViewModel.afsmHost(...)` and `viewModelScope` ownership |
+| `afsm-test` | Transition decision/state/command assertion helpers |
+| `afsm-graph-ksp` | `@AfsmGraph` discovery and generated registry |
+| `io.github.afsm.graph` | Gradle `.mmd` export integration |
+| `sample-shop` | Auth, Checkout, Product Editor reference flows plus ordinary non-Afsm screens |
+| `consumer-smoke` | Separate Maven Local Android consumer, behavior tests, and graph generation |
 
-The six library modules tracked by explicit API mode and binary API validation
-are `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`,
-and `afsm-graph-ksp`. `sample-shop` is intentionally excluded from API dumps.
+Five library modules use explicit API mode/API validation: `afsm-core`,
+`afsm-runtime`, `afsm-test`, `afsm-viewmodel`, and `afsm-graph-ksp`.
 
 ## Authoring and Runtime Policy
 
-- The canonical DSL vocabulary is `phase`, `on`, conditional `case`, phase-only
-  `transitionTo`, `updateData`, `onEnter`, `onExit`, `command`, phase-owned
-  `invoke`, `effect`, `ignore`, and `invalid`.
-- Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
-  one `on<Event>` block form one unconditional branch. `case` requires a
-  condition and is used only for graph-visible alternatives. Mixing direct
-  actions with `case`, `ignore`, or `invalid` decisions in one handler fails
-  while the machine is built.
-- A 2026-07-10 first-use experiment rejected partial generic calls and inferred
-  generic feature superclasses, then implemented the smallest viable shape:
-  graphable features expose one explicitly typed lower-camel top-level `val`
-  machine.
-  Draft, Auth, Checkout, ProductEditor, and consumer fixtures no longer need a
-  machine alias, delegated object, or factory. Fresh human preference remains
-  unverified, so this is a pre-release authoring candidate rather than an API
-  freeze.
-- Checkout no longer declares placeholder `productId = 0` data. Its base
-  `AfsmMachine` has graph initial phase `Idle` but no default state, so the
-  ViewModel must call the explicit-state host overload at compile time.
-- `case(condition = ...)` and payload phase factories are read-only scopes.
-- A handled event stays in its phase by omitting `transitionTo(...)`.
-  `ignore(...)` is reserved for expected harmless no-ops; omitted impossible
-  handlers are invalid by default.
-- Phase-changing execution order is
-  `onExit -> branch actions -> target phase factory -> onEnter`.
-- Initial state construction does not run `onEnter`. Restoration reconstructs
-  minimal stable state and deliberately starts work through an event only when
-  safe. Checkout restores unresolved payment to `PaymentStatusUnknown` rather
-  than retrying automatically.
-- `AfsmInvalidTransitionPolicy.Throw` and
-  `AfsmCommandFailurePolicy.Throw` are the defaults. Event and command queues
-  default to capacity `64` and fail fast on overflow.
-- Ordinary commands execute sequentially on a separate processor, so a
-  suspended command does not block later event reduction. Long-running work
-  owned by one phase can use `onEnter { invoke(key, label) { command } }`; the
-  runtime tracks it separately and cancels its cooperative coroutine on phase
-  exit or host closure. A cancelled invocation cannot send a late result through
-  its Afsm-owned `dispatchEvent` capability. Request ids and idempotency remain
-  required for remote or non-cooperative work.
-- `AfsmCommandHandler.handle(command, dispatchEvent)` names the command-result
-  direction explicitly: `dispatchEvent(event)` queues a typed result event
-  through the serialized host path. External/UI input continues to use
-  `AfsmHost.dispatch(event)`.
-- Effects have no replay by default. Late collectors do not receive old effects.
-- Runtime diagnostics are types-only by default. They expose stable codes,
-  decision categories, fixed messages, type names, and Afsm-owned metadata.
-  Raw state/event/command/reason/throwable values require explicit
-  `AfsmDiagnosticDataPolicy.IncludeValues` and grouped `diagnostic.values`
-  access.
-- ProductEditor injects a feature-owned `ProductImageUploader` suspend boundary.
-  Controllable ViewModel tests prove uploader start/cancel, fixed safe failure
-  mapping, and cancellation rethrow without timing races. The route supplies a
-  demo-only cooperative mock; it is not real transport evidence.
+- DSL vocabulary is `phase`, `on`, `updateData`, phase-only `transitionTo`,
+  `command`, conditional `case`, `ignore`, `invalid`, `onEnter`, `onExit`, and
+  phase-owned `invoke`.
+- `case` requires a condition and is used only for named graph-relevant
+  alternatives. Unconditional behavior uses direct statements.
+- Missing impossible handlers are invalid by default. `ignore` is reserved for
+  expected duplicates and stale results.
+- Phase-changing order is `onExit -> branch actions -> target phase factory ->
+  onEnter`.
+- Initial state construction does not run `onEnter`. Features restore minimal
+  safe business state and start work through explicit events only when safe.
+- Checkout restores interrupted payment as
+  `PaymentStatusUnknown(requestId)`, never automatic resubmission.
+- Events are serialized FIFO. State is published before accepted command work.
+  Commands execute sequentially without blocking later event reduction.
+- `invoke(key, label)` owns a cooperative long-running job for one phase;
+  phase exit and host closure cancel it. Remote work still needs request ids,
+  idempotency, or backend cancellation.
+- Invalid transitions and unexpected command failures throw by default. Queue
+  capacities default to 64. Diagnostics retain types only unless raw values are
+  explicitly enabled.
 
-## Examples and Documentation
+## Android Sample Shape
 
-The supported learning order is:
+- Sample role files use `*Flow.kt`, not MVI-style `*Contract.kt`.
+- Compose screens construct zero Auth, Checkout, or ProductEditor machine Event
+  objects.
+- ViewModels expose verbs such as `submit()`, `pay()`, `retry()`,
+  `updateTitle(value)`, and `cancelUpload()`.
+- Auth and Checkout routes react to durable authenticated/completed state.
+- Product Editor Done directly calls the UI callback because publication is
+  already the durable result and closing the surface is not a business rule.
 
-1. Draft in `docs/getting-started.md` and `consumer-smoke`.
-2. Auth as the first real Android form screen.
-3. Checkout for dynamic initial state, loading, retry, request ids, stale result
-   handling, durable completion, process restoration, and optional navigation
-   effect.
-4. ProductEditor as the advanced graph, transition-order, and phase-owned upload
-   cancellation stress test.
-5. Ordinary catalog/detail/like/review screens as examples where Afsm is not
-   needed.
+## Reading Contract
 
-A 2026-07-10 constrained Checkout repository review could reconstruct the main
-path, recovery, request-id safety, commands, and completion from only the
-machine, generated graph, and transition tests. Focused tests now cover the
-remaining graph-invisible handled/ignored/invalid policies. A separate
-2026-07-11 four-file AI review scored `11/11` and found no critical
-misconception, while surfacing local-readability hypotheses around command
-execution ownership, update/transition ordering, and contract-type locality.
-AI timing and preference are supporting evidence only. On 2026-07-17 the
-project owner relayed the first human usability feedback: the reader could not
-justify the `Command`/`Effect` split, found the vocabulary costly, needed a
-verbal explanation of the machine-versus-Mermaid-graph trade-off, and felt the
-samples read too much like MVI. Participant context, reviewed inputs, timing,
-and coaching were not recorded, so this reopens product hypotheses but does not
-count as the controlled first-use result or a pilot.
+The phase-local DSL favors exact local rules over one-screen topology scanning.
+Three artifacts are therefore one product view:
 
-`README.md` is the English quick map and `README.ko.md` is its Korean-language
-counterpart. Both explain the creator motivation and keep the same code,
-commands, links, and feature order. `docs/getting-started.md` remains the
-authoritative first-use copy/paste source and is mirrored by the external
-consumer fixture.
+- generated `.mmd`: whole topology, conditions, and entry work,
+- machine: exact data, commands, guards, and ordering,
+- tests: payload and graph-invisible Handled/Ignored/Invalid proof.
 
-## Verification and Distribution
+The graph is generated from the executable machine and is a first-class review
+artifact, not manually maintained decoration.
 
-- Current coordinates are `io.github.afsm:*:0.1.0-SNAPSHOT`; the group id is
-  explicitly temporary.
-- `scripts/verify-release-local.sh` is the authoritative local release gate. It
-  runs graph plugin tests, module and sample tests, graph generation, `apiCheck`,
-  Maven Local publication, and the clean external consumer smoke build.
-- The full local release gate passed again on 2026-07-13 after the
-  conditional-only `case` DSL and `dispatchEvent` source-name migrations,
-  including API validation, Maven Local publication, and the clean external
-  consumer build. The known Kotlin Gradle plugin POM rewriting deprecation
-  warning remains non-blocking.
-- Hosted GitHub Actions CI was removed for cost control. No
-  `.github/workflows/ci.yml` exists; maintainers run the relevant local checks
-  before merge and the full local gate for release-facing work.
-- Historical Android CLI layout/screenshot evidence remains under
-  `raw/verification/`; it proves the dated sample journeys it records, not the
-  state of every later commit.
-- A no-coaching Checkout first-use task and facilitator rubric are ready. One
-  informal human response now identifies vocabulary, graph-role, and MVI
-  positioning problems, but no controlled Android developer session has been
-  recorded. The post-restoration facilitator setup check and one constrained AI
-  review pass; provisional time and score gates remain assumptions until the
-  first measured human run.
-- A production-like pilot protocol now defines same-feature baseline capture,
-  pre-registered success/stop gates, reviewer comparison, safety evidence, and
-  a measured rollback drill. No target feature, owner, reviewer, baseline
-  commit, or pilot result has been recorded yet.
-- `CheckoutViewModelTest` now proves dynamic product id, product loading,
-  repository command-result events, session failure, durable completion, and
-  active effect delivery through the real sample ViewModel and production
-  repositories over fake DAO boundaries.
-- Checkout now implements representative feature-owned process restoration with
-  minimal stable/pending `SavedStateHandle` keys and an explicit
-  `PaymentStatusUnknown` phase instead of serializing the full machine state or
-  silently retrying interrupted payment work. JVM, graph, APK assemble, and full
-  release gates pass.
-- Current ProductEditor Android CLI verification passes when emulator start and
-  `android run` share a persistent shell. The APK installs/launches, the
-  `Uploading mock images` state visibly exposes `Cancel upload`, and tapping it
-  returns to `Editing draft` with the draft retained. This is demo-device
-  evidence, not real transport, human, or production-pilot evidence.
-- The current completion audit reran the full local release gate and mapped all
-  named local safety requirements to tests. Repository and device evidence are
-  strong, but the Goal remains incomplete because the new human feedback is not
-  a controlled first-use result and no production-like pilot exists. API freeze
-  is therefore not yet eligible.
+## Current Evidence
 
-## Remaining Decisions
+- Core/runtime/ViewModel/test/sample/KSP tests and API checks pass after the
+  Effect-free migration.
+- Generated Auth, Checkout, and Product Editor graphs match the current
+  executable machines.
+- A clean separate Android consumer compiles published Maven Local artifacts,
+  runs Draft ViewModel/machine and invocation tests, and generates graphs.
+- Prior Android CLI sample evidence proves the dated Product Editor cancellation
+  journey, not every later commit.
+- One relayed human response identified the Command/Effect vocabulary cost,
+  graph-role discoverability problem, and MVI-heavy samples. Metadata is
+  insufficient to classify it as a controlled first-use session.
+- Prior constrained Checkout review is AI evidence, not human evidence.
 
-The 2026-07-17 output-model redesign is accepted but not yet implemented at
-this commit. It will remove the Effect generic/channel and `afsm-compose`, move
-the three sample UI behaviors to state/direct callbacks, expose verb-named
-ViewModel methods to UI, and document graph/machine/tests as complementary
-views. Until that migration lands, the implemented-surface sections above
-accurately describe the older runtime.
+## Goal Status
 
-The unresolved release, module-boundary, advanced-runtime, restoration-helper,
-and graph-aggregation decisions are maintained in
-[[open-questions|Open Questions]]. Public release gates and metadata blockers
-are maintained in `docs/release-readiness.md`.
+This redesign cycle is implemented and locally verified. The long-term product
+goal is still incomplete because no controlled Effect-free human first-use
+session and no production-like Android pilot exist.
 
 ## Canonical References
 
 - [[../01-product/android-fsm-library-strategy|Android FSM Library Strategy]]
-- [[../03-engineering/android-fsm-architecture|Android FSM Architecture]]
-- [[../03-engineering/android-official-guidance|Android Official Guidance]]
+- [[../03-engineering/afsm-output-model-simplification|Afsm Output Model Simplification]]
 - [[../03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]]
-- [[../03-engineering/afsm-example-catalog|Afsm Example Catalog]]
-- [[../03-engineering/testing-strategy|Testing Strategy]]
-- [[../07-llm/ai-engineering-guardrails|AI Engineering Guardrails]]
-- [[../07-llm/codex-project-workflow|Codex Project Workflow]]
-
-## Source Evidence
-
-- [Android ViewModel FSM Discussion](../../raw/conversations/2026-05-01-android-viewmodel-fsm-discussion.md)
-- [Android Official Docs Research](../../raw/sources/2026-05-01-android-official-docs-fsm-research.md)
-- [LLM Wiki Pattern](../../raw/sources/2026-05-01-llm-wiki-pattern.md)
+- [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]]
+- [[../03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]]
+- [[../06-project/long-term-goal|Afsm Long-Term Goal]]
+- [[open-questions|Open Questions]]

@@ -7,107 +7,69 @@
 
 **English** | [한국어](README.ko.md)
 
-Afsm is an Android-focused finite state machine toolkit that turns implicit
-business-flow state changes scattered across complex `ViewModel`s into explicit
-`Phase` and `Event` transition rules. From the same executable machine
-definition, developers can read and test which events are valid, how `Phase`
-and `Data` change, and which host-executed `Command`s or optional UI `Effect`s
-follow. `ViewModel` remains the Android lifecycle and UI integration adapter.
+Afsm helps Android teams make complex screen flows easier to read, verify, and
+change safely. It moves business-flow rules scattered across `ViewModel`
+`state.copy(...)` calls, coroutines, callbacks, and tests into one plain Kotlin
+state machine, while Android `ViewModel` remains the lifecycle, `StateFlow`,
+saved-state, repository, and UI adapter.
 
-Use Afsm when a screen has meaningful phases, retries, async results, invalid
-transitions, or multi-step behavior. Do not force it onto simple product lists,
-detail pages, likes, review lists, or basic loading/content/error screens where
-ordinary `ViewModel + StateFlow` is clearer.
+Use Afsm for screens with meaningful phases, retries, concurrent or stale async
+results, and rules that depend on the current phase. Keep ordinary
+`ViewModel + StateFlow` for simple screens when it is clearer.
 
 ## Why I Started Afsm
 
-I started Afsm because complex Android screens often reach a point where their
-business flow exists everywhere and nowhere at once. Each individual
-`state.copy(...)`, event handler, coroutine launch, and repository callback may
-be reasonable, but understanding the whole screen means reconstructing rules
-across a `ViewModel`, UI collectors, async result handlers, and tests.
+Complex Android screens often reach a point where every individual handler looks
+reasonable but the complete flow exists everywhere and nowhere at once. To
+answer “what can happen now?”, a reviewer has to reconstruct rules across the
+`ViewModel`, UI callbacks, repository calls, result callbacks, and tests.
 
-At that point, simple questions become expensive: What phase is the screen in?
-Which events are valid now? What starts external work? What happens on failure
-or retry? Can a stale result overwrite newer state? Which completion is durable,
-and which output is only a one-shot UI action?
+Afsm began as an attempt to make those answers local and executable. It does not
+replace `ViewModel`, hide Kotlin `copy()`, or require an app-wide MVI
+architecture. It gives one complex feature a readable business-flow model that
+can be executed, tested, and rendered as a state diagram.
 
-Afsm began as an attempt to make those answers local and executable. The goal
-is not to replace Android `ViewModel`, hide Kotlin `copy()`, or impose an entire
-application architecture. The goal is to move the business-flow rules of a
-complex screen into one plain Kotlin machine that the runtime executes, tests
-verify, and graph tooling visualizes. `ViewModel` still owns lifecycle,
-`StateFlow`, repositories, saved state, and the UI bridge. Simple screens should
-continue to use ordinary Android state handling when it is clearer.
+## Three Concepts
 
-## First Use Path
-
-Start with [docs/getting-started.md](docs/getting-started.md) if this is your
-first Afsm screen.
-
-Use this README as the quick map. Copy the first real Draft files from
-[docs/getting-started.md](docs/getting-started.md); that guide is mirrored in
-`consumer-smoke` and compiled against the published Maven Local artifacts during
-the release gate.
-
-The short version:
-
-1. Draw the phases first.
-2. Put durable screen data in `Data`, not in every phase constructor.
-3. Handle UI/repository results as `Event`.
-4. Move between phases with `transitionTo(...)`.
-5. Start repository work from `command(...)`, usually in `onEnter`.
-6. Test the pure machine with plain JVM transition tests.
-7. Host the machine from a `ViewModel` with `afsmHost(...)`.
-8. Add one ViewModel wiring test for command execution and result events.
-
-That is the minimum first pass. After that, connect Compose with
-`collectAsStateWithLifecycle`, add render state only when UI starts inferring
-behavior from phases, and add effects, saved state, config, or graphs only when
-the screen needs them.
-
-Use [docs/examples.md](docs/examples.md) to choose a real sample. Use
-[docs/modeling-rules.md](docs/modeling-rules.md) before modeling a production
-screen.
-
-## Minimal Machine
-
-The core mental model:
+The public machine vocabulary is deliberately small:
 
 | Concept | Meaning |
 |---|---|
-| `Phase` | Finite state diagram node, such as `Editing` or `Saving` |
-| `Data` | Extended state data carried across phases, not `android.content.Context` |
-| `State` | Android-facing snapshot, normally `AfsmState<Phase, Data>` |
-| `Event` | User input or command result |
-| `Command` | Host-executed work, such as repository calls or timers |
-| `Effect` | Optional UI one-shot output |
+| `State` | Current `Phase` plus durable business `Data` |
+| `Event` | An input to the machine: user intent or external-work result |
+| `Command` | A value asking the Android host to perform external work |
 
-Use `AfsmNoCommand` when a machine never emits host-executed work. Use
-`AfsmNoEffect` when it never emits UI one-shot output.
+`Phase` and `Data` normally use `AfsmState<Phase, Data>`. A screen that never
+starts external work can use `AfsmNoCommand`.
 
-Daily choices:
+### Why Command Is Separate
 
-| Situation | Use |
-|---|---|
-| The business step changes | `transitionTo(Phase.X)` |
-| The same step only updates form/error data | `updateData { ... }` |
-| An event has named alternatives | `case(label, condition = ...) { ... }` |
-| Repository, database, timer, or SDK work must run | `command(label) { ... }`, often in `onEnter` |
-| Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
-| An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
+The pure machine must not call a suspend repository, database, timer, or SDK.
+Instead it returns a `Command`; `ViewModel` executes it and dispatches the result
+as a new `Event`.
 
-Define a small machine first. Do not start with graph/KSP. The snippet below is
-for orientation; use [docs/getting-started.md](docs/getting-started.md) as the
-copy-paste source for the complete `DraftStateMachine.kt` and
-`DraftViewModel.kt` path.
+```text
+UI intent -> Event -> pure machine -> State + Command
+                                      |
+                                      v
+                              ViewModel executes work
+                                      |
+                                      v
+                                  result Event
+```
+
+This separation keeps transitions deterministic and JVM-testable. It also
+prevents external work from being accidentally restarted merely because state
+was recollected or restored.
+
+Afsm has no separate `Effect` output channel. Product completion belongs in
+state. UI-only actions initiated by the UI, such as closing an editor after a
+Done click, stay direct UI callbacks. A route can react to a durable completion
+state with `LaunchedEffect` when navigation is required.
+
+## Minimal Machine
 
 ```kotlin
-import afsm.core.AfsmDefaultMachine
-import afsm.core.AfsmNoEffect
-import afsm.core.AfsmState
-import afsm.core.afsmMachine
-
 sealed interface DraftPhase {
     data object Editing : DraftPhase
     data object Saving : DraftPhase
@@ -124,459 +86,149 @@ typealias DraftState = AfsmState<DraftPhase, DraftData>
 sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
-    data object DraftSaveCompleted : DraftEvent
-    data class DraftSaveFailed(val message: String) : DraftEvent
+    data object SaveCompleted : DraftEvent
 }
 
 sealed interface DraftCommand {
-    data class SaveDraft(val title: String) : DraftCommand
+    data class Save(val title: String) : DraftCommand
 }
 
-val draftStateMachine: AfsmDefaultMachine<
-    DraftState,
-    DraftEvent,
-    DraftCommand,
-    AfsmNoEffect,
-    > = afsmMachine {
-    initial(
-        phase = DraftPhase.Editing,
-        data = DraftData(),
-    )
+val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
+    afsmMachine {
+        initial(DraftPhase.Editing, DraftData())
 
-    phase(DraftPhase.Editing) {
-        on<DraftEvent.TitleChanged> {
-            updateData { data, event ->
-                data.copy(
-                    title = event.value,
-                    errorMessage = null,
-                )
+        phase(DraftPhase.Editing) {
+            on<DraftEvent.TitleChanged> {
+                updateData { data, event ->
+                    data.copy(title = event.value, errorMessage = null)
+                }
+            }
+
+            on<DraftEvent.SaveClicked> {
+                case("valid title", condition = { data.title.isNotBlank() }) {
+                    transitionTo(DraftPhase.Saving)
+                }
+                case("missing title", condition = { data.title.isBlank() }) {
+                    updateData { copy(errorMessage = "Title is required.") }
+                }
             }
         }
 
-        on<DraftEvent.SaveClicked> {
-            case(
-                label = "valid title",
-                condition = { data.title.isNotBlank() },
-            ) {
-                transitionTo(DraftPhase.Saving)
+        phase(DraftPhase.Saving) {
+            onEnter {
+                command("Save") { DraftCommand.Save(data.title) }
             }
-
-            case(
-                label = "missing title",
-                condition = { data.title.isBlank() },
-            ) {
-                updateData { copy(errorMessage = "Title is required.") }
+            on<DraftEvent.SaveCompleted> {
+                transitionTo(DraftPhase.Saved)
             }
         }
+
+        phase(DraftPhase.Saved)
     }
-
-    phase(DraftPhase.Saving) {
-        onEnter {
-            command(label = "SaveDraft") {
-                DraftCommand.SaveDraft(data.title)
-            }
-        }
-
-        on<DraftEvent.DraftSaveCompleted> {
-            transitionTo(DraftPhase.Saved)
-        }
-
-        on<DraftEvent.DraftSaveFailed> {
-            updateData { data, event ->
-                data.copy(errorMessage = event.message)
-            }
-            transitionTo(DraftPhase.Editing)
-        }
-    }
-
-    phase(DraftPhase.Saved)
-}
 ```
 
-`AfsmDefaultMachine` means this static Draft flow owns a real default state. A
-feature that needs navigation or restored data uses base `AfsmMachine` plus
-`afsmMachine(initialPhase = ...)`, which makes an explicit host state mandatory.
+Use ordinary Kotlin inside a rule. Use `case(...)` only when one event has
+multiple named conditional outcomes that should appear in the generated graph.
 
-Use `case(...)` only for conditional alternatives. Its `condition` is required,
-and cases are checked in declaration order; if none match, the event is invalid
-for the current phase. Direct `updateData`, `command`, `effect`, and
-`transitionTo` statements inside one `on<Event>` block compose one
-unconditional branch. Do not mix direct actions and conditional cases in the
-same event handler.
+## Android Boundary
 
-Phase-changing transitions run:
-
-```text
-onExit -> branch actions -> target phase factory -> onEnter
-```
-
-Initial state construction does not run `onEnter`. Trigger startup work with an explicit event such as `ScreenEntered`.
-
-## ViewModel
+The machine uses events internally; the Compose UI does not need to know those
+event types. Expose verb-named feature methods from the `ViewModel`:
 
 ```kotlin
-import afsm.viewmodel.afsmHost
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.StateFlow
-
-interface DraftRepository {
-    suspend fun save(title: String): Result<Unit>
-}
-
 class DraftViewModel(
     private val repository: DraftRepository,
 ) : ViewModel() {
     private val host = afsmHost(
-        machine = draftStateMachine,
+        machine = draftMachine,
         commandHandler = { command: DraftCommand, dispatchEvent ->
             when (command) {
-                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
-                    onSuccess = {
-                        dispatchEvent(DraftEvent.DraftSaveCompleted)
-                    },
-                    onFailure = { error ->
-                        dispatchEvent(
-                            DraftEvent.DraftSaveFailed(
-                                error.message ?: "Draft save failed.",
-                            ),
-                        )
-                    },
-                )
+                is DraftCommand.Save -> {
+                    repository.save(command.title)
+                    dispatchEvent(DraftEvent.SaveCompleted)
+                }
             }
         },
     )
 
     val state: StateFlow<DraftState> = host.state
 
-    fun onEvent(event: DraftEvent) {
-        host.dispatch(event)
-    }
+    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
+    fun save() = host.dispatch(DraftEvent.SaveClicked)
 }
 ```
 
-If the starting state comes from navigation arguments, a deep link, repository restoration, or `SavedStateHandle`, keep the same `machine` language and pass an explicit initial state:
-
 ```kotlin
-private val host = afsmHost(
-    machine = draftStateMachine,
-    initialState = restoredDraftState,
-    commandHandler = draftCommandHandler,
-)
-```
-
-For a tested `SavedStateHandle` version of this pattern, see
-[docs/getting-started.md](docs/getting-started.md#add-initial-state-from-savedstatehandle-later).
-
-## Install
-
-Repository-local development:
-
-```kotlin
-dependencies {
-    implementation(project(":afsm-core"))
-    implementation(project(":afsm-runtime"))
-    implementation(project(":afsm-viewmodel"))
-    implementation(project(":afsm-compose")) // optional
-    ksp(project(":afsm-graph-ksp")) // optional graph registry
-}
-```
-
-Maven Local evaluation:
-
-```bash
-./gradlew publishToMavenLocal
-./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # only needed for optional graph plugin
-```
-
-```kotlin
-repositories {
-    google()
-    mavenCentral()
-    mavenLocal()
-}
-
-dependencies {
-    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-
-    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
-    testImplementation("junit:junit:4.13.2")
-}
-```
-
-Optional Compose and graph tooling:
-
-For Maven Local graph plugin resolution, include `mavenLocal()` in
-`pluginManagement.repositories` in `settings.gradle.kts`.
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp")
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
-}
-
-dependencies {
-    implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-}
-```
-
-The graph plugin adds `afsm-graph-ksp` to the app module by default and
-registers `generateAfsmMmd`.
-
-The full local consumer check publishes the plugin and verifies graph generation
-from an external Android build. It also compiles the Draft quickstart machine
-and ViewModel from [docs/getting-started.md](docs/getting-started.md), so the
-first-use example cannot drift from the published Maven Local artifacts.
-
-```bash
-./scripts/verify-consumer-smoke.sh --warning-mode all
-```
-
-Android consumers must enable AndroidX:
-
-```properties
-android.useAndroidX=true
-```
-
-`io.github.afsm` is the current pre-release group id. Final Maven Central
-coordinates still need product approval.
-
-## Current Status
-
-Afsm is in private internal beta. The local release gate is green, Maven Local
-evaluation works, and sample-shop demonstrates Auth, Checkout, and ProductEditor
-flows. Checkout also demonstrates minimal stable/pending `SavedStateHandle`
-restoration without automatic payment retry. Stable OSS/Maven Central
-publishing is intentionally blocked until license, final coordinates, SCM
-metadata, signing, and release ownership are decided. Internal pilot rules are documented in
-[docs/release-readiness.md](docs/release-readiness.md). The no-prior-Afsm
-Checkout comprehension task is in
-[docs/checkout-first-use-participant-task.md](docs/checkout-first-use-participant-task.md).
-
-If you intentionally use a custom non-graphable `AfsmReducer`, name it as a
-reducer at the call site:
-
-```kotlin
-private val host = afsmHost(
-    reducer = LegacyCheckoutReducer(),
-    initialState = restoredCheckoutState,
-    commandHandler = checkoutCommandHandler,
-)
-```
-
-## Test First
-
-State machine tests are plain JVM tests.
-
-```kotlin
-import afsm.test.assertCommands
-import afsm.test.assertPhase
-import afsm.test.assertTransitioned
-import org.junit.Test
-
-@Test
-fun `SaveClicked enters Saving and emits SaveDraft`() {
-    val result = draftStateMachine.transition(
-        state = DraftState(
-            phase = DraftPhase.Editing,
-            data = DraftData(title = "Plan"),
-        ),
-        event = DraftEvent.SaveClicked,
-    )
-
-    result
-        .assertTransitioned()
-        .assertPhase(DraftPhase.Saving)
-        .assertCommands(DraftCommand.SaveDraft("Plan"))
-}
-```
-
-Good feature tests usually cover:
-
-- valid phase transition,
-- invalid transition,
-- command emission,
-- command failure result path,
-- effect emission,
-- stale command result handling.
-
-After the machine tests pass, add one ViewModel wiring test that drives
-`onEvent(event)`, verifies repository command calls, and observes the resulting
-`state.value`. Keep the rest of the transition matrix in pure machine tests.
-
-See [docs/testing-guide.md#viewmodel-tests](docs/testing-guide.md#viewmodel-tests)
-and the executable
-[`consumer-smoke` Draft ViewModel test](consumer-smoke/app/src/test/kotlin/afsm/consumer/smoke/DraftViewModelTest.kt).
-
-## Long Command Safety
-
-Commands run outside the pure machine and may finish late. Model late results explicitly.
-
-Recommended pattern:
-
-- put a `requestId` or input snapshot in the command,
-- return the same id in success/failure events,
-- accept the result only if it matches the current active request,
-- `ignore` stale results that belong to an older request.
-
-The sample checkout flow uses this policy for mock payment retry.
-
-## Compose Effects
-
-For machines that emit UI effects, collect them at route level. The minimal
-draft machine above uses `AfsmNoEffect`, so this pattern applies only when a
-feature defines an effect type.
-
-For the first migration from `AfsmNoEffect` to a real feature effect type, see
-[docs/getting-started.md](docs/getting-started.md#add-the-first-effect-later).
-
-Add the Compose helper only for those effectful features:
-
-```kotlin
-implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-```
-
-Collect effects at route level. Navigation, snackbar display, focus, scroll, and animation state should stay in UI unless they are part of the business flow.
-
-```kotlin
-import afsm.compose.CollectAfsmEffects
-
 @Composable
-fun EditorRoute(
-    viewModel: EditorViewModel,
-    onDone: () -> Unit,
-) {
+fun DraftRoute(viewModel: DraftViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    CollectAfsmEffects(viewModel.effects) { effect ->
-        when (effect) {
-            ProductEditorEffect.CloseEditor -> onDone()
-        }
-    }
-
-    EditorScreen(
-        state = state,
-        onEvent = viewModel::onEvent,
+    DraftScreen(
+        title = state.data.title,
+        onTitleChange = viewModel::updateTitle,
+        onSave = viewModel::save,
     )
 }
 ```
 
-Effects are best-effort one-shot outputs. Anything that must survive recreation should be state plus an acknowledgement event.
+This is intentional Android code, not a requirement to expose one generic
+`onEvent(Event)` MVI boundary.
 
-## Optional MMD Graphs
+## Why Machine, Graph, and Tests Are All Needed
 
-After the machine works, opt into graph generation.
+Phase-local lambdas keep each rule close to the state where it is valid, but a
+large machine is not the best whole-flow overview. Afsm therefore treats three
+artifacts as one reading contract:
 
-Current pre-release graph export uses KSP discovery plus the Afsm graph Gradle
-plugin. You annotate graphable machines and run one task; the plugin generates
-the small unit-test writer internally so app teams do not maintain export tests.
-See [docs/graph-generation.md](docs/graph-generation.md) for the full setup.
+| Artifact | Best question it answers |
+|---|---|
+| generated `.mmd` graph | What is the complete topology, including named conditions and entry commands? |
+| machine source | What exact data, guards, commands, and ordering does this rule use? |
+| transition tests | What payload details and graph-invisible `Handled`, `Ignored`, or `Invalid` behavior are proven? |
 
-```kotlin
-@AfsmGraph(
-    id = "Draft",
-    fileName = "DraftStateMachine.mmd",
-)
-val draftStateMachine: AfsmDefaultMachine<
-    DraftState,
-    DraftEvent,
-    DraftCommand,
-    AfsmNoEffect,
-    > = afsmMachine {
-    // same executable machine body
-}
-```
+The graph is not decoration and it is not a substitute for code. It compensates
+for the locality tradeoff of phase-scoped rules by giving reviewers a generated,
+whole-machine map. Because it is generated from the executable machine, drift is
+checked by the build rather than maintained by hand.
 
-Pass `label = ...` to `command(...)` or `effect(...)` only when you want that
-output to appear in generated diagrams. The label and runtime output stay in the
-same statement so the diagram is less likely to drift from behavior.
+## First-Use Path
 
-Apply the plugin:
+1. Decide whether the screen is complex enough to justify a machine.
+2. Draw phases and important transitions before writing DSL.
+3. Define `State`, `Event`, and `Command` in a product-role `*Flow.kt` file.
+4. Implement phase-local rules and use `case` only for real conditions.
+5. Test the pure machine first.
+6. Host it in a normal Android `ViewModel` and expose verb-named methods.
+7. Generate and review the `.mmd` graph beside the machine and tests.
 
-```kotlin
-plugins {
-    id("com.google.devtools.ksp")
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
-}
-
-afsmGraph {
-    variant.set("debug") // default
-    outputDir.set(layout.buildDirectory.dir("generated/afsm/mmd")) // default
-    mmdOptions.set("Flow") // default; use "Full" for every internal edge
-}
-```
-
-Sample output:
-
-```bash
-./gradlew :sample-shop:generateAfsmMmd
-```
-
-```text
-sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd
-sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd
-sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd
-```
-
-`Flow` hides ordinary unlabeled internal self-loops such as text changes, but
-keeps named condition, command, and effect edges. Use `Full` when you need every
-internal edge:
-
-```bash
-./gradlew :sample-shop:generateAfsmMmd -PafsmMmdOptions=Full
-```
-
-## Runtime Policies
-
-- `dispatch(event)` is non-suspending and serialized through FIFO event processing.
-- `tryDispatch(event)` returns `false` when the event queue is closed or full.
-- Events use a bounded queue, default `64`.
-- Command result events use that same bounded event queue; if the queue is
-  full, the host throws `AfsmEventQueueOverflowException` instead of suspending
-  command processing. If the host is already closed, the result event is
-  dropped and logged because the screen lifecycle has ended.
-- Commands execute sequentially without blocking later event reduction.
-- Commands also use a bounded queue, default `64`; if it fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor.
-- Long-running work owned by one phase can use
-  `onEnter { invoke(key, label) { command } }`. It runs in a tracked child job
-  and is cancelled automatically on phase exit or host closure.
-- Invocation cancellation is local and cooperative. Keep request ids and
-  idempotency when remote, callback, SDK, or blocking work can outlive the
-  coroutine.
-- Command results should dispatch typed events back into the host.
-- Domain failures should become domain events, not thrown exceptions.
-- Unexpected command exceptions use `AfsmCommandFailurePolicy`.
-- Invalid transitions can be asserted in pure machine tests; hosted invalid
-  transitions throw by default so flow bugs are visible during development.
-- Runtime diagnostics are types-only by default: codes, decision categories,
-  fixed messages, Kotlin type names, and Afsm-owned metadata are available,
-  while raw state/event/command/reason/throwable values are discarded.
-- `AfsmDiagnosticDataPolicy.IncludeValues` is an explicit privacy-risk opt-in.
-  Do not send its `diagnostic.values` to production logs or crash tools without
-  an application-owned redaction boundary.
-- `CancellationException` is always rethrown.
-- Effects are best-effort one-shot outputs with no replay by default.
+Start with [Getting started](docs/getting-started.md), then read
+[Modeling rules](docs/modeling-rules.md) and [Graph generation](docs/graph-generation.md).
 
 ## Modules
 
-| Module | Purpose | Android dependency |
-|---|---|---|
-| `afsm-core` | Pure Kotlin transition types, reducer contract, executable machine DSL, invocation output, graph metadata | No |
-| `afsm-runtime` | Coroutine host, serialized dispatch loop, sequential commands, phase-owned invocation jobs, effect delivery | No |
-| `afsm-test` | Kotlin test assertion helpers for Afsm transition behavior | No |
-| `afsm-viewmodel` | Thin `ViewModel.afsmHost(...)` adapter backed by `viewModelScope` | Yes |
-| `afsm-compose` | Lifecycle-aware Compose effect collection helper | Yes |
-| `afsm-graph-ksp` | KSP discovery for `@AfsmGraph` machines | No Android runtime dependency |
-| `sample-shop` | Compose + Room sample app proving real usage | Yes |
-| `consumer-smoke` | Separate Android consumer build that resolves Afsm from Maven Local | Yes |
+| Module | Purpose |
+|---|---|
+| `afsm-core` | Pure Kotlin machine, DSL, topology, Mermaid rendering |
+| `afsm-runtime` | Serialized event processing and command execution |
+| `afsm-viewmodel` | `ViewModel.afsmHost(...)` integration |
+| `afsm-test` | Transition assertion helpers |
+| `afsm-graph-ksp` | Generated graph registry |
+| `afsm-graph-gradle-plugin` | `.mmd` export task |
+| `sample-shop` | Android reference flows |
+| `consumer-smoke` | External Maven Local compile and behavior gate |
 
-## Verification
+## Build and Verify
 
 ```bash
-./scripts/verify-release-local.sh --warning-mode all
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-test:test
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
+./scripts/verify-release-local.sh --no-daemon
 ```
 
-`consumer-smoke` is intentionally a separate Gradle build. It verifies that an Android project can resolve the Maven Local artifacts without project-module shortcuts.
+Afsm has not been publicly released. APIs may change when usability or safety
+evidence shows that a better design serves real Android teams.
 
-See [docs/examples.md](docs/examples.md), [docs/afsm-public-api.md](docs/afsm-public-api.md), [docs/restoration-effect-command-policy.md](docs/restoration-effect-command-policy.md), [docs/graph-generation.md](docs/graph-generation.md), [docs/auth-walkthrough.md](docs/auth-walkthrough.md), [docs/checkout-walkthrough.md](docs/checkout-walkthrough.md), [docs/product-editor-walkthrough.md](docs/product-editor-walkthrough.md), [docs/sample-shop-afsm-guide.md](docs/sample-shop-afsm-guide.md), [docs/release-readiness.md](docs/release-readiness.md), [CHANGELOG.md](CHANGELOG.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+See [Public API](docs/afsm-public-api.md), [Testing](docs/testing-guide.md),
+[Examples](docs/examples.md), [Auth](docs/auth-walkthrough.md),
+[Checkout](docs/checkout-walkthrough.md), and
+[Product editor](docs/product-editor-walkthrough.md).

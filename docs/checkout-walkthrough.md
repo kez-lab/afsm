@@ -1,55 +1,17 @@
 # Checkout Walkthrough
 
-Checkout is the recommended example after Auth.
+Checkout is the primary readability and safety example.
 
-It is small enough to read in one sitting, but it has the Android problems that
-make a state machine worthwhile: screen entry, loading, payment, retry, stale
-async results, durable completion, and optional navigation.
+Source:
 
-Read Checkout after [auth-walkthrough.md](auth-walkthrough.md), not as the first
-copy-paste target. Auth teaches the small form-screen loop; Checkout adds the
-first lifecycle and async-result policies that usually make Afsm worth using in
-production screens.
+- `feature/checkout/CheckoutFlow.kt`
+- `feature/checkout/CheckoutStateMachine.kt`
+- `feature/checkout/CheckoutViewModel.kt`
+- `feature/checkout/CheckoutRestoration.kt`
+- `feature/checkout/CheckoutScreen.kt`
+- `CheckoutStateMachineTest.kt`
 
-## From Auth To Checkout
-
-Keep the same model from Auth:
-
-- `State` is still `AfsmState<Phase, Data>`,
-- repository work still lives in the ViewModel command handler,
-- result events still return to the machine as typed events,
-- render state still keeps Compose out of internal phases,
-- navigation remains durable state plus an optional route effect.
-
-Checkout adds the next Android-specific concerns:
-
-- dynamic initial state from a navigation `productId`,
-- an explicit `ScreenEntered` event because initial state construction does not
-  run `onEnter`,
-- `onEnter` commands for startup loading and payment submission,
-- request ids so stale payment results after retry can be ignored safely,
-- durable completion state so required product progress does not depend on
-  best-effort effect delivery.
-
-## Files
-
-- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutContract.kt`
-- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutRestoration.kt`
-- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachine.kt`
-- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModel.kt`
-- `sample-shop/src/main/kotlin/afsm/sample/shop/feature/checkout/CheckoutScreen.kt`
-- `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutStateMachineTest.kt`
-- `sample-shop/src/test/kotlin/afsm/sample/shop/feature/checkout/CheckoutViewModelTest.kt`
-
-## Graph
-
-Generate the graph:
-
-```bash
-./gradlew :sample-shop:generateAfsmMmd
-```
-
-Current graph shape:
+## Read the graph first
 
 ```mermaid
 stateDiagram-v2
@@ -57,327 +19,119 @@ stateDiagram-v2
   Idle --> ProductLoading: ScreenEntered
   ProductLoading --> ProductReady: ProductLoaded
   ProductLoading --> ProductUnavailable: ProductUnavailable
-  state PaymentStatusUnknown
   ProductReady --> PaymentInProgress: PayClicked [product loaded]
-  ProductReady --> ProductReady: PayClicked [missing product]
   PaymentInProgress --> Completed: PaymentSucceeded [matching request]
   PaymentInProgress --> PaymentFailed: PaymentFailed [matching request]
   PaymentFailed --> PaymentInProgress: RetryClicked [product loaded]
-  PaymentFailed --> PaymentFailed: RetryClicked [missing product]
 ```
 
-The generated file also includes entry command notes:
+The generated `.mmd` file is the whole-flow index. Then read machine source for
+exact data and commands, and tests for stale, duplicate, invalid, and restoration
+behavior that the default graph intentionally does not show.
 
-- `ProductLoading` enters with `LoadProduct`.
-- `PaymentInProgress` enters with `SubmitPayment`.
+## Dynamic initial state
 
-`PaymentStatusUnknown` has no ordinary incoming edge. It is a conservative
-restoration-only phase when process death interrupts a payment whose backend
-outcome is not known locally.
-
-## Contract Shape
-
-Checkout uses the standard graphable state shape:
+The machine is `AfsmMachine`, not `AfsmDefaultMachine`, because the runtime
+product id and `SavedStateHandle` determine the usable start state.
 
 ```kotlin
-typealias CheckoutState = AfsmState<CheckoutPhase, CheckoutData>
-```
+private val initialState = checkoutStateFromSavedState(
+    savedStateHandle = savedStateHandle,
+    navigationProductId = productId,
+)
 
-`CheckoutPhase` is the finite graph:
-
-```kotlin
-sealed interface CheckoutPhase {
-    data object Idle : CheckoutPhase
-    data object ProductLoading : CheckoutPhase
-    data object ProductReady : CheckoutPhase
-    data class PaymentInProgress(val requestId: Long) : CheckoutPhase
-    data object PaymentFailed : CheckoutPhase
-    data object ProductUnavailable : CheckoutPhase
-    data class PaymentStatusUnknown(val requestId: Long) : CheckoutPhase
-    data class Completed(val orderId: Long) : CheckoutPhase
-}
-```
-
-`CheckoutData` carries durable data that should survive phase changes:
-
-```kotlin
-data class CheckoutData(
-    val productId: Long,
-    val product: Product? = null,
-    val nextPaymentRequestId: Long = 0,
-    val errorMessage: String? = null,
+private val host = afsmHost(
+    machine = checkoutStateMachine,
+    initialState = initialState,
+    commandHandler = ...,
 )
 ```
 
-This keeps the graph about business phases and keeps product/form data out of
-every phase constructor.
+## Entry commands
 
-## Dynamic Initial State And Restoration
-
-Checkout's machine declares only the initial graph phase. It cannot invent a
-usable `CheckoutData` without the navigation argument:
-
-```kotlin
-internal val checkoutStateMachine:
-    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
-    afsmMachine(initialPhase = CheckoutPhase.Idle) {
-        // phase rules
-    }
-```
-
-Because this is an `AfsmMachine`, not an `AfsmDefaultMachine`, the no-state
-`afsmHost(machine)` overload is not applicable. The ViewModel reconstructs a
-minimal feature state from navigation plus `SavedStateHandle`, then dispatches
-the startup event only for a fresh `Idle` state:
-
-```kotlin
-class CheckoutViewModel(
-    productId: Long,
-    private val productRepository: ProductRepository,
-    private val paymentRepository: PaymentRepository,
-    private val sessionRepository: SessionRepository,
-    private val savedStateHandle: SavedStateHandle,
-) : ViewModel() {
-    private val initialState = checkoutStateFromSavedState(
-        savedStateHandle = savedStateHandle,
-        navigationProductId = productId,
-    )
-
-    private val host = afsmHost(
-        machine = checkoutStateMachine,
-        initialState = initialState,
-        commandHandler = { command: CheckoutCommand, dispatchEvent ->
-            when (command) {
-                is CheckoutCommand.LoadProduct -> {
-                    // Load and dispatch ProductLoaded/ProductUnavailable.
-                }
-
-                is CheckoutCommand.SubmitPayment -> {
-                    val session = sessionRepository.currentSession()
-                    if (session == null) {
-                        // Dispatch a typed PaymentFailed event.
-                    } else {
-                        savedStateHandle[CheckoutPendingPaymentRequestIdKey] =
-                            command.requestId
-                        paymentRepository.submitPayment(
-                            session = session,
-                            product = command.product,
-                        ).fold(
-                            onSuccess = { receipt ->
-                                savedStateHandle[CheckoutCompletedOrderIdKey] =
-                                    receipt.orderId
-                                savedStateHandle.remove<Long>(
-                                    CheckoutPendingPaymentRequestIdKey,
-                                )
-                                // Dispatch PaymentSucceeded.
-                            },
-                            onFailure = { error ->
-                                savedStateHandle.remove<Long>(
-                                    CheckoutPendingPaymentRequestIdKey,
-                                )
-                                // Dispatch PaymentFailed.
-                            },
-                        )
-                    }
-                }
-            }
-        },
-    )
-
-    val state: StateFlow<CheckoutState> = host.state
-    val effects: Flow<CheckoutEffect> = host.effects
-
-    init {
-        if (initialState.phase == CheckoutPhase.Idle) {
-            host.dispatch(CheckoutEvent.ScreenEntered)
-        }
-    }
-
-    fun onEvent(event: CheckoutEvent) {
-        host.dispatch(event)
-    }
-}
-```
-
-The saved-state conversion persists only `productId`, `completedOrderId`, and
-`pendingPaymentRequestId`:
-
-- completed order -> restore `Completed` with no command or effect replay,
-- pending payment -> restore `PaymentStatusUnknown` with no pay/retry action,
-- neither -> restore `Idle` and load through `ScreenEntered`.
-
-The pending key is written only immediately before the payment repository call.
-Normal success stores completion before removing pending; normal failure removes
-pending. A production payment backend should use idempotency and status lookup
-before moving away from `PaymentStatusUnknown`.
-
-Do not rely on initial state construction to run `onEnter`. Checkout starts in
-`Idle`; `ScreenEntered` moves it to `ProductLoading`, whose `onEnter` emits the
-`LoadProduct` command. Restored terminal phases do not receive that startup
-event.
-
-## Commands
-
-Commands are emitted when entering work phases:
-
-```kotlin
-phase(CheckoutPhase.ProductLoading) {
-    onEnter {
-        command(label = "LoadProduct") {
-            CheckoutCommand.LoadProduct(data.productId)
-        }
-    }
-}
-```
+Entering `ProductLoading` emits `LoadProduct`. Entering
+`PaymentInProgress(requestId)` emits `SubmitPayment`.
 
 ```kotlin
 phase<CheckoutPhase.PaymentInProgress> {
     onEnter {
-        command(label = "SubmitPayment") {
-            val product = requireNotNull(data.product)
+        command("SubmitPayment") {
             CheckoutCommand.SubmitPayment(
                 requestId = phase.requestId,
-                product = product,
+                product = requireNotNull(data.product),
             )
         }
     }
 }
 ```
 
-The state machine does not call repositories. The ViewModel command handler
-does that work and dispatches typed result events back to the host.
+The command is a value. `CheckoutViewModel` performs repository work and returns
+the result as an event.
 
-## Stale Result Policy
-
-Payment commands carry a request id:
+## Stale-result safety
 
 ```kotlin
-data class PaymentInProgress(val requestId: Long)
-data class SubmitPayment(val requestId: Long, val product: Product)
-data class PaymentSucceeded(val requestId: Long, val receipt: OrderReceipt)
-data class PaymentFailed(val requestId: Long, val message: String)
-```
-
-Only matching results are accepted:
-
-```kotlin
-case(
-    label = "matching request",
-    condition = { phase.requestId == event.requestId },
-) {
-    effect(label = "PaymentCompleted") {
-        CheckoutEffect.PaymentCompleted(event.receipt.orderId)
+on<CheckoutEvent.PaymentSucceeded> {
+    case(
+        label = "matching request",
+        condition = { phase.requestId == event.requestId },
+    ) {
+        transitionTo<CheckoutPhase.Completed> {
+            CheckoutPhase.Completed(event.receipt.orderId)
+        }
     }
-    transitionTo<CheckoutPhase.Completed> {
-        CheckoutPhase.Completed(orderId = event.receipt.orderId)
-    }
-}
 
-ignore(
-    reason = "Stale payment success result.",
-    condition = { phase.requestId != event.requestId },
-)
-```
-
-This is the reference pattern for async work that can complete after retry or
-screen movement.
-
-## Missing Data Branches
-
-When a phase requires data that might be absent, model the negative branch explicitly instead
-of relying on an unconditional fallback case:
-
-```kotlin
-case(
-    label = "product loaded",
-    condition = { data.product != null },
-) {
-    transitionTo<CheckoutPhase.PaymentInProgress> {
-        CheckoutPhase.PaymentInProgress(requestId = data.nextPaymentRequestId + 1)
-    }
-}
-
-case(
-    label = "missing product",
-    condition = { data.product == null },
-) {
-    updateData { copy(errorMessage = "Product is required before payment.") }
+    ignore(
+        reason = "Stale payment success result.",
+        condition = { phase.requestId != event.requestId },
+    )
 }
 ```
 
-This keeps source code and generated `.mmd` labels aligned.
+The phase payload and result event carry the same correlation id. A late result
+cannot overwrite a newer attempt.
 
-## Ignore Is Optional
+## Durable completion
 
-You do not need to list every impossible event in every phase. If an event is
-not valid and not expected, omit it and let Afsm report an invalid transition.
-
-Checkout uses `ignore(...)` only for expected harmless events, such as duplicate
-screen entry while loading or stale payment results after retry. That keeps
-diagnostics useful without teaching users to enumerate a full event matrix.
-
-## Durable Completion Plus Optional Effect
-
-Payment completion is modeled as state:
+`CheckoutPhase.Completed(orderId)` is the single source of truth for completion.
+The route reacts to the derived order id:
 
 ```kotlin
-CheckoutPhase.Completed(orderId)
-```
-
-The navigation callback is also emitted as an effect:
-
-```kotlin
-effect(label = "PaymentCompleted") {
-    CheckoutEffect.PaymentCompleted(orderId)
+LaunchedEffect(renderState.orderId) {
+    if (renderState.isComplete) onPaymentComplete()
 }
 ```
 
-If the effect is missed, the screen can still render the completed order from
-state. This is the recommended Android policy for required product progress.
+This also defines restoration behavior: restored completion is still completion.
+There is no separate best-effort payment-completed output.
 
-## Render State
+## Android API
 
-The UI does not need to know every internal phase. `CheckoutState.toRenderState`
-maps phase/data to a screen model:
+The screen calls:
 
 ```kotlin
-val state by viewModel.state.collectAsStateWithLifecycle()
-
-CheckoutScreen(
-    state = state.toRenderState(),
-    onPayClick = { viewModel.onEvent(CheckoutEvent.PayClicked) },
-    onRetryClick = { viewModel.onEvent(CheckoutEvent.RetryClicked) },
-)
+viewModel.pay()
+viewModel.retry()
 ```
 
-This keeps the machine graph precise while keeping Compose rendering ordinary.
-The render state should expose UI choices directly. For example, Checkout maps
-phases to a `primaryAction` instead of making the button infer retry behavior
-from `errorMessage`.
+The ViewModel keeps machine events internal, owns repositories and
+`SavedStateHandle`, and dispatches command results.
 
-## Tests To Read
+## Restoration policy
 
-Read `CheckoutStateMachineTest` in this order:
+- completed order -> `Completed(orderId)`, no command,
+- payment known to be pending after recreation ->
+  `PaymentStatusUnknown(requestId)`, no automatic retry,
+- otherwise -> start from `Idle` and dispatch `ScreenEntered`.
 
-1. `screen entered loads product exactly once`
-2. `pay clicked with loaded product enters payment phase and emits submit command`
-3. `payment failure enters failure phase and retry can emit payment command`
-4. `payment success completes checkout and emits completion effect`
-5. `stale payment success result is ignored`
-6. `restored unknown payment status rejects automatic retry`
-7. `topology exposes Checkout graph without sample events`
+Unknown payment status exists because repeating payment is unsafe.
 
-These tests are the executable spec for the example.
+## Tests to read
 
-Then read `CheckoutViewModelTest` for the Android adapter boundary:
-
-1. navigation product id to `LoadProduct` and `ProductReady`
-2. valid-session payment to durable `Completed` plus active effect delivery
-3. missing-session payment failure without an order insert
-4. missing-product command result to `ProductUnavailable`
-5. repository payment failure clearing pending state while preserving retry
-6. restored completion without commands or effect replay
-7. restored pending payment without automatic work
-
-The ViewModel tests use production repositories over recording DAO fakes. They
-verify command-result wiring without repeating every machine branch.
+- load and unavailable paths,
+- pay, failure, and retry,
+- duplicate pay/retry while pending,
+- matching versus stale success/failure,
+- completed-state duplicates,
+- restored completion and unknown status,
+- topology assertions and `.mmd` rendering.

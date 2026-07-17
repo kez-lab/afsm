@@ -1,128 +1,50 @@
 # Changelog
 
-All notable Afsm changes will be documented here.
-
-This project follows pre-1.0 semantic versioning discipline:
-
-- `0.x` versions may still change public API.
-- Every public API change must be reflected in binary API dumps.
-- Breaking changes after the first public artifact require an explicit release note.
+All notable Afsm changes are documented here. Afsm is pre-release; `0.x` APIs
+may change, but every public API change must update API dumps, docs, examples,
+and verification in the same change.
 
 ## 0.1.0 - Unreleased
 
-Initial pre-release candidate.
+Initial internal-beta candidate.
 
 ### Added
 
-- `afsm-core` pure Kotlin module.
-- `AfsmReducer<S, E, C, F>` low-level transition contract.
-- `AfsmTransition<S, C, F>` with state, ordinary commands, phase-owned command
-  invocations, effects, and decision.
+- `afsm-core` pure Kotlin `State`, `Event`, and `Command` machine model.
+- `AfsmState<Phase, Data>` and executable `afsmMachine { ... }` DSL.
+- `AfsmMachine<S, E, C>` for runtime-supplied initial state and
+  `AfsmDefaultMachine<S, E, C>` for static defaults.
+- Phase-local `on`, `updateData`, `transitionTo`, `command`, `case`, `ignore`,
+  `invalid`, `onEnter`, and `onExit` APIs.
+- `AfsmInvocationKey`, `invoke`, and phase-owned command cancellation.
 - `AfsmDecision` with `Transitioned`, `Handled`, `Ignored`, and `Invalid`.
-- `AfsmNoCommand` marker for machines that do not emit host-executed work.
-- `AfsmNoEffect` marker for machines that do not emit UI-side effects.
-- `AfsmMachine<S, E, C, F>` graphable transition/topology boundary without an
-  assumed default state.
-- `AfsmDefaultMachine<S, E, C, F>` for static flows with a genuine default
-  state and the concise ViewModel host overload.
-- `AfsmState<P, D>` phase/data state model.
-- `afsmMachine { ... }` executable DSL that returns
-  `AfsmDefaultMachine<AfsmState<Phase, Data>, Event, Command, Effect>` with
-  topology metadata.
-- `afsmMachine(initialPhase = ...) { ... }` for graphable dynamic flows whose
-  host must supply runtime data.
-- DSL helpers including `initial`, `phase`, `on`, `case`, `transitionTo`,
-  `ignore`, `invalid`, `onEnter`, `onExit`, `updateData`, `command`, `invoke`,
-  and `effect`.
-- `AfsmInvocationKey` and `AfsmCommandInvocation.Start/Cancel` for tracked
-  long-running work owned by a phase.
-- `AfsmTopology`, `AfsmTopologyTransition`, `AfsmMmdOptions`, and Mermaid `.mmd` export support.
-- `@AfsmGraph`, `AfsmGraphSource`, `AfsmGraphRegistry`, and `AfsmMmdWriter`.
-- `afsm-runtime` coroutine host with serialized event dispatch.
-- `afsm-test` Kotlin test assertion helpers for Afsm transition behavior.
-- Sequential command execution that does not block later event reduction.
-- Cooperative phase-owned invocation cancellation on phase exit and host
-  closure, without requiring ViewModel `Job` maps or queued cancel commands.
-- `AfsmHost.tryDispatch(event)` for non-throwing event queue attempts.
-- Bounded default event queue capacity through `AfsmConfig.eventQueueCapacity`.
-- Bounded default command queue capacity through `AfsmConfig.commandQueueCapacity`.
-- Configurable invalid transition and command failure policies.
-- `AfsmDiagnosticCode`, `AfsmDiagnosticDecision`, and privacy-safe top-level
-  diagnostic fields for runtime failure grouping without raw domain values.
-- `AfsmDiagnosticDataPolicy.TypesOnly` as the default, with explicit
-  `IncludeValues` access through grouped `AfsmDiagnosticValues`.
-- Best-effort one-shot effect flow delivery.
-- `afsm-viewmodel` with `ViewModel.afsmHost(...)`, including machine and dynamic initial state overloads.
-- `afsm-compose` with `CollectAfsmEffects(...)`.
-- `afsm-graph-ksp` KSP processor for automatic graph registry generation.
-- `@AfsmGraph` discovery for stable top-level machine properties, allowing
-  feature declarations to avoid delegated class/object wrappers and factories.
-- `io.github.afsm.graph` Gradle plugin that wires KSP graph export and registers `generateAfsmMmd`.
-- `phase(phase)` DSL convenience for terminal or marker phases with no handlers.
-- `sample-shop` Android reference app using Afsm for auth, product editor, and checkout flows.
-- Checkout ViewModel integration fixtures for dynamic navigation state,
-  production repository command-result wiring, durable completion, and active
-  effect delivery.
-- Checkout feature-owned `SavedStateHandle` restoration for durable completion
-  and explicit unresolved-payment protection through `PaymentStatusUnknown`.
-- ProductEditor upload cancellation with a visible machine/graph/UI edge and
-  no feature-level cancel command.
-- ProductEditor `ProductImageUploader` suspend boundary with explicit route
-  injection, controllable cancellation tests, fixed safe failure mapping, and a
-  demo-only visibility delay.
-- `consumer-smoke` external Android build that verifies Maven Local consumption.
-- Public example documentation for Auth, Checkout, and ProductEditor walkthroughs.
-- External app-module graph generation setup guide.
-- Maven Local publication for `afsm-core`, `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, `afsm-compose`, `afsm-graph-ksp`, and the Afsm graph Gradle plugin.
-- Kotlin explicit API mode for public library modules.
-- Binary API validation baseline for public library modules.
+- `AfsmNoCommand` for machines without external work.
+- `afsm-runtime` with serialized FIFO event processing, bounded queues,
+  sequential command execution, failure policies, and privacy-safe diagnostics.
+- `afsm-viewmodel` with default and dynamic-initial-state `afsmHost` overloads.
+- `afsm-test` transition assertions.
+- Generated Mermaid topology through `@AfsmGraph`, KSP registry generation, and
+  the `io.github.afsm.graph` Gradle plugin.
+- Auth, Checkout, and Product Editor reference flows in `sample-shop`.
+- External Maven Local consumer smoke build and binary API validation.
 
 ### Changed
 
-- Renamed the second `AfsmCommandHandler.handle` parameter and maintained
-  command-handler examples from `dispatch` to `dispatchEvent`. The name now
-  makes typed result-event queueing explicit; runtime behavior and
-  `AfsmHost.dispatch(event)` are unchanged.
-- Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
-  one `on<Event>` block now compose one unconditional branch instead of
-  competing as separate alternatives.
-- `case` now requires an explicit condition and is reserved for conditional
-  graph-visible alternatives. Mixing direct actions with `case`, `ignore`, or
-  `invalid` decisions in one handler is rejected at machine build time.
-- Event-scope `updateData` no longer accepts condition or label parameters;
-  conditional updates belong inside `case(condition = ...)`.
+- Public machine vocabulary was reduced to `State`, `Event`, and `Command`.
+- Android sample UI now calls verb-named ViewModel methods instead of exposing a
+  generic `onEvent(Event)` MVI boundary.
+- Sample role files were renamed from `*Contract.kt` to `*Flow.kt`.
+- Auth and Checkout navigation now derives from durable completion state.
+- Product Editor Done is a direct UI callback because it does not change
+  business flow.
+- `case` requires a condition and is reserved for named conditional branches;
+  unconditional rules use direct DSL statements.
+- `AfsmCommandHandler` calls its result capability `dispatchEvent`.
 
 ### Removed
 
-- Pre-release compatibility aliases before first publication:
-  - `AfsmStateMachine`
-  - `AfsmStateChart`
-  - `afsmStateChart`
-  - `AfsmStateChartMachine`
-  - `AfsmChartState`
-  - `AfsmGraphReducer`
-- Superseded pre-release DSL names before first publication:
-  - `AfsmDecision.Stayed`
-  - `AfsmTransition.stayed(...)`
-  - `AfsmPhaseMachine`
-  - `state(...)`
-  - `updateContext(...)`
-  - `AfsmState.context`
-  - `stay(...)`
-  - `otherwise(...)`
-- Temporary `AfsmMachineAdapter` base before first publication; graphable
-  machines now use `AfsmState<Phase, Data>` directly.
-- Raw top-level `AfsmDiagnostic` state, event, command, reason, and throwable
-  getters, plus the public diagnostic constructor. Raw access now requires the
-  explicit `IncludeValues` policy and `diagnostic.values`.
-- Pre-release guidance to interrupt active sequential work with an `onExit`
-  cancel command. Phase-owned `invoke` now provides the executable local
-  cancellation contract.
-- Hosted GitHub Actions CI workflow after the cost-control decision; local
-  verification through `scripts/verify-release-local.sh` remains the release
-  gate.
-
-### Known Issues
-
-- `publishToMavenLocal --warning-mode all` reports a Kotlin Gradle plugin POM rewriting deprecation warning for a project dependency. Afsm does not call the deprecated Gradle API directly.
-- Final remote publishing metadata is not configured yet. License, final coordinates, SCM metadata, signing, and repository target remain product decisions.
+- The pre-release `Effect` generic, DSL operation, transition output, runtime
+  stream, buffering policy, assertion helpers, and marker type.
+- `afsm-compose`; ordinary Compose state observation now covers the supported
+  UI integration model.
+- Superseded pre-release aliases and DSL names before first publication.

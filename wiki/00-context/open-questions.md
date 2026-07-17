@@ -108,8 +108,8 @@ boundary is recorded in
   state. `AfsmDefaultMachine` adds a genuine static default; dynamic features
   declare `initialPhase` and cannot use `afsmHost(machine)` without an explicit
   runtime state.
-- `AfsmTransition` carries effects. Effects are best-effort with no replay by
-  default, while required progress stays in state or state plus acknowledgement.
+- `AfsmTransition` carries only state, command work, and a decision. Product
+  completion stays in state; UI-only behavior stays at the UI boundary.
 - Retry and stale-result policy is feature-owned through explicit phases,
   request ids, result events, and narrowly used `ignore(...)`; the library does
   not own a generic retry policy.
@@ -128,7 +128,6 @@ boundary is recorded in
   `AfsmInvalidTransitionPolicy.Record`.
 - Named no-transition condition cases appear in Flow graphs. `ignore(...)` and
   `invalid(...)` are runtime decisions without graph edges. State ids provide
-  default labels, while condition/command/effect labels are explicit where
-  useful.
+  default labels, while condition and command labels are explicit where useful.
 - The example ladder is Draft, Auth, Checkout, ProductEditor, followed by
   ordinary non-Afsm data screens as anti-examples.

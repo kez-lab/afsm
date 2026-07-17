@@ -23,5 +23,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-11-checkout-first-use-ai-review/`: constrained four-file AI review submission, 11-point score, reported timing/ratings, and command/data-order readability hypotheses; not human first-use evidence.
 - `verification/2026-07-17-human-usability-feedback/`: relayed human feedback about Command/Effect learning cost, phase-local transition visibility, graph explanation, and MVI-heavy sample framing; useful product evidence but not a controlled first-use result.
 - `verification/2026-07-17-output-model-audit/`: repository measurements, sample redundancy findings, alternative comparison, and success criteria for removing the Effect channel and MVI-shaped UI event surface.
+- `verification/2026-07-17-effect-free-output-model/`: red/green API migration, module/API/graph checks, clean external-consumer pass, and static acceptance audit for the implemented three-concept output model.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

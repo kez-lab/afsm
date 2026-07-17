@@ -3020,3 +3020,38 @@ Conclusion:
 - The sample's visible local cancellation path passes on the current emulator.
   Real transport cancellation, human comprehension, and production-like pilot
   evidence remain open.
+
+## [2026-07-17] Effect-free output model and Android-style sample boundary
+
+Change:
+
+- Removed the Effect type parameter, transition output, DSL operation,
+  topology metadata, runtime stream/config, assertion helpers, marker type, and
+  `afsm-compose` module.
+- Reduced reducer, machine, transition, host, ViewModel, and external-consumer
+  APIs to State/Event/Command.
+- Moved Auth and Checkout navigation to durable completion state and kept
+  ProductEditor Done as a direct UI callback.
+- Replaced sample `onEvent(Event)` UI boundaries with verb-named ViewModel
+  methods and renamed feature `Contract.kt` files to `Flow.kt`.
+- Rewrote onboarding/public docs around Command ownership and the generated
+  graph/machine/tests reading contract.
+
+Verification:
+
+```bash
+./gradlew :afsm-core:test :afsm-runtime:test :afsm-viewmodel:test \
+  :afsm-test:test :afsm-graph-ksp:test :sample-shop:testDebugUnitTest --no-daemon
+./gradlew :sample-shop:generateAfsmMmd apiCheck --no-daemon
+ANDROID_HOME=/Users/kwak-euijin/Library/Android/sdk \
+  ./gradlew -p consumer-smoke -PafsmVersion=0.1.0-SNAPSHOT \
+  --refresh-dependencies clean :app:compileDebugKotlin \
+  :app:testDebugUnitTest :app:generateAfsmMmd --no-daemon
+```
+
+Conclusion:
+
+- Repository, API, graph, Maven Local, and clean external-consumer gates pass.
+- Static audit finds zero maintained Effect surface and zero feature Event
+  construction in sample screens.
+- A fresh controlled human review and production-like pilot remain required.

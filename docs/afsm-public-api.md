@@ -1,637 +1,136 @@
 # Afsm Public API
 
-This page describes the current pre-release public API surface.
+Status: internal beta. Afsm is not publicly released and may make breaking API
+changes when usability or safety evidence justifies them.
 
-For Android restoration, one-shot effects, command failures, request ids, and
-queue pressure policy, read
-[restoration-effect-command-policy.md](restoration-effect-command-policy.md).
-
-For complete Android examples, read [examples.md](examples.md),
-[auth-walkthrough.md](auth-walkthrough.md),
-[checkout-walkthrough.md](checkout-walkthrough.md), and
-[product-editor-walkthrough.md](product-editor-walkthrough.md). For `.mmd`
-setup, read [graph-generation.md](graph-generation.md).
-
-## Android-First Path
-
-Most Android feature code needs one named state and one explicit machine
-property:
-
-```kotlin
-typealias ScreenState = AfsmState<ScreenPhase, ScreenData>
-val screenStateMachine:
-    AfsmDefaultMachine<ScreenState, ScreenEvent, ScreenCommand, ScreenEffect> =
-    afsmMachine {
-        // initial state and phase rules
-    }
-```
-
-Machines that do not emit host-executed work should use `AfsmNoCommand` as
-their `Command` type. Machines that do not emit UI one-shot output should use
-`AfsmNoEffect` as their `Effect` type.
-
-```kotlin
-val toggleStateMachine:
-    AfsmDefaultMachine<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect> =
-    afsmMachine {
-        // no command or effect output
-    }
-```
-
-The ViewModel hosts that machine:
-
-```kotlin
-private val host = afsmHost(
-    machine = screenStateMachine,
-    commandHandler = { command: ScreenCommand, dispatchEvent ->
-        // repository/use-case work
-        // dispatchEvent(result event)
-    },
-)
-```
-
-Start with `afsmMachine { ... }`, `AfsmState<Phase, Data>`, and
-`ViewModel.afsmHost(...)`. Treat `AfsmReducer`, `AfsmTransition`, and
-`AfsmDecision` as advanced reference concepts unless you are writing a custom
-reducer or library integration.
-
-Everyday DSL choices:
-
-| Situation | Use |
-|---|---|
-| The business step changes | `transitionTo(Phase.X)` |
-| The same step only updates form/error data | `updateData { ... }` |
-| An event has named alternatives | `case(label, condition = ...) { ... }` |
-| Repository, database, timer, or SDK work must run | `command(label) { ... }`, often in `onEnter` |
-| Optional navigation/snackbar/close behavior is needed | `effect(label) { ... }` |
-| An expected duplicate or stale event should be harmless | `ignore(reason)`, used sparingly |
-
-## Coordinates
-
-Required dependencies:
-
-```kotlin
-implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-```
-
-Optional test, Compose, and graph tooling:
-
-```kotlin
-testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
-```
-
-```kotlin
-implementation("io.github.afsm:afsm-compose:0.1.0-SNAPSHOT")
-```
-
-Add `afsm-compose` only for Compose routes that collect machine effects. A
-machine that never emits UI one-shots should use `AfsmNoEffect` and does not
-need the Compose helper module.
-
-```kotlin
-plugins {
-    id("com.google.devtools.ksp")
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
-}
-```
-
-Generate local artifacts:
-
-```bash
-./gradlew publishToMavenLocal
-./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal # optional graph plugin
-```
-
-Verify from a separate Android consumer build:
-
-```bash
-./scripts/verify-consumer-smoke.sh
-```
-
-The graph Gradle plugin adds `io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT`
-to the app module by default when `com.google.devtools.ksp` is applied. That
-default is generated from the graph plugin version, so a published
-`io.github.afsm.graph` plugin and its KSP processor stay on the same Afsm
-version unless the consumer explicitly overrides `processorDependency`.
-
-## afsm-core
-
-### AfsmTransition
-
-`AfsmTransition` is the result of reducing one `state + event` pair. Create it
-through `Afsm` helpers or `AfsmTransition` factory functions, not a raw public
-constructor.
-
-```kotlin
-Afsm.transitioned(state, commands, effects)
-Afsm.ignore(state, reason)
-Afsm.invalid(state, reason)
-AfsmTransition.handled(state, commands, effects, reason) // low-level reducer escape hatch
-```
-
-The constructor is intentionally not public so `Ignored` and `Invalid` decisions
-cannot accidentally carry commands, effects, or changed state output.
-`commands` contains ordinary sequential work. `commandInvocations` contains
-separate keyed `Start/Cancel` operations for phase-owned work; ignored and
-invalid transitions carry neither output kind.
-For graphable `afsmMachine { ... }` code, do not call a `stay` helper.
-Handling a DSL case without `transitionTo(...)` produces a `Handled` decision.
-Direct `updateData`, `command`, `effect`, and `transitionTo` statements inside
-one `on<Event>` block compose one unconditional branch. Use
-`case(condition = ...)` only for conditional alternatives, and do not mix
-direct actions with decision branches in the same handler.
-
-### AfsmDecision
-
-| Decision | Meaning | Runtime behavior |
-|---|---|---|
-| `Transitioned` | State transition accepted | Publish state, emit effects, execute commands |
-| `Handled` | Event handled without phase change | Publish state, emit effects, execute commands |
-| `Ignored` | Event expected but intentionally no-op | Drop state/outputs and optionally log accidental outputs |
-| `Invalid` | Event invalid in current state | Record or throw according to `AfsmInvalidTransitionPolicy` |
-
-### AfsmReducer
-
-```kotlin
-fun interface AfsmReducer<S : Any, E : Any, C : Any, F : Any> {
-    fun transition(state: S, event: E): AfsmTransition<S, C, F>
-}
-```
-
-Use this for custom state shapes or low-level integrations.
-
-### AfsmMachine
-
-```kotlin
-interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
-    AfsmReducer<S, E, C, F>,
-    AfsmGraphSource
-
-interface AfsmDefaultMachine<S : Any, E : Any, C : Any, F : Any> :
-    AfsmMachine<S, E, C, F> {
-    val initialState: S
-}
-```
-
-`AfsmMachine` owns transition rules and topology. `AfsmDefaultMachine` also
-owns a genuine default state and enables the concise ViewModel host overload.
-Use the base type when Android runtime input is required.
-
-```kotlin
-typealias ProductEditorState =
-    AfsmState<ProductEditorPhase, ProductEditorData>
-
-val productEditorStateMachine:
-    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
-    afsmMachine {
-        // initial state and phase rules
-    }
-```
-
-### AfsmState
+## Core types
 
 ```kotlin
 data class AfsmState<P : Any, D : Any>(
     val phase: P,
     val data: D,
 )
+
+fun interface AfsmReducer<S : Any, E : Any, C : Any> {
+    fun transition(state: S, event: E): AfsmTransition<S, C>
+}
+
+interface AfsmMachine<S : Any, E : Any, C : Any> :
+    AfsmReducer<S, E, C>,
+    AfsmGraphSource
+
+interface AfsmDefaultMachine<S : Any, E : Any, C : Any> :
+    AfsmMachine<S, E, C> {
+    val initialState: S
+}
 ```
 
-`phase` is the finite graph state. `data` is durable screen data carried across
-phases. It is not `android.content.Context`.
+Use `AfsmMachine` when runtime input or restoration supplies the initial state.
+Use `AfsmDefaultMachine` when a genuine static default exists.
 
-### DSL
+## DSL
 
 ```kotlin
-afsmMachine<Phase, Data, Event, Command, Effect> {
-    initial(phase = Phase.Editing, data = FormData())
+afsmMachine<Phase, Data, Event, Command> {
+    initial(Phase.Idle, Data())
 
-    phase(Phase.Editing) {
-        on<Event.SubmitClicked> {
-            case(
-                label = "valid form",
-                condition = { data.canSubmitForm() },
-            ) {
-                updateData { copy(errorMessage = null) }
-                transitionTo(Phase.Submitting)
-            }
-
-            case(
-                label = "invalid form",
-                condition = { data.hasSubmitError() },
-            ) {
-                updateData { copy(errorMessage = "Invalid form") }
-            }
-        }
-    }
-
-    phase(Phase.Submitting) {
-        onEnter {
-            command(label = "Submit") {
-                Command.Submit(data.form)
-            }
+    phase(Phase.Idle) {
+        on<Event.Start> {
+            updateData { copy(error = null) }
+            command("StartWork") { Command.StartWork }
+            transitionTo(Phase.Working)
         }
     }
 }
 ```
 
-For navigation/deep-link data, declare only the graph's initial phase and use
-the base machine type:
+Main operations:
 
-```kotlin
-val checkoutStateMachine:
-    AfsmMachine<CheckoutState, CheckoutEvent, CheckoutCommand, CheckoutEffect> =
-    afsmMachine(initialPhase = CheckoutPhase.Idle) {
-        // phase rules; no placeholder CheckoutData is needed
-    }
-```
-
-Emit short sequential work either from the accepted `case` or from the target
-phase's `onEnter`, not both. Prefer `onEnter` when the work starts because the
-machine entered a work phase such as `Submitting`. Use `invoke` instead of
-`command` when long-running work is owned by that phase and must be cancelled
-locally when the phase exits.
-
-| API | Meaning |
+| API | Purpose |
 |---|---|
-| `initial(phase, data)` | Genuine default state for `AfsmDefaultMachine`; does not run `onEnter` |
-| `afsmMachine(initialPhase = phase) { ... }` | Graph initial phase for a machine whose host must supply runtime data |
-| `phase(phase) { ... }` | Exact phase scope |
-| `phase(phase)` | Exact phase declaration with no handlers, useful for terminal states |
-| `phase<PayloadPhase> { ... }` | Payload phase scope |
-| `phase<PayloadPhase>()` | Payload phase declaration with no handlers |
-| `phase(phaseType = PayloadPhase::class) { ... }` | Non-inline payload phase scope |
-| `on<Event>()` | Event-specific branch scope |
-| `on(eventType = Event::class)` | Non-inline event-specific branch scope |
-| `case(label, condition = ...) { ... }` | Conditional branch; `condition` is required |
-| `transitionTo(phase)` | Phase change only |
-| `transitionTo<PayloadPhase> { ... }` | Phase change to payload phase |
-| `transitionTo(phaseType = PayloadPhase::class, phase = { ... })` | Non-inline payload phase change |
-| `updateData { ... }` | Adds an immutable data update to the direct event branch |
-| `updateData { data, event -> ... }` | Data update that uses the typed event payload |
-| `ignore(reason)` | Expected no-op event; no graph edge |
-| `invalid(reason)` | Explicit invalid event; no graph edge |
-| `command(label = ...) { ... }` | Host-executed work output from the current branch |
-| `effect(label = ...) { ... }` | UI-side one-shot output from the current branch |
-| `onEnter { ... }` | Declares actions that run after entering a phase |
-| `onExit { ... }` | Declares actions that run before leaving a phase |
-| `command(label = ...) { ... }` in `onEnter`/`onExit` | Host work plus optional graph label in one statement |
-| `invoke(key, label = ...) { ... }` in `onEnter` | Keyed phase-owned work, automatically cancelled on phase exit |
-| `effect(label = ...) { ... }` in `onEnter`/`onExit` | UI one-shot plus optional graph label in one statement |
+| `initial(phase, data)` | Define a static initial state |
+| `phase(value) { ... }` | Register rules for an object-like phase |
+| `phase<Phase.Payload> { ... }` | Register rules for a payload phase |
+| `on<Event.Type> { ... }` | Handle an event in the current phase |
+| `updateData { ... }` | Update extended state data |
+| `transitionTo(...)` | Change phase |
+| `command(label) { ... }` | Emit host-executed work |
+| `case(label, condition) { ... }` | Name a real conditional branch |
+| `ignore(reason, condition?)` | Accept an intentional no-op |
+| `invalid(reason, condition?)` | Explicitly reject an event |
+| `onEnter`, `onExit` | Attach phase lifecycle data/command work |
+| `invoke(key, label) { ... }` | Start phase-owned cancellable command work |
 
-`case(...)` requires a condition. Cases are evaluated in declaration order.
-The first branch whose `condition` returns `true` handles the event. If no
-branch matches, the event is invalid in the current phase. A named case becomes
-the generated transition's condition label, including no-transition cases such
-as validation failures.
-
-An `on<Event>` handler with no cases instead accumulates its direct actions into
-one unconditional branch. Mixing this direct branch with `case`, `ignore`, or
-`invalid` decisions is rejected when the machine is built.
-
-Conditions run with a read-only scope containing typed `phase`, typed `event`,
-and current `data`. They cannot update data or emit outputs. Payload phase
-factories in `transitionTo<PayloadPhase> { ... }` are also read-only and should
-only create the target phase.
-
-Entry and exit blocks are declaration blocks. `command`, `invoke`, and `effect`
-record graph labels when the machine is built, then run their value factories
-later with `phase` and `data` from `AfsmPhaseActionScope`. `invoke` is available
-only in `onEnter` in the current bounded contract.
-
-Use `phase(phase)` for singleton/data-object phases. For payload phase classes,
-prefer `phase<PayloadPhase>()` or `phase<PayloadPhase> { ... }` so the machine
-matches any payload instance rather than one exact value.
-
-Phase-changing transition order:
-
-```text
-source invocation cancel -> onExit -> branch actions -> target phase factory -> onEnter
-```
-
-### Phase-Owned Invocation
-
-Ordinary `command(...)` output remains sequential and bounded. For a
-cooperative upload, timer, or polling loop whose lifetime belongs to one phase,
-declare a stable code-owned key and use `invoke`:
+## Transition result
 
 ```kotlin
-val ImageUpload = AfsmInvocationKey("product-editor/image-upload")
-
-phase(ProductEditorPhase.ImageUploadInProgress) {
-    onEnter {
-        invoke(
-            key = ImageUpload,
-            label = "StartImageUpload",
-        ) {
-            ProductEditorCommand.StartImageUpload(data.draft)
-        }
-    }
-
-    on<ProductEditorEvent.CancelUploadClicked> {
-        transitionTo(ProductEditorPhase.EditingDraft)
-    }
+class AfsmTransition<S : Any, C : Any> {
+    val state: S
+    val commands: List<C>
+    val commandInvocations: List<AfsmCommandInvocation<C>>
+    val decision: AfsmDecision
 }
 ```
 
-Entering the phase adds
-`AfsmCommandInvocation.Start(ImageUpload, StartImageUpload(...))` to
-`transition.commandInvocations`. Every phase exit adds `Cancel(ImageUpload)`
-before target-phase starts. `AfsmHost` runs the start through the existing
-`AfsmCommandHandler` in a tracked child job; exit or host closure cancels it.
-Cancellation is requested before a target-phase invocation starts, but the
-runtime does not block the state transition waiting for a non-cancellable
-`finally` block or remote operation to finish.
+`Transitioned` means phase changed. `Handled` means an accepted rule kept the
+phase. `Ignored` is a recognized no-op. `Invalid` is rejected by the current
+flow contract.
+
+## Runtime
 
 ```kotlin
-result.assertCommandInvocations(
-    AfsmCommandInvocation.Cancel(ImageUpload),
-)
-```
-
-Cancellation is Kotlin cooperative cancellation and is not logged as command
-failure. Afsm also rejects dispatch through the cancelled invocation's
-`dispatchEvent` capability.
-It cannot guarantee a remote server, callback API, SDK, or blocking call stopped
-work. Keep request ids, stale-result handling, and idempotency when work can
-outlive the local coroutine.
-
-Invocation starts do not consume the ordinary command queue. Keep the declared
-set small and phase-owned; do not use low-level transitions to create an
-unbounded dynamic job scheduler.
-
-`AfsmInvocationKey` values must be non-blank, stable code identifiers. Duplicate
-keys in one phase definition are rejected. Adjacent phases may reuse a key;
-the source cancel is ordered before the target start.
-
-### Topology and MMD
-
-```kotlin
-data class AfsmTopology(
-    val states: List<AfsmTopologyState>,
-    val transitions: List<AfsmTopologyTransition>,
-    val initialStateId: String? = null,
-)
-
-fun AfsmTopology.toMmd(
-    options: AfsmMmdOptions = AfsmMmdOptions.Flow,
-): String
-```
-
-`AfsmMmdOptions.Flow` hides ordinary unlabeled internal self-loops. Named
-condition, command, and effect edges remain visible. Use `AfsmMmdOptions.Full`
-for complete topology.
-
-`AfsmTopologyState` can include entry/exit command/effect labels. In the DSL,
-those labels come from the same `command(label = ...) { ... }` and
-`effect(label = ...) { ... }` statements that emit runtime outputs.
-
-The `io.github.afsm.graph` Gradle plugin is the preferred Android app-module
-entry point for `.mmd` output. It generates the export test internally and
-registers `generateAfsmMmd`; app modules should not maintain a hand-written
-`AfsmMmdExportTest`.
-
-Set `afsmGraph { mmdOptions.set("Full") }` or run with
-`-PafsmMmdOptions=Full` when you need full topology output.
-
-## afsm-runtime
-
-```kotlin
-fun interface AfsmCommandHandler<C : Any, E : Any> {
-    suspend fun handle(
-        command: C,
-        dispatchEvent: suspend (E) -> Unit,
-    )
-}
-
-class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
+class AfsmHost<S : Any, E : Any, C : Any>(
     initialState: S,
-    reducer: AfsmReducer<S, E, C, F>,
+    reducer: AfsmReducer<S, E, C>,
     commandHandler: AfsmCommandHandler<C, E>,
     scope: CoroutineScope,
     config: AfsmConfig = AfsmConfig(),
-)
-```
-
-Public outputs:
-
-```kotlin
-val state: StateFlow<S>
-val effects: Flow<F>
-fun dispatch(event: E)
-fun tryDispatch(event: E): Boolean
-fun close()
-```
-
-Runtime guarantees:
-
-- `dispatch(event)` is non-suspending.
-- Events are processed serially in FIFO order.
-- Command result events use the same bounded event queue. If a command result
-  cannot be queued, the host throws `AfsmEventQueueOverflowException` instead
-  of blocking the sequential command processor. If the host is already closed,
-  the result event is dropped and logged because the screen lifecycle has ended.
-- Commands are executed sequentially without blocking later event reduction.
-- If the command queue fills, the host throws `AfsmCommandQueueOverflowException` instead of suspending the event processor indefinitely.
-- Commands may dispatch follow-up events.
-- Follow-up events are queued, not re-entered recursively.
-- `tryDispatch(event)` returns `false` when the host is closed or the event queue is full.
-
-### AfsmConfig
-
-Start with the default `AfsmConfig()` in ordinary feature ViewModels. Change it
-only when the host runtime policy is intentionally different from the default
-development behavior. Expected product failures should still be modeled as
-typed result events, not as config changes.
-
-```kotlin
-class AfsmConfig(
-    val invalidTransitionPolicy: AfsmInvalidTransitionPolicy =
-        AfsmInvalidTransitionPolicy.Throw,
-    val commandExecutionPolicy: AfsmCommandExecutionPolicy =
-        AfsmCommandExecutionPolicy.Sequential,
-    val commandFailurePolicy: AfsmCommandFailurePolicy =
-        AfsmCommandFailurePolicy.Throw,
-    val effectDelivery: AfsmEffectDelivery =
-        AfsmEffectDelivery.Default,
-    val eventQueueCapacity: Int = 64,
-    val commandQueueCapacity: Int = 64,
-    val diagnosticDataPolicy: AfsmDiagnosticDataPolicy =
-        AfsmDiagnosticDataPolicy.TypesOnly,
-    val logger: AfsmLogger =
-        AfsmLogger.None,
-)
-```
-
-Command failure policy:
-
-- `Throw`: fail the processing coroutine. This is the default for programmer errors.
-- `Record`: log `AfsmDiagnostic` and continue processing later events.
-- `CancellationException` is always rethrown.
-
-Command queue overflow:
-
-- `AfsmCommandQueueOverflowException` means a machine emitted accepted commands faster than the bounded host queue could accept them.
-- Prefer fewer, coarser commands or increase `commandQueueCapacity`.
-- Do not use command overflow as domain failure handling; domain failures should still become typed result events.
-
-### Diagnostics
-
-Diagnostics are privacy-safe by default. `AfsmDiagnosticDataPolicy.TypesOnly`
-discards raw state, event, command, reason, and throwable values before the
-configured logger receives the diagnostic.
-
-```kotlin
-diagnostic.code
-diagnostic.decision
-diagnostic.message
-diagnostic.stateType
-diagnostic.eventType
-diagnostic.commandType
-diagnostic.failureType
-diagnostic.metadata
-diagnostic.values // null under the default policy
-```
-
-Codes and decision categories are stable grouping fields. Messages are fixed
-library text, type fields are simple Kotlin type names, and metadata contains
-only Afsm-owned values such as queue capacity. Enum instances intentionally
-collapse to their enum type.
-
-Raw values require an explicit host policy:
-
-```kotlin
-AfsmConfig(
-    diagnosticDataPolicy = AfsmDiagnosticDataPolicy.IncludeValues,
-    logger = applicationLogger,
-)
-```
-
-This creates `diagnostic.values` with raw state, event, command, reason, and
-throwable objects. It may expose credentials, personal data, tokens, form
-input, or exception details. Do not use `IncludeValues` for production logs or
-crash tools without an application-owned redaction boundary. The
-`AfsmDiagnostic` constructor and `AfsmDiagnosticValues` constructor are not
-public; diagnostics are runtime-owned records.
-
-## afsm-viewmodel
-
-```kotlin
-fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmDefaultMachine<S, E, C, F>,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
-
-fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
-    initialState: S,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
-
-fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    reducer: AfsmReducer<S, E, C, F>,
-    initialState: S,
-    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
-    config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F>
-```
-
-Use `AfsmDefaultMachine` for the static concise path. A base `AfsmMachine`
-requires `machine + initialState`, so a dynamic feature cannot accidentally use
-placeholder data. Use `reducer + initialState` only for custom non-graphable
-reducer escape hatches.
-
-The signatures show `AfsmCommandHandler<C, E>` because that is the exact API
-type. Kotlin callers should usually pass a direct lambda:
-
-```kotlin
-commandHandler = { command: ScreenCommand, dispatchEvent ->
-    // execute host work
-    // dispatchEvent(result event)
+) {
+    val state: StateFlow<S>
+    fun dispatch(event: E)
+    fun tryDispatch(event: E): Boolean
+    fun close()
 }
 ```
 
-The default `AfsmCommandHandler.none()` is only for machines that never emit
-commands. If a machine emits commands and the handler is omitted, those
-commands are intentionally ignored.
+The host serializes events, publishes accepted state before scheduling command
+work, executes commands sequentially, and returns command results through the
+handler's `dispatchEvent` capability.
 
-## afsm-compose
+`AfsmConfig` controls invalid-transition policy, command failure policy, queue
+capacities, diagnostic data policy, and logging.
 
-```kotlin
-@Composable
-fun <F : Any> CollectAfsmEffects(
-    effects: Flow<F>,
-    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
-    onEffect: suspend (F) -> Unit,
-)
-```
-
-Use this in route-level composables for UI one-shot behavior such as navigation
-or snackbar display. Keep required product progress in state; effects are
-best-effort one-shot outputs.
-
-## afsm-test
-
-`afsm-test` contains Kotlin-only helpers for common transition assertions:
+## ViewModel integration
 
 ```kotlin
-result
-    .assertTransitioned()
-    .assertPhase(ScreenPhase.Saving)
-    .assertCommands(ScreenCommand.Save)
+fun <S : Any, E : Any, C : Any> ViewModel.afsmHost(
+    machine: AfsmDefaultMachine<S, E, C>,
+    commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
+    config: AfsmConfig = AfsmConfig(),
+): AfsmHost<S, E, C>
 ```
 
-Use these helpers in unit tests when they make the behavioral expectation
-clearer than inspecting `result.decision`, `result.state.phase`,
-`result.commands`, and `result.effects` directly.
+Overloads accept an explicit initial state with either `AfsmMachine` or
+`AfsmReducer`.
 
-Android `ViewModel` test rules, fake repositories, and dispatcher rules remain
-consumer-owned test fixtures.
+Keep `StateFlow`, `viewModelScope`, repositories, `SavedStateHandle`, command
+execution, and UI bridging in `ViewModel`. Expose verb-named methods to UI.
 
-## afsm-graph-ksp
+## Graph API
 
-```kotlin
-@AfsmGraph(
-    id = "ProductEditor",
-    fileName = "ProductEditorStateMachine.mmd",
-)
-val productEditorStateMachine:
-    AfsmDefaultMachine<ProductEditorState, ProductEditorEvent, ProductEditorCommand, ProductEditorEffect> =
-    afsmMachine {
-        // executable machine body
-    }
-```
+- `@AfsmGraph(id, fileName)` registers a graphable machine.
+- `AfsmTopology` contains states, transitions, and optional initial state id.
+- `topology.toMmd(options)` renders Mermaid.
+- `AfsmMmdOptions.Flow` favors review topology.
+- `AfsmMmdOptions.Full` includes more internal detail.
 
-KSP discovers annotated stable top-level properties, classes, or objects that
-implement both `AfsmReducer` and `AfsmGraphSource`. `AfsmMachine` satisfies
-both automatically. A top-level machine property is the normal feature shape.
+## Test API
 
-Property policy:
+`afsm-test` provides fluent assertions for state, phase, data, commands,
+command invocations, and decisions. See [Testing](testing-guide.md).
 
-- the property must be a non-private, non-extension, top-level immutable `val`,
-- it must have a stable backing field rather than a computed getter or delegate.
+## Deliberately absent
 
-Class constructor policy:
-
-- annotated classes must be `object`s, or
-- classes must be constructible with no required constructor parameters.
-
-## Removed Pre-Release Names
-
-- `Afsm.transitionTo(...)` -> use `Afsm.transitioned(...)`
-- `AfsmDecision.Stayed` -> use `AfsmDecision.Handled`
-- `AfsmTransition.stayed(...)` -> use `AfsmTransition.handled(...)`
-- DSL `state(...)` -> use `phase(...)`
-- DSL `updateContext(...)` -> use `updateData(...)`
-- `AfsmState.context` -> use `AfsmState.data`
-- `AfsmPhaseMachine` -> use `AfsmDefaultMachine` for genuine defaults or `AfsmMachine` for runtime-supplied state
-- `AfsmStateMachine` -> use `AfsmReducer`
-- `AfsmStateChart` -> use `AfsmMachine` / `afsmMachine`
-- `afsmStateChart` -> use `afsmMachine`
-- `AfsmStateChartMachine` -> use `AfsmMachine`
-- `AfsmChartState` -> use `AfsmState`
-- `AfsmGraphReducer` -> use `AfsmMachine<State, Event, Command, Effect>`
+There is no `Effect` generic, effect DSL statement, effect stream, effect
+delivery policy, or Compose effect module. Durable business outcomes belong in
+state; UI-only behavior stays at the UI boundary.

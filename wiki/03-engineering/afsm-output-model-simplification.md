@@ -1,7 +1,7 @@
 ---
 title: Afsm Output Model Simplification
 updated: 2026-07-17
-status: accepted-implementation-pending
+status: implemented-verified
 ---
 
 # Afsm Output Model Simplification
@@ -156,3 +156,22 @@ removed without compatibility aliases.
 - [Informal human feedback](../../raw/verification/2026-07-17-human-usability-feedback/README.md)
 - [Output model audit](../../raw/verification/2026-07-17-output-model-audit/README.md)
 - [Android guidance refresh](../../raw/sources/2026-07-17-android-ui-event-guidance-refresh.md)
+
+## Implementation Result
+
+Implemented on 2026-07-17:
+
+- core, runtime, ViewModel, test helpers, topology, and API dumps use the
+  three-type model;
+- `afsm-compose` and every maintained feature Effect type were removed;
+- sample screens construct zero feature Event objects and call verb-named
+  ViewModel methods;
+- Auth and Checkout navigation derive from durable state; ProductEditor Done is
+  a direct callback;
+- `Contract.kt` feature files became `Flow.kt`;
+- README and public docs explain Command ownership and the graph/machine/tests
+  reading contract;
+- module tests, sample tests, KSP tests, graph generation, API checks, Maven
+  Local publication, and clean external consumer tasks pass.
+
+A new controlled human first-use session remains the next evidence gate.
