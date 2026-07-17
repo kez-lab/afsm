@@ -1,6 +1,5 @@
 package afsm.test
 
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmCommandInvocation
 import afsm.core.AfsmInvocationKey
 import afsm.core.AfsmState
@@ -10,11 +9,10 @@ import kotlin.test.assertFailsWith
 
 class AfsmTransitionAssertionsTest {
     @Test
-    fun `assertions pass for transitioned state commands and effects`() {
+    fun `assertions pass for transitioned state and command work`() {
         AfsmTransition.transitioned(
             state = AfsmState(phase = Phase.Saving, data = Data(title = "Plan")),
             commands = listOf(Command.Save("Plan")),
-            effects = listOf(Effect.ShowSaved),
             commandInvocations = listOf(
                 AfsmCommandInvocation.Start(
                     key = AfsmInvocationKey("draft/autosave"),
@@ -32,22 +30,21 @@ class AfsmTransitionAssertionsTest {
                     command = Command.Save("Plan"),
                 ),
             )
-            .assertEffects(Effect.ShowSaved)
     }
 
     @Test
     fun `handled ignored and invalid assertions can verify reasons`() {
-        AfsmTransition.handled<AfsmState<Phase, Data>, Command, AfsmNoEffect>(
+        AfsmTransition.handled<AfsmState<Phase, Data>, Command>(
             state = AfsmState(Phase.Editing, Data()),
             reason = "validation failed",
         ).assertHandled("validation failed")
 
-        AfsmTransition.ignored<AfsmState<Phase, Data>, Command, AfsmNoEffect>(
+        AfsmTransition.ignored<AfsmState<Phase, Data>, Command>(
             state = AfsmState(Phase.Saving, Data()),
             reason = "stale result",
         ).assertIgnored("stale result")
 
-        AfsmTransition.invalid<AfsmState<Phase, Data>, Command, AfsmNoEffect>(
+        AfsmTransition.invalid<AfsmState<Phase, Data>, Command>(
             state = AfsmState(Phase.Editing, Data()),
             reason = "event not accepted",
         ).assertInvalid("event not accepted")
@@ -56,7 +53,7 @@ class AfsmTransitionAssertionsTest {
     @Test
     fun `assertion failure names the expected decision`() {
         val failure = assertFailsWith<AssertionError> {
-            AfsmTransition.invalid<AfsmState<Phase, Data>, Command, AfsmNoEffect>(
+            AfsmTransition.invalid<AfsmState<Phase, Data>, Command>(
                 state = AfsmState(Phase.Editing, Data()),
             ).assertTransitioned()
         }
@@ -76,9 +73,5 @@ class AfsmTransitionAssertionsTest {
 
     private sealed interface Command {
         data class Save(val title: String) : Command
-    }
-
-    private sealed interface Effect {
-        data object ShowSaved : Effect
     }
 }

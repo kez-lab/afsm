@@ -29,13 +29,12 @@ public final class afsm/runtime/AfsmCommandQueueOverflowException : java/lang/Il
 
 public final class afsm/runtime/AfsmConfig {
 	public fun <init> ()V
-	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)V
-	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmEffectDelivery;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)V
+	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCommandExecutionPolicy ()Lafsm/runtime/AfsmCommandExecutionPolicy;
 	public final fun getCommandFailurePolicy ()Lafsm/runtime/AfsmCommandFailurePolicy;
 	public final fun getCommandQueueCapacity ()I
 	public final fun getDiagnosticDataPolicy ()Lafsm/runtime/AfsmDiagnosticDataPolicy;
-	public final fun getEffectDelivery ()Lafsm/runtime/AfsmEffectDelivery;
 	public final fun getEventQueueCapacity ()I
 	public final fun getInvalidTransitionPolicy ()Lafsm/runtime/AfsmInvalidTransitionPolicy;
 	public final fun getLogger ()Lafsm/runtime/AfsmLogger;
@@ -91,19 +90,6 @@ public final class afsm/runtime/AfsmDiagnosticValues {
 	public final fun getThrowable ()Ljava/lang/Throwable;
 }
 
-public final class afsm/runtime/AfsmEffectDelivery {
-	public static final field Companion Lafsm/runtime/AfsmEffectDelivery$Companion;
-	public synthetic fun <init> (IILkotlinx/coroutines/channels/BufferOverflow;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getExtraBufferCapacity ()I
-	public final fun getReplay ()I
-}
-
-public final class afsm/runtime/AfsmEffectDelivery$Companion {
-	public final fun buffered (I)Lafsm/runtime/AfsmEffectDelivery;
-	public final fun getDefault ()Lafsm/runtime/AfsmEffectDelivery;
-	public final fun getRendezvous ()Lafsm/runtime/AfsmEffectDelivery;
-}
-
 public final class afsm/runtime/AfsmEventQueueOverflowException : java/lang/IllegalStateException {
 	public fun <init> (Lafsm/runtime/AfsmDiagnostic;)V
 	public final fun getDiagnostic ()Lafsm/runtime/AfsmDiagnostic;
@@ -114,7 +100,6 @@ public final class afsm/runtime/AfsmHost {
 	public synthetic fun <init> (Ljava/lang/Object;Lafsm/core/AfsmReducer;Lafsm/runtime/AfsmCommandHandler;Lkotlinx/coroutines/CoroutineScope;Lafsm/runtime/AfsmConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun close ()V
 	public final fun dispatch (Ljava/lang/Object;)V
-	public final fun getEffects ()Lkotlinx/coroutines/flow/Flow;
 	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun tryDispatch (Ljava/lang/Object;)Z
 }

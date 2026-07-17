@@ -10,8 +10,8 @@ import kotlin.test.assertTrue
 /**
  * Asserts that this transition changed phase or state.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertTransitioned():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertTransitioned():
+    AfsmTransition<S, C> {
     assertEquals(AfsmDecision.Transitioned, decision)
     return this
 }
@@ -19,8 +19,8 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertTransitione
 /**
  * Asserts that this transition handled an event without changing phase.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertHandled():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertHandled():
+    AfsmTransition<S, C> {
     assertTrue(
         actual = decision is AfsmDecision.Handled,
         message = "Expected AfsmDecision.Handled but was $decision.",
@@ -32,9 +32,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertHandled():
  * Asserts that this transition handled an event without changing phase and used
  * the expected reason.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertHandled(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertHandled(
     reason: String?,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertHandled()
     assertEquals(reason, (decision as AfsmDecision.Handled).reason)
     return this
@@ -43,8 +43,8 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertHandled(
 /**
  * Asserts that this transition intentionally ignored an expected no-op event.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertIgnored():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertIgnored():
+    AfsmTransition<S, C> {
     assertTrue(
         actual = decision is AfsmDecision.Ignored,
         message = "Expected AfsmDecision.Ignored but was $decision.",
@@ -56,9 +56,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertIgnored():
  * Asserts that this transition intentionally ignored an expected no-op event
  * and used the expected reason.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertIgnored(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertIgnored(
     reason: String?,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertIgnored()
     assertEquals(reason, (decision as AfsmDecision.Ignored).reason)
     return this
@@ -67,8 +67,8 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertIgnored(
 /**
  * Asserts that this event was invalid for the current state.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertInvalid():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertInvalid():
+    AfsmTransition<S, C> {
     assertTrue(
         actual = decision is AfsmDecision.Invalid,
         message = "Expected AfsmDecision.Invalid but was $decision.",
@@ -80,9 +80,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertInvalid():
  * Asserts that this event was invalid for the current state and used the
  * expected reason.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertInvalid(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertInvalid(
     reason: String?,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertInvalid()
     assertEquals(reason, (decision as AfsmDecision.Invalid).reason)
     return this
@@ -91,9 +91,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertInvalid(
 /**
  * Asserts the full state value.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertState(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertState(
     expected: S,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertEquals(expected, state)
     return this
 }
@@ -101,9 +101,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertState(
 /**
  * Asserts the phase of the standard `AfsmState<Phase, Data>` state shape.
  */
-public fun <P : Any, D : Any, C : Any, F : Any> AfsmTransition<AfsmState<P, D>, C, F>.assertPhase(
+public fun <P : Any, D : Any, C : Any> AfsmTransition<AfsmState<P, D>, C>.assertPhase(
     expected: P,
-): AfsmTransition<AfsmState<P, D>, C, F> {
+): AfsmTransition<AfsmState<P, D>, C> {
     assertEquals(expected, state.phase)
     return this
 }
@@ -111,9 +111,9 @@ public fun <P : Any, D : Any, C : Any, F : Any> AfsmTransition<AfsmState<P, D>, 
 /**
  * Asserts the data of the standard `AfsmState<Phase, Data>` state shape.
  */
-public fun <P : Any, D : Any, C : Any, F : Any> AfsmTransition<AfsmState<P, D>, C, F>.assertData(
+public fun <P : Any, D : Any, C : Any> AfsmTransition<AfsmState<P, D>, C>.assertData(
     expected: D,
-): AfsmTransition<AfsmState<P, D>, C, F> {
+): AfsmTransition<AfsmState<P, D>, C> {
     assertEquals(expected, state.data)
     return this
 }
@@ -121,9 +121,9 @@ public fun <P : Any, D : Any, C : Any, F : Any> AfsmTransition<AfsmState<P, D>, 
 /**
  * Asserts the ordered commands emitted by this transition.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertCommands(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertCommands(
     vararg expected: C,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertEquals(expected.toList(), commands)
     return this
 }
@@ -131,8 +131,8 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertCommands(
 /**
  * Asserts that this transition emitted no commands.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoCommands():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertNoCommands():
+    AfsmTransition<S, C> {
     assertEquals(emptyList(), commands)
     return this
 }
@@ -140,9 +140,9 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoCommands(
 /**
  * Asserts the ordered phase-owned command invocation operations.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertCommandInvocations(
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertCommandInvocations(
     vararg expected: AfsmCommandInvocation<C>,
-): AfsmTransition<S, C, F> {
+): AfsmTransition<S, C> {
     assertEquals(expected.toList(), commandInvocations)
     return this
 }
@@ -150,38 +150,18 @@ public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertCommandInvo
 /**
  * Asserts that this transition emitted no phase-owned command invocation work.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoCommandInvocations():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertNoCommandInvocations():
+    AfsmTransition<S, C> {
     assertEquals(emptyList(), commandInvocations)
     return this
 }
 
 /**
- * Asserts the ordered effects emitted by this transition.
+ * Asserts that this transition emitted no command work.
  */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertEffects(
-    vararg expected: F,
-): AfsmTransition<S, C, F> {
-    assertEquals(expected.toList(), effects)
-    return this
-}
-
-/**
- * Asserts that this transition emitted no effects.
- */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoEffects():
-    AfsmTransition<S, C, F> {
-    assertEquals(emptyList(), effects)
-    return this
-}
-
-/**
- * Asserts that this transition emitted no commands or effects.
- */
-public fun <S : Any, C : Any, F : Any> AfsmTransition<S, C, F>.assertNoOutputs():
-    AfsmTransition<S, C, F> {
+public fun <S : Any, C : Any> AfsmTransition<S, C>.assertNoOutputs():
+    AfsmTransition<S, C> {
     assertNoCommands()
     assertNoCommandInvocations()
-    assertNoEffects()
     return this
 }

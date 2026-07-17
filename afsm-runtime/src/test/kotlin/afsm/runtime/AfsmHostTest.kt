@@ -2,7 +2,6 @@ package afsm.runtime
 
 import afsm.core.Afsm
 import afsm.core.AfsmDecision
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
 import afsm.core.AfsmTransition
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -11,11 +10,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -46,7 +42,7 @@ class AfsmHostTest {
     @Test
     fun `dispatch processes external and command events in FIFO order without reentrancy`() = runTest {
         val hostScope = newHostScope()
-        val host: AfsmHost<TraceState, TraceEvent, TraceCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<TraceState, TraceEvent, TraceCommand> = AfsmHost(
             initialState = TraceState(),
             reducer = AfsmReducer { state: TraceState, event: TraceEvent ->
                 when (event) {
@@ -82,53 +78,40 @@ class AfsmHostTest {
     }
 
     @Test
-    fun `transition emits state then effects then executes commands`() = runTest {
+    fun `transition publishes state before executing commands`() = runTest {
         val hostScope = newHostScope()
         val timeline = mutableListOf<String>()
-        lateinit var host: AfsmHost<EffectState, EffectEvent, EffectCommand, EffectOutput>
+        lateinit var host: AfsmHost<WorkState, WorkEvent, WorkCommand>
         host = AfsmHost(
-            initialState = EffectState.Idle,
-            reducer = AfsmReducer { state: EffectState, event: EffectEvent ->
+            initialState = WorkState.Idle,
+            reducer = AfsmReducer { state: WorkState, event: WorkEvent ->
                 when (event) {
-                    EffectEvent.Start -> Afsm.transitioned(
-                        state = EffectState.Started,
-                        commands = listOf(EffectCommand.Complete),
-                        effects = listOf(EffectOutput.ShowStarted),
+                    WorkEvent.Start -> Afsm.transitioned(
+                        state = WorkState.Started,
+                        commands = listOf(WorkCommand.Complete),
                     )
 
-                    EffectEvent.Completed -> Afsm.transitioned(
-                        state = EffectState.Completed,
+                    WorkEvent.Completed -> Afsm.transitioned(
+                        state = WorkState.Completed,
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: EffectCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: WorkCommand, dispatchEvent ->
                 when (command) {
-                    EffectCommand.Complete -> {
+                    WorkCommand.Complete -> {
                         timeline += "command:${host.state.value}"
-                        dispatchEvent(EffectEvent.Completed)
+                        dispatchEvent(WorkEvent.Completed)
                     }
                 }
             },
             scope = hostScope,
         )
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            host.effects.collect { effect ->
-                timeline += "effect:$effect"
-            }
-        }
-
-        host.dispatch(EffectEvent.Start)
+        host.dispatch(WorkEvent.Start)
         advanceUntilIdle()
 
-        assertEquals(EffectState.Completed, host.state.value)
-        assertEquals(
-            listOf(
-                "effect:${EffectOutput.ShowStarted}",
-                "command:${EffectState.Started}",
-            ),
-            timeline,
-        )
+        assertEquals(WorkState.Completed, host.state.value)
+        assertEquals(listOf("command:${WorkState.Started}"), timeline)
         hostScope.cancel()
     }
 
@@ -136,7 +119,7 @@ class AfsmHostTest {
     fun `long running command does not block later external events`() = runTest {
         val hostScope = newHostScope()
         val commandGate = CompletableDeferred<Unit>()
-        val host: AfsmHost<ResponsiveState, ResponsiveEvent, ResponsiveCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<ResponsiveState, ResponsiveEvent, ResponsiveCommand> = AfsmHost(
             initialState = ResponsiveState.Idle,
             reducer = AfsmReducer { _: ResponsiveState, event: ResponsiveEvent ->
                 when (event) {
@@ -190,7 +173,7 @@ class AfsmHostTest {
                 exceptions += throwable
             },
         )
-        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand> = AfsmHost(
             initialState = PressureState.Idle,
             reducer = AfsmReducer { _: PressureState, _: PressureEvent ->
                 Afsm.transitioned(
@@ -227,7 +210,7 @@ class AfsmHostTest {
                 exceptions += throwable
             },
         )
-        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand> = AfsmHost(
             initialState = PressureState.Idle,
             reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
                 when (event) {
@@ -282,7 +265,7 @@ class AfsmHostTest {
                 exceptions += throwable
             },
         )
-        val host: AfsmHost<PressureState, PressureEvent, PressureCommand, AfsmNoEffect> = AfsmHost(
+        val host: AfsmHost<PressureState, PressureEvent, PressureCommand> = AfsmHost(
             initialState = PressureState.Idle,
             reducer = AfsmReducer { state: PressureState, event: PressureEvent ->
                 when (event) {
@@ -339,46 +322,45 @@ class AfsmHostTest {
     @Test
     fun `Handled transition keeps current state but may execute cleanup commands`() = runTest {
         val hostScope = newHostScope()
-        val handledCommands = mutableListOf<NoEffectCommand>()
-        val host: AfsmHost<NoEffectState, NoEffectEvent, NoEffectCommand, AfsmNoEffect> = AfsmHost(
-            initialState = NoEffectState.Submitting,
-            reducer = AfsmReducer { state: NoEffectState, event: NoEffectEvent ->
+        val handledCommands = mutableListOf<NoWorkCommand>()
+        val host: AfsmHost<NoWorkState, NoWorkEvent, NoWorkCommand> = AfsmHost(
+            initialState = NoWorkState.Submitting,
+            reducer = AfsmReducer { state: NoWorkState, event: NoWorkEvent ->
                 when (event) {
-                    NoEffectEvent.CancelRequested -> AfsmTransition.handled(
+                    NoWorkEvent.CancelRequested -> AfsmTransition.handled(
                         state = state,
-                        commands = listOf(NoEffectCommand.CancelRequest),
+                        commands = listOf(NoWorkCommand.CancelRequest),
                         reason = "cancel accepted while request is in flight",
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: NoEffectCommand, _ ->
+            commandHandler = AfsmCommandHandler { command: NoWorkCommand, _ ->
                 handledCommands += command
             },
             scope = hostScope,
         )
 
-        host.dispatch(NoEffectEvent.CancelRequested)
+        host.dispatch(NoWorkEvent.CancelRequested)
         advanceUntilIdle()
 
-        assertEquals(NoEffectState.Submitting, host.state.value)
-        assertEquals(listOf(NoEffectCommand.CancelRequest), handledCommands)
+        assertEquals(NoWorkState.Submitting, host.state.value)
+        assertEquals(listOf(NoWorkCommand.CancelRequest), handledCommands)
         hostScope.cancel()
     }
 
     @Test
-    fun `default effects are not replayed to late collectors`() = runTest {
+    fun `accepted transition remains available as durable current state`() = runTest {
         val hostScope = newHostScope()
-        val host: AfsmHost<EffectState, EffectEvent, EffectCommand, EffectOutput> = AfsmHost(
-            initialState = EffectState.Idle,
-            reducer = AfsmReducer { _: EffectState, event: EffectEvent ->
+        val host: AfsmHost<WorkState, WorkEvent, WorkCommand> = AfsmHost(
+            initialState = WorkState.Idle,
+            reducer = AfsmReducer { _: WorkState, event: WorkEvent ->
                 when (event) {
-                    EffectEvent.Start -> Afsm.transitioned(
-                        state = EffectState.Started,
-                        effects = listOf(EffectOutput.ShowStarted),
+                    WorkEvent.Start -> Afsm.transitioned(
+                        state = WorkState.Started,
                     )
 
-                    EffectEvent.Completed -> Afsm.transitioned(
-                        state = EffectState.Completed,
+                    WorkEvent.Completed -> Afsm.transitioned(
+                        state = WorkState.Completed,
                     )
                 }
             },
@@ -386,23 +368,10 @@ class AfsmHostTest {
             scope = hostScope,
         )
 
-        host.dispatch(EffectEvent.Start)
+        host.dispatch(WorkEvent.Start)
         advanceUntilIdle()
 
-        val lateEffects = mutableListOf<EffectOutput>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            host.effects.collect { effect ->
-                lateEffects += effect
-            }
-        }
-        advanceUntilIdle()
-
-        assertTrue(lateEffects.isEmpty())
-
-        host.dispatch(EffectEvent.Start)
-        advanceUntilIdle()
-
-        assertEquals(listOf(EffectOutput.ShowStarted), lateEffects)
+        assertEquals(WorkState.Started, host.state.value)
         hostScope.cancel()
     }
 
@@ -411,8 +380,7 @@ class AfsmHostTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
         val handledCommands = mutableListOf<DecisionCommand>()
-        val emittedEffects = mutableListOf<DecisionEffect>()
-        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 Afsm.ignore(
@@ -431,18 +399,11 @@ class AfsmHostTest {
             ),
         )
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            host.effects.collect { effect ->
-                emittedEffects += effect
-            }
-        }
-
         host.dispatch(DecisionEvent.Any)
         advanceUntilIdle()
 
         assertEquals(DecisionState("current"), host.state.value)
         assertTrue(handledCommands.isEmpty())
-        assertTrue(emittedEffects.isEmpty())
         assertTrue(diagnostics.isEmpty())
         hostScope.cancel()
     }
@@ -452,7 +413,7 @@ class AfsmHostTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
         val handledCommands = mutableListOf<DecisionCommand>()
-        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 Afsm.invalid(
@@ -492,7 +453,7 @@ class AfsmHostTest {
                 exceptions += throwable
             },
         )
-        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 Afsm.invalid(
@@ -521,7 +482,7 @@ class AfsmHostTest {
     fun `Command failure with Record policy records diagnostic and keeps host alive`() = runTest {
         val hostScope = newHostScope()
         val diagnostics = mutableListOf<AfsmDiagnostic>()
-        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { state: DecisionState, _: DecisionEvent ->
                 if (state.value == "current") {
@@ -567,7 +528,7 @@ class AfsmHostTest {
                 exceptions += throwable
             },
         )
-        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand, DecisionEffect> = AfsmHost(
+        val host: AfsmHost<DecisionState, DecisionEvent, DecisionCommand> = AfsmHost(
             initialState = DecisionState("current"),
             reducer = AfsmReducer { _: DecisionState, _: DecisionEvent ->
                 Afsm.transitioned(
@@ -629,34 +590,30 @@ class AfsmHostTest {
         DispatchC,
     }
 
-    private enum class EffectState {
+    private enum class WorkState {
         Idle,
         Started,
         Completed,
     }
 
-    private enum class EffectEvent {
+    private enum class WorkEvent {
         Start,
         Completed,
     }
 
-    private enum class EffectCommand {
+    private enum class WorkCommand {
         Complete,
     }
 
-    private enum class EffectOutput {
-        ShowStarted,
-    }
-
-    private enum class NoEffectState {
+    private enum class NoWorkState {
         Submitting,
     }
 
-    private enum class NoEffectEvent {
+    private enum class NoWorkEvent {
         CancelRequested,
     }
 
-    private enum class NoEffectCommand {
+    private enum class NoWorkCommand {
         CancelRequest,
     }
 
@@ -707,7 +664,4 @@ class AfsmHostTest {
         ShouldNotRun,
     }
 
-    private enum class DecisionEffect {
-        ShouldNotEmit,
-    }
 }

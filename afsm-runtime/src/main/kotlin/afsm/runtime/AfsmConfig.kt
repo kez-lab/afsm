@@ -22,11 +22,6 @@ public class AfsmConfig(
     public val commandFailurePolicy: AfsmCommandFailurePolicy =
         AfsmCommandFailurePolicy.Throw,
     /**
-     * Controls one-shot effect buffering. Effects are not durable state.
-     */
-    public val effectDelivery: AfsmEffectDelivery =
-        AfsmEffectDelivery.Default,
-    /**
      * Maximum number of events that can be queued by non-suspending dispatch.
      *
      * Command result events also use this queue. If a command result event

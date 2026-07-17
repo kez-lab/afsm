@@ -2,7 +2,6 @@ public final class afsm/test/AfsmTransitionAssertionsKt {
 	public static final fun assertCommandInvocations (Lafsm/core/AfsmTransition;[Lafsm/core/AfsmCommandInvocation;)Lafsm/core/AfsmTransition;
 	public static final fun assertCommands (Lafsm/core/AfsmTransition;[Ljava/lang/Object;)Lafsm/core/AfsmTransition;
 	public static final fun assertData (Lafsm/core/AfsmTransition;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
-	public static final fun assertEffects (Lafsm/core/AfsmTransition;[Ljava/lang/Object;)Lafsm/core/AfsmTransition;
 	public static final fun assertHandled (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
 	public static final fun assertHandled (Lafsm/core/AfsmTransition;Ljava/lang/String;)Lafsm/core/AfsmTransition;
 	public static final fun assertIgnored (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
@@ -11,7 +10,6 @@ public final class afsm/test/AfsmTransitionAssertionsKt {
 	public static final fun assertInvalid (Lafsm/core/AfsmTransition;Ljava/lang/String;)Lafsm/core/AfsmTransition;
 	public static final fun assertNoCommandInvocations (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
 	public static final fun assertNoCommands (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
-	public static final fun assertNoEffects (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
 	public static final fun assertNoOutputs (Lafsm/core/AfsmTransition;)Lafsm/core/AfsmTransition;
 	public static final fun assertPhase (Lafsm/core/AfsmTransition;Ljava/lang/Object;)Lafsm/core/AfsmTransition;
 	public static final fun assertState (Lafsm/core/AfsmTransition;Ljava/lang/Object;)Lafsm/core/AfsmTransition;

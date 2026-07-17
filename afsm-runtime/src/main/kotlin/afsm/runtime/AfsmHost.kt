@@ -10,30 +10,22 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
-public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
+public class AfsmHost<S : Any, E : Any, C : Any>(
     initialState: S,
-    private val reducer: AfsmReducer<S, E, C, F>,
+    private val reducer: AfsmReducer<S, E, C>,
     private val commandHandler: AfsmCommandHandler<C, E>,
     scope: CoroutineScope,
     private val config: AfsmConfig = AfsmConfig(),
 ) {
     private val eventQueue = Channel<E>(config.eventQueueCapacity)
-    private val commandQueue = Channel<PendingCommand<S, E, C, F>>(config.commandQueueCapacity)
+    private val commandQueue = Channel<PendingCommand<S, E, C>>(config.commandQueueCapacity)
     private val _state = MutableStateFlow(initialState)
-    private val _effects = MutableSharedFlow<F>(
-        replay = config.effectDelivery.replay,
-        extraBufferCapacity = config.effectDelivery.extraBufferCapacity,
-        onBufferOverflow = config.effectDelivery.onBufferOverflow,
-    )
 
     private val processor: Job = scope.launch(start = CoroutineStart.UNDISPATCHED) {
         processEvents()
@@ -45,14 +37,6 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     private val activeInvocations = mutableMapOf<AfsmInvocationKey, Job>()
 
     public val state: StateFlow<S> = _state.asStateFlow()
-
-    /**
-     * Best-effort one-shot effects emitted by accepted transitions.
-     *
-     * Critical UI actions that must survive recreation should be modeled as
-     * durable state plus an acknowledgement event instead of effect-only output.
-     */
-    public val effects: Flow<F> = _effects.asSharedFlow()
 
     init {
         processor.invokeOnCompletion { cause ->
@@ -132,13 +116,9 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
 
     private suspend fun applyAcceptedTransition(
         event: E,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
         _state.value = transition.state
-
-        for (effect in transition.effects) {
-            _effects.emit(effect)
-        }
 
         for (invocation in transition.commandInvocations) {
             when (invocation) {
@@ -171,7 +151,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         state: S,
         event: E,
         command: C,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
         val pending = PendingCommand(
             state = state,
@@ -215,7 +195,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         state: S,
         event: E,
         command: C,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
         dispatchAllowed: () -> Boolean = { true },
     ) {
         try {
@@ -262,7 +242,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         state: S,
         event: E,
         invocation: AfsmCommandInvocation.Start<C>,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
         lateinit var job: Job
         synchronized(activeInvocations) {
@@ -306,7 +286,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
         state: S,
         event: E,
         command: C,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
         val result = eventQueue.trySend(event)
         if (result.isSuccess) {
@@ -347,10 +327,9 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     private fun recordDroppedIgnoredOutputsIfNeeded(
         state: S,
         event: E,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
-        val hasDroppedOutputs =
-            transition.commands.isNotEmpty() || transition.effects.isNotEmpty()
+        val hasDroppedOutputs = transition.commands.isNotEmpty()
         val changedState = transition.state != state
 
         if (!hasDroppedOutputs && !changedState) {
@@ -372,7 +351,7 @@ public class AfsmHost<S : Any, E : Any, C : Any, F : Any>(
     private fun handleInvalidTransition(
         state: S,
         event: E,
-        transition: AfsmTransition<S, C, F>,
+        transition: AfsmTransition<S, C>,
     ) {
         val decision = transition.decision as AfsmDecision.Invalid
         val diagnostic = createDiagnostic(
@@ -437,9 +416,9 @@ private fun Any.safeTypeName(): String {
     return this::class.simpleName ?: "Unknown"
 }
 
-private data class PendingCommand<S : Any, E : Any, C : Any, F : Any>(
+private data class PendingCommand<S : Any, E : Any, C : Any>(
     val state: S,
     val event: E,
     val command: C,
-    val transition: AfsmTransition<S, C, F>,
+    val transition: AfsmTransition<S, C>,
 )

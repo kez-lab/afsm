@@ -3,7 +3,6 @@ package afsm.runtime
 import afsm.core.Afsm
 import afsm.core.AfsmCommandInvocation
 import afsm.core.AfsmInvocationKey
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -121,7 +120,6 @@ class AfsmPhaseOwnedInvocationTest {
         InvocationState,
         InvocationEvent,
         InvocationCommand,
-        AfsmNoEffect,
         > {
         return AfsmReducer { state, event ->
             when (event) {

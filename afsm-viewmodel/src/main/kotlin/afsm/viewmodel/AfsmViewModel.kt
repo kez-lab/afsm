@@ -19,11 +19,11 @@ import androidx.lifecycle.viewModelScope
  * If the machine emits commands, pass [commandHandler]. The default command
  * handler is intended only for machines that never emit commands.
  */
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmDefaultMachine<S, E, C, F>,
+public fun <S : Any, E : Any, C : Any> ViewModel.afsmHost(
+    machine: AfsmDefaultMachine<S, E, C>,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F> {
+): AfsmHost<S, E, C> {
     return afsmHost(
         initialState = machine.initialState,
         reducer = machine,
@@ -46,12 +46,12 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * If the machine emits commands, pass [commandHandler]. The default command
  * handler is intended only for machines that never emit commands.
  */
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    machine: AfsmMachine<S, E, C, F>,
+public fun <S : Any, E : Any, C : Any> ViewModel.afsmHost(
+    machine: AfsmMachine<S, E, C>,
     initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F> {
+): AfsmHost<S, E, C> {
     return afsmHost(
         initialState = initialState,
         reducer = machine,
@@ -70,12 +70,12 @@ public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
  * If the reducer emits commands, pass [commandHandler]. The default command
  * handler is intended only for reducers that never emit commands.
  */
-public fun <S : Any, E : Any, C : Any, F : Any> ViewModel.afsmHost(
-    reducer: AfsmReducer<S, E, C, F>,
+public fun <S : Any, E : Any, C : Any> ViewModel.afsmHost(
+    reducer: AfsmReducer<S, E, C>,
     initialState: S,
     commandHandler: AfsmCommandHandler<C, E> = AfsmCommandHandler.none(),
     config: AfsmConfig = AfsmConfig(),
-): AfsmHost<S, E, C, F> {
+): AfsmHost<S, E, C> {
     return AfsmHost(
         initialState = initialState,
         reducer = reducer,

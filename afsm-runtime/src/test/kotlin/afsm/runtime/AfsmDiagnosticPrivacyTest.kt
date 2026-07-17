@@ -1,7 +1,6 @@
 package afsm.runtime
 
 import afsm.core.Afsm
-import afsm.core.AfsmNoEffect
 import afsm.core.AfsmReducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +27,6 @@ class AfsmDiagnosticPrivacyTest {
             SensitiveState,
             SensitiveEvent,
             SensitiveCommand,
-            AfsmNoEffect,
             > = AfsmHost(
             initialState = state,
             reducer = AfsmReducer { currentState: SensitiveState, _: SensitiveEvent ->
@@ -70,7 +68,6 @@ class AfsmDiagnosticPrivacyTest {
             SensitiveState,
             SensitiveEvent,
             SensitiveCommand,
-            AfsmNoEffect,
             > = AfsmHost(
             initialState = SensitiveState(password = "secret-password"),
             reducer = AfsmReducer { currentState: SensitiveState, _: SensitiveEvent ->
@@ -117,7 +114,6 @@ class AfsmDiagnosticPrivacyTest {
             SensitiveState,
             SensitiveEvent,
             SensitiveCommand,
-            AfsmNoEffect,
             > = AfsmHost(
             initialState = state,
             reducer = AfsmReducer { currentState: SensitiveState, _: SensitiveEvent ->
