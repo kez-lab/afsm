@@ -1685,3 +1685,9 @@
 - Source: Current three-generic `AfsmMachine`, `AfsmDefaultMachine`, and `AfsmReducer` declarations plus the implemented explicit-state Checkout host path.
 - Action: Kept the implemented dynamic-initial-state experiment canonical while replacing its obsolete four-channel type signature and marking the selected split as current.
 - Updated: `wiki/03-engineering/afsm-dynamic-initial-state-experiment.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] wiki-lint | Mark legacy API experiments and verification as historical
+
+- Source: Effect-free core/runtime API declarations, current KSP/DSL pages, and index routing audit of legacy symbols.
+- Action: Preserved older declaration experiments, Signup reference/pseudo code, v2 compile evidence, and four-channel Checkout verification while adding direct-page historical warnings and current-contract routes; updated index labels so legacy Effect APIs cannot appear current.
+- Updated: `wiki/03-engineering/afsm-first-use-api-experiment.md`, `wiki/03-engineering/afsm-first-use-api-experiment-results-2026-07-10.md`, `wiki/03-engineering/reference-flow-signup-identity-retry.md`, `wiki/03-engineering/signup-state-machine-pseudo-implementation.md`, `wiki/03-engineering/afsm-core-compile-validation.md`, `wiki/03-engineering/checkout-viewmodel-integration-verification.md`, `wiki/index.md`, `wiki/log.md`.

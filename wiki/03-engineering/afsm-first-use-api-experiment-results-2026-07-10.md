@@ -1,10 +1,17 @@
 ---
-title: Afsm First-Use API Experiment Results 2026-07-10
-updated: 2026-07-10
-status: candidate-e-implemented
+title: Historical Afsm First-Use API Experiment Results 2026-07-10
+updated: 2026-07-17
+status: historical-experiment-result
 ---
 
 # Afsm First-Use API Experiment Results 2026-07-10
+
+> Historical result snapshot. Candidate E's directly annotated top-level
+> machine property remains current, but the event/command/effect token
+> prototypes and generic counts below describe the pre-Effect-removal API. Use
+> [[afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] and
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]] for the
+> maintained surface.
 
 The first prototype round did not accept a new production API. It eliminated
 two attractive but invalid Kotlin shapes and showed that compiling alternatives

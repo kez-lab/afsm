@@ -21,8 +21,8 @@ updated: 2026-07-17
 - [[03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]] - Implemented scoped State/Event/Command DSL that is runtime definition, graph source, and test target.
 - [[03-engineering/afsm-reference-architecture-review|Historical Afsm Reference Architecture Review]] - May 2026 comparison against XState, SCXML, Kotlin state-machine libraries, Redux/Elm, Workflow, and Android guidance.
 - [[03-engineering/afsm-example-catalog|Afsm Example Catalog]] - Canonical example ladder from minimal Draft to Auth, Checkout, ProductEditor, and non-Afsm data screens.
-- [[03-engineering/afsm-first-use-api-experiment|Afsm First-Use API Experiment]] - Breaking pre-release prototypes to reduce feature-boundary generic and declaration ceremony.
-- [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Afsm First-Use API Experiment Results 2026-07-10]] - Compile, behavior, and diagnostic findings that reject two invalid Kotlin shapes and advance direct graphable properties.
+- [[03-engineering/afsm-first-use-api-experiment|Historical Afsm First-Use API Experiment]] - Pre-Effect-removal declaration prototypes; retained direct-property learning is implemented in current KSP/DSL docs.
+- [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Historical Afsm First-Use API Experiment Results 2026-07-10]] - Dated compile and diagnostic evidence that led to direct graphable properties under the older output model.
 - [[03-engineering/afsm-dynamic-initial-state-experiment|Afsm Dynamic Initial State Experiment]] - Current implemented split between graphable machine rules and genuinely defaultable state for Android runtime inputs.
 - [[03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] - Current KSP discovery and Gradle `.mmd` generation contract.
 - [[03-engineering/afsm-v3-topology-first-api|Superseded Afsm v3 Phased State API]] - Historical phased-state helper direction superseded by the executable DSL plan.
@@ -42,8 +42,8 @@ updated: 2026-07-17
 - [[03-engineering/android-fsm-architecture|Android FSM Architecture]] - Core architecture for ViewModel-backed plain Kotlin FSMs.
 - [[03-engineering/fsm-runtime-roadmap|Historical FSM Runtime Roadmap]] - Superseded build-order plan retained as implementation history.
 - [[03-engineering/library-delivery-plan|Historical Library Delivery Plan]] - Staged plan retained as history; current gates live in release readiness and open questions.
-- [[03-engineering/reference-flow-signup-identity-retry|Reference Flow - Signup Identity Retry]] - First reference flow design with State/Event/Command/Effect policy.
-- [[03-engineering/signup-state-machine-pseudo-implementation|Signup StateMachine Pseudo Implementation]] - Kotlin-like pseudo implementation used to validate Afsm API ergonomics.
+- [[03-engineering/reference-flow-signup-identity-retry|Historical Reference Flow - Signup Identity Retry]] - First reference scenario retained with its superseded State/Event/Command/Effect policy.
+- [[03-engineering/signup-state-machine-pseudo-implementation|Historical Signup StateMachine Pseudo Implementation]] - Superseded v1/v2 Kotlin-like ergonomics exercise retained as design history.
 - [[03-engineering/state-event-command-effect|Historical State, Event, Command, Effect]] - Superseded explanation of the four-concept output model retained as design history.
 - [[03-engineering/viewmodel-fsm-boundaries|ViewModel and FSM Boundaries]] - Responsibility split across View, ViewModel, FSM, and UseCase layers.
 - [[03-engineering/testing-strategy|Testing Strategy]] - How to test transitions, ViewModel command execution, and UI rendering.

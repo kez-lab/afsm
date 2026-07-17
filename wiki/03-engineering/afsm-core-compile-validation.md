@@ -1,9 +1,15 @@
 ---
-title: Afsm Core Compile Validation
-updated: 2026-05-03
+title: Historical Afsm Core Compile Validation
+updated: 2026-07-17
+status: historical-v2-compile-evidence
 ---
 
 # Afsm Core Compile Validation
+
+> Historical compile evidence for the removed v2 API. The types listed below
+> are not the current public surface. Use
+> [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]] and
+> `docs/afsm-public-api.md` for maintained declarations.
 
 ## Summary
 

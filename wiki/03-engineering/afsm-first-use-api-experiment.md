@@ -1,10 +1,18 @@
 ---
-title: Afsm First-Use API Experiment
-updated: 2026-07-10
-status: candidate-e-implemented-review-pending
+title: Historical Afsm First-Use API Experiment
+updated: 2026-07-17
+status: historical-experiment-superseded-output-model
 ---
 
 # Afsm First-Use API Experiment
+
+> Historical experiment snapshot. The direct top-level machine-property result
+> remains implemented, but the four-channel Effect model and declaration
+> examples below were superseded on 2026-07-17. Use
+> [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]],
+> [[afsm-ksp-mmd-generation|Afsm KSP MMD Generation]], and
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]] for the
+> current contract.
 
 This experiment tests whether Afsm can make a feature machine easier to declare
 without hiding the domain flow or weakening Kotlin type safety.

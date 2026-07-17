@@ -1,10 +1,18 @@
 ---
-title: Checkout ViewModel Integration Verification
-updated: 2026-07-10
-status: verified
+title: Historical Checkout ViewModel Integration Verification
+updated: 2026-07-17
+status: historical-four-channel-verification
 ---
 
 # Checkout ViewModel Integration Verification
+
+> Historical verification snapshot for the pre-2026-07-17 Checkout Effect
+> channel. The repository scenarios remain useful evidence for product-id and
+> repository-result wiring, but completion now exists only as durable state.
+> Use
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]] and
+> [[../05-qa/verification-report-2026-07-17-effect-free-output-model|Effect-Free Output Model Verification 2026-07-17]]
+> for the maintained contract.
 
 ## Evidence Gap
 

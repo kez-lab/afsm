@@ -1,9 +1,16 @@
 ---
-title: Reference Flow - Signup Identity Retry
-updated: 2026-05-01
+title: Historical Reference Flow - Signup Identity Retry
+updated: 2026-07-17
+status: historical-reference-superseded-output-model
 ---
 
 # Reference Flow - Signup Identity Retry
+
+> Historical pre-implementation reference flow. Its Effect policy was
+> superseded by
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]]. Use
+> [[afsm-example-catalog|Afsm Example Catalog]] for current reference flows.
+> The scenario remains useful design history; its proposed API is not current.
 
 ## Purpose
 

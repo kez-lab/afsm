@@ -1,9 +1,16 @@
 ---
-title: Signup StateMachine Pseudo Implementation
-updated: 2026-05-01
+title: Historical Signup StateMachine Pseudo Implementation
+updated: 2026-07-17
+status: historical-pseudo-implementation-superseded
 ---
 
 # Signup StateMachine Pseudo Implementation
+
+> Historical v1/v2 ergonomics exercise. `AfsmStateMachine`, the three-parameter
+> transition with Effect, `AfsmNoEffect`, and the Effect conclusion below are
+> superseded. Use [[afsm-v3-executable-dsl|Afsm v3 Executable DSL]] and
+> [[afsm-output-model-simplification|Afsm Output Model Simplification]] for the
+> current API and output ownership.
 
 ## Purpose
 
