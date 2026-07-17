@@ -3055,3 +3055,32 @@ Conclusion:
 - Static audit finds zero maintained Effect surface and zero feature Event
   construction in sample screens.
 - A fresh controlled human review and production-like pilot remain required.
+
+## [2026-07-17] Bilingual interactive onboarding page
+
+Change:
+
+- Added `docs/index.html` as a dependency-free English/Korean introduction to
+  why Afsm exists, the State/Event/Command model, the Android host loop, the
+  Draft quickstart, the graph/machine/tests reading contract, and the example
+  ladder.
+- Added locale-aware language switching, reduced-motion and no-JavaScript
+  fallbacks, responsive layouts, and a conceptual Draft simulator that exposes
+  Event, Command, and phase changes.
+- Linked the page from both READMEs and the Getting Started guide.
+
+Verification:
+
+```text
+Inline JavaScript syntax: pass
+Relative documentation links: 7 checked, 0 missing
+Browser: 1280x720 desktop and 390x844 mobile, 0 horizontal overflow
+Interaction: EN/KO switch, missing-title branch, Editing -> Saving -> Saved
+Console: 0 warnings or errors
+```
+
+Conclusion:
+
+- The public first-use path now has one directly openable bilingual visual
+  orientation page before the compile-backed Draft and Android walkthroughs.
+- This is repository/browser evidence, not a controlled human first-use result.

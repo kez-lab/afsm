@@ -13,6 +13,7 @@ The public docs version is [docs/examples.md](../../docs/examples.md).
 
 | Level | Example | Purpose |
 |---|---|---|
+| 0 | [Bilingual visual introduction](../../docs/index.html) | English/Korean origin story, three-concept model, Android execution loop, and interactive Draft simulation |
 | 1 | README minimal Draft | Smallest mental model: phase, data, event, command, `onEnter` |
 | 2 | [Auth](../../docs/auth-walkthrough.md) | Smallest real Android screen: validation, command result events, state-driven navigation |
 | 3 | [Checkout](../../docs/checkout-walkthrough.md) | Mid-size Android lifecycle flow: navigation argument initial state, loading, payment, retry, stale results, durable completion |
@@ -52,8 +53,9 @@ Use examples to prove both sides of the product:
 - Afsm does not require UI composables to construct machine Event objects;
   ordinary verb-named ViewModel functions are the public screen boundary.
 
-The public onboarding should send developers through dedicated walkthroughs in
-this order:
+The visual introduction is the optional first orientation surface. It links
+directly into the public onboarding, which should send developers through
+dedicated walkthroughs in this order:
 
 1. Auth.
 2. Checkout.

@@ -55,6 +55,7 @@ Command = typed host-work request emitted by an accepted transition
 | `io.github.afsm.graph` | Gradle `.mmd` export integration |
 | `sample-shop` | Auth, Checkout, Product Editor reference flows plus ordinary non-Afsm screens |
 | `consumer-smoke` | Separate Maven Local Android consumer, behavior tests, and graph generation |
+| `docs/index.html` | Single-file English/Korean visual introduction with the origin story, three-concept model, and interactive Draft loop |
 
 Five library modules use explicit API mode/API validation: `afsm-core`,
 `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, and `afsm-graph-ksp`.

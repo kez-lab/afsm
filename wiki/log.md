@@ -1710,3 +1710,16 @@
 - Action: Reclassified all eight goal outcomes with current proof, recorded repository coherence as passing, and preserved human first-use, first-author experience, and production-like pilot as required missing evidence.
 - Evidence: `raw/verification/2026-07-17-goal-completion-audit/README.md` and `wiki/06-project/goal-completion-audit-2026-07-17.md`.
 - Updated: `raw/README.md`, `wiki/06-project/long-term-goal.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] implementation | Add bilingual interactive Afsm introduction
+
+- Source: Current README origin story, Effect-free State/Event/Command model,
+  Draft-first example ladder, and Android ViewModel boundary.
+- Action: Added a dependency-free responsive English/Korean HTML introduction
+  with a visual flow, interactive Draft simulation, accessible language switch,
+  and links into the maintained onboarding path; verified desktop/mobile
+  rendering, interaction, console output, script syntax, and relative links.
+- Updated: `docs/index.html`, `docs/getting-started.md`, `README.md`,
+  `README.ko.md`, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-example-catalog.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

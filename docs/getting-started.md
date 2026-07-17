@@ -3,6 +3,9 @@
 This guide builds the smallest useful Android Afsm feature. Complete compiled
 versions live in `consumer-smoke/app/src/main/kotlin/.../DraftQuickstart.kt`.
 
+For the motivation, three-concept model, and an interactive Draft simulation in
+English or Korean, start with the [bilingual visual introduction](index.html).
+
 ## 1. Add the modules
 
 Afsm is currently verified through Maven Local, not publicly released.
