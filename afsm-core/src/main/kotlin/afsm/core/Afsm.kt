@@ -14,21 +14,18 @@ public object Afsm {
      * Builds an accepted transition result for a custom reducer.
      *
      * [state] must be the reducer's next state. [commands] are ordinary
-     * sequential host work, [commandInvocations] are keyed phase-owned work,
-     * and [effects] are UI output. Graphable DSL code should use
-     * `transitionTo(...)`, `command(...)`, `invoke(...)`, and `effect(...)`
-     * instead.
+     * sequential host work and [commandInvocations] are keyed phase-owned work.
+     * Graphable DSL code should use `transitionTo(...)`, `command(...)`, and
+     * `invoke(...)` instead.
      */
-    public fun <S : Any, C : Any, F : Any> transitioned(
+    public fun <S : Any, C : Any> transitioned(
         state: S,
         commands: List<C> = emptyList(),
-        effects: List<F> = emptyList(),
         commandInvocations: List<AfsmCommandInvocation<C>> = emptyList(),
-    ): AfsmTransition<S, C, F> {
+    ): AfsmTransition<S, C> {
         return AfsmTransition.transitioned(
             state = state,
             commands = commands,
-            effects = effects,
             commandInvocations = commandInvocations,
         )
     }
@@ -40,10 +37,10 @@ public object Afsm {
      * usually omit impossible event handlers, and use scoped `ignore(...)` only
      * for expected no-op events that are worth documenting.
      */
-    public fun <S : Any, C : Any, F : Any> ignore(
+    public fun <S : Any, C : Any> ignore(
         state: S,
         reason: String? = null,
-    ): AfsmTransition<S, C, F> {
+    ): AfsmTransition<S, C> {
         return AfsmTransition.ignored(
             state = state,
             reason = reason,
@@ -58,10 +55,10 @@ public object Afsm {
      * by default, and use scoped `invalid(...)` only when an explicit diagnostic
      * reason is useful.
      */
-    public fun <S : Any, C : Any, F : Any> invalid(
+    public fun <S : Any, C : Any> invalid(
         state: S,
         reason: String? = null,
-    ): AfsmTransition<S, C, F> {
+    ): AfsmTransition<S, C> {
         return AfsmTransition.invalid(
             state = state,
             reason = reason,

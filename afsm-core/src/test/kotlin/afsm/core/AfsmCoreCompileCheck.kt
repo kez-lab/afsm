@@ -37,15 +37,11 @@ private sealed interface SignupCommand {
     ) : SignupCommand
 }
 
-private sealed interface SignupEffect {
-    data object NavigateToHome : SignupEffect
-}
-
 private typealias SignupTransition =
-    AfsmTransition<SignupState, SignupCommand, SignupEffect>
+    AfsmTransition<SignupState, SignupCommand>
 
 private typealias SignupMachine =
-    AfsmReducer<SignupState, SignupEvent, SignupCommand, SignupEffect>
+    AfsmReducer<SignupState, SignupEvent, SignupCommand>
 
 private class SignupStateMachine : SignupMachine {
     override fun transition(
@@ -103,7 +99,6 @@ private class SignupStateMachine : SignupMachine {
         return when (event) {
             SignupEvent.VerificationSucceeded -> Afsm.transitioned(
                 state = SignupState.Completed,
-                effects = listOf(SignupEffect.NavigateToHome),
             )
 
             is SignupEvent.VerificationFailed -> Afsm.transitioned(
@@ -188,10 +183,10 @@ private sealed interface LoginCommand {
 }
 
 private typealias LoginTransition =
-    AfsmTransition<LoginState, LoginCommand, AfsmNoEffect>
+    AfsmTransition<LoginState, LoginCommand>
 
 private typealias LoginMachine =
-    AfsmReducer<LoginState, LoginEvent, LoginCommand, AfsmNoEffect>
+    AfsmReducer<LoginState, LoginEvent, LoginCommand>
 
 private class LoginStateMachine : LoginMachine {
     override fun transition(
@@ -251,10 +246,10 @@ private sealed interface ToggleEvent {
 }
 
 private typealias ToggleTransition =
-    AfsmTransition<ToggleState, AfsmNoCommand, AfsmNoEffect>
+    AfsmTransition<ToggleState, AfsmNoCommand>
 
 private typealias ToggleMachine =
-    AfsmReducer<ToggleState, ToggleEvent, AfsmNoCommand, AfsmNoEffect>
+    AfsmReducer<ToggleState, ToggleEvent, AfsmNoCommand>
 
 private object ToggleStateMachine : ToggleMachine {
     override fun transition(
@@ -271,15 +266,14 @@ private object ToggleStateMachine : ToggleMachine {
 }
 
 @Suppress("unused")
-private fun compileAfsmNoEffectUsage() {
+private fun compileEffectFreeTransitionUsage() {
     val machine: LoginMachine = LoginStateMachine()
     val transition: LoginTransition = machine.transition(
         state = LoginState.Editing,
         event = LoginEvent.SubmitRequested,
     )
 
-    val noEffects: List<AfsmNoEffect> = transition.effects
-    check(noEffects.isEmpty())
+    check(transition.state == LoginState.Submitting)
 }
 
 @Suppress("unused")
@@ -290,13 +284,11 @@ private fun compileAfsmNoCommandUsage() {
     )
 
     val noCommands: List<AfsmNoCommand> = transition.commands
-    val noEffects: List<AfsmNoEffect> = transition.effects
     check(noCommands.isEmpty())
-    check(noEffects.isEmpty())
 }
 
 @Suppress("unused")
-private fun compileAfsmTransitionWithEffectsUsage() {
+private fun compileDurableCompletionUsage() {
     val machine: SignupMachine = SignupStateMachine()
     val transition: SignupTransition = machine.transition(
         state = SignupState.VerifyingIdentity(
@@ -307,5 +299,5 @@ private fun compileAfsmTransitionWithEffectsUsage() {
         event = SignupEvent.VerificationSucceeded,
     )
 
-    check(transition.effects == listOf(SignupEffect.NavigateToHome))
+    check(transition.state == SignupState.Completed)
 }

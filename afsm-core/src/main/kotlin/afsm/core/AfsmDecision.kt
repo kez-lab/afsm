@@ -28,7 +28,7 @@ public sealed interface AfsmDecision {
      *
      * Use this for duplicate or stale events that are harmless and worth
      * documenting, such as a retry click while a retry command is already
-     * running. Ignored decisions drop state, command, and effect output.
+     * running. Ignored decisions drop state and command output.
      */
     public data class Ignored(
         public val reason: String? = null,

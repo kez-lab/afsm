@@ -8,8 +8,8 @@ package afsm.core
  * comes from navigation, a deep link, or restoration should use this type and
  * pass an explicit state to their host.
  */
-public interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
-    AfsmReducer<S, E, C, F>,
+public interface AfsmMachine<S : Any, E : Any, C : Any> :
+    AfsmReducer<S, E, C>,
     AfsmGraphSource
 
 /**
@@ -19,7 +19,7 @@ public interface AfsmMachine<S : Any, E : Any, C : Any, F : Any> :
  * runtime input. It enables the concise ViewModel host overload that starts
  * from [initialState].
  */
-public interface AfsmDefaultMachine<S : Any, E : Any, C : Any, F : Any> :
-    AfsmMachine<S, E, C, F> {
+public interface AfsmDefaultMachine<S : Any, E : Any, C : Any> :
+    AfsmMachine<S, E, C> {
     public val initialState: S
 }

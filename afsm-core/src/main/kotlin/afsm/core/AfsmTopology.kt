@@ -14,9 +14,7 @@ public data class AfsmTopologyState(
     public val label: String = id,
     public val parentId: String? = null,
     public val entryCommandLabels: List<String> = emptyList(),
-    public val entryEffectLabels: List<String> = emptyList(),
     public val exitCommandLabels: List<String> = emptyList(),
-    public val exitEffectLabels: List<String> = emptyList(),
 )
 
 public enum class AfsmTopologyTransitionKind {
@@ -30,7 +28,6 @@ public data class AfsmTopologyTransition(
     public val to: String,
     public val conditionLabel: String? = null,
     public val commandLabels: List<String> = emptyList(),
-    public val effectLabels: List<String> = emptyList(),
     public val kind: AfsmTopologyTransitionKind = AfsmTopologyTransitionKind.External,
     public val isFallback: Boolean = false,
 )
@@ -40,13 +37,12 @@ public data class AfsmMmdOptions(
     public val includeInternalTransitions: Boolean = false,
     public val includeFallbackTransitions: Boolean = true,
     public val includeCommandOnlyInternalTransitions: Boolean = true,
-    public val includeEffectOnlyInternalTransitions: Boolean = true,
 ) {
     public companion object {
         /**
          * Flow-oriented diagram for README/docs/reviews. Text-field self-loops
-         * are hidden unless they are named condition, fallback, command, or
-         * effect branches.
+         * are hidden unless they are named condition, fallback, or command
+         * branches.
          */
         public val Flow: AfsmMmdOptions = AfsmMmdOptions()
 
@@ -115,9 +111,6 @@ private fun AfsmTopologyTransition.shouldRender(options: AfsmMmdOptions): Boolea
     if (commandLabels.isNotEmpty()) {
         return options.includeCommandOnlyInternalTransitions
     }
-    if (effectLabels.isNotEmpty()) {
-        return options.includeEffectOnlyInternalTransitions
-    }
     return options.includeInternalTransitions
 }
 
@@ -129,9 +122,6 @@ private fun AfsmTopologyTransition.mmdLabel(): String {
     if (commandLabels.isNotEmpty()) {
         parts += "/ ${commandLabels.joinToString(", ")}"
     }
-    if (effectLabels.isNotEmpty()) {
-        parts += "! ${effectLabels.joinToString(", ")}"
-    }
     return parts.joinToString(" ")
 }
 
@@ -140,14 +130,8 @@ private fun AfsmTopologyState.mmdNotes(): List<String> {
         if (entryCommandLabels.isNotEmpty()) {
             add("entry / ${entryCommandLabels.joinToString(", ")}")
         }
-        if (entryEffectLabels.isNotEmpty()) {
-            add("entry ! ${entryEffectLabels.joinToString(", ")}")
-        }
         if (exitCommandLabels.isNotEmpty()) {
             add("exit / ${exitCommandLabels.joinToString(", ")}")
-        }
-        if (exitEffectLabels.isNotEmpty()) {
-            add("exit ! ${exitEffectLabels.joinToString(", ")}")
         }
     }
 }

@@ -60,7 +60,6 @@ class AfsmPhaseOwnedInvocationTest {
                 Unit,
                 UploadEvent,
                 UploadCommand,
-                AfsmNoEffect,
                 > {
                 initial(UploadPhase.Editing, Unit)
 
@@ -93,7 +92,6 @@ class AfsmPhaseOwnedInvocationTest {
             Unit,
             UploadEvent,
             UploadCommand,
-            AfsmNoEffect,
             > {
             initial(UploadPhase.Editing, Unit)
 
@@ -144,7 +142,6 @@ class AfsmPhaseOwnedInvocationTest {
         AfsmState<UploadPhase, Unit>,
         UploadEvent,
         UploadCommand,
-        AfsmNoEffect,
         > {
         return afsmMachine {
             initial(UploadPhase.Editing, Unit)

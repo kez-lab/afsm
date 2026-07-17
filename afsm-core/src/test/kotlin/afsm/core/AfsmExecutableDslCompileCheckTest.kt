@@ -128,7 +128,6 @@ class AfsmExecutableDslCompileCheckTest {
             DslProductEditorData,
             DslProductEditorEvent,
             DslProductEditorCommand,
-            DslProductEditorEffect,
             > {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
@@ -145,9 +144,6 @@ class AfsmExecutableDslCompileCheckTest {
                     }
                     command(label = "SaveDraft") {
                         DslProductEditorCommand.SaveDraft(data.draft)
-                    }
-                    effect(label = "CloseEditor") {
-                        DslProductEditorEffect.CloseEditor
                     }
                     transitionTo(DslProductEditorPhase.SavingDraft)
                 }
@@ -171,7 +167,6 @@ class AfsmExecutableDslCompileCheckTest {
             ),
             result.commands,
         )
-        assertEquals(listOf(DslProductEditorEffect.CloseEditor), result.effects)
         assertIs<AfsmDecision.Transitioned>(result.decision)
         assertEquals(
             AfsmTopologyTransition(
@@ -179,7 +174,6 @@ class AfsmExecutableDslCompileCheckTest {
                 event = "SubmitClicked",
                 to = "SavingDraft",
                 commandLabels = listOf("SaveDraft"),
-                effectLabels = listOf("CloseEditor"),
             ),
             machine.topology.transitions.single(),
         )
@@ -193,7 +187,6 @@ class AfsmExecutableDslCompileCheckTest {
                 DslProductEditorData,
                 DslProductEditorEvent,
                 DslProductEditorCommand,
-                DslProductEditorEffect,
                 > {
                 initial(
                     phase = DslProductEditorPhase.EditingDraft,
@@ -217,34 +210,12 @@ class AfsmExecutableDslCompileCheckTest {
     }
 
     @Test
-    fun `effect can be emitted without changing phase`() {
-        val machine = productEditorMachine()
-        val phase = DslProductEditorPhase.Published(
-            productId = 10,
-            title = "Travel Mug",
-        )
-
-        val result = machine.transition(
-            state = AfsmState(
-                phase = phase,
-                data = DslProductEditorData(),
-            ),
-            event = DslProductEditorEvent.DoneClicked,
-        )
-
-        assertEquals(phase, result.state.phase)
-        assertEquals(listOf(DslProductEditorEffect.CloseEditor), result.effects)
-        assertIs<AfsmDecision.Handled>(result.decision)
-    }
-
-    @Test
     fun `onExit runs before transition block and onEnter`() {
         val machine = afsmMachine<
             DslProductEditorPhase,
             String,
             DslProductEditorEvent,
             DslProductEditorCommand,
-            DslProductEditorEffect,
             > {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
@@ -284,7 +255,6 @@ class AfsmExecutableDslCompileCheckTest {
             String,
             DslProductEditorEvent,
             DslProductEditorCommand,
-            DslProductEditorEffect,
             > {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
@@ -335,7 +305,6 @@ class AfsmExecutableDslCompileCheckTest {
                 DslProductEditorData,
                 DslProductEditorEvent,
                 DslProductEditorCommand,
-                DslProductEditorEffect,
                 > {
                 initial(
                     phase = DslProductEditorPhase.EditingDraft,
@@ -353,7 +322,6 @@ class AfsmExecutableDslCompileCheckTest {
                 DslProductEditorData,
                 DslProductEditorEvent,
                 DslProductEditorCommand,
-                DslProductEditorEffect,
                 > {
                 initial(
                     phase = DslProductEditorPhase.EditingDraft,
@@ -379,7 +347,6 @@ class AfsmExecutableDslCompileCheckTest {
             DslProductEditorData,
             DslProductEditorEvent,
             DslProductEditorCommand,
-            DslProductEditorEffect,
             > {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
@@ -391,7 +358,7 @@ class AfsmExecutableDslCompileCheckTest {
                     ignore(reason = "Draft save is disabled.")
                 }
 
-                on<DslProductEditorEvent.DoneClicked> {
+                on<DslProductEditorEvent.DraftSaveCompleted> {
                     invalid(reason = "Editor cannot close before publish.")
                 }
             }
@@ -403,7 +370,7 @@ class AfsmExecutableDslCompileCheckTest {
         )
         val invalid = machine.transition(
             state = machine.initialState,
-            event = DslProductEditorEvent.DoneClicked,
+            event = DslProductEditorEvent.DraftSaveCompleted,
         )
 
         assertEquals(AfsmDecision.Ignored("Draft save is disabled."), ignored.decision)
@@ -418,7 +385,6 @@ class AfsmExecutableDslCompileCheckTest {
             DslProductEditorData,
             DslProductEditorEvent,
             DslProductEditorCommand,
-            DslProductEditorEffect,
             > {
             initial(
                 phase = DslProductEditorPhase.EditingDraft,
@@ -492,13 +458,6 @@ class AfsmExecutableDslCompileCheckTest {
                     event = "ImageUploadSucceeded",
                     to = "ReviewSubmissionInProgress",
                 ),
-                AfsmTopologyTransition(
-                    from = "Published",
-                    event = "DoneClicked",
-                    to = "Published",
-                    effectLabels = listOf("CloseEditor"),
-                    kind = AfsmTopologyTransitionKind.Internal,
-                ),
             ),
             machine.topology.transitions,
         )
@@ -513,7 +472,6 @@ class AfsmExecutableDslCompileCheckTest {
         AfsmState<DslProductEditorPhase, DslProductEditorData>,
         DslProductEditorEvent,
         DslProductEditorCommand,
-        DslProductEditorEffect,
         > {
         return afsmMachine {
             initial(
@@ -607,11 +565,7 @@ class AfsmExecutableDslCompileCheckTest {
                 }
             }
 
-            phase<DslProductEditorPhase.Published> {
-                on<DslProductEditorEvent.DoneClicked> {
-                    effect(label = "CloseEditor") { DslProductEditorEffect.CloseEditor }
-                }
-            }
+            phase<DslProductEditorPhase.Published>()
         }
     }
 }
@@ -671,7 +625,6 @@ private sealed interface DslProductEditorEvent {
     data object DraftSaveCompleted : DslProductEditorEvent
     data object SubmitClicked : DslProductEditorEvent
     data class ImageUploadSucceeded(val uploadToken: String) : DslProductEditorEvent
-    data object DoneClicked : DslProductEditorEvent
 }
 
 private sealed interface DslProductEditorCommand {
@@ -682,8 +635,4 @@ private sealed interface DslProductEditorCommand {
         val draft: DslProductDraft,
         val uploadToken: String,
     ) : DslProductEditorCommand
-}
-
-private sealed interface DslProductEditorEffect {
-    data object CloseEditor : DslProductEditorEffect
 }

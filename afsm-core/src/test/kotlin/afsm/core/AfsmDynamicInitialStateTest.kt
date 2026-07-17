@@ -7,7 +7,7 @@ import kotlin.test.assertFailsWith
 class AfsmDynamicInitialStateTest {
     @Test
     fun `static machine exposes a genuine default state`() {
-        val machine: AfsmDefaultMachine<DynamicState, DynamicEvent, DynamicCommand, AfsmNoEffect> =
+        val machine: AfsmDefaultMachine<DynamicState, DynamicEvent, DynamicCommand> =
             afsmMachine {
                 initial(
                     phase = DynamicPhase.Idle,
@@ -22,7 +22,7 @@ class AfsmDynamicInitialStateTest {
 
     @Test
     fun `dynamic machine needs only an initial phase and accepts real runtime data`() {
-        val machine: AfsmMachine<DynamicState, DynamicEvent, DynamicCommand, AfsmNoEffect> =
+        val machine: AfsmMachine<DynamicState, DynamicEvent, DynamicCommand> =
             afsmMachine(initialPhase = DynamicPhase.Idle) {
                 dynamicFlow()
             }
@@ -49,7 +49,6 @@ class AfsmDynamicInitialStateTest {
                 DynamicData,
                 DynamicEvent,
                 DynamicCommand,
-                AfsmNoEffect,
                 >(initialPhase = DynamicPhase.Idle) {
                 initial(
                     phase = DynamicPhase.Idle,
@@ -71,7 +70,6 @@ private fun AfsmMachineBuilder<
     DynamicData,
     DynamicEvent,
     DynamicCommand,
-    AfsmNoEffect,
     >.dynamicFlow() {
     phase(DynamicPhase.Idle) {
         on<DynamicEvent.ScreenEntered> {
