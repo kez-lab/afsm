@@ -185,8 +185,12 @@ that proof; they do not replace it.
 
 ## Current Evidence
 
+- [[goal-completion-audit-2026-07-17|Afsm Goal Completion Audit 2026-07-17]]
+- [[../05-qa/verification-report-2026-07-17-effect-free-output-model|Effect-Free Output Model Verification 2026-07-17]]
+- [[../05-qa/verification-report-2026-07-17-effect-free-first-use-preparation|Effect-Free First-Use Preparation 2026-07-17]]
 - [[../05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]]
 - [[goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]]
+  (historical pre-Effect-removal audit)
 - [[production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]]
 - [[goal-evidence-baseline-2026-07-11|Goal Evidence Baseline 2026-07-11]]
 - [[goal-evidence-baseline-2026-07-10|Goal Evidence Baseline 2026-07-10]]

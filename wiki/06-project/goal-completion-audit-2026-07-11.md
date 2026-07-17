@@ -1,13 +1,18 @@
 ---
-title: Afsm Goal Completion Audit 2026-07-11
+title: Historical Afsm Goal Completion Audit 2026-07-11
 type: maintenance
 created: 2026-07-11
-updated: 2026-07-11
-status: not-complete-external-evidence-required
+updated: 2026-07-17
+status: historical-pre-effect-removal-audit
 audited_commit: dd54490
 ---
 
 # Afsm Goal Completion Audit 2026-07-11
+
+> Historical pre-Effect-removal proof boundary. Use
+> [[goal-completion-audit-2026-07-17|Afsm Goal Completion Audit 2026-07-17]]
+> for the current requirement audit. The dated command/effect evidence below is
+> preserved rather than rewritten.
 
 ## Verdict
 

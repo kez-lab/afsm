@@ -81,11 +81,9 @@ the engineering pages and `wiki/06-project/decision-log.md`.
   [[../06-project/production-like-pilot-protocol|Afsm Production-Like Pilot Protocol]],
   but target, roles, commits, thresholds, and evidence permission remain open.
 
-These are completion blockers, not optional follow-ups. The dated full
-requirement audit remains
-[[../06-project/goal-completion-audit-2026-07-11|Afsm Goal Completion Audit 2026-07-11]];
-the later repository redesign and prepared-but-unrun human gate are recorded in
-the 2026-07-17 Effect-free verification and preparation QA reports.
+These are completion blockers, not optional follow-ups. The current full proof
+boundary is
+[[../06-project/goal-completion-audit-2026-07-17|Afsm Goal Completion Audit 2026-07-17]].
 
 ## Resolved Current Policies
 

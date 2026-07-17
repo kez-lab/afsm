@@ -133,7 +133,8 @@ artifact, not manually maintained decoration.
 This redesign cycle is implemented, locally verified, and ready for a
 controlled two-stage human review. The long-term product goal is still
 incomplete because no controlled Effect-free human result and no
-production-like Android pilot exist.
+production-like Android pilot exist. The current requirement-by-requirement
+proof boundary is recorded in the 2026-07-17 completion audit.
 
 ## Canonical References
 
@@ -143,4 +144,5 @@ production-like Android pilot exist.
 - [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]]
 - [[../03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]]
 - [[../06-project/long-term-goal|Afsm Long-Term Goal]]
+- [[../06-project/goal-completion-audit-2026-07-17|Afsm Goal Completion Audit 2026-07-17]]
 - [[open-questions|Open Questions]]

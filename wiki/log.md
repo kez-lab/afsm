@@ -1703,3 +1703,10 @@
 - Source: Current core/runtime/ViewModel/sample code, public docs, API arity, all indexed engineering pages, and the prepared first-use manifest.
 - Action: Published the post-correction lint, made direct-page historical marking a durable maintenance rule, and recorded the zero-legacy-current, zero-ambiguous-history, zero-unindexed, zero-broken-link result in current state.
 - Updated: `wiki/07-llm/wiki-lint-2026-07-17.md`, `wiki/07-llm/wiki-maintenance-guide.md`, `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`, `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-17] verification | Refresh the long-term goal completion audit
+
+- Source: Full local release gate at `8d268cc596268e0d6a2a8b4243e88c662e90d284`, current named safety tests, Effect-free Wiki lint, first-use manifest, and absence of completed human/pilot records.
+- Action: Reclassified all eight goal outcomes with current proof, recorded repository coherence as passing, and preserved human first-use, first-author experience, and production-like pilot as required missing evidence.
+- Evidence: `raw/verification/2026-07-17-goal-completion-audit/README.md` and `wiki/06-project/goal-completion-audit-2026-07-17.md`.
+- Updated: `raw/README.md`, `wiki/06-project/long-term-goal.md`, `wiki/00-context/current-state.md`, `wiki/00-context/open-questions.md`, `wiki/index.md`, `wiki/log.md`.
