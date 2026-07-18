@@ -1799,3 +1799,19 @@
   `wiki/01-product/android-fsm-library-strategy.md`,
   `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
   `wiki/log.md`.
+
+## [2026-07-18] verification | Verify the public GitHub Pages documentation
+
+- Source: Pages run `29631426699`, deployment `5498951966`, public endpoint
+  headers, and direct browser interaction at `https://kez-lab.org/afsm/`.
+- Action: Verified commit `6b900e0` deployed successfully, confirmed custom
+  domain and default-URL redirect behavior, exercised live Draft Event/Data/
+  Command tracing on the public page, and checked desktop/mobile overflow plus
+  console output.
+- Boundary: HTTPS content passes, while GitHub-managed `https_enforced` remains
+  unavailable because the Pages API reports no certificate yet.
+- Updated: `README.md`, `README.ko.md`, `raw/README.md`,
+  `raw/verification/2026-07-18-github-pages-docs/README.md`,
+  `wiki/05-qa/verification-report-2026-07-18-github-pages-docs.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/index.md`, `wiki/log.md`.

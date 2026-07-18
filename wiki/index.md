@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # Wiki Index
@@ -71,6 +71,7 @@ updated: 2026-07-17
 - [[05-qa/verification-report-2026-07-17-human-usability-feedback|Informal Human Usability Feedback 2026-07-17]] - Relayed human findings about vocabulary cost, machine/graph visibility, and MVI-heavy sample framing, kept separate from controlled first-use proof.
 - [[05-qa/verification-report-2026-07-17-effect-free-output-model|Effect-Free Output Model Verification 2026-07-17]] - Passing repository/API/graph/external-consumer evidence for the implemented three-concept redesign.
 - [[05-qa/verification-report-2026-07-17-effect-free-first-use-preparation|Effect-Free First-Use Preparation 2026-07-17]] - Commit-pinned two-stage Checkout input and passed integrity/coverage checks; no human result yet.
+- [[05-qa/verification-report-2026-07-18-github-pages-docs|GitHub Pages Documentation Verification 2026-07-18]] - Successful Pages workflow and public desktop/mobile interaction proof for the bilingual documentation hub.
 
 ## LLM Operations
 

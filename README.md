@@ -5,7 +5,7 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
-**English** | [한국어](README.ko.md) | [Documentation (EN/KO)](docs/index.html)
+**English** | [한국어](README.ko.md) | [Documentation (EN/KO)](https://kez-lab.org/afsm/)
 
 Afsm helps Android teams make complex screen flows easier to read, verify, and
 change safely. It moves business-flow rules scattered across `ViewModel`

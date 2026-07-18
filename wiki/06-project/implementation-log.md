@@ -3216,3 +3216,25 @@ Conclusion:
   workflow reaches `main`.
 - The public URL and HTTPS behavior are not considered verified until the
   deployment completes and the rendered site is checked directly.
+
+## [2026-07-18] Public GitHub Pages deployment verified
+
+Verification:
+
+- Pushed `6b900e0` to `origin/main`.
+- GitHub Actions run `29631426699` and Pages deployment `5498951966` passed.
+- `https://kez-lab.org/afsm/` returned `200 OK`; the default GitHub Pages URL
+  redirected to the custom domain.
+- Public-browser Draft input emitted the entered Event and Data diff, saving
+  reached `Saving`, and `SaveDraft` appeared in the trace.
+- Public 1280px desktop and 390px mobile checks had zero horizontal overflow;
+  console warnings/errors remained zero.
+- README documentation links now target the public HTTPS URL.
+
+Boundary:
+
+- GitHub Pages reported `https_enforced=false`, and enabling it returned a
+  missing-certificate error. HTTPS content works through the current custom
+  domain path, but GitHub-managed forced redirect is not proven.
+- This is deployment/browser evidence, not human first-use or Android pilot
+  evidence.

@@ -5,7 +5,7 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
-[English](README.md) | **한국어** | [공식 문서 (한/영)](docs/index.html)
+[English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/)
 
 Afsm은 Android 팀이 복잡한 화면 흐름을 더 쉽게 읽고 검증하며 안전하게
 변경할 수 있도록 만드는 도구입니다. `ViewModel`의 `state.copy(...)`,

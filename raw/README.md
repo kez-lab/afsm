@@ -26,5 +26,6 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-17-effect-free-output-model/`: red/green API migration, module/API/graph checks, clean external-consumer pass, and static acceptance audit for the implemented three-concept output model.
 - `verification/2026-07-17-effect-free-first-use-preparation/`: commit-pinned two-stage participant input, manifest, source/graph parity, question coverage, and explicit no-human-result boundary for the Effect-free review.
 - `verification/2026-07-17-goal-completion-audit/`: current full release gate, Effect-free Wiki/manifest checks, named safety coverage, and explicit human/pilot proof boundary.
+- `verification/2026-07-18-github-pages-docs/`: commit-pinned Pages workflow, deployment status, public HTTP/HTTPS responses, and browser interaction evidence for the bilingual documentation hub.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.

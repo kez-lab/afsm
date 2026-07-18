@@ -107,6 +107,19 @@ Three artifacts are therefore one product view:
 The graph is generated from the executable machine and is a first-class review
 artifact, not manually maintained decoration.
 
+## Public Documentation
+
+- The bilingual documentation hub is publicly available at
+  <https://kez-lab.org/afsm/>.
+- GitHub Pages deploys the `docs/` artifact from `main` through
+  `.github/workflows/pages.yml`.
+- Deployment run `29631426699` published commit `6b900e0` successfully; public
+  desktop, 390px mobile, and live Draft Event/Data/Command interaction checks
+  pass with zero console warnings or errors.
+- HTTPS content is reachable through the custom domain, but GitHub-managed
+  `https_enforced` remains false because its Pages certificate was not yet
+  available during verification.
+
 ## Current Evidence
 
 - Core/runtime/ViewModel/test/sample/KSP tests and API checks pass after the
