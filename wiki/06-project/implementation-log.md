@@ -3084,3 +3084,135 @@ Conclusion:
 - The public first-use path now has one directly openable bilingual visual
   orientation page before the compile-backed Draft and Android walkthroughs.
 - This is repository/browser evidence, not a controlled human first-use result.
+
+## [2026-07-18] Official bilingual documentation hub
+
+Change:
+
+- Replaced the presentation-style introduction with a conventional
+  documentation shell: persistent section navigation, page contents, search,
+  installation, a five-minute Draft quickstart, fundamentals, Android
+  integration, API quick reference, guide routes, and the example ladder.
+- Kept the origin story as secondary background and removed the conceptual
+  simulator and presentation motion from the primary learning path.
+- Preserved English/Korean parity, code-copy controls, keyboard search, and a
+  responsive mobile drawer without external assets or dependencies.
+- Renamed README and Getting Started links so the entry point is described as
+  documentation rather than an interactive introduction.
+
+Verification:
+
+```text
+Inline JavaScript syntax: pass
+Relative documentation links: 19 checked, 0 missing
+Browser: 1280x720 desktop and 390x844 mobile, 0 horizontal overflow
+Interaction: EN/KO switch, English/Korean search, code copy, mobile menu open/close
+Accessibility: 0 duplicate IDs, 0 unnamed buttons, 0 unnamed links
+Console: 0 warnings or errors
+```
+
+Conclusion:
+
+- The HTML entry now behaves like an official documentation home rather than a
+  product introduction while retaining the Draft-first learning sequence.
+- This is repository/browser evidence, not a controlled human first-use result.
+
+## [2026-07-18] Embedded example transition trace lab
+
+Change:
+
+- Replaced the example ladder's direct Markdown actions with inline trace-lab
+  launchers for Draft, Auth, Checkout, and ProductEditor.
+- Added current phase and formatted `Data` inspection plus ordered Event,
+  Guard, Data diff, Phase, Result, State, Command, and Invoke entries.
+- Added reset, single-Event stepping, and automatic main-path playback while
+  keeping each complete Markdown walkthrough as a secondary link.
+- Labeled the browser trace honestly as a JavaScript mirror of the maintained
+  Kotlin machine rather than the Kotlin/JVM Afsm runtime itself.
+- Corrected Draft Quickstart names in both READMEs, Getting Started, and the
+  HTML code samples from the shortened `Save`/`SaveCompleted` form to the
+  compile-backed `SaveDraft`/`DraftSaveCompleted`/`DraftSaveFailed` names.
+
+Verification:
+
+```text
+Inline JavaScript syntax: pass
+Relative documentation links: 16 checked, 0 missing
+Desktop: Draft step and automatic path; all four examples reach expected final State
+Mobile: 390x844, trace lab width 358px, 0 horizontal overflow
+Language: Korean trace summary, Event, State, and Command text verified
+Accessibility: 0 duplicate IDs, 0 unnamed buttons, 0 unnamed links
+Console: 0 warnings or errors
+```
+
+Conclusion:
+
+- Developers can now observe `updateData` and work emission in the same context
+  as phase changes instead of leaving the documentation hub immediately.
+- This remains a learning trace backed by repository inspection and browser
+  verification, not runtime telemetry or controlled human evidence.
+
+## [2026-07-18] User-driven interactive example controls
+
+Change:
+
+- Removed the fixed `Next Event` and automatic main-path controls from the
+  embedded example lab.
+- Added scenario-specific feature controls: Draft title/save/result, Auth
+  mode/form/submit/result, Checkout enter/load/pay/stale/failure/retry/result,
+  and ProductEditor form/save/upload/cancel/review/resubmit/publish actions.
+- Made every text, password, select, and textarea change dispatch the matching
+  value-change Event and append its exact before/after `Data` diff immediately.
+- Made available actions phase-dependent and kept external-work results as
+  explicit buttons so Command emission and result Event re-entry stay visible.
+- Redacted Auth passwords in the Data inspector and trace while preserving
+  their length and validation behavior.
+
+Verification:
+
+```text
+Draft: live TitleChanged/Data diff, blank-title guard, save failure, retained input
+Auth: Register mode, live name/email/password Events, masked Data, failure retry
+Checkout: load, pay, stale success Ignored, failure, retry request id 1 -> 2, complete
+ProductEditor: live nested form Data, upload, rejection, edit, resubmit, approve, publish
+Korean: live Korean input, labels, summary, Result and State messages
+Mobile: 390x844, form and console width 356px, 0 horizontal overflow
+Accessibility: 0 duplicate IDs, unnamed controls, unnamed buttons, or unnamed links
+Console: 0 warnings or errors
+```
+
+Conclusion:
+
+- The example now teaches the screen-action -> Event -> Data/phase -> Command
+  loop through direct manipulation rather than a pre-recorded sequence.
+- This is still a browser mirror of current Kotlin behavior, not execution of
+  the Kotlin/JVM runtime or controlled human evidence.
+
+## [2026-07-18] GitHub Pages documentation workflow
+
+Change:
+
+- Added `.github/workflows/pages.yml` to publish the `docs/` directory from
+  `main` as the GitHub Pages artifact.
+- Scoped workflow permissions to contents read, Pages write, and OIDC token
+  write, with a single concurrency group and path-filtered push triggers.
+- Used the GitHub API-confirmed current action majors: checkout v7,
+  configure-pages v6, upload-pages-artifact v5, and deploy-pages v5.
+- Enabled the repository Pages site with `build_type=workflow`.
+
+Verification before first deployment:
+
+```text
+GitHub CLI authentication: active account kez-lab
+Repository: kez-lab/afsm, public, default branch main
+Pages before enablement: 404 Not Found
+Pages after enablement: build_type workflow
+API-provided URL: http://kez-lab.org/afsm/
+```
+
+Conclusion:
+
+- The repository is configured to start its first Pages deployment when the
+  workflow reaches `main`.
+- The public URL and HTTPS behavior are not considered verified until the
+  deployment completes and the rendered site is checked directly.

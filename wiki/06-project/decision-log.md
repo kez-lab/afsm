@@ -1713,3 +1713,96 @@ Consequences:
   their time boundary is clear.
 - Current synthesis is corrected directly rather than relying on a later log
   entry to override stale guidance.
+
+## [2026-07-18] Make the HTML entry an official documentation hub
+
+Decision: Replace the presentation-led bilingual introduction with a
+conventional documentation portal centered on installation, a compile-oriented
+Draft quickstart, Android integration, API lookup, and guide navigation.
+
+Rationale:
+
+- The first HTML version looked like a product introduction rather than a place
+  where an Android developer could install the library and look up an API.
+- Afsm already has maintained Markdown guides and a small public API; the HTML
+  entry should route and summarize those assets instead of competing with them.
+- First-use comprehension needs working code and stable information scent more
+  than large headlines, ornamental motion, or a conceptual simulator.
+
+Consequences:
+
+- Installation and status appear before background story.
+- Desktop uses persistent docs navigation and on-page contents; mobile uses a
+  compact documentation drawer.
+- English and Korean preserve the same section, link, and API structure.
+- The Draft -> Auth -> Checkout -> ProductEditor ladder remains canonical.
+
+## [2026-07-18] Open examples in an embedded transition trace lab
+
+Decision: Make the primary action for each documentation-hub example open an
+inline trace lab that visualizes the maintained machine's main path, while the
+Markdown walkthrough becomes a secondary source link.
+
+Rationale:
+
+- Navigating straight to Markdown loses the immediate state-machine learning
+  loop that made Event-to-transition behavior concrete.
+- Phase changes alone hide an important part of Afsm authoring: `updateData`,
+  guard decisions, Command emission, and the resulting State need to be read in
+  one ordered trace.
+- A single embedded lab lets developers compare Draft, Auth, Checkout, and
+  ProductEditor without leaving the official documentation context.
+
+Consequences:
+
+- The static page mirrors current Kotlin machine paths in JavaScript; it must
+  state clearly that it is not executing the Kotlin/JVM Afsm runtime.
+- Trace entries distinguish Event, Guard, Data, Phase, Command/Invoke, and
+  Result or State records.
+- Each example supports reset, single-step, and automatic main-path playback.
+- Markdown walkthroughs remain available for complete source and edge cases.
+
+## [2026-07-18] Make example traces user-driven instead of pre-recorded
+
+Decision: Replace the fixed `Next Event` and automatic main-path player with
+feature-like inputs and actions whose direct manipulation dispatches the
+corresponding Event and updates the visible Data/phase trace immediately.
+
+Rationale:
+
+- A pre-recorded sequence demonstrates ordering but does not teach the Android
+  boundary where a user action becomes a ViewModel verb and then an Event.
+- Typing into a field should visibly produce `TitleChanged`, `EmailChanged`, or
+  similar Events and show the exact before/after Data change at that moment.
+- Phase-dependent buttons let developers explore guards, errors, retry,
+  cancellation, and completion instead of passively watching one happy path.
+
+Consequences:
+
+- Each selected example renders its own compact form and phase-valid actions.
+- External-work results remain explicit simulator actions so Command emission
+  and result Event re-entry can be observed separately.
+- Reset remains available, but fixed next/auto controls are removed.
+- This supersedes only the playback mechanics of the earlier embedded-trace
+  decision; the JavaScript-mirror boundary and secondary Markdown links remain.
+
+## [2026-07-18] Deploy the documentation hub through GitHub Pages Actions
+
+Decision: Publish the maintained `docs/` directory as the GitHub Pages artifact
+from `main`, with `docs/index.html` at the public site root.
+
+Rationale:
+
+- The dependency-free bilingual documentation hub is already a complete static
+  artifact and does not need a separate site generator or hosting build.
+- An Actions deployment makes the artifact boundary explicit and keeps the
+  public page tied to reviewed repository content.
+- Path filtering avoids documentation deployments for unrelated Kotlin-only
+  commits while manual dispatch remains available for recovery.
+
+Consequences:
+
+- `.github/workflows/pages.yml` owns configure, artifact upload, and deployment.
+- The workflow receives only read contents, write Pages, and OIDC permissions.
+- Current official action majors are used and the deployment output, not an
+  assumed hostname, determines the canonical public URL.

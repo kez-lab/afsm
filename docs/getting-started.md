@@ -3,8 +3,8 @@
 This guide builds the smallest useful Android Afsm feature. Complete compiled
 versions live in `consumer-smoke/app/src/main/kotlin/.../DraftQuickstart.kt`.
 
-For the motivation, three-concept model, and an interactive Draft simulation in
-English or Korean, start with the [bilingual visual introduction](index.html).
+For installation, the five-minute Draft path, API lookup, and guide navigation
+in English or Korean, start with the [bilingual documentation hub](index.html).
 
 ## 1. Add the modules
 
@@ -28,9 +28,9 @@ current phase. For a simple loading/content/error screen, a normal
 For a draft editor, start with this flow:
 
 ```text
-Editing --SaveClicked--> Saving --SaveCompleted--> Saved
+Editing --SaveClicked--> Saving --DraftSaveCompleted--> Saved
                            |
-                           +--SaveFailed--> Editing
+                           +--DraftSaveFailed--> Editing
 ```
 
 ## 3. Define the flow types
@@ -54,12 +54,12 @@ typealias DraftState = AfsmState<DraftPhase, DraftData>
 sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
-    data object SaveCompleted : DraftEvent
-    data class SaveFailed(val message: String) : DraftEvent
+    data object DraftSaveCompleted : DraftEvent
+    data class DraftSaveFailed(val message: String) : DraftEvent
 }
 
 sealed interface DraftCommand {
-    data class Save(val title: String) : DraftCommand
+    data class SaveDraft(val title: String) : DraftCommand
 }
 ```
 
@@ -92,14 +92,14 @@ val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
 
         phase(DraftPhase.Saving) {
             onEnter {
-                command("Save") { DraftCommand.Save(data.title) }
+                command("SaveDraft") { DraftCommand.SaveDraft(data.title) }
             }
 
-            on<DraftEvent.SaveCompleted> {
+            on<DraftEvent.DraftSaveCompleted> {
                 transitionTo(DraftPhase.Saved)
             }
 
-            on<DraftEvent.SaveFailed> {
+            on<DraftEvent.DraftSaveFailed> {
                 updateData { data, event -> data.copy(errorMessage = event.message) }
                 transitionTo(DraftPhase.Editing)
             }
@@ -126,7 +126,7 @@ fun `valid draft starts save command`() {
     draftMachine.transition(editing, DraftEvent.SaveClicked)
         .assertTransitioned()
         .assertPhase(DraftPhase.Saving)
-        .assertCommands(DraftCommand.Save("Plan"))
+        .assertCommands(DraftCommand.SaveDraft("Plan"))
 }
 ```
 
@@ -144,11 +144,11 @@ class DraftViewModel(
         machine = draftMachine,
         commandHandler = { command: DraftCommand, dispatchEvent ->
             when (command) {
-                is DraftCommand.Save -> repository.save(command.title).fold(
-                    onSuccess = { dispatchEvent(DraftEvent.SaveCompleted) },
+                is DraftCommand.SaveDraft -> repository.save(command.title).fold(
+                    onSuccess = { dispatchEvent(DraftEvent.DraftSaveCompleted) },
                     onFailure = { error ->
                         dispatchEvent(
-                            DraftEvent.SaveFailed(
+                            DraftEvent.DraftSaveFailed(
                                 error.message ?: "Draft save failed.",
                             ),
                         )

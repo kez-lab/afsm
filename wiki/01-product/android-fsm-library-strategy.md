@@ -1,6 +1,6 @@
 ---
 title: Android FSM Library Strategy
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # Android FSM Library Strategy
@@ -46,6 +46,31 @@ only after evidence shows that the selected design is worth preserving.
 - Android app teams using Kotlin, ViewModel, StateFlow, and Jetpack Compose.
 - Teams that already feel MVVM/UDF improves separation but hurts flow traceability.
 - Teams building complex flows such as login, signup, checkout, identity verification, permission gates, onboarding, upload/download, search/filter/paging, and retry-heavy screens.
+
+## Documentation Entry
+
+The public HTML entry point is an official documentation hub, not a marketing
+landing page. A first-time Android developer should be able to open it and
+immediately find:
+
+- current release status and Maven Local installation,
+- a minimal compile-oriented Draft quickstart,
+- the State/Event/Command model and Android `ViewModel` boundary,
+- a concise public API reference,
+- testing, graph generation, restoration, and modeling guides,
+- the Draft -> Auth -> Checkout -> ProductEditor learning path,
+- embedded feature-like controls that let the reader dispatch Events directly
+  and observe live Data, phase, State, and Command ordering before the full
+  walkthrough.
+
+The origin story is useful context, but it must not displace installation,
+working code, API lookup, or guide navigation. English and Korean should expose
+the same document structure and technical content.
+
+The maintained `docs/` directory is the GitHub Pages source. A push to `main`
+that changes documentation or the Pages workflow deploys `docs/index.html` as
+the site root through GitHub Actions. Repository Markdown remains source and
+deep-link material; the bilingual HTML hub is the public entry point.
 
 ## Core Promise
 

@@ -1723,3 +1723,79 @@
   `README.ko.md`, `wiki/00-context/current-state.md`,
   `wiki/03-engineering/afsm-example-catalog.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-07-18] implementation | Reframe the HTML entry as official documentation
+
+- Source: User feedback that the first HTML page should follow a conventional
+  official-documentation repertoire with installation, learning material, and
+  API lookup instead of reading primarily as a product introduction.
+- Action: Rebuilt `docs/index.html` as a bilingual documentation hub with
+  persistent navigation, search, installation, Draft quickstart, fundamentals,
+  Android integration, API quick reference, guides, examples, code copy, and a
+  mobile drawer; moved the origin story to secondary background and removed the
+  conceptual simulator from the primary path.
+- Verification: Inline JavaScript passed syntax checking; 19 relative links
+  resolved; desktop and 390px mobile had no horizontal overflow; EN/KO switch,
+  bilingual search, code copy, and mobile menu passed; console reported zero
+  warnings or errors.
+- Updated: `docs/index.html`, `docs/getting-started.md`, `README.md`,
+  `README.ko.md`, `wiki/00-context/current-state.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/03-engineering/afsm-example-catalog.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-07-18] implementation | Add embedded transition traces to examples
+
+- Source: User feedback that opening an example should preserve the visible
+  state-transition learning loop and include `Data` update logs instead of
+  navigating directly to Markdown.
+- Action: Added a four-example inline trace lab with single-step and automatic
+  playback, current State/Data inspection, Event/Guard/Data/Phase/Result/State/
+  Command/Invoke records, and secondary walkthrough links; explicitly labeled
+  the static JavaScript mirror as distinct from the Kotlin/JVM runtime.
+- Verification: All four main paths reached their expected final phase and Data
+  in the browser; English/Korean trace text, 390px mobile layout, link and script
+  checks, accessibility basics, and zero console warnings/errors passed.
+- Drift correction: Aligned public Draft documentation names with the compiled
+  consumer example's `SaveDraft`, `DraftSaveCompleted`, and
+  `DraftSaveFailed` declarations.
+- Updated: `README.md`, `README.ko.md`, `docs/getting-started.md`,
+  `docs/index.html`, `wiki/00-context/current-state.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/03-engineering/afsm-example-catalog.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-07-18] implementation | Replace fixed traces with direct feature actions
+
+- Source: User correction that `Next Event` remained a fixed demonstration and
+  did not show the Event/Data changes caused by the reader's own text entry and
+  feature actions.
+- Action: Replaced fixed stepping and playback with example-specific forms and
+  phase-valid buttons; input changes now append value-change Events and exact
+  Data diffs immediately, while external result buttons expose Command/result
+  Event boundaries and alternate paths such as validation, stale results,
+  failure, retry, cancellation, rejection, and resubmission.
+- Verification: Browser interaction covered all four examples, Korean live
+  input, password redaction, Checkout stale/retry, ProductEditor rejection and
+  resubmission, 390px layout, accessibility basics, and zero console errors.
+- Updated: `docs/index.html`, `wiki/00-context/current-state.md`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/03-engineering/afsm-example-catalog.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-07-18] implementation | Configure GitHub Pages documentation deployment
+
+- Source: User request to commit, push, and deploy the bilingual documentation
+  hub to GitHub Pages.
+- Action: Added a least-privilege Pages Actions workflow for the `docs/`
+  artifact, enabled repository Pages with workflow builds, and used the latest
+  official action majors reported by the GitHub API.
+- Boundary: The Pages API returned `http://kez-lab.org/afsm/`; publication and
+  HTTPS remain unverified until the first deployment and browser check finish.
+- Updated: `.github/workflows/pages.yml`,
+  `wiki/01-product/android-fsm-library-strategy.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.

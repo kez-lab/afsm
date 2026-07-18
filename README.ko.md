@@ -5,7 +5,7 @@
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
 ![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
 
-[English](README.md) | **한국어** | [인터랙티브 가이드 (한/영)](docs/index.html)
+[English](README.md) | **한국어** | [공식 문서 (한/영)](docs/index.html)
 
 Afsm은 Android 팀이 복잡한 화면 흐름을 더 쉽게 읽고 검증하며 안전하게
 변경할 수 있도록 만드는 도구입니다. `ViewModel`의 `state.copy(...)`,
@@ -86,11 +86,11 @@ typealias DraftState = AfsmState<DraftPhase, DraftData>
 sealed interface DraftEvent {
     data class TitleChanged(val value: String) : DraftEvent
     data object SaveClicked : DraftEvent
-    data object SaveCompleted : DraftEvent
+    data object DraftSaveCompleted : DraftEvent
 }
 
 sealed interface DraftCommand {
-    data class Save(val title: String) : DraftCommand
+    data class SaveDraft(val title: String) : DraftCommand
 }
 
 val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
@@ -116,9 +116,9 @@ val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
 
         phase(DraftPhase.Saving) {
             onEnter {
-                command("Save") { DraftCommand.Save(data.title) }
+                command("SaveDraft") { DraftCommand.SaveDraft(data.title) }
             }
-            on<DraftEvent.SaveCompleted> {
+            on<DraftEvent.DraftSaveCompleted> {
                 transitionTo(DraftPhase.Saved)
             }
         }
@@ -144,9 +144,9 @@ class DraftViewModel(
         machine = draftMachine,
         commandHandler = { command: DraftCommand, dispatchEvent ->
             when (command) {
-                is DraftCommand.Save -> {
+                is DraftCommand.SaveDraft -> {
                     repository.save(command.title)
-                    dispatchEvent(DraftEvent.SaveCompleted)
+                    dispatchEvent(DraftEvent.DraftSaveCompleted)
                 }
             }
         },
