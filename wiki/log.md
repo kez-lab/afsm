@@ -1815,3 +1815,18 @@
   `wiki/05-qa/verification-report-2026-07-18-github-pages-docs.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/index.md`, `wiki/log.md`.
+
+## [2026-07-25] llm-ops | Add external Afsm adoption skill
+
+- Source: User request for an English skill that helps agents use Afsm well
+  from outside the library repository and is reviewable through a pull request.
+- Action: Added `.agents/skills/use-afsm` with progressive references for the
+  current Effect-free contract and external implementation pattern; linked the
+  skill from both README entry points and recorded the repo-skill-first
+  distribution decision.
+- Verification: Standard skill validation passed through an isolated PyYAML
+  runtime; Maven Local publication, separate Android consumer compile/tests,
+  KSP processing, and `.mmd` graph assertions passed.
+- Updated: `.agents/skills/use-afsm/`, `README.md`, `README.ko.md`,
+  `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.

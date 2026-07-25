@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Afsm"
+  short_description: "Model and integrate Android flows with Afsm"
+  default_prompt: "Use $use-afsm to model and integrate this Android feature flow with Afsm."

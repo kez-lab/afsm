@@ -1,6 +1,6 @@
 ---
 title: Implementation Log
-updated: 2026-07-13
+updated: 2026-07-25
 ---
 
 # Implementation Log
@@ -3238,3 +3238,35 @@ Boundary:
   domain path, but GitHub-managed forced redirect is not proven.
 - This is deployment/browser evidence, not human first-use or Android pilot
   evidence.
+
+## [2026-07-25] External Afsm adoption skill
+
+Change:
+
+- Added the English `.agents/skills/use-afsm` skill with UI metadata and
+  bundled current-contract and implementation-pattern references.
+- Encoded fit assessment, existing-behavior inventory, pure transition TDD,
+  Android boundary ownership, restoration safety, generated graph review, and
+  consumer verification as one reusable workflow.
+- Linked the installable GitHub skill path from the English and Korean README
+  entry points.
+- Recorded that the skill must inspect the consumer's configured version and
+  distribution instead of assuming a public artifact.
+
+Verification:
+
+```bash
+uv run --with pyyaml python \
+  /Users/kwak-euijin/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  .agents/skills/use-afsm
+./scripts/verify-consumer-smoke.sh --no-daemon
+git diff --check
+```
+
+Conclusion:
+
+- The standard skill structure validation passes.
+- Maven Local publication, the clean separate Android consumer compile, focused
+  unit tests, KSP processing, and generated `.mmd` assertions pass.
+- Gradle still reports the existing SDK XML version mismatch and deprecation
+  warnings; neither warning fails the external consumer gate.
