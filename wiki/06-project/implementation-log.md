@@ -3239,6 +3239,27 @@ Boundary:
 - This is deployment/browser evidence, not human first-use or Android pilot
   evidence.
 
+## [2026-07-25] Manual-only Pages deployment
+
+Change:
+
+- Removed the automatic `push` trigger from `.github/workflows/pages.yml`.
+- Kept `workflow_dispatch` so the documentation site can still be published
+  intentionally.
+- Updated the current-state and decision records to make hosted Actions a
+  manual deployment step, not part of the default PR or merge path.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- Documentation changes can now be locally verified and merged without starting
+  hosted GitHub Actions automatically.
+
 ## [2026-07-25] External Afsm adoption skill
 
 Change:

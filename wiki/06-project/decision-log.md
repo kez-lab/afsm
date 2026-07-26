@@ -1807,6 +1807,27 @@ Consequences:
 - Current official action majors are used and the deployment output, not an
   assumed hostname, determines the canonical public URL.
 
+## [2026-07-25] Make hosted documentation deployment manual-only
+
+Decision: Keep the GitHub Pages deployment workflow, but remove its automatic
+push trigger so hosted Actions run only when manually dispatched.
+
+Rationale:
+
+- The project cost-control policy now requires local verification and immediate
+  merge without automatic hosted CI or deployment runs.
+- Documentation edits should not spend hosted-runner minutes merely by reaching
+  `main`.
+- A manual Pages dispatch still preserves the reviewed deployment path when the
+  public documentation site intentionally needs to be refreshed.
+
+Consequences:
+
+- `.github/workflows/pages.yml` no longer runs on PR or push.
+- Maintainers verify documentation changes locally before merge.
+- Public docs publication is now an explicit manual operation, separate from
+  ordinary repository merge flow.
+
 ## [2026-07-25] Ship the external adoption workflow as a repo skill
 
 Decision: Add one English `use-afsm` agent skill under
