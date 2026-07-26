@@ -7,7 +7,7 @@
 | Draft quickstart | minimal machine, command handler, verb-named ViewModel API | every form needs an FSM |
 | Auth | validation branches and durable completion | Afsm requires app-wide MVI |
 | Checkout | dynamic initial state, retry, stale-result safety, restoration | every navigation callback belongs in the machine |
-| Product Editor | long flow and phase-owned cancellable work | every UI action needs an Event |
+| Product Editor | after Checkout: long flow, render state, and phase-owned cancellable work | first Afsm feature needs `invoke` |
 
 ## Reading order
 
@@ -26,7 +26,12 @@ without implying an MVI contract layer.
 
 Auth UI calls `selectMode`, `updateEmail`, and `submit`. Checkout calls `pay` and
 `retry`. Product Editor calls editing and workflow verbs. Machine event types do
-not leak into Compose screens.
+not leak into Compose screens. Product Editor also renders a feature-owned
+`ProductEditorRenderState` so phase payload details stay out of UI code.
+
+Use Product Editor only after the smaller examples are clear. Its image upload
+uses `invoke` because the work belongs to one phase and must cancel on phase
+exit; ordinary save, review, and publish work still use `command`.
 
 ## Graph role
 
