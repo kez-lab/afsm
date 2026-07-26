@@ -1816,6 +1816,17 @@
   `wiki/00-context/current-state.md`, `wiki/06-project/implementation-log.md`,
   `wiki/index.md`, `wiki/log.md`.
 
+## [2026-07-25] process | Make Pages deployment manual-only
+
+- Source: Cost-control request to avoid hosted Actions and rely on local
+  verification before merge.
+- Action: Removed the automatic push trigger from the Pages workflow while
+  keeping manual dispatch available for intentional documentation publication.
+- Updated: `.github/workflows/pages.yml`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/decision-log.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-07-25] llm-ops | Add external Afsm adoption skill
 
 - Source: User request for an English skill that helps agents use Afsm well

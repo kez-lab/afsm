@@ -112,8 +112,9 @@ artifact, not manually maintained decoration.
 
 - The bilingual documentation hub is publicly available at
   <https://kez-lab.org/afsm/>.
-- GitHub Pages deploys the `docs/` artifact from `main` through
-  `.github/workflows/pages.yml`.
+- GitHub Pages deployment remains available through the manual
+  `.github/workflows/pages.yml` dispatch, but PRs and pushes no longer start
+  hosted Actions automatically.
 - Deployment run `29631426699` published commit `6b900e0` successfully; public
   desktop, 390px mobile, and live Draft Event/Data/Command interaction checks
   pass with zero console warnings or errors.
