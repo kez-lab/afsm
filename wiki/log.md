@@ -1837,6 +1837,18 @@
   `docs/index.html`, `wiki/00-context/current-state.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
 
+## [2026-07-25] documentation | Getting-started restoration stop rule
+
+- Source: First-use review of the Draft getting-started path and restoration
+  command policy.
+- Action: Added a restoration step that rejects blind in-flight command phase
+  restoration, gives Draft-specific safe states, and links the restoration
+  policy from the initial guide.
+- Updated: `docs/getting-started.md`,
+  `docs/restoration-command-ui-policy.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-07-25] llm-ops | Add external Afsm adoption skill
 
 - Source: User request for an English skill that helps agents use Afsm well

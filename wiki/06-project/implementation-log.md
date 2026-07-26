@@ -3285,6 +3285,30 @@ Conclusion:
 - First-time Android developers have a clearer stop rule before copying the
   Product Editor graph and a narrower trigger for phase-owned invocation.
 
+## [2026-07-25] Getting-started restoration stop rule
+
+Change:
+
+- Added a getting-started step that tells first-time users not to restore an
+  in-flight command phase until the safe business state is clear.
+- Gave the Draft sample concrete restored-state choices for saved, editable,
+  and uncertain save outcomes.
+- Linked the first path directly to the restoration, command, and UI policy
+  guide.
+- Reinforced in the policy guide that initial state construction does not run
+  `onEnter` and restored state must not hide a new repository-work request.
+
+Verification:
+
+```bash
+git diff --check
+```
+
+Conclusion:
+
+- First-time users now see the restoration safety boundary before they scale
+  from Draft into Checkout-style dynamic initial state.
+
 ## [2026-07-25] External Afsm adoption skill
 
 Change:
