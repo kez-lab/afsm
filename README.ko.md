@@ -206,6 +206,25 @@ build가 drift를 검사할 수 있습니다.
 [모델링 규칙](docs/modeling-rules.md)과
 [그래프 생성](docs/graph-generation.md)을 읽으세요.
 
+## Codex로 Afsm 사용하기
+
+다른 Android 프로젝트에서 Afsm을 도입할 때 사용할 수 있는 영문
+[`use-afsm` 스킬](.agents/skills/use-afsm/SKILL.md)이 저장소에 포함되어
+있습니다. 이 스킬은 적용 적합성 판단, 기존 동작 목록화,
+State/Event/Command 모델링, 순수 전이 테스트, ViewModel 연결, 복원 안전성,
+생성 그래프 검토까지 안내합니다.
+
+`$skill-installer`에 이 저장소의 스킬 폴더를 지정한 뒤, 사용하는 프로젝트에서
+`$use-afsm`을 호출하세요.
+
+```text
+$skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main/.agents/skills/use-afsm
+```
+
+스킬은 공개 좌표를 추측하지 않고 consumer 프로젝트에 이미 설정된 Afsm
+버전과 배포 경로를 먼저 확인합니다. Afsm은 아직 Maven Local 또는 직접
+프로젝트 모듈로 전달되는 internal beta입니다.
+
 ## 모듈
 
 | 모듈 | 역할 |

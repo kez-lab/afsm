@@ -1,6 +1,6 @@
 ---
 title: Decision Log
-updated: 2026-07-13
+updated: 2026-07-25
 ---
 
 # Decision Log
@@ -1806,3 +1806,35 @@ Consequences:
 - The workflow receives only read contents, write Pages, and OIDC permissions.
 - Current official action majors are used and the deployment output, not an
   assumed hostname, determines the canonical public URL.
+
+## [2026-07-25] Ship the external adoption workflow as a repo skill
+
+Decision: Add one English `use-afsm` agent skill under
+`.agents/skills/use-afsm` and expose it from both README entry points before
+considering plugin packaging.
+
+Rationale:
+
+- External adoption needs more than a quickstart snippet: an agent must inspect
+  existing behavior, decide whether Afsm fits, preserve Android boundaries,
+  specify transitions, and verify the generated graph.
+- A repository skill is auto-discoverable while working in Afsm and can also be
+  installed from its GitHub folder into a consuming project.
+- Afsm remains an internal beta with Maven Local or direct-module delivery, so
+  the skill must inspect the consumer's configured version and distribution
+  instead of inventing public coordinates.
+- One focused skill keeps the workflow reviewable while the product and API are
+  still changing. A plugin becomes useful only when broader distribution or
+  additional bundled capabilities justify it.
+
+Consequences:
+
+- The skill body and bundled references are English.
+- The workflow covers fit assessment, behavior inventory, pure machine design,
+  transition tests, ViewModel and Compose boundaries, safe restoration, graph
+  generation, and proportional verification.
+- The skill explicitly rejects Effect output, repository work inside reducers,
+  UI-exposed machine events, broad `ignore`, unsafe restoration restart, and
+  mismatched Afsm versions.
+- API changes must keep the skill references synchronized with canonical public
+  docs and external consumer evidence.

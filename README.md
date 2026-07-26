@@ -204,6 +204,25 @@ checked by the build rather than maintained by hand.
 Start with [Getting started](docs/getting-started.md), then read
 [Modeling rules](docs/modeling-rules.md) and [Graph generation](docs/graph-generation.md).
 
+## Use Afsm With Codex
+
+The repository includes an English
+[`use-afsm` skill](.agents/skills/use-afsm/SKILL.md) for adopting Afsm from
+another Android project. It guides Codex through fit assessment, behavior
+inventory, State/Event/Command modeling, pure transition tests, ViewModel
+integration, restoration safety, and generated graph review.
+
+Point `$skill-installer` at this repository folder, then invoke `$use-afsm` in
+the consuming project:
+
+```text
+$skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main/.agents/skills/use-afsm
+```
+
+The skill checks the consumer's existing Afsm version and distribution path
+instead of guessing public coordinates. Afsm remains an internal beta delivered
+through Maven Local or direct project modules.
+
 ## Modules
 
 | Module | Purpose |

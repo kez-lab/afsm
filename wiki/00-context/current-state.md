@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-07-18
+updated: 2026-07-25
 ---
 
 # Current State
@@ -56,6 +56,7 @@ Command = typed host-work request emitted by an accepted transition
 | `sample-shop` | Auth, Checkout, Product Editor reference flows plus ordinary non-Afsm screens |
 | `consumer-smoke` | Separate Maven Local Android consumer, behavior tests, and graph generation |
 | `docs/index.html` | Single-file English/Korean documentation hub with installation, Draft quickstart, Android integration, API reference, guides, search, mobile navigation, and four user-driven examples with live Event/Data/phase traces |
+| `.agents/skills/use-afsm` | English Codex skill for fit assessment, external-project modeling, ViewModel integration, restoration safety, tests, and graph review |
 
 Five library modules use explicit API mode/API validation: `afsm-core`,
 `afsm-runtime`, `afsm-test`, `afsm-viewmodel`, and `afsm-graph-ksp`.
@@ -128,6 +129,9 @@ artifact, not manually maintained decoration.
   executable machines.
 - A clean separate Android consumer compiles published Maven Local artifacts,
   runs Draft ViewModel/machine and invocation tests, and generates graphs.
+- The repo-scoped `use-afsm` skill packages the current Effect-free adoption
+  contract and an external implementation pattern without guessing a public
+  artifact coordinate.
 - Prior Android CLI sample evidence proves the dated Product Editor cancellation
   journey, not every later commit.
 - One relayed human response identified the Command/Effect vocabulary cost,
