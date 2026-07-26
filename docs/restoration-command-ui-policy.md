@@ -6,6 +6,11 @@ Reconstruct the safest known business state from navigation input and persisted
 data. Do not automatically repeat unsafe work merely because a `ViewModel` was
 recreated.
 
+Before persisting or restoring a command phase, write the recovery rule in
+product terms. If the repository or backend cannot prove the old work completed,
+restore an editable or explicit unknown state instead of pretending the command
+is still safely running.
+
 Checkout examples:
 
 - persisted completed order -> `Completed(orderId)`,
@@ -39,6 +44,10 @@ There is no separate best-effort one-shot output channel.
 state and remain Android-independent. Persist only the identifiers necessary to
 reconstruct business progress; repository data remains the authority for domain
 objects.
+
+Initial state construction does not execute `onEnter`. A restored state should
+therefore represent already-known business truth, not a hidden request to start
+new repository work.
 
 ## Unsafe work rule
 

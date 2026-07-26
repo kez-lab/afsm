@@ -74,6 +74,8 @@ Five library modules use explicit API mode/API validation: `afsm-core`,
   onEnter`.
 - Initial state construction does not run `onEnter`. Features restore minimal
   safe business state and start work through explicit events only when safe.
+- The getting-started path now teaches this as a first-feature stop rule:
+  define the safe restored state before restoring any in-flight command phase.
 - Checkout restores interrupted payment as
   `PaymentStatusUnknown(requestId)`, never automatic resubmission.
 - Events are serialized FIFO. State is published before accepted command work.

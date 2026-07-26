@@ -192,11 +192,29 @@ fun DraftRoute(viewModel: DraftViewModel) {
 Keep focus, scroll, animation, sheet, and snackbar host state in Compose unless
 they change business flow. Keep completed product outcomes in machine state.
 
-## 8. Read machine, graph, and tests together
+## 8. Add restoration only after the safe state is clear
+
+Do not restore an in-flight command phase just because the process died there.
+Construct the safest business state first, then let the user or a verified
+business result start the next command.
+
+For the Draft sample:
+
+- persisted saved draft -> `Saved`,
+- editable unsaved draft -> `Editing`,
+- uncertain save outcome -> `Editing` with a recoverable message, or a
+  feature-specific unknown phase if the backend can confirm completion.
+
+Initial state construction does not run `onEnter`, so restoring `Saving` would
+not automatically save again. That is intentional: unsafe work should restart
+only from an explicit event after the feature defines its recovery rule.
+
+## 9. Read machine, graph, and tests together
 
 Once the machine becomes non-trivial, generate its `.mmd` diagram. Use the
 graph for whole-flow topology, machine code for exact local rules, and tests for
 payload and `Handled`/`Ignored`/`Invalid` details.
 
 Continue with [Modeling rules](modeling-rules.md),
-[Testing](testing-guide.md), and [Graph generation](graph-generation.md).
+[Testing](testing-guide.md), [Restoration, Command, and UI policy](restoration-command-ui-policy.md),
+and [Graph generation](graph-generation.md).
