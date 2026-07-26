@@ -93,6 +93,9 @@ Five library modules use explicit API mode/API validation: `afsm-core`,
 - ViewModels expose verbs such as `submit()`, `pay()`, `retry()`,
   `updateTitle(value)`, and `cancelUpload()`.
 - Auth and Checkout routes react to durable authenticated/completed state.
+- Product Editor is documented as the final sample after Checkout, not the
+  first feature template; its `invoke` usage is limited to phase-owned local
+  cancellable upload work.
 - Product Editor Done directly calls the UI callback because publication is
   already the durable result and closing the surface is not a business rule.
 

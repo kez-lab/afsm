@@ -1827,6 +1827,16 @@
   `wiki/06-project/decision-log.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
 
+## [2026-07-25] documentation | Product Editor onboarding boundary
+
+- Source: First-use review of the Product Editor walkthrough and example path.
+- Action: Reframed Product Editor as an after-Checkout sample, added a bridge
+  from Checkout lessons to advanced phase-owned upload work, and narrowed the
+  documented trigger for `invoke`.
+- Updated: `docs/product-editor-walkthrough.md`, `docs/examples.md`,
+  `docs/index.html`, `wiki/00-context/current-state.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
 ## [2026-07-25] llm-ops | Add external Afsm adoption skill
 
 - Source: User request for an English skill that helps agents use Afsm well

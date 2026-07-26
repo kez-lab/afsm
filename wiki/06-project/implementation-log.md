@@ -3260,6 +3260,31 @@ Conclusion:
 - Documentation changes can now be locally verified and merged without starting
   hosted GitHub Actions automatically.
 
+## [2026-07-25] Product Editor onboarding boundary
+
+Change:
+
+- Reframed Product Editor as the final sample after Checkout instead of a first
+  Afsm feature template.
+- Added a Checkout-to-Product-Editor bridge that separates reusable Android
+  boundaries from advanced-only Product Editor concerns.
+- Documented that `invoke` is only for phase-owned cooperative work and that
+  draft save, review submission, and publish remain ordinary commands.
+- Updated the public HTML example ladder so ProductEditor is visibly an
+  after-Checkout sample.
+
+Verification:
+
+```bash
+git diff --check
+ANDROID_HOME="$HOME/Library/Android/sdk" ANDROID_SDK_ROOT="$HOME/Library/Android/sdk" ./gradlew :sample-shop:testDebugUnitTest --tests 'afsm.sample.shop.feature.editor.ProductEditorStateMachineTest' --tests 'afsm.sample.shop.feature.editor.ProductEditorViewModelTest' --no-daemon
+```
+
+Conclusion:
+
+- First-time Android developers have a clearer stop rule before copying the
+  Product Editor graph and a narrower trigger for phase-owned invocation.
+
 ## [2026-07-25] External Afsm adoption skill
 
 Change:
