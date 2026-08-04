@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-07-25
+updated: 2026-08-05
 ---
 
 # Current State
@@ -81,9 +81,16 @@ Five library modules use explicit API mode/API validation: `afsm-core`,
 - `invoke(key, label)` owns a cooperative long-running job for one phase;
   phase exit and host closure cancel it. Remote work still needs request ids,
   idempotency, or backend cancellation.
-- Invalid transitions and unexpected command failures throw by default. Queue
-  capacities default to 64. Diagnostics retain types only unless raw values are
-  explicitly enabled.
+- Invalid transitions, reducer failures, unexpected command failures, and queue
+  overflow record a diagnostic by default and keep the host usable.
+  `AfsmConfig.strict()` selects fail-fast behavior for debug builds and tests.
+  Queue capacities default to 64. Diagnostics retain types only unless raw
+  values are explicitly enabled.
+- A stopped host is observable through `AfsmHost.isActive` and always records a
+  `HostStopped` diagnostic. Phase-owned invocations are supervised, so one
+  failing invocation cannot cancel siblings or the host.
+- `AfsmConfig.commandContext` moves command handler execution off the hosting
+  dispatcher when a command calls work that is not main-safe.
 
 ## Android Sample Shape
 
@@ -106,7 +113,9 @@ Three artifacts are therefore one product view:
 - tests: payload and graph-invisible Handled/Ignored/Invalid proof.
 
 The graph is generated from the executable machine and is a first-class review
-artifact, not manually maintained decoration.
+artifact, not manually maintained decoration. Generated diagrams are committed
+as a baseline; `verifyAfsmMmd` compares the baseline against the machine on
+`check`, so graph drift fails the build instead of being regenerated silently.
 
 ## Public Documentation
 
@@ -123,6 +132,8 @@ artifact, not manually maintained decoration.
 
 ## Current Evidence
 
+- Every pull request runs unit tests, `apiCheck`, graph verification, and the
+  Maven Local consumer smoke build through `.github/workflows/ci.yml`.
 - Core/runtime/ViewModel/test/sample/KSP tests and API checks pass after the
   Effect-free migration.
 - Generated Auth, Checkout, and Product Editor graphs match the current

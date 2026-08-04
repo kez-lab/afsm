@@ -28,9 +28,11 @@ public final class afsm/runtime/AfsmCommandQueueOverflowException : java/lang/Il
 }
 
 public final class afsm/runtime/AfsmConfig {
+	public static final field Companion Lafsm/runtime/AfsmConfig$Companion;
 	public fun <init> ()V
-	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)V
-	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmOverflowPolicy;Lkotlin/coroutines/CoroutineContext;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)V
+	public synthetic fun <init> (Lafsm/runtime/AfsmInvalidTransitionPolicy;Lafsm/runtime/AfsmCommandExecutionPolicy;Lafsm/runtime/AfsmCommandFailurePolicy;Lafsm/runtime/AfsmOverflowPolicy;Lkotlin/coroutines/CoroutineContext;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCommandContext ()Lkotlin/coroutines/CoroutineContext;
 	public final fun getCommandExecutionPolicy ()Lafsm/runtime/AfsmCommandExecutionPolicy;
 	public final fun getCommandFailurePolicy ()Lafsm/runtime/AfsmCommandFailurePolicy;
 	public final fun getCommandQueueCapacity ()I
@@ -38,6 +40,12 @@ public final class afsm/runtime/AfsmConfig {
 	public final fun getEventQueueCapacity ()I
 	public final fun getInvalidTransitionPolicy ()Lafsm/runtime/AfsmInvalidTransitionPolicy;
 	public final fun getLogger ()Lafsm/runtime/AfsmLogger;
+	public final fun getOverflowPolicy ()Lafsm/runtime/AfsmOverflowPolicy;
+}
+
+public final class afsm/runtime/AfsmConfig$Companion {
+	public final fun strict (Lkotlin/coroutines/CoroutineContext;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;)Lafsm/runtime/AfsmConfig;
+	public static synthetic fun strict$default (Lafsm/runtime/AfsmConfig$Companion;Lkotlin/coroutines/CoroutineContext;IILafsm/runtime/AfsmDiagnosticDataPolicy;Lafsm/runtime/AfsmLogger;ILjava/lang/Object;)Lafsm/runtime/AfsmConfig;
 }
 
 public final class afsm/runtime/AfsmDiagnostic {
@@ -57,8 +65,12 @@ public final class afsm/runtime/AfsmDiagnosticCode : java/lang/Enum {
 	public static final field CommandQueueOverflow Lafsm/runtime/AfsmDiagnosticCode;
 	public static final field CommandResultDroppedHostClosed Lafsm/runtime/AfsmDiagnosticCode;
 	public static final field CommandResultQueueOverflow Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field DuplicateInvocationKey Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field EventDropped Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field HostStopped Lafsm/runtime/AfsmDiagnosticCode;
 	public static final field IgnoredTransitionOutputDropped Lafsm/runtime/AfsmDiagnosticCode;
 	public static final field InvalidTransition Lafsm/runtime/AfsmDiagnosticCode;
+	public static final field ReducerFailure Lafsm/runtime/AfsmDiagnosticCode;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmDiagnosticCode;
 	public static fun values ()[Lafsm/runtime/AfsmDiagnosticCode;
@@ -101,6 +113,7 @@ public final class afsm/runtime/AfsmHost {
 	public final fun close ()V
 	public final fun dispatch (Ljava/lang/Object;)V
 	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun isActive ()Z
 	public final fun tryDispatch (Ljava/lang/Object;)Z
 }
 
@@ -124,5 +137,13 @@ public abstract interface class afsm/runtime/AfsmLogger {
 
 public final class afsm/runtime/AfsmLogger$Companion {
 	public final fun getNone ()Lafsm/runtime/AfsmLogger;
+}
+
+public final class afsm/runtime/AfsmOverflowPolicy : java/lang/Enum {
+	public static final field Record Lafsm/runtime/AfsmOverflowPolicy;
+	public static final field Throw Lafsm/runtime/AfsmOverflowPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lafsm/runtime/AfsmOverflowPolicy;
+	public static fun values ()[Lafsm/runtime/AfsmOverflowPolicy;
 }
 

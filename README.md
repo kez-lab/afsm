@@ -188,8 +188,55 @@ artifacts as one reading contract:
 
 The graph is not decoration and it is not a substitute for code. It compensates
 for the locality tradeoff of phase-scoped rules by giving reviewers a generated,
-whole-machine map. Because it is generated from the executable machine, drift is
-checked by the build rather than maintained by hand.
+whole-machine map.
+
+Because the graph is generated from the executable machine, it can only be
+trusted if the committed copy is compared against the machine on every build.
+The Gradle plugin provides that comparison:
+
+```bash
+./gradlew :your-module:generateAfsmMmd   # write diagrams into build/
+./gradlew :your-module:updateAfsmMmd     # copy them into the committed baseline
+./gradlew :your-module:verifyAfsmMmd     # fail when the baseline is out of date
+```
+
+`verifyAfsmMmd` runs as part of `check` whenever a baseline directory exists, so
+a changed machine with a stale committed diagram fails the build with a diff.
+
+## Runtime Failure Policy
+
+A hosted machine is part of a running screen, so `AfsmConfig` decides what a
+failure does rather than leaving it to chance.
+
+| Failure | Default (`AfsmConfig()`) | `AfsmConfig.strict()` |
+|---|---|---|
+| Invalid transition | diagnostic, host stays usable | throws |
+| Reducer throws | diagnostic, state unchanged | throws |
+| Command handler throws | diagnostic, host stays usable | throws |
+| Queue overflow | diagnostic, work dropped | throws |
+
+The recording defaults exist because a stopped host is the worst outcome for a
+user: the screen keeps rendering but stops responding. Recording keeps the
+screen alive and reports the problem through `AfsmConfig.logger`, which is
+`AfsmLogger.None` until you supply one — always supply one.
+
+```kotlin
+private val host = afsmHost(
+    machine = draftMachine,
+    commandHandler = { command, dispatchEvent -> /* ... */ },
+    config = if (BuildConfig.DEBUG) {
+        AfsmConfig.strict(logger = androidAfsmLogger)
+    } else {
+        AfsmConfig(logger = androidAfsmLogger)
+    },
+)
+```
+
+Command handlers run on the hosting scope, which is the main dispatcher for
+`viewModelScope`. Set `AfsmConfig.commandContext = Dispatchers.IO` when a
+command calls work that is not main-safe. `AfsmHost.isActive` reports whether a
+host stopped, and a stopped host always records an `AfsmDiagnosticCode.HostStopped`
+diagnostic.
 
 ## First-Use Path
 
@@ -240,12 +287,30 @@ through Maven Local or direct project modules.
 
 ```bash
 ./gradlew :afsm-core:test :afsm-runtime:test :afsm-test:test
-./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:verifyAfsmMmd
 ./scripts/verify-release-local.sh --no-daemon
 ```
 
+Every pull request runs the same unit tests, `apiCheck`, graph verification, and
+the Maven Local consumer smoke build in
+[CI](.github/workflows/ci.yml).
+
 Afsm has not been publicly released. APIs may change when usability or safety
 evidence shows that a better design serves real Android teams.
+
+## Known Limitations
+
+- **Restoration modelling lives outside the machine.** Mapping a
+  `SavedStateHandle` back to a starting phase is ordinary `ViewModel` code, and
+  those restore paths do not appear in the generated graph. See
+  [Restoration policy](docs/restoration-command-ui-policy.md).
+- **`onEnter` does not run for the initial state.** A host that must start work
+  on first composition dispatches an explicit event such as `ScreenEntered`.
+- **Phase and event labels come from Kotlin simple names** (enum entries use the
+  entry name). Two phase types that share a simple name collide, and the machine
+  fails to build with a duplicate-phase error.
+- **Graph generation reuses the module's unit test runtime classpath**, so the
+  unit test sources of the module must compile before `generateAfsmMmd` runs.
 
 See [Public API](docs/afsm-public-api.md), [Testing](docs/testing-guide.md),
 [Examples](docs/examples.md), [Auth](docs/auth-walkthrough.md),

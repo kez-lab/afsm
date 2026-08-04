@@ -3,6 +3,7 @@ package afsm.sample.shop.feature.checkout
 import afsm.sample.shop.core.data.PaymentRepository
 import afsm.sample.shop.core.data.ProductRepository
 import afsm.sample.shop.core.data.SessionRepository
+import afsm.sample.shop.app.shopAfsmConfig
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -22,6 +23,7 @@ class CheckoutViewModel(
 
     private val host = afsmHost(
         machine = checkoutStateMachine,
+        config = shopAfsmConfig(),
         initialState = initialState,
         commandHandler = { command: CheckoutCommand, dispatchEvent ->
             when (command) {

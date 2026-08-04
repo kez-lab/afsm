@@ -102,8 +102,9 @@ unsafe operations after recreation.
 ### 7. Generate the Review Graph
 
 For non-trivial machines, annotate a stable graphable machine value, configure
-matching KSP and Afsm graph-plugin versions, and run the consumer's
-`generateAfsmMmd` task.
+matching KSP and Afsm graph-plugin versions, run the consumer's
+`updateAfsmMmd` task, and commit the resulting baseline so `verifyAfsmMmd` can
+fail the build when the machine and its diagram disagree.
 
 Review graph, machine, and tests together:
 

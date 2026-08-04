@@ -21,7 +21,7 @@ class AfsmGraphPluginFunctionalTest {
     }
 
     @Test
-    fun `generateAfsmMmd runs only the generated graph export test`() {
+    fun `generateAfsmMmd does not run the module unit tests`() {
         val projectDir = createAndroidProject(
             applyKsp = true,
             configureAfsmGraph = "addProcessorDependency.set(false)",
@@ -103,7 +103,7 @@ class AfsmGraphPluginFunctionalTest {
     }
 
     @Test
-    fun `normal unit tests do not run generated graph export test`() {
+    fun `normal unit tests do not generate graphs`() {
         val projectDir = createAndroidProject(
             applyKsp = true,
             configureAfsmGraph = "addProcessorDependency.set(false)",
@@ -147,6 +147,64 @@ class AfsmGraphPluginFunctionalTest {
             .buildAndFail()
 
         assertContains(result.output, "No Afsm graph registry was generated.")
+    }
+
+    @Test
+    fun `verifyAfsmMmd fails when the checked-in baseline is out of date`() {
+        val projectDir = createAndroidProject(
+            applyKsp = true,
+            configureAfsmGraph = "addProcessorDependency.set(false)",
+        )
+        projectDir.writeAfsmCoreTestStubs()
+        projectDir.writeTextFile(
+            "app/afsm-graph/FixtureGraph.mmd",
+            "stateDiagram-v2\n    [*] --> Stale\n",
+        )
+
+        val result = gradle(projectDir)
+            .withArguments(":app:verifyAfsmMmd", "--stacktrace")
+            .buildAndFail()
+
+        assertContains(result.output, "out of date: FixtureGraph.mmd")
+        assertContains(result.output, ":app:updateAfsmMmd")
+    }
+
+    @Test
+    fun `verifyAfsmMmd reports graphs that are missing from the baseline`() {
+        val projectDir = createAndroidProject(
+            applyKsp = true,
+            configureAfsmGraph = "addProcessorDependency.set(false)",
+        )
+        projectDir.writeAfsmCoreTestStubs()
+        projectDir.writeTextFile("app/afsm-graph/Unrelated.mmd", "stateDiagram-v2\n")
+
+        val result = gradle(projectDir)
+            .withArguments(":app:verifyAfsmMmd", "--stacktrace")
+            .buildAndFail()
+
+        assertContains(result.output, "missing from baseline: FixtureGraph.mmd")
+        assertContains(result.output, "no longer generated: Unrelated.mmd")
+    }
+
+    @Test
+    fun `updateAfsmMmd writes a baseline that verifyAfsmMmd accepts`() {
+        val projectDir = createAndroidProject(
+            applyKsp = true,
+            configureAfsmGraph = "addProcessorDependency.set(false)",
+        )
+        projectDir.writeAfsmCoreTestStubs()
+
+        gradle(projectDir)
+            .withArguments(":app:updateAfsmMmd", "--stacktrace")
+            .build()
+
+        val baseline = projectDir.resolve("app/afsm-graph/FixtureGraph.mmd")
+        assertTrue(baseline.isFile)
+        assertTrue(baseline.readText().startsWith("stateDiagram-v2"))
+
+        gradle(projectDir)
+            .withArguments(":app:verifyAfsmMmd", "--stacktrace")
+            .build()
     }
 
     private fun gradle(projectDir: File): GradleRunner {
@@ -232,6 +290,10 @@ class AfsmGraphPluginFunctionalTest {
             afsmGraph {
                 $configureAfsmGraph
             }
+
+            dependencies {
+                testImplementation("junit:junit:4.13.2")
+            }
             """.trimIndent(),
         )
         projectDir.writeTextFile(
@@ -269,6 +331,27 @@ class AfsmGraphPluginFunctionalTest {
 
             interface AfsmGraphRegistry {
                 val entries: List<AfsmGraphEntry>
+            }
+
+            object AfsmMmdExport {
+                @JvmStatic
+                fun main(args: Array<String>) {
+                    val outputDir = File(args[0])
+                    val options = when (args[1]) {
+                        "Full" -> AfsmMmdOptions.Full
+                        else -> AfsmMmdOptions.Flow
+                    }
+                    val registryClass = try {
+                        Class.forName("afsm.generated.AfsmGeneratedGraphRegistry")
+                    } catch (error: ClassNotFoundException) {
+                        throw IllegalStateException(
+                            "No Afsm graph registry was generated.",
+                            error,
+                        )
+                    }
+                    val registry = registryClass.getField("INSTANCE").get(null) as AfsmGraphRegistry
+                    AfsmMmdWriter.writeAll(registry, outputDir, options)
+                }
             }
 
             object AfsmMmdWriter {

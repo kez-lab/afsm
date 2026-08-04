@@ -1830,3 +1830,30 @@
 - Updated: `.agents/skills/use-afsm/`, `README.md`, `README.ko.md`,
   `wiki/00-context/current-state.md`, `wiki/06-project/decision-log.md`,
   `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-08-05] runtime+tooling | Record failures by default and verify graph baselines
+
+- Source: Critical review of the library that reproduced a permanently dead
+  host after one command-handler exception, an unsupported graph-drift claim in
+  `README.md`, broken enum phase support, and a Gradle plugin that injected
+  JUnit 4 and reflected into the AGP DSL.
+- Action: Switched `AfsmConfig` to recording defaults with `AfsmConfig.strict()`
+  for development, supervised phase-owned invocations, added `ReducerFailure`,
+  `DuplicateInvocationKey`, `EventDropped`, and `HostStopped` diagnostics plus
+  `AfsmHost.isActive` and `AfsmConfig.commandContext`, labelled enum phases by
+  entry name, rejected shadowed event handlers at build time, replaced the
+  generated JUnit graph-export test with a `JavaExec` run of
+  `afsm.core.AfsmMmdExport`, added `updateAfsmMmd`/`verifyAfsmMmd` with committed
+  baselines, and added a CI workflow.
+- Verification: `./scripts/verify-release-local.sh --no-daemon` passes, including
+  the Maven Local consumer smoke build with `:app:verifyAfsmMmd`. New
+  `AfsmHostResilienceTest`, `AfsmDefinitionValidationTest`, `AfsmMmdExportTest`,
+  and three plugin baseline tests pass; drift detection was confirmed by
+  corrupting a committed baseline and observing a failing diff.
+- Updated: `afsm-core/`, `afsm-runtime/`, `afsm-graph-gradle-plugin/`,
+  `sample-shop/`, `consumer-smoke/app/afsm-graph/`, `scripts/`,
+  `.github/workflows/ci.yml`, `README.md`, `README.ko.md`, `CHANGELOG.md`,
+  `docs/afsm-public-api.md`, `docs/graph-generation.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
+  `wiki/06-project/decision-log.md`, `wiki/log.md`.

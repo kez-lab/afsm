@@ -210,14 +210,18 @@ dependencies {
 }
 ```
 
-Run the module's generated task:
+Run the module's graph tasks:
 
 ```bash
-./gradlew :feature:generateAfsmMmd
+./gradlew :feature:generateAfsmMmd   # write diagrams into build/
+./gradlew :feature:updateAfsmMmd     # copy them into the committed baseline
+./gradlew :feature:verifyAfsmMmd     # fail when the baseline is out of date
 ```
 
-Inspect the generated `.mmd`; do not commit or edit generated build output
-unless the consuming repository explicitly tracks it as verification evidence.
+Commit the baseline directory (`afsmGraph.checkedInDir`, default
+`afsm-graph/`) so graph drift is reviewed like any other source change.
+`verifyAfsmMmd` joins `check` whenever that directory exists. Never hand-edit
+generated build output or the baseline; regenerate it instead.
 
 ## Verification
 
@@ -225,7 +229,7 @@ Adapt task names to the consumer:
 
 ```bash
 ./gradlew :feature:testDebugUnitTest
-./gradlew :feature:generateAfsmMmd
+./gradlew :feature:verifyAfsmMmd
 ./gradlew :feature:compileDebugKotlin
 ```
 

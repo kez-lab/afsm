@@ -87,8 +87,14 @@ Decision meanings:
 - Accepted state is published before command work is scheduled.
 - Ordinary commands execute sequentially without blocking later event
   reduction.
-- Invalid hosted transitions throw by default unless the host opts into a
-  recording policy.
+- Invalid transitions, reducer failures, unmodelled command failures, and queue
+  overflow record a diagnostic and keep the host usable by default. Configure
+  `AfsmConfig.logger`, or those failures are silent. Use `AfsmConfig.strict()`
+  in debug builds and tests to fail fast instead.
+- `AfsmHost.isActive` reports a stopped host, and a host stopped by a throwing
+  policy records a `HostStopped` diagnostic.
+- Command handlers run on the hosting scope. Set `AfsmConfig.commandContext`
+  when a command calls work that is not main-safe.
 - Event and command queues are bounded; do not assume dispatch always succeeds
   when using `tryDispatch`.
 - Diagnostics retain types only by default. Raw values are an explicit privacy

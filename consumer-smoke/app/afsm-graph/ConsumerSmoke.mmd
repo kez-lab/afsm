@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> Editing
+  state Editing
+  state Saving
+  note right of Saving
+    entry / SaveTitle
+  end note
+  state Saved
+  Editing --> Saving: SaveClicked
+  Saving --> Saved: Saved

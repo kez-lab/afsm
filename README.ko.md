@@ -189,8 +189,55 @@ phase 내부 람다는 규칙을 해당 규칙이 유효한 상태 가까이에 
 
 그래프는 장식도 아니고 코드를 대체하지도 않습니다. phase-local 규칙의
 지역성이라는 트레이드오프를 보완해 reviewer에게 생성된 전체 머신 지도를
-제공합니다. 실행 가능한 머신에서 생성되므로 손으로 관리하는 그림과 달리
-build가 drift를 검사할 수 있습니다.
+제공합니다.
+
+그래프가 실행 가능한 머신에서 생성된다는 사실만으로는 신뢰할 수 없습니다.
+커밋된 그래프를 매 빌드마다 머신과 비교해야 의미가 생깁니다. Gradle 플러그인이
+그 비교를 담당합니다.
+
+```bash
+./gradlew :your-module:generateAfsmMmd   # build/에 다이어그램 생성
+./gradlew :your-module:updateAfsmMmd     # 커밋 대상 baseline으로 복사
+./gradlew :your-module:verifyAfsmMmd     # baseline이 낡았으면 실패
+```
+
+baseline 디렉터리가 있으면 `verifyAfsmMmd`가 `check`에 연결되므로, 머신을
+바꾸고 다이어그램을 커밋하지 않으면 빌드가 diff와 함께 실패합니다.
+
+## 런타임 실패 정책
+
+호스팅된 머신은 실행 중인 화면의 일부이므로, 실패했을 때의 동작을 우연에
+맡기지 않고 `AfsmConfig`가 결정합니다.
+
+| 실패 | 기본값 (`AfsmConfig()`) | `AfsmConfig.strict()` |
+|---|---|---|
+| 잘못된 전이 | 진단 기록, 호스트 유지 | throw |
+| reducer 예외 | 진단 기록, 상태 유지 | throw |
+| command 핸들러 예외 | 진단 기록, 호스트 유지 | throw |
+| 큐 오버플로 | 진단 기록, 해당 작업 드롭 | throw |
+
+기록을 기본값으로 둔 이유는 호스트가 멈추는 것이 사용자에게 가장 나쁜 결과이기
+때문입니다. 화면은 계속 그려지지만 아무 입력도 받지 않는 상태가 됩니다. 기록
+정책은 화면을 살려 두고 문제를 `AfsmConfig.logger`로 보냅니다. 이 logger는
+지정하기 전까지 `AfsmLogger.None`이므로 **반드시 직접 지정하세요.**
+
+```kotlin
+private val host = afsmHost(
+    machine = draftMachine,
+    commandHandler = { command, dispatchEvent -> /* ... */ },
+    config = if (BuildConfig.DEBUG) {
+        AfsmConfig.strict(logger = androidAfsmLogger)
+    } else {
+        AfsmConfig(logger = androidAfsmLogger)
+    },
+)
+```
+
+command 핸들러는 호스트 스코프에서 실행되며 `viewModelScope`에서는 main
+dispatcher입니다. main-safe하지 않은 작업을 호출한다면
+`AfsmConfig.commandContext = Dispatchers.IO`를 지정하세요. 호스트가 멈췄는지는
+`AfsmHost.isActive`로 알 수 있고, 멈춘 호스트는 항상
+`AfsmDiagnosticCode.HostStopped` 진단을 남깁니다.
 
 ## 처음 시작하는 순서
 
@@ -242,12 +289,29 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 
 ```bash
 ./gradlew :afsm-core:test :afsm-runtime:test :afsm-test:test
-./gradlew :sample-shop:testDebugUnitTest :sample-shop:generateAfsmMmd
+./gradlew :sample-shop:testDebugUnitTest :sample-shop:verifyAfsmMmd
 ./scripts/verify-release-local.sh --no-daemon
 ```
 
+모든 pull request는 동일한 단위 테스트, `apiCheck`, 그래프 검증, Maven Local
+consumer smoke 빌드를 [CI](.github/workflows/ci.yml)에서 실행합니다.
+
 Afsm은 아직 공개 배포되지 않았습니다. 실제 Android 팀의 사용성과 안전성을
 더 높인다는 근거가 있다면 API는 변경될 수 있습니다.
+
+## 알려진 한계
+
+- **복원(restoration) 모델링은 머신 밖에 있습니다.** `SavedStateHandle`을 시작
+  phase로 되돌리는 코드는 평범한 `ViewModel` 코드이며, 그 복원 경로는 생성된
+  그래프에 나타나지 않습니다.
+  [복원 정책](docs/restoration-command-ui-policy.md)을 참고하세요.
+- **초기 상태에서는 `onEnter`가 실행되지 않습니다.** 첫 진입에 작업을 시작해야
+  하면 `ScreenEntered` 같은 이벤트를 명시적으로 dispatch합니다.
+- **phase와 event 라벨은 Kotlin simple name에서 옵니다**(enum은 엔트리 이름).
+  simple name이 같은 두 phase 타입은 충돌하며 머신 빌드가 중복 phase 오류로
+  실패합니다.
+- **그래프 생성은 모듈의 unit test 런타임 classpath를 재사용합니다.** 따라서
+  `generateAfsmMmd` 이전에 해당 모듈의 unit test 소스가 컴파일되어야 합니다.
 
 [공개 API](docs/afsm-public-api.md), [테스트](docs/testing-guide.md),
 [예제](docs/examples.md), [Auth](docs/auth-walkthrough.md),

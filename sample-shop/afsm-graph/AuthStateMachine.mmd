@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> Editing
+  state Editing
+  state Submitting
+  state Authenticated
+  Editing --> Submitting: SubmitClicked [login form] / Login
+  Editing --> Submitting: SubmitClicked [register form] / Register
+  Editing --> Editing: SubmitClicked [invalid form]
+  Submitting --> Authenticated: AuthSucceeded
+  Submitting --> Editing: AuthFailed

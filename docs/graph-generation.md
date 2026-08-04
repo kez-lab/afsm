@@ -84,8 +84,44 @@ debugging.
 val mmd = machine.topology.toMmd(AfsmMmdOptions.Full)
 ```
 
+## Commit a baseline and verify it
+
+A regenerated diagram proves nothing on its own. Commit the generated diagrams
+and let the build compare them against the machine on every run.
+
+```bash
+./gradlew :sample-shop:updateAfsmMmd   # writes sample-shop/afsm-graph/*.mmd
+./gradlew :sample-shop:verifyAfsmMmd   # fails when the committed copy is stale
+```
+
+`verifyAfsmMmd` is wired into `check` whenever the baseline directory exists, so
+changing a machine without updating its diagram fails the build:
+
+```text
+Afsm graphs differ from the checked-in baseline in sample-shop/afsm-graph:
+  - out of date: AuthStateMachine.mmd
+      -   Editing --> Submitting: SubmitClicked [login form] / Login
+      +   Editing --> Submitting: SubmitClicked [login form] / SignIn
+
+Run ':sample-shop:updateAfsmMmd' and commit the result.
+```
+
+Configure the baseline location with `afsmGraph.checkedInDir`, and opt out of
+the `check` wiring with `afsmGraph.verifyOnCheck.set(false)`.
+
+## How generation runs
+
+`generateAfsmMmd` is a `JavaExec` task that runs `afsm.core.AfsmMmdExport`
+against the module's unit test runtime classpath. That classpath is used because
+it is the one Android classpath containing main classes, generated KSP output,
+dependencies, and the mockable `android.jar`; the module's unit test sources
+must therefore compile, but its unit tests are never run by graph generation.
+The plugin does not add a test framework to the consuming project and does not
+generate sources into its test source set.
+
 ## Review rule
 
 Review graph, machine, and tests in the same change. The graph answers “where
 can the flow go?”, the machine answers “how exactly?”, and tests answer “which
-edge conditions are proven?”. Do not hand-edit generated build output.
+edge conditions are proven?”. Do not hand-edit generated build output; update
+the committed baseline with `updateAfsmMmd` instead.

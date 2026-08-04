@@ -2,6 +2,7 @@ package afsm.sample.shop.feature.auth
 
 import afsm.sample.shop.core.data.AuthRepository
 import afsm.sample.shop.core.data.SessionRepository
+import afsm.sample.shop.app.shopAfsmConfig
 import afsm.viewmodel.afsmHost
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +13,7 @@ class AuthViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = authStateMachine,
+        config = shopAfsmConfig(),
         commandHandler = { command: AuthCommand, dispatchEvent ->
             when (command) {
                 is AuthCommand.Login -> {

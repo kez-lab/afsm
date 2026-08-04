@@ -8,6 +8,53 @@ and verification in the same change.
 
 Initial internal-beta candidate.
 
+### Runtime resilience
+
+- `AfsmConfig` now records failures by default. `invalidTransitionPolicy` and
+  `commandFailurePolicy` default to `Record`, so an invalid transition or an
+  unmodelled command failure no longer stops the host and no longer reaches an
+  Android `viewModelScope` as an uncaught exception.
+- `AfsmConfig.strict()` selects the previous fail-fast behavior for debug builds
+  and tests.
+- Added `AfsmOverflowPolicy` (default `Record`): a full event or command queue
+  drops the rejected work with a diagnostic instead of stopping the host.
+- Reducer exceptions are caught and reported as
+  `AfsmDiagnosticCode.ReducerFailure` instead of ending event processing.
+- Phase-owned invocations run under a `SupervisorJob`, so one failing invocation
+  no longer cancels sibling invocations or the host.
+- A duplicate active invocation key cancels the stale invocation and records
+  `AfsmDiagnosticCode.DuplicateInvocationKey` instead of throwing.
+- Added `AfsmHost.isActive` and the `AfsmDiagnosticCode.HostStopped` diagnostic,
+  so a stopped host is never silent.
+- Added `AfsmConfig.commandContext` for command handlers that call work which is
+  not main-safe.
+- `AfsmDiagnostic.decision` and `AfsmDiagnostic.eventType` are nullable for
+  diagnostics that are not tied to one reduced event.
+
+### Graph verification
+
+- Added `verifyAfsmMmd` and `updateAfsmMmd` Gradle tasks and the
+  `afsmGraph.checkedInDir` baseline. `verifyAfsmMmd` joins `check` when a
+  baseline exists, so a changed machine with a stale committed diagram fails the
+  build with a diff.
+- `generateAfsmMmd` is a `JavaExec` task running `afsm.core.AfsmMmdExport`. The
+  plugin no longer injects a JUnit 4 dependency, no longer generates a test class
+  into the consuming project's test source set, and no longer reflects into the
+  Android Gradle plugin DSL.
+- Committed graph baselines for `sample-shop` and `consumer-smoke`.
+
+### Definition validation
+
+- Enum phases are labelled by entry name. Previously every entry of one enum
+  collapsed into a single label and the machine failed to build.
+- An `on<Event>` handler that can never run because an earlier handler in the
+  same phase matches a supertype now fails the build.
+
+### Project
+
+- Added a CI workflow running unit tests, `apiCheck`, graph verification, and the
+  Maven Local consumer smoke build on every pull request.
+
 ### Added
 
 - `afsm-core` pure Kotlin `State`, `Event`, and `Command` machine model.

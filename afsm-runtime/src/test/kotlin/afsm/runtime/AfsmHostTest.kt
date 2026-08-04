@@ -187,7 +187,10 @@ class AfsmHostTest {
             },
             commandHandler = AfsmCommandHandler { _: PressureCommand, _ -> },
             scope = hostScope,
-            config = AfsmConfig(commandQueueCapacity = 1),
+            config = AfsmConfig(
+                overflowPolicy = AfsmOverflowPolicy.Throw,
+                commandQueueCapacity = 1,
+            ),
         )
 
         host.dispatch(PressureEvent.Start)
@@ -238,7 +241,10 @@ class AfsmHostTest {
                 dispatchEvent(PressureEvent.ResultThree)
             },
             scope = hostScope,
-            config = AfsmConfig(eventQueueCapacity = 1),
+            config = AfsmConfig(
+                overflowPolicy = AfsmOverflowPolicy.Throw,
+                eventQueueCapacity = 1,
+            ),
         )
 
         host.dispatch(PressureEvent.Start)

@@ -200,6 +200,15 @@ public final class afsm/core/AfsmMachineDslKt {
 	public static final fun afsmMachine (Lkotlin/jvm/functions/Function1;)Lafsm/core/AfsmDefaultMachine;
 }
 
+public final class afsm/core/AfsmMmdExport {
+	public static final field DEFAULT_REGISTRY_CLASS_NAME Ljava/lang/String;
+	public static final field INSTANCE Lafsm/core/AfsmMmdExport;
+	public final fun export (Ljava/io/File;Lafsm/core/AfsmMmdOptions;Ljava/lang/String;)Ljava/util/List;
+	public static synthetic fun export$default (Lafsm/core/AfsmMmdExport;Ljava/io/File;Lafsm/core/AfsmMmdOptions;Ljava/lang/String;ILjava/lang/Object;)Ljava/util/List;
+	public static final fun main ([Ljava/lang/String;)V
+	public final fun parseOptions (Ljava/lang/String;)Lafsm/core/AfsmMmdOptions;
+}
+
 public final class afsm/core/AfsmMmdOptions {
 	public static final field Companion Lafsm/core/AfsmMmdOptions$Companion;
 	public fun <init> ()V
