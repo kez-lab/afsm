@@ -13,7 +13,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -50,8 +49,13 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
      *
      * Cancelling the owning [scope] still cancels the host, but a failing
      * command, invocation, or processor no longer cancels its siblings.
+     *
+     * The parent job is read as a nullable context element rather than through
+     * `CoroutineContext.job`, because a scope is not required to carry one.
+     * `GlobalScope` and hand-written [CoroutineScope] implementations have no
+     * job, and hosting one of those must not fail at construction.
      */
-    private val hostJob = SupervisorJob(parent = scope.coroutineContext.job)
+    private val hostJob = SupervisorJob(parent = scope.coroutineContext[Job])
     private val hostScope = CoroutineScope(scope.coroutineContext + hostJob)
 
     private val processor: Job = hostScope.launch(start = CoroutineStart.UNDISPATCHED) {

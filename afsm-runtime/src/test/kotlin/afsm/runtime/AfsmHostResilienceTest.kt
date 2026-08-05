@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
@@ -20,7 +21,9 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Behavior that keeps a hosted screen usable after a failure.
@@ -291,6 +294,37 @@ class AfsmHostResilienceTest {
         )
         assertTrue(host.isActive)
         hostScope.cancel()
+    }
+
+    @Test
+    fun `a scope without a Job can host a machine`() = runTest {
+        // GlobalScope and hand-written CoroutineScope implementations carry no
+        // Job element. Reading the parent job must stay optional so hosting one
+        // of them does not fail at construction.
+        val jobLessScope = object : CoroutineScope {
+            override val coroutineContext: CoroutineContext =
+                StandardTestDispatcher(testScheduler)
+        }
+        assertNull(jobLessScope.coroutineContext[Job])
+
+        val host = AfsmHost(
+            initialState = CounterState(0),
+            reducer = countingReducer(),
+            commandHandler = AfsmCommandHandler.none(),
+            scope = jobLessScope,
+            config = AfsmConfig(),
+        )
+
+        host.dispatch(CounterEvent)
+        advanceUntilIdle()
+
+        assertEquals(CounterState(1), host.state.value)
+        assertTrue(host.isActive)
+
+        host.close()
+        advanceUntilIdle()
+
+        assertFalse(host.isActive)
     }
 
     private fun TestScope.hostScope(
