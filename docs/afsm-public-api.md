@@ -87,6 +87,7 @@ class AfsmHost<S : Any, E : Any, C : Any>(
     config: AfsmConfig = AfsmConfig(),
 ) {
     val state: StateFlow<S>
+    val isActive: Boolean
     fun dispatch(event: E)
     fun tryDispatch(event: E): Boolean
     fun close()
@@ -97,8 +98,49 @@ The host serializes events, publishes accepted state before scheduling command
 work, executes commands sequentially, and returns command results through the
 handler's `dispatchEvent` capability.
 
-`AfsmConfig` controls invalid-transition policy, command failure policy, queue
-capacities, diagnostic data policy, and logging.
+`isActive` is `false` once the host stopped accepting events. A host stops when
+it is closed, when the owning scope is cancelled, or when a throwing policy
+ended a processing coroutine; the last case also records an
+`AfsmDiagnosticCode.HostStopped` diagnostic.
+
+### Failure policies
+
+```kotlin
+class AfsmConfig(
+    val invalidTransitionPolicy: AfsmInvalidTransitionPolicy = Record,
+    val commandExecutionPolicy: AfsmCommandExecutionPolicy = Sequential,
+    val commandFailurePolicy: AfsmCommandFailurePolicy = Record,
+    val overflowPolicy: AfsmOverflowPolicy = Record,
+    val commandContext: CoroutineContext = EmptyCoroutineContext,
+    val eventQueueCapacity: Int = 64,
+    val commandQueueCapacity: Int = 64,
+    val diagnosticDataPolicy: AfsmDiagnosticDataPolicy = TypesOnly,
+    val logger: AfsmLogger = AfsmLogger.None,
+) {
+    companion object {
+        fun strict(/* ... */): AfsmConfig
+    }
+}
+```
+
+| Policy | Covers | `Record` | `Throw` |
+|---|---|---|---|
+| `invalidTransitionPolicy` | `Invalid` decisions, reducer exceptions, duplicate invocation keys | diagnostic, host stays usable | exception stops the host |
+| `commandFailurePolicy` | exceptions a command handler did not model | diagnostic, host stays usable | exception stops the host |
+| `overflowPolicy` | full event and command queues | diagnostic, work dropped | overflow exception |
+
+`AfsmConfig.strict()` selects `Throw` for all three. Use it in debug builds and
+tests; keep the recording defaults in release builds so one flow mistake cannot
+freeze a shipped screen.
+
+`commandContext` is added to the coroutine context while a command handler runs.
+Event reduction always stays on the host scope so transitions stay serialized.
+
+Diagnostics carry a stable `AfsmDiagnosticCode`: `InvalidTransition`,
+`ReducerFailure`, `IgnoredTransitionOutputDropped`, `CommandFailure`,
+`DuplicateInvocationKey`, `EventDropped`, `CommandQueueOverflow`,
+`CommandResultQueueOverflow`, `CommandResultDroppedHostClosed`, and
+`HostStopped`.
 
 ## ViewModel integration
 

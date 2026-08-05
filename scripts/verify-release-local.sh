@@ -17,7 +17,7 @@ GRADLE_ARGS=("$@")
   :afsm-viewmodel:testDebugUnitTest \
   :sample-shop:compileDebugKotlin \
   :sample-shop:testDebugUnitTest \
-  :sample-shop:generateAfsmMmd \
+  :sample-shop:verifyAfsmMmd \
   apiCheck \
   --stacktrace \
   "${GRADLE_ARGS[@]}"

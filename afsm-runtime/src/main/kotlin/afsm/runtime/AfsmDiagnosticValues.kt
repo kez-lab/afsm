@@ -9,7 +9,7 @@ package afsm.runtime
  */
 public class AfsmDiagnosticValues internal constructor(
     public val state: Any,
-    public val event: Any,
+    public val event: Any?,
     public val command: Any?,
     public val reason: String?,
     public val throwable: Throwable?,

@@ -1859,3 +1859,59 @@ Consequences:
   mismatched Afsm versions.
 - API changes must keep the skill references synchronized with canonical public
   docs and external consumer evidence.
+
+
+## [2026-08-05] Runtime failures record by default and graph baselines are verified
+
+Status: Accepted
+
+Decision: Make `AfsmConfig` record invalid transitions, reducer failures,
+command failures, and queue overflow by default; supervise phase-owned
+invocations; and verify committed `.mmd` baselines from the build instead of
+only regenerating them.
+
+Context:
+
+- A critical review reproduced the previous defaults on a scope shaped like
+  `viewModelScope`: one command handler exception delivered two uncaught
+  exceptions to the scope and left the host permanently unable to accept
+  events. On Android that is an app crash followed by a screen that renders but
+  never responds again.
+- `invocationScope` used the command processor job as its parent, so any failing
+  invocation cancelled sibling invocations and both processors.
+- The README claimed the build checked graph drift, but the generated export
+  only asserted that files existed and started with `stateDiagram-v2`; nothing
+  was ever compared against a committed diagram.
+
+Rationale:
+
+- Fail-fast is right for development and wrong for a shipped screen. A stopped
+  host is invisible to the user until they tap something, and then nothing
+  happens; recording keeps the screen alive and routes the problem to a logger.
+- Making the strict behavior explicit (`AfsmConfig.strict()`) keeps the original
+  intent available where it belongs: debug builds and tests.
+- Supervision is the coroutine-level expression of the same rule: one failure is
+  one failure, not a cascade.
+- A generated diagram is only trustworthy if something compares it to the
+  machine. `updateAfsmMmd`/`verifyAfsmMmd` mirror the familiar API-dump
+  workflow that this repository already uses for binary compatibility.
+
+Consequences:
+
+- Consumers must supply `AfsmConfig.logger`; the default logger discards
+  diagnostics, so recorded failures are otherwise invisible.
+- `AfsmHost.isActive` and `AfsmDiagnosticCode.HostStopped` make a stopped host
+  observable.
+- New diagnostic codes: `ReducerFailure`, `DuplicateInvocationKey`,
+  `EventDropped`, `HostStopped`. `AfsmDiagnostic.decision` and `eventType` are
+  nullable because `HostStopped` is not tied to one reduced event.
+- A duplicate active invocation key now cancels the stale invocation
+  (latest wins) instead of throwing.
+- Graph baselines live in `afsmGraph.checkedInDir` (default `afsm-graph/`) and
+  are committed for `sample-shop` and `consumer-smoke`.
+- The Gradle plugin runs `afsm.core.AfsmMmdExport` through `JavaExec`, so it no
+  longer injects JUnit 4, generates a test class into the consumer's test source
+  set, or reflects into the AGP DSL. Graph generation still reuses the module's
+  unit test runtime classpath, so unit test sources must compile.
+- Enum phases are labelled by entry name, and event handlers shadowed by an
+  earlier supertype handler fail the build.

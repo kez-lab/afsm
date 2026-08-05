@@ -253,6 +253,8 @@ public class AfsmMachineBuilder<P : Any, D : Any, E : Any, C : Any> {
                     errors += "Duplicate event handler in ${state.label}: $eventLabel."
                 }
 
+            errors += state.shadowedEventHandlerErrors()
+
             state.eventDefinitions
                 .flatMap { it.transitions }
                 .filter { transition -> transition.to !in stateLabels }
@@ -381,6 +383,7 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, PS : P> intern
     ) {
         addEventDefinition(
             eventLabel = afsmLabelForClass(eventType),
+            eventType = eventType,
             eventMatcher = { event -> event.castIfInstance(eventType) },
             build = build,
         )
@@ -388,12 +391,14 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, PS : P> intern
 
     private fun <EV : E> addEventDefinition(
         eventLabel: String,
+        eventType: KClass<EV>,
         eventMatcher: (E) -> EV?,
         build: AfsmEventBranchScope<P, D, E, C, PS, EV>.() -> Unit,
     ) {
         val builder = AfsmEventBranchScope<P, D, E, C, PS, EV>(
             stateLabel = stateLabel,
             eventLabel = eventLabel,
+            eventType = eventType,
             phaseMatcher = matcher,
             eventMatcher = eventMatcher,
         )
@@ -419,6 +424,7 @@ public class AfsmPhaseBuilder<P : Any, D : Any, E : Any, C : Any, PS : P> intern
 public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, PS : P, EV : E> internal constructor(
     private val stateLabel: String,
     private val eventLabel: String,
+    private val eventType: KClass<EV>,
     private val phaseMatcher: (P) -> PS?,
     private val eventMatcher: (E) -> EV?,
 ) {
@@ -719,7 +725,10 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, PS : P, EV
         if (hasDirectActions && hasDecisionBranches) {
             throw AfsmDefinitionException(
                 "Event $eventLabel in phase $stateLabel cannot mix direct actions " +
-                    "with conditional case, ignore, or invalid branches.",
+                    "with conditional case, ignore, or invalid branches.\n" +
+                    "Move every direct statement into its own case(...) branch, or " +
+                    "remove the case/ignore/invalid branches so the handler stays " +
+                    "unconditional.",
             )
         }
 
@@ -733,6 +742,7 @@ public class AfsmEventBranchScope<P : Any, D : Any, E : Any, C : Any, PS : P, EV
 
         return AfsmEventDefinition(
             eventLabel = eventLabel,
+            eventType = eventType,
             eventMatcher = { event -> eventMatcher(event) != null },
             branches = branches.toList(),
             transitions = transitions.toList(),
@@ -1125,6 +1135,32 @@ public class AfsmTransitionScope<P : Any, D : Any, E : Any, C : Any, PS : P, EV 
 
 }
 
+/**
+ * Reports `on<Event>` handlers that can never run because an earlier handler in
+ * the same phase already matches a supertype of their event.
+ *
+ * Runtime event dispatch picks the first declaration whose type matches, so a
+ * handler declared after a supertype handler is dead code. Failing at build time
+ * keeps that mistake from silently changing flow behavior.
+ */
+private fun <P : Any, D : Any, E : Any, C : Any> AfsmStateDefinition<P, D, E, C>.shadowedEventHandlerErrors(): List<String> {
+    val definitions = eventDefinitions
+
+    return definitions.flatMapIndexed { index, shadowed ->
+        definitions.take(index)
+            .filter { earlier ->
+                earlier.eventType != shadowed.eventType &&
+                    earlier.eventType.java.isAssignableFrom(shadowed.eventType.java)
+            }
+            .map { earlier ->
+                "Event handler ${shadowed.eventLabel} in phase $label is unreachable " +
+                    "because ${earlier.eventLabel} is declared earlier and already " +
+                    "matches ${shadowed.eventLabel}. Declare the more specific " +
+                    "handler first, or remove the broader one."
+            }
+    }
+}
+
 internal data class AfsmStateDefinition<P : Any, D : Any, E : Any, C : Any>(
     val label: String,
     val matcher: (P) -> Any?,
@@ -1138,6 +1174,7 @@ internal data class AfsmStateDefinition<P : Any, D : Any, E : Any, C : Any>(
 
 internal data class AfsmEventDefinition<P : Any, D : Any, E : Any, C : Any>(
     val eventLabel: String,
+    val eventType: KClass<*>,
     val eventMatcher: (E) -> Boolean,
     val branches: List<AfsmEventBranch<P, D, E, C>>,
     val transitions: List<AfsmTopologyTransition>,
@@ -1327,6 +1364,13 @@ internal class AfsmDslExecution<P : Any, D : Any, C : Any>(
 )
 
 private fun afsmLabelForValue(value: Any): String {
+    // Enum entries must be labelled by entry name. `EnumEntry::class` is the
+    // enum class itself for entries without a body, so `simpleName` would
+    // collapse every entry of one enum into a single duplicate phase label.
+    if (value is Enum<*>) {
+        return value.name
+    }
+
     return value::class.simpleName ?: value.toString()
 }
 

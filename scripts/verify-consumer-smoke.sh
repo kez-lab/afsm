@@ -28,6 +28,7 @@ fi
   :app:compileDebugKotlin \
   :app:testDebugUnitTest \
   :app:generateAfsmMmd \
+  :app:verifyAfsmMmd \
   "${GRADLE_ARGS[@]}"
 
 MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/ConsumerSmoke.mmd"
