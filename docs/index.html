@@ -807,20 +807,27 @@
     }
 
     .example-open {
-      padding: 0;
+      padding: 6px 14px;
       color: var(--accent);
-      border: 0;
-      background: transparent;
-      font-weight: 690;
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 0.18em;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: var(--surface-soft);
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.15s ease;
     }
 
-    .example-open:hover,
-    .example-open.is-selected {
+    .example-open:hover {
       color: var(--accent-hover);
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+
+    .example-open.is-selected {
+      color: var(--surface);
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 700;
     }
 
     .trace-lab {
@@ -1536,17 +1543,17 @@
           <ul class="docs-nav">
             <li><a href="#concepts" data-nav-link><span data-lang="en" lang="en">State, Event, Command</span><span data-lang="ko" lang="ko">State, Event, Command</span></a></li>
             <li><a href="#android-integration" data-nav-link><span data-lang="en" lang="en">Android integration</span><span data-lang="ko" lang="ko">Android 연동</span></a></li>
-            <li><a class="external-link" href="modeling-rules.md"><span data-lang="en" lang="en">Modeling rules</span><span data-lang="ko" lang="ko">모델링 규칙</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/modeling-rules.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Modeling rules</span><span data-lang="ko" lang="ko">모델링 규칙</span></a></li>
           </ul>
         </div>
 
         <div class="nav-group">
           <p class="nav-group-title"><span data-lang="en" lang="en">Guides</span><span data-lang="ko" lang="ko">가이드</span></p>
           <ul class="docs-nav">
-            <li><a class="external-link" href="testing-guide.md"><span data-lang="en" lang="en">Testing</span><span data-lang="ko" lang="ko">테스트</span></a></li>
-            <li><a class="external-link" href="graph-generation.md"><span data-lang="en" lang="en">Graph generation</span><span data-lang="ko" lang="ko">그래프 생성</span></a></li>
-            <li><a class="external-link" href="restoration-command-ui-policy.md"><span data-lang="en" lang="en">Restoration & UI policy</span><span data-lang="ko" lang="ko">복원과 UI 정책</span></a></li>
-            <li><a class="external-link" href="sample-shop-afsm-guide.md"><span data-lang="en" lang="en">Sample Shop</span><span data-lang="ko" lang="ko">Sample Shop</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/testing-guide.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Testing</span><span data-lang="ko" lang="ko">테스트</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/graph-generation.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Graph generation</span><span data-lang="ko" lang="ko">그래프 생성</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/restoration-command-ui-policy.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Restoration & UI policy</span><span data-lang="ko" lang="ko">복원과 UI 정책</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/sample-shop-afsm-guide.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Sample Shop</span><span data-lang="ko" lang="ko">Sample Shop</span></a></li>
           </ul>
         </div>
 
@@ -1554,8 +1561,8 @@
           <p class="nav-group-title"><span data-lang="en" lang="en">Reference</span><span data-lang="ko" lang="ko">레퍼런스</span></p>
           <ul class="docs-nav">
             <li><a href="#api-reference" data-nav-link><span data-lang="en" lang="en">API quick reference</span><span data-lang="ko" lang="ko">API 빠른 참조</span></a></li>
-            <li><a class="external-link" href="afsm-public-api.md"><span data-lang="en" lang="en">Full public API</span><span data-lang="ko" lang="ko">전체 공개 API</span></a></li>
-            <li><a class="external-link" href="release-readiness.md"><span data-lang="en" lang="en">Release readiness</span><span data-lang="ko" lang="ko">릴리스 준비 상태</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/afsm-public-api.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Full public API</span><span data-lang="ko" lang="ko">전체 공개 API</span></a></li>
+            <li><a class="external-link" href="https://github.com/kez-lab/afsm/blob/main/docs/release-readiness.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Release readiness</span><span data-lang="ko" lang="ko">릴리스 준비 상태</span></a></li>
             <li><a href="#examples" data-nav-link><span data-lang="en" lang="en">Examples</span><span data-lang="ko" lang="ko">예제</span></a></li>
           </ul>
         </div>
@@ -1735,7 +1742,7 @@ sealed interface DraftCommand {
             <span data-lang="ko" lang="ko">순수 머신은 repository, database, timer, SDK를 직접 호출하지 않습니다. Android host가 실행할 작업을 값으로 내보내므로 전이는 결정적이고 JVM에서 테스트할 수 있습니다.</span>
           </div>
 
-          <p><a href="getting-started.md"><span data-lang="en" lang="en">Continue with the complete Draft tutorial →</span><span data-lang="ko" lang="ko">전체 Draft 튜토리얼 계속 읽기 →</span></a></p>
+          <p><a href="https://github.com/kez-lab/afsm/blob/main/docs/getting-started.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Continue with the complete Draft tutorial →</span><span data-lang="ko" lang="ko">전체 Draft 튜토리얼 계속 읽기 →</span></a></p>
         </section>
 
         <section class="doc-section" id="concepts">
@@ -1869,16 +1876,16 @@ sealed interface DraftCommand {
             </table>
           </div>
 
-          <p><a href="afsm-public-api.md"><span data-lang="en" lang="en">Open the full public API reference →</span><span data-lang="ko" lang="ko">전체 공개 API 레퍼런스 열기 →</span></a></p>
+          <p><a href="https://github.com/kez-lab/afsm/blob/main/docs/afsm-public-api.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Open the full public API reference →</span><span data-lang="ko" lang="ko">전체 공개 API 레퍼런스 열기 →</span></a></p>
         </section>
 
         <section class="doc-section" id="guides">
           <h2><a class="anchor-link" href="#guides"><span data-lang="en" lang="en">Guides</span><span data-lang="ko" lang="ko">가이드</span></a></h2>
           <div class="guide-list">
-            <a class="guide-link" href="modeling-rules.md"><span><strong><span data-lang="en" lang="en">Modeling rules</span><span data-lang="ko" lang="ko">모델링 규칙</span></strong><p><span data-lang="en" lang="en">Choose Phase, Data, Event, and Command boundaries without forcing FSM ceremony.</span><span data-lang="ko" lang="ko">불필요한 FSM 의식 없이 Phase, Data, Event, Command 경계를 선택합니다.</span></p></span><span class="guide-arrow">↗</span></a>
-            <a class="guide-link" href="testing-guide.md"><span><strong><span data-lang="en" lang="en">Testing guide</span><span data-lang="ko" lang="ko">테스트 가이드</span></strong><p><span data-lang="en" lang="en">Test pure transitions, ViewModel wiring, runtime ordering, and graph contracts.</span><span data-lang="ko" lang="ko">순수 전이, ViewModel wiring, runtime 순서, graph contract를 테스트합니다.</span></p></span><span class="guide-arrow">↗</span></a>
-            <a class="guide-link" href="graph-generation.md"><span><strong><span data-lang="en" lang="en">Graph generation</span><span data-lang="ko" lang="ko">그래프 생성</span></strong><p><span data-lang="en" lang="en">Generate Mermaid topology from the same executable machine definition.</span><span data-lang="ko" lang="ko">같은 실행 가능한 machine 정의에서 Mermaid topology를 생성합니다.</span></p></span><span class="guide-arrow">↗</span></a>
-            <a class="guide-link" href="restoration-command-ui-policy.md"><span><strong><span data-lang="en" lang="en">Restoration, Command, and UI policy</span><span data-lang="ko" lang="ko">복원, Command, UI 정책</span></strong><p><span data-lang="en" lang="en">Restore minimal safe state and keep UI behavior at the correct boundary.</span><span data-lang="ko" lang="ko">최소한의 안전한 state를 복원하고 UI 동작을 올바른 경계에 둡니다.</span></p></span><span class="guide-arrow">↗</span></a>
+            <a class="guide-link" href="https://github.com/kez-lab/afsm/blob/main/docs/modeling-rules.md" target="_blank" rel="noopener noreferrer"><span><strong><span data-lang="en" lang="en">Modeling rules</span><span data-lang="ko" lang="ko">모델링 규칙</span></strong><p><span data-lang="en" lang="en">Choose Phase, Data, Event, and Command boundaries without forcing FSM ceremony.</span><span data-lang="ko" lang="ko">불필요한 FSM 의식 없이 Phase, Data, Event, Command 경계를 선택합니다.</span></p></span><span class="guide-arrow">↗</span></a>
+            <a class="guide-link" href="https://github.com/kez-lab/afsm/blob/main/docs/testing-guide.md" target="_blank" rel="noopener noreferrer"><span><strong><span data-lang="en" lang="en">Testing guide</span><span data-lang="ko" lang="ko">테스트 가이드</span></strong><p><span data-lang="en" lang="en">Test pure transitions, ViewModel wiring, runtime ordering, and graph contracts.</span><span data-lang="ko" lang="ko">순수 전이, ViewModel wiring, runtime 순서, graph contract를 테스트합니다.</span></p></span><span class="guide-arrow">↗</span></a>
+            <a class="guide-link" href="https://github.com/kez-lab/afsm/blob/main/docs/graph-generation.md" target="_blank" rel="noopener noreferrer"><span><strong><span data-lang="en" lang="en">Graph generation</span><span data-lang="ko" lang="ko">그래프 생성</span></strong><p><span data-lang="en" lang="en">Generate Mermaid topology from the same executable machine definition.</span><span data-lang="ko" lang="ko">같은 실행 가능한 machine 정의에서 Mermaid topology를 생성합니다.</span></p></span><span class="guide-arrow">↗</span></a>
+            <a class="guide-link" href="https://github.com/kez-lab/afsm/blob/main/docs/restoration-command-ui-policy.md" target="_blank" rel="noopener noreferrer"><span><strong><span data-lang="en" lang="en">Restoration, Command, and UI policy</span><span data-lang="ko" lang="ko">복원, Command, UI 정책</span></strong><p><span data-lang="en" lang="en">Restore minimal safe state and keep UI behavior at the correct boundary.</span><span data-lang="ko" lang="ko">최소한의 안전한 state를 복원하고 UI 동작을 올바른 경계에 둡니다.</span></p></span><span class="guide-arrow">↗</span></a>
           </div>
         </section>
 
@@ -1892,14 +1899,14 @@ sealed interface DraftCommand {
             <li><strong>ProductEditor</strong><span><span data-lang="en" lang="en">After Checkout: long flow and phase-owned cancellation</span><span data-lang="ko" lang="ko">Checkout 이후: 긴 흐름과 phase 소유 취소</span></span><button class="example-open" type="button" data-open-example="product-editor" aria-controls="example-lab" aria-pressed="false"><span data-lang="en" lang="en">Try example</span><span data-lang="ko" lang="ko">예제 실행</span></button></li>
           </ol>
 
-          <div class="trace-lab" id="example-lab" hidden>
+          <div class="trace-lab" id="example-lab">
             <div class="trace-lab-head">
               <div>
                 <p class="trace-lab-eyebrow"><span data-lang="en" lang="en">Main-path trace lab</span><span data-lang="ko" lang="ko">주요 경로 추적 실습</span></p>
                 <h3 id="trace-title">Draft</h3>
                 <p class="trace-lab-summary" id="trace-summary"></p>
               </div>
-              <a class="trace-guide-link" id="trace-guide-link" href="getting-started.md"><span data-lang="en" lang="en">Read full walkthrough →</span><span data-lang="ko" lang="ko">전체 가이드 읽기 →</span></a>
+              <a class="trace-guide-link" id="trace-guide-link" href="https://github.com/kez-lab/afsm/blob/main/docs/getting-started.md" target="_blank" rel="noopener noreferrer"><span data-lang="en" lang="en">Read full walkthrough on GitHub ↗</span><span data-lang="ko" lang="ko">GitHub에서 전체 가이드 읽기 ↗</span></a>
             </div>
 
             <div class="trace-workspace">
@@ -1947,8 +1954,8 @@ sealed interface DraftCommand {
         </section>
 
         <nav class="page-nav" aria-label="Documentation pagination" data-aria-en="Documentation pagination" data-aria-ko="문서 이전 다음">
-          <a href="../README.md"><small><span data-lang="en" lang="en">Repository</span><span data-lang="ko" lang="ko">저장소</span></small><strong>README</strong></a>
-          <a href="getting-started.md"><small><span data-lang="en" lang="en">Next</span><span data-lang="ko" lang="ko">다음</span></small><strong><span data-lang="en" lang="en">Complete Draft tutorial →</span><span data-lang="ko" lang="ko">전체 Draft 튜토리얼 →</span></strong></a>
+          <a href="https://github.com/kez-lab/afsm"><small><span data-lang="en" lang="en">Repository</span><span data-lang="ko" lang="ko">저장소</span></small><strong>README</strong></a>
+          <a href="https://github.com/kez-lab/afsm/blob/main/docs/getting-started.md" target="_blank" rel="noopener noreferrer"><small><span data-lang="en" lang="en">Next</span><span data-lang="ko" lang="ko">다음</span></small><strong><span data-lang="en" lang="en">Complete Draft tutorial →</span><span data-lang="ko" lang="ko">전체 Draft 튜토리얼 →</span></strong></a>
         </nav>
 
         <footer class="doc-footer">
@@ -2010,11 +2017,11 @@ sealed interface DraftCommand {
         { en: 'State, Event, Command', ko: 'State, Event, Command', groupEn: 'Fundamentals', groupKo: '기본 개념', href: '#concepts', keywords: 'phase data decision transitioned handled ignored invalid 개념' },
         { en: 'Android integration', ko: 'Android 연동', groupEn: 'Fundamentals', groupKo: '기본 개념', href: '#android-integration', keywords: 'viewmodel compose stateflow command handler 연동' },
         { en: 'API quick reference', ko: 'API 빠른 참조', groupEn: 'Reference', groupKo: '레퍼런스', href: '#api-reference', keywords: 'afsmstate reducer machine host dsl reference api' },
-        { en: 'Modeling rules', ko: '모델링 규칙', groupEn: 'Guide', groupKo: '가이드', href: 'modeling-rules.md', keywords: 'phase data events command stale results 모델링' },
-        { en: 'Testing guide', ko: '테스트 가이드', groupEn: 'Guide', groupKo: '가이드', href: 'testing-guide.md', keywords: 'junit transition viewmodel test assertion 테스트' },
-        { en: 'Graph generation', ko: '그래프 생성', groupEn: 'Guide', groupKo: '가이드', href: 'graph-generation.md', keywords: 'mermaid mmd ksp graph topology 그래프' },
-        { en: 'Restoration and UI policy', ko: '복원과 UI 정책', groupEn: 'Guide', groupKo: '가이드', href: 'restoration-command-ui-policy.md', keywords: 'savedstatehandle restore navigation ui 복원' },
-        { en: 'Full public API', ko: '전체 공개 API', groupEn: 'Reference', groupKo: '레퍼런스', href: 'afsm-public-api.md', keywords: 'signature overload config runtime public api' },
+        { en: 'Modeling rules', ko: '모델링 규칙', groupEn: 'Guide', groupKo: '가이드', href: 'https://github.com/kez-lab/afsm/blob/main/docs/modeling-rules.md', keywords: 'phase data events command stale results 모델링' },
+        { en: 'Testing guide', ko: '테스트 가이드', groupEn: 'Guide', groupKo: '가이드', href: 'https://github.com/kez-lab/afsm/blob/main/docs/testing-guide.md', keywords: 'junit transition viewmodel test assertion 테스트' },
+        { en: 'Graph generation', ko: '그래프 생성', groupEn: 'Guide', groupKo: '가이드', href: 'https://github.com/kez-lab/afsm/blob/main/docs/graph-generation.md', keywords: 'mermaid mmd ksp graph topology 그래프' },
+        { en: 'Restoration and UI policy', ko: '복원과 UI 정책', groupEn: 'Guide', groupKo: '가이드', href: 'https://github.com/kez-lab/afsm/blob/main/docs/restoration-command-ui-policy.md', keywords: 'savedstatehandle restore navigation ui 복원' },
+        { en: 'Full public API', ko: '전체 공개 API', groupEn: 'Reference', groupKo: '레퍼런스', href: 'https://github.com/kez-lab/afsm/blob/main/docs/afsm-public-api.md', keywords: 'signature overload config runtime public api' },
         { en: 'Examples', ko: '예제', groupEn: 'Learning path', groupKo: '학습 순서', href: '#examples', keywords: 'draft auth checkout product editor sample 예제' },
       ];
 
@@ -2167,7 +2174,7 @@ sealed interface DraftCommand {
             en: 'Type a title, save it, and return the repository result as an Event.',
             ko: '제목을 입력하고 저장한 뒤 repository 결과를 Event로 다시 전달합니다.',
           },
-          guide: 'getting-started.md',
+          guide: 'https://github.com/kez-lab/afsm/blob/main/docs/getting-started.md',
           initial: {
             phase: 'Editing',
             data: { title: '', errorMessage: null },
@@ -2179,7 +2186,7 @@ sealed interface DraftCommand {
             en: 'Edit the form, submit credentials, and choose the external authentication result.',
             ko: '폼을 직접 편집하고 인증 정보를 제출한 뒤 외부 인증 결과를 선택합니다.',
           },
-          guide: 'auth-walkthrough.md',
+          guide: 'https://github.com/kez-lab/afsm/blob/main/docs/auth-walkthrough.md',
           initial: {
             phase: 'Editing',
             data: {
@@ -2195,7 +2202,7 @@ sealed interface DraftCommand {
             en: 'Enter the screen, load a product, pay, and return matching or stale results.',
             ko: '화면 진입, 상품 로딩, 결제, 일치하거나 오래된 결과를 직접 발생시킵니다.',
           },
-          guide: 'checkout-walkthrough.md',
+          guide: 'https://github.com/kez-lab/afsm/blob/main/docs/checkout-walkthrough.md',
           initial: {
             phase: 'Idle',
             data: {
@@ -2212,7 +2219,7 @@ sealed interface DraftCommand {
             en: 'Edit nested draft Data and drive save, upload, review, and publish results.',
             ko: '중첩된 draft Data를 편집하고 저장, 업로드, 심사, 게시 결과를 직접 진행합니다.',
           },
-          guide: 'product-editor-walkthrough.md',
+          guide: 'https://github.com/kez-lab/afsm/blob/main/docs/product-editor-walkthrough.md',
           initial: {
             phase: 'EditingDraft',
             data: {
@@ -3026,6 +3033,7 @@ sealed interface DraftCommand {
         ? savedLanguage
         : (navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
       setLanguage(initialLanguage);
+      selectExample('draft', false);
     })();
   </script>
 </body>

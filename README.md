@@ -1,11 +1,15 @@
 # Afsm
 
-![Status](https://img.shields.io/badge/status-public%20beta-blue)
-![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
-![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
-![Distribution](https://img.shields.io/badge/distribution-Maven%20Central-blue)
+[![Status](https://img.shields.io/badge/status-public%20beta-blue.svg)](https://github.com/kez-lab/afsm)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.afsm/afsm-core?color=blue&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.afsm/afsm-core)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
+[![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
-**English** | [한국어](README.ko.md) | [Documentation (EN/KO)](https://kez-lab.org/afsm/)
+**English** | [한국어](README.ko.md) | [Documentation Hub (EN/KO)](https://kez-lab.org/afsm/)
+
+> 🚀 **Live Interactive Demo:** Experience state transitions, event processing, and live data traces directly in your browser at **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**.
 
 Afsm helps Android teams make complex screen flows easier to read, verify, and
 change safely. It moves business-flow rules scattered across `ViewModel`
@@ -20,14 +24,72 @@ results, and rules that depend on the current phase. Keep ordinary
 ## Why I Started Afsm
 
 Complex Android screens often reach a point where every individual handler looks
-reasonable but the complete flow exists everywhere and nowhere at once. To
-answer “what can happen now?”, a reviewer has to reconstruct rules across the
-`ViewModel`, UI callbacks, repository calls, result callbacks, and tests.
+reasonable, but the complete screen flow is scattered across `ViewModel` boolean flags,
+coroutines, repository callbacks, and UI handlers.
 
-Afsm began as an attempt to make those answers local and executable. It does not
-replace `ViewModel`, hide Kotlin `copy()`, or require an app-wide MVI
-architecture. It gives one complex feature a readable business-flow model that
-can be executed, tested, and rendered as a state diagram.
+### The Problem: Boolean Flag & State Explosion (Before)
+
+```kotlin
+// Traditional ViewModel: Implicit, fragile flow state
+class DraftViewModel : ViewModel() {
+    var isLoading by mutableStateOf(false)
+    var isSaving by mutableStateOf(false)
+    var isSaved by mutableStateOf(false)
+    var errorMessage by mutableStateOf<String?>(null)
+
+    fun save(title: String) {
+        if (isSaving || isLoading) return // What if the user clicks twice?
+        if (title.isBlank()) {
+            errorMessage = "Title is required"
+            return
+        }
+        isSaving = true
+        viewModelScope.launch {
+            try {
+                repository.save(title)
+                isSaved = true
+                isSaving = false // Easy to produce invalid combinations (e.g. isSaving=true & isSaved=true)
+            } catch (e: Exception) {
+                errorMessage = e.message
+                isSaving = false
+            }
+        }
+    }
+}
+```
+
+### The Solution: Explicit Phase & Deterministic Machine (After)
+
+With Afsm, business flow rules are moved into a pure Kotlin state machine with explicit `Phase`s, `Event`s, and `Command`s.
+
+```kotlin
+// Afsm: Single source of truth for flow transitions
+val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> = afsmMachine {
+    initial(DraftPhase.Editing, DraftData())
+
+    phase(DraftPhase.Editing) {
+        on<DraftEvent.SaveClicked> {
+            case("valid title", condition = { data.title.isNotBlank() }) {
+                transitionTo(DraftPhase.Saving)
+            }
+            case("missing title", condition = { data.title.isBlank() }) {
+                updateData { copy(errorMessage = "Title is required.") }
+            }
+        }
+    }
+
+    phase(DraftPhase.Saving) {
+        onEnter { command("SaveDraft") { DraftCommand.SaveDraft(data.title) } }
+        on<DraftEvent.DraftSaveCompleted> { transitionTo(DraftPhase.Saved) }
+        on<DraftEvent.DraftSaveFailed> {
+            updateData { data, event -> data.copy(errorMessage = event.message) }
+            transitionTo(DraftPhase.Editing)
+        }
+    }
+
+    phase(DraftPhase.Saved)
+}
+```
 
 ## Three Concepts
 
@@ -127,6 +189,18 @@ val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
     }
 ```
 
+### Generated State Diagram
+
+The executable machine automatically generates a verifiable Mermaid state diagram:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Editing
+    Editing --> Saving: SaveClicked [valid title]
+    Editing --> Editing: SaveClicked [missing title]
+    Saving --> Saved: DraftSaveCompleted
+```
+
 Use ordinary Kotlin inside a rule. Use `case(...)` only when one event has
 multiple named conditional outcomes that should appear in the generated graph.
 
@@ -173,6 +247,17 @@ fun DraftRoute(viewModel: DraftViewModel) {
 
 This is intentional Android code, not a requirement to expose one generic
 `onEvent(Event)` MVI boundary.
+
+## Example Ladder
+
+Afsm provides a 4-step canonical learning path ranging from simple editors to complex async flows:
+
+| Level | Feature | Key Concepts | Walkthrough | Generated Graph |
+|---|---|---|---|---|
+| **1** | **Draft** | Minimal `Phase + Data + Command` & ViewModel host | [Draft Guide](docs/getting-started.md) | [DraftQuickstart.mmd](consumer-smoke/app/build/generated/afsm/mmd/DraftQuickstart.mmd) |
+| **2** | **Auth** | Form validation, login result events, state-driven navigation | [Auth Walkthrough](docs/auth-walkthrough.md) | [AuthStateMachine.mmd](sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd) |
+| **3** | **Checkout** | Nav arguments dynamic initial state, payment retry, request-id stale result handling, restoration | [Checkout Walkthrough](docs/checkout-walkthrough.md) | [CheckoutStateMachine.mmd](sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd) |
+| **4** | **Product Editor** | Nested draft editing, phase-owned cooperative upload cancellation, review rejection & resubmission | [Product Editor Walkthrough](docs/product-editor-walkthrough.md) | [ProductEditorStateMachine.mmd](sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd) |
 
 ## Why Machine, Graph, and Tests Are All Needed
 

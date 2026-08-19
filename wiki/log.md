@@ -1897,3 +1897,10 @@
 - Action: Replaced `AfsmHost.dispatch` and `tryDispatch` with `send` and `trySend`, added `operator fun invoke(event: E) = send(event)`, renamed `AfsmCommandHandler` parameter from `dispatchEvent` to `send`, removed `dispatch`/`tryDispatch` completely, fixed `afsm-graph-gradle-plugin` staging in `scripts/publish-central.sh`, fixed bash 3.2 empty array expansion in verification scripts, added `trySend` unit tests, updated all sample ViewModels, tests, docs, READMEs, skills, API dumps, and wiki synthesis.
 - Verification: `./gradlew apiDump apiCheck check verifyAfsmMmd`, `./scripts/verify-release-local.sh`, and `./scripts/verify-consumer-smoke.sh` pass with 100% green tests.
 - Updated: `afsm-runtime/`, `afsm-viewmodel/`, `sample-shop/`, `consumer-smoke/`, `scripts/`, `docs/`, `README.md`, `README.ko.md`, `.agents/skills/use-afsm/`, `wiki/00-context/current-state.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-08-20] docs | Polish READMEs and documentation hub interactive lab
+
+- Source: Human DX review requesting visual polish, Mermaid diagrams, Before vs After comparisons, and fixing raw `.md` link dead-ends on GitHub Pages.
+- Action: Enhanced `README.md` and `README.ko.md` with Maven Central/CI badges, Live Demo callout box, Before vs After state-explosion comparison, Mermaid state diagrams, and Example Ladder roadmap table. Upgraded `docs/index.html` to open the Interactive Lab by default with Draft pre-loaded, styled example ladder tab buttons, and linked all external guide/reference items directly to GitHub rich markdown viewer.
+- Verification: `./gradlew apiCheck check verifyAfsmMmd` and `./scripts/verify-release-local.sh` pass with 100% green tests.
+- Updated: `README.md`, `README.ko.md`, `docs/index.html`, `wiki/log.md`.

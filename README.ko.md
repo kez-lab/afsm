@@ -1,11 +1,15 @@
 # Afsm
 
-![Status](https://img.shields.io/badge/status-public%20beta-blue)
-![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
-![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
-![Distribution](https://img.shields.io/badge/distribution-Maven%20Central-blue)
+[![Status](https://img.shields.io/badge/status-public%20beta-blue.svg)](https://github.com/kez-lab/afsm)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.afsm/afsm-core?color=blue&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.afsm/afsm-core)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
+[![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
 [English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/)
+
+> 🚀 **라이브 인터랙티브 데모:** 웹 브라우저에서 버튼을 누르며 상태 전이와 데이터 변화를 직접 시뮬레이션해 보세요: **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**
 
 Afsm은 Android 팀이 복잡한 화면 흐름을 더 쉽게 읽고 검증하며 안전하게
 변경할 수 있도록 만드는 도구입니다. `ViewModel`의 `state.copy(...)`,
@@ -20,14 +24,71 @@ state, repository와 UI 어댑터 역할을 그대로 담당합니다.
 ## Afsm을 만들기 시작한 이유
 
 복잡한 Android 화면은 각각의 핸들러는 합리적으로 보여도 전체 흐름은
-코드 곳곳에 흩어져 한눈에 존재하지 않는 상태가 되곤 합니다. “지금 무엇이
-가능한가?”에 답하려면 `ViewModel`, UI 콜백, repository 호출, 결과 콜백과
-테스트를 오가며 규칙을 다시 조립해야 합니다.
+`ViewModel` 불리언 플래그, 코루틴, repository 콜백에 흩어져 한눈에 보이지 않는 상태가 되곤 합니다.
 
-Afsm은 그 답을 한곳에서 읽고 실제로 실행할 수 있게 만들려는 시도에서
-출발했습니다. `ViewModel`을 대체하거나 Kotlin `copy()`를 감추거나 앱 전체에
-MVI 아키텍처를 강제하지 않습니다. 복잡한 feature 하나의 비즈니스 흐름을
-실행하고 테스트하고 상태 전이도로 볼 수 있게 만드는 것이 목적입니다.
+### 문제: 불리언 플래그 난무 및 불가능한 상태 조합 (Before)
+
+```kotlin
+// 기존 ViewModel: 암시적이고 깨지기 쉬운 상태 관리
+class DraftViewModel : ViewModel() {
+    var isLoading by mutableStateOf(false)
+    var isSaving by mutableStateOf(false)
+    var isSaved by mutableStateOf(false)
+    var errorMessage by mutableStateOf<String?>(null)
+
+    fun save(title: String) {
+        if (isSaving || isLoading) return // 연타 클릭 방어 필요
+        if (title.isBlank()) {
+            errorMessage = "제목을 입력하세요."
+            return
+        }
+        isSaving = true
+        viewModelScope.launch {
+            try {
+                repository.save(title)
+                isSaved = true
+                isSaving = false // 플래그를 누락하거나 유효하지 않은 조합(isSaving=true & isSaved=true) 발생 위험!
+            } catch (e: Exception) {
+                errorMessage = e.message
+                isSaving = false
+            }
+        }
+    }
+}
+```
+
+### 해결: 명시적 Phase와 결정적 상태 머신 (After)
+
+Afsm을 사용하면 비즈니스 흐름 규칙을 명시적인 `Phase`, `Event`, `Command`를 가진 순수 Kotlin 상태 머신으로 격리합니다.
+
+```kotlin
+// Afsm: 화면 전이 규칙의 단일 진실 공급원 (Single Source of Truth)
+val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> = afsmMachine {
+    initial(DraftPhase.Editing, DraftData())
+
+    phase(DraftPhase.Editing) {
+        on<DraftEvent.SaveClicked> {
+            case("valid title", condition = { data.title.isNotBlank() }) {
+                transitionTo(DraftPhase.Saving)
+            }
+            case("missing title", condition = { data.title.isBlank() }) {
+                updateData { copy(errorMessage = "제목을 입력하세요.") }
+            }
+        }
+    }
+
+    phase(DraftPhase.Saving) {
+        onEnter { command("SaveDraft") { DraftCommand.SaveDraft(data.title) } }
+        on<DraftEvent.DraftSaveCompleted> { transitionTo(DraftPhase.Saved) }
+        on<DraftEvent.DraftSaveFailed> {
+            updateData { data, event -> data.copy(errorMessage = event.message) }
+            transitionTo(DraftPhase.Editing)
+        }
+    }
+
+    phase(DraftPhase.Saved)
+}
+```
 
 ## 세 가지 개념
 
@@ -127,6 +188,18 @@ val draftMachine: AfsmDefaultMachine<DraftState, DraftEvent, DraftCommand> =
     }
 ```
 
+### 생성된 상태 전이도 (State Diagram)
+
+실행 가능한 머신 정의로부터 검증 가능한 Mermaid 다이어그램이 자동 생성됩니다:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Editing
+    Editing --> Saving: SaveClicked [valid title]
+    Editing --> Editing: SaveClicked [missing title]
+    Saving --> Saved: DraftSaveCompleted
+```
+
 규칙 내부에서는 일반 Kotlin을 사용하세요. 하나의 event에 생성 그래프에도
 나타나야 하는 이름 있는 조건 결과가 여러 개 있을 때만 `case(...)`를
 사용합니다.
@@ -174,6 +247,17 @@ fun DraftRoute(viewModel: DraftViewModel) {
 
 이는 의도적인 Android 코드입니다. Afsm이 하나의 범용
 `onEvent(Event)` MVI 경계를 공개하도록 요구하지 않습니다.
+
+## 예제 학습 사다리 (Example Ladder)
+
+Afsm은 간단한 에디터부터 복잡한 비동기 트랜잭션까지 4단계의 표준 학습 경로를 제공합니다:
+
+| 단계 | 예제 | 주요 학습 개념 | 상세 가이드 | 생성된 그래프 |
+|---|---|---|---|---|
+| **1** | **Draft** | 최소 `Phase + Data + Command` & ViewModel 호스팅 | [Draft 튜토리얼](docs/getting-started.md) | [DraftQuickstart.mmd](consumer-smoke/app/build/generated/afsm/mmd/DraftQuickstart.mmd) |
+| **2** | **Auth** | 폼 유효성 검증, 로그인 결과 이벤트, 상태 기반 화면 이동 | [Auth 가이드](docs/auth-walkthrough.md) | [AuthStateMachine.mmd](sample-shop/build/generated/afsm/mmd/AuthStateMachine.mmd) |
+| **3** | **Checkout** | Nav argument 동적 초기 상태, 결제 재시도, request-id stale 결과 방어, 상태 복원 | [Checkout 가이드](docs/checkout-walkthrough.md) | [CheckoutStateMachine.mmd](sample-shop/build/generated/afsm/mmd/CheckoutStateMachine.mmd) |
+| **4** | **Product Editor** | 중첩 draft 편집, phase 소유 협력적 업로드 취소, 심사 반려 및 재제출 | [Product Editor 가이드](docs/product-editor-walkthrough.md) | [ProductEditorStateMachine.mmd](sample-shop/build/generated/afsm/mmd/ProductEditorStateMachine.mmd) |
 
 ## 머신, 그래프, 테스트가 모두 필요한 이유
 
