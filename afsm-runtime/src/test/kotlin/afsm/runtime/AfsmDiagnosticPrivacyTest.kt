@@ -43,7 +43,7 @@ class AfsmDiagnosticPrivacyTest {
             ),
         )
 
-        host.dispatch(event)
+        host.send(event)
         advanceUntilIdle()
 
         val diagnostic = diagnostics.single()
@@ -86,7 +86,7 @@ class AfsmDiagnosticPrivacyTest {
             ),
         )
 
-        host.dispatch(SensitiveEvent.Submit(email = "ada@example.com"))
+        host.send(SensitiveEvent.Submit(email = "ada@example.com"))
         advanceUntilIdle()
 
         val diagnostic = diagnostics.single()
@@ -131,7 +131,7 @@ class AfsmDiagnosticPrivacyTest {
             ),
         )
 
-        host.dispatch(event)
+        host.send(event)
         advanceUntilIdle()
 
         val diagnostic = diagnostics.single()

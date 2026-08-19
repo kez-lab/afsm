@@ -6,7 +6,7 @@ plugins {
 }
 
 val afsmVersion = providers.gradleProperty("afsmVersion")
-    .orElse("0.1.0-SNAPSHOT")
+    .orElse("0.1.0")
     .get()
 
 android {

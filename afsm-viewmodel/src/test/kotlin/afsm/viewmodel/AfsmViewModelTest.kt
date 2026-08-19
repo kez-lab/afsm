@@ -77,20 +77,20 @@ class AfsmViewModelTest {
 
         private val host = afsmHost(
             machine = CounterStateMachine,
-            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: CounterCommand, send ->
                 handledCommands += command
                 when (command) {
                     is CounterCommand.PersistCount -> {
-                        dispatchEvent(CounterEvent.CountPersisted)
+                        send(CounterEvent.CountPersisted)
                     }
                 }
             },
         )
 
         val state: StateFlow<CounterState> = host.state
-        fun increment() = host.dispatch(CounterEvent.IncrementClicked)
+        fun increment() = host.send(CounterEvent.IncrementClicked)
 
-        fun done() = host.dispatch(CounterEvent.DoneClicked)
+        fun done() = host.send(CounterEvent.DoneClicked)
     }
 
     private class DynamicInitialCounterViewModel(
@@ -101,11 +101,11 @@ class AfsmViewModelTest {
         private val host = afsmHost(
             machine = DynamicCounterStateMachine,
             initialState = CounterState(count = initialCount),
-            commandHandler = AfsmCommandHandler { command: CounterCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: CounterCommand, send ->
                 handledCommands += command
                 when (command) {
                     is CounterCommand.PersistCount -> {
-                        dispatchEvent(CounterEvent.CountPersisted)
+                        send(CounterEvent.CountPersisted)
                     }
                 }
             },
@@ -113,7 +113,7 @@ class AfsmViewModelTest {
 
         val state: StateFlow<CounterState> = host.state
 
-        fun increment() = host.dispatch(CounterEvent.IncrementClicked)
+        fun increment() = host.send(CounterEvent.IncrementClicked)
     }
 
     private object CounterStateMachine :

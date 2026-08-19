@@ -68,11 +68,11 @@ class PhaseOwnedInvocationConsumerTest {
             scope = hostScope,
         )
 
-        host.dispatch(UploadEvent.StartClicked)
+        host.send(UploadEvent.StartClicked)
         runCurrent()
         assertTrue(started.isCompleted)
 
-        host.dispatch(UploadEvent.CancelClicked)
+        host.send(UploadEvent.CancelClicked)
         runCurrent()
 
         assertTrue(cancelled.isCompleted)

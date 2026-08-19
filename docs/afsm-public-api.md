@@ -1,7 +1,8 @@
 # Afsm Public API
 
-Status: internal beta. Afsm is not publicly released and may make breaking API
-changes when usability or safety evidence justifies them.
+Status: public pre-1.0 beta. Afsm may make breaking API changes when usability
+or safety evidence justifies them; releases carry API, documentation, and
+migration updates together.
 
 ## Core types
 
@@ -88,15 +89,16 @@ class AfsmHost<S : Any, E : Any, C : Any>(
 ) {
     val state: StateFlow<S>
     val isActive: Boolean
-    fun dispatch(event: E)
-    fun tryDispatch(event: E): Boolean
+    fun send(event: E)
+    fun trySend(event: E): Boolean
+    operator fun invoke(event: E)
     fun close()
 }
 ```
 
 The host serializes events, publishes accepted state before scheduling command
 work, executes commands sequentially, and returns command results through the
-handler's `dispatchEvent` capability.
+handler's `send` capability.
 
 `isActive` is `false` once the host stopped accepting events. A host stops when
 it is closed, when the owning scope is cancelled, or when a throwing policy

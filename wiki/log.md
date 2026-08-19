@@ -1890,3 +1890,10 @@
   `wiki/00-context/current-state.md`,
   `wiki/03-engineering/afsm-runtime-dispatch-loop.md`,
   `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-08-19] runtime+api | Replace dispatch with send, trySend, and invoke operator
+
+- Source: Human DX feedback noting `host.dispatch` readability friction and Redux/dispatcher ambiguity.
+- Action: Replaced `AfsmHost.dispatch` and `tryDispatch` with `send` and `trySend`, added `operator fun invoke(event: E) = send(event)`, renamed `AfsmCommandHandler` parameter from `dispatchEvent` to `send`, added deprecation bridges, updated all sample ViewModels, tests, docs, READMEs, skills, API dumps, and wiki synthesis.
+- Verification: `./gradlew test`, `./gradlew apiCheck`, and `./gradlew apiDump` pass with 100% green tests.
+- Updated: `afsm-runtime/`, `afsm-viewmodel/`, `sample-shop/`, `consumer-smoke/`, `docs/`, `README.md`, `README.ko.md`, `.agents/skills/use-afsm/`, `wiki/00-context/current-state.md`, `wiki/03-engineering/afsm-runtime-dispatch-loop.md`, `wiki/03-engineering/afsm-viewmodel-integration.md`, `wiki/06-project/decision-log.md`, `wiki/log.md`.

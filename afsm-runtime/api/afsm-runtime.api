@@ -113,8 +113,11 @@ public final class afsm/runtime/AfsmHost {
 	public final fun close ()V
 	public final fun dispatch (Ljava/lang/Object;)V
 	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun invoke (Ljava/lang/Object;)V
 	public final fun isActive ()Z
+	public final fun send (Ljava/lang/Object;)V
 	public final fun tryDispatch (Ljava/lang/Object;)Z
+	public final fun trySend (Ljava/lang/Object;)Z
 }
 
 public final class afsm/runtime/AfsmInvalidTransitionException : java/lang/IllegalStateException {

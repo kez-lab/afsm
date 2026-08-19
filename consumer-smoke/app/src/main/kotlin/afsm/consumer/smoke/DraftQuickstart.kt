@@ -115,14 +115,14 @@ class DraftViewModel(
     private val host = afsmHost(
         machine = draftStateMachine,
         initialState = initialState,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.SaveDraft -> repository.save(command.title).fold(
                     onSuccess = {
-                        dispatchEvent(DraftEvent.DraftSaveCompleted)
+                        send(DraftEvent.DraftSaveCompleted)
                     },
                     onFailure = { error ->
-                        dispatchEvent(
+                        send(
                             DraftEvent.DraftSaveFailed(
                                 error.message ?: "Draft save failed.",
                             ),
@@ -135,7 +135,7 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
 
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun save() = host.send(DraftEvent.SaveClicked)
 }

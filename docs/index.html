@@ -1479,7 +1479,7 @@
         <span class="brand-name">Afsm</span>
         <span class="brand-divider" aria-hidden="true"></span>
         <span class="brand-docs">Docs</span>
-        <span class="version-chip">0.1.0-SNAPSHOT</span>
+        <span class="version-chip">0.1.0</span>
       </a>
 
       <div class="search-wrap">
@@ -1517,8 +1517,8 @@
     <aside class="sidebar" id="sidebar" aria-label="Documentation navigation" data-aria-en="Documentation navigation" data-aria-ko="문서 탐색">
       <div class="sidebar-status">
         <span class="status-dot" aria-hidden="true"></span>
-        <span data-lang="en" lang="en">Internal beta · Maven Local</span>
-        <span data-lang="ko" lang="ko">내부 베타 · Maven Local</span>
+        <span data-lang="en" lang="en">Public beta · Maven Central</span>
+        <span data-lang="ko" lang="ko">공개 베타 · Maven Central</span>
       </div>
 
       <nav>
@@ -1586,19 +1586,19 @@
           </div>
           <div class="notice">
             <strong>
-              <span data-lang="en" lang="en">Not publicly released</span>
+              <span data-lang="en" lang="en">Public pre-1.0 beta</span>
               <span data-lang="ko" lang="ko">아직 공개 배포 전</span>
             </strong>
-            <span data-lang="en" lang="en">Afsm is currently distributed through Maven Local as <code>0.1.0-SNAPSHOT</code>. APIs may change when usability or safety evidence supports a better design.</span>
-            <span data-lang="ko" lang="ko">Afsm은 현재 Maven Local의 <code>0.1.0-SNAPSHOT</code>으로 배포합니다. 사용성이나 안전성 근거가 더 나은 설계를 지지하면 API가 변경될 수 있습니다.</span>
+            <span data-lang="en" lang="en">Afsm is available from Maven Central as <code>0.1.0</code>. APIs may change in a later pre-1.0 release when usability or safety evidence supports a better design.</span>
+            <span data-lang="ko" lang="ko">Afsm은 Maven Central에서 <code>0.1.0</code>으로 사용할 수 있습니다. 사용성이나 안전성 근거가 더 나은 설계를 지지하면 이후 pre-1.0 릴리스에서 API가 변경될 수 있습니다.</span>
           </div>
         </section>
 
         <section class="doc-section" id="installation">
           <h2><a class="anchor-link" href="#installation"><span data-lang="en" lang="en">Installation</span><span data-lang="ko" lang="ko">설치</span></a></h2>
           <p>
-            <span data-lang="en" lang="en">Until the first remote release, publish Afsm from this repository and consume it from Maven Local.</span>
-            <span data-lang="ko" lang="ko">첫 원격 릴리스 전까지는 이 저장소에서 Afsm을 Maven Local로 게시한 뒤 사용합니다.</span>
+            <span data-lang="en" lang="en">Maven Central is the only repository required. Afsm is distributed under Apache-2.0.</span>
+            <span data-lang="ko" lang="ko">별도 저장소는 필요하지 않습니다. Afsm은 Apache-2.0으로 배포됩니다.</span>
           </p>
 
           <ol class="step-list">
@@ -1612,7 +1612,7 @@
             </li>
 
             <li class="step">
-              <h3><span data-lang="en" lang="en">Add Maven Local</span><span data-lang="ko" lang="ko">Maven Local 추가</span></h3>
+              <h3><span data-lang="en" lang="en">Add dependencies</span><span data-lang="ko" lang="ko">의존성 추가</span></h3>
               <p><span data-lang="en" lang="en">Add <code>mavenLocal()</code> to plugin and dependency repositories in the consuming project.</span><span data-lang="ko" lang="ko">사용할 프로젝트의 plugin 및 dependency repository에 <code>mavenLocal()</code>을 추가합니다.</span></p>
               <div class="code-block">
                 <div class="code-head"><span>settings.gradle.kts</span><button class="copy-button" type="button" data-copy-target="install-repos"><span data-lang="en" lang="en">Copy</span><span data-lang="ko" lang="ko">복사</span></button></div>
@@ -1640,7 +1640,7 @@ dependencyResolutionManagement {
               <p><span data-lang="en" lang="en">Start with core, runtime, ViewModel integration, and the test helpers.</span><span data-lang="ko" lang="ko">core, runtime, ViewModel 연동, 테스트 helper부터 추가합니다.</span></p>
               <div class="code-block">
                 <div class="code-head"><span>build.gradle.kts</span><button class="copy-button" type="button" data-copy-target="install-deps"><span data-lang="en" lang="en">Copy</span><span data-lang="ko" lang="ko">복사</span></button></div>
-                <pre><code id="install-deps">val afsmVersion = "0.1.0-SNAPSHOT"
+                <pre><code id="install-deps">val afsmVersion = "0.1.0"
 
 dependencies {
     implementation("io.github.afsm:afsm-core:$afsmVersion")
@@ -1806,12 +1806,12 @@ sealed interface DraftCommand {
 ) : ViewModel() {
     private val host = afsmHost(
         machine = draftMachine,
-        commandHandler = { command: DraftCommand, dispatchEvent -&gt;
+        commandHandler = { command: DraftCommand, send -&gt;
             when (command) {
                 is DraftCommand.SaveDraft -&gt; repository.save(command.title).fold(
-                    onSuccess = { dispatchEvent(DraftEvent.DraftSaveCompleted) },
+                    onSuccess = { send(DraftEvent.DraftSaveCompleted) },
                     onFailure = { error -&gt;
-                        dispatchEvent(DraftEvent.DraftSaveFailed(error.message.orEmpty()))
+                        send(DraftEvent.DraftSaveFailed(error.message.orEmpty()))
                     },
                 )
             }
@@ -1820,8 +1820,8 @@ sealed interface DraftCommand {
 
     val state: StateFlow&lt;DraftState&gt; = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
+    fun save() = host.send(DraftEvent.SaveClicked)
 }</code></pre>
           </div>
 
@@ -1963,7 +1963,7 @@ sealed interface DraftCommand {
         </nav>
 
         <footer class="doc-footer">
-          <span>Afsm 0.1.0-SNAPSHOT · </span>
+          <span>Afsm 0.1.0 · </span>
           <span data-lang="en" lang="en">Internal beta documentation</span>
           <span data-lang="ko" lang="ko">내부 베타 문서</span>
         </footer>

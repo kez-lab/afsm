@@ -14,20 +14,21 @@ and returns command results to the same event queue.
 ## Dispatch Contract
 
 ```text
-dispatch(event)
+send(event) / host(event)
 -> bounded FIFO event queue
 -> reducer.transition(currentState, event)
 -> inspect Decision
 -> publish accepted state
 -> start/cancel phase-owned invocations
 -> enqueue ordinary commands
--> command handler may dispatchEvent(result)
+-> command handler may send(result)
 ```
 
-- `dispatch` is non-suspending for Android callbacks. A rejected event is
+- `send` is non-suspending for Android callbacks. A rejected event is
   recorded as an `EventDropped` diagnostic under the default overflow policy and
   throws only under `AfsmOverflowPolicy.Throw`.
-- `tryDispatch` returns false instead.
+- `trySend` returns false instead.
+- Function invocation syntax `host(event)` is supported via `operator fun invoke`.
 - External events and command-result events share serialized ordering.
 - State is published before command execution.
 - A suspended ordinary command does not block later event reduction.
@@ -49,11 +50,11 @@ Commands execute sequentially in acceptance order. The handler signature is:
 ```kotlin
 suspend fun handle(
     command: C,
-    dispatchEvent: suspend (E) -> Unit,
+    send: suspend (E) -> Unit,
 )
 ```
 
-`dispatchEvent` explicitly means “return a typed result event to the host”, not
+`send` explicitly means “return a typed result event to the host”, not
 a generic callback and not direct reentrant reduction.
 
 Unexpected handler exceptions follow `AfsmCommandFailurePolicy`. Domain

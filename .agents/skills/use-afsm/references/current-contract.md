@@ -1,7 +1,7 @@
 # Afsm Current Contract
 
-This reference describes the repository's current internal-beta contract. Afsm
-is not publicly released. Verify the consuming project's exact version and use
+This reference describes the repository's current public pre-1.0 beta contract.
+Verify the consuming project's exact version and use
 matching source, docs, tests, and API dumps when they are available.
 
 ## Contents
@@ -95,8 +95,8 @@ Decision meanings:
   policy records a `HostStopped` diagnostic.
 - Command handlers run on the hosting scope. Set `AfsmConfig.commandContext`
   when a command calls work that is not main-safe.
-- Event and command queues are bounded; do not assume dispatch always succeeds
-  when using `tryDispatch`.
+- Event and command queues are bounded; do not assume send always succeeds
+  when using `trySend`.
 - Diagnostics retain types only by default. Raw values are an explicit privacy
   risk.
 - `invoke(key, label)` owns cooperative local work for one phase; phase exit and

@@ -39,7 +39,8 @@ Use Afsm to make one complex Android feature flow explicit without replacing
 
 If Afsm is not already available to the consumer, report the distribution
 boundary. The bundled contract targets the repository's internal-beta snapshot;
-do not silently add Maven Local or a guessed remote repository.
+use the documented Maven Central coordinates; do not add Maven Local unless the
+consumer is intentionally testing unpublished local changes.
 
 ### 2. Decide Whether Afsm Fits
 
@@ -89,7 +90,7 @@ weaken an existing test merely to fit the new machine.
 
 Host the machine with `ViewModel.afsmHost(...)`, expose its `StateFlow`, execute
 commands through the injected Android dependencies, and return results through
-the command handler's `dispatchEvent` capability.
+the command handler's `send` capability.
 
 Expose verb-named methods such as `save()`, `retry()`, or
 `updateTitle(value)` to UI. Do not make Compose construct machine `Event`

@@ -44,7 +44,7 @@ class PaymentRepository(
 
     @Synchronized
     private fun nextAttempt(productId: Long): Int {
-        val next = attemptsByProductId.getOrDefault(productId, 0) + 1
+        val next = (attemptsByProductId[productId] ?: 0) + 1
         attemptsByProductId[productId] = next
         return next
     }

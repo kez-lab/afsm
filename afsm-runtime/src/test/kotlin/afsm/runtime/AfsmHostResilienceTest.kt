@@ -48,13 +48,13 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertTrue(host.isActive)
         assertEquals(AfsmDiagnosticCode.CommandFailure, diagnostics.single().code)
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(CounterState(2), host.state.value)
@@ -81,8 +81,8 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(AfsmDiagnosticCode.InvalidTransition, diagnostics.single().code)
@@ -110,7 +110,7 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(AfsmDiagnosticCode.ReducerFailure, diagnostics.single().code)
@@ -118,7 +118,7 @@ class AfsmHostResilienceTest {
         assertEquals(CounterState(0), host.state.value)
         assertTrue(host.isActive)
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(CounterState(1), host.state.value)
@@ -142,7 +142,7 @@ class AfsmHostResilienceTest {
             config = AfsmConfig.strict(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         val thrown = exceptions.single()
@@ -165,7 +165,7 @@ class AfsmHostResilienceTest {
     }
 
     @Test
-    fun `dispatch records a dropped event instead of throwing when the queue is full`() = runTest {
+    fun `send records a dropped event instead of throwing when the queue is full`() = runTest {
         val diagnostics = mutableListOf<AfsmDiagnostic>()
         val hostScope = hostScope()
         val host = AfsmHost(
@@ -179,7 +179,7 @@ class AfsmHostResilienceTest {
             ),
         )
 
-        repeat(4) { host.dispatch(CounterEvent) }
+        repeat(4) { host.send(CounterEvent) }
         advanceUntilIdle()
 
         assertTrue(diagnostics.isNotEmpty())
@@ -202,7 +202,7 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(commandContext = CoroutineName("afsm-commands")),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals("afsm-commands", observed.getCompleted())
@@ -241,7 +241,7 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(AfsmDiagnosticCode.CommandFailure, diagnostics.single().code)
@@ -281,9 +281,9 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(logger = { diagnostic -> diagnostics += diagnostic }),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(listOf(0, 1), started)
@@ -315,7 +315,7 @@ class AfsmHostResilienceTest {
             config = AfsmConfig(),
         )
 
-        host.dispatch(CounterEvent)
+        host.send(CounterEvent)
         advanceUntilIdle()
 
         assertEquals(CounterState(1), host.state.value)

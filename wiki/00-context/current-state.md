@@ -38,7 +38,7 @@ Command = typed host-work request emitted by an accepted transition
 - Dynamic features such as Checkout supply runtime initial state to
   `afsmHost(machine, initialState)`.
 - The pure machine emits command values; `ViewModel` executes them and returns
-  typed result events through the command handler's `dispatchEvent` capability.
+  typed result events through the command handler's `send` capability.
 - Product completion is state. UI-originated UI-only actions are direct UI
   callbacks. Routes may react to durable completion state for navigation.
 - There is no Effect type/channel or `afsm-compose` module.

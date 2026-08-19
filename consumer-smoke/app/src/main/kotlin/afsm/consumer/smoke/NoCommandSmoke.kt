@@ -62,6 +62,6 @@ internal class NoCommandSmokeViewModel : ViewModel() {
         get() = host.state.value
 
     fun toggle() {
-        host.dispatch(NoCommandEvent.ToggleClicked)
+        host.send(NoCommandEvent.ToggleClicked)
     }
 }

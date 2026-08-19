@@ -1,6 +1,6 @@
 # Afsm Release Readiness
 
-Afsm is an internal beta and has not been publicly released.
+Afsm is a public pre-1.0 beta published to Maven Central as `0.1.0`.
 
 ## Local release gate
 
@@ -25,10 +25,10 @@ authoritative engineering gate.
 ## Current artifacts
 
 ```kotlin
-implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+implementation("io.github.afsm:afsm-core:0.1.0")
+implementation("io.github.afsm:afsm-runtime:0.1.0")
+implementation("io.github.afsm:afsm-viewmodel:0.1.0")
+testImplementation("io.github.afsm:afsm-test:0.1.0")
 ```
 
 Graph tooling:
@@ -36,7 +36,7 @@ Graph tooling:
 ```kotlin
 plugins {
     id("com.google.devtools.ksp")
-    id("io.github.afsm.graph") version "0.1.0-SNAPSHOT"
+    id("io.github.afsm.graph") version "0.1.0"
 }
 ```
 
@@ -82,12 +82,15 @@ Before claiming product-goal completion, run:
 - Keep Afsm isolated to a feature module for rollback.
 - Run the pilot app tests and this repository gate before upgrading.
 
-## Before public publishing
+## Public release automation
 
-Still required:
+`v<version>` is released only through the manual
+[Maven Central workflow](../.github/workflows/release.yml). It runs the local
+release gate, signs every published file, uploads a Central Portal bundle with
+automatic publishing, then compiles the separate consumer against Maven
+Central with `mavenLocal()` disabled.
 
-- final group and artifact coordinates,
-- license, project URL, SCM, and developer metadata,
-- signing and repository credentials,
-- public release automation,
-- evidence-backed API freeze decision.
+The workflow requires the protected `maven-central` environment to provide
+`CENTRAL_USERNAME`, `CENTRAL_PASSWORD`, `SIGNING_KEY`, and `SIGNING_PASSWORD`.
+The GPG public key must be discoverable by Maven Central before the first
+release. Artifact versions are immutable after publication.
