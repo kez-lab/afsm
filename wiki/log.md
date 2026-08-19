@@ -1904,3 +1904,10 @@
 - Action: Enhanced `README.md` and `README.ko.md` with Maven Central/CI badges, Live Demo callout box, Before vs After state-explosion comparison, Mermaid state diagrams, and Example Ladder roadmap table. Upgraded `docs/index.html` to open the Interactive Lab by default with Draft pre-loaded, styled example ladder tab buttons, and linked all external guide/reference items directly to GitHub rich markdown viewer.
 - Verification: `./gradlew apiCheck check verifyAfsmMmd` and `./scripts/verify-release-local.sh` pass with 100% green tests.
 - Updated: `README.md`, `README.ko.md`, `docs/index.html`, `wiki/log.md`.
+
+## [2026-08-20] docs | In-page official documentation viewer with full bilingual EN/KO parity
+
+- Source: Human DX requirement to host official guides, API references, and walkthroughs in-place on the web without redirecting to external GitHub pages, keeping markdown as the single source of truth (zero fragmentation) with full English and Korean support.
+- Action: Implemented an In-Page SPA Markdown Documentation Engine in `docs/index.html` with hash routing (`#/guide/<name>`), dynamic sticky Table of Contents, code blocks with syntax highlighting and copy buttons, GitHub alert callouts, and sequential pagination. Created Korean markdown companion files (`docs/*.ko.md`) for all 12 core guides (`getting-started`, `modeling-rules`, `testing-guide`, `graph-generation`, `restoration-command-ui-policy`, `afsm-public-api`, `release-readiness`, `auth-walkthrough`, `checkout-walkthrough`, `product-editor-walkthrough`, `sample-shop-afsm-guide`, `examples`). Synchronized global EN/KO language toggle with active guide rendering.
+- Verification: `./gradlew apiCheck check verifyAfsmMmd` and `./scripts/verify-release-local.sh` pass with 100% green tests.
+- Updated: `docs/index.html`, `docs/*.ko.md`, `wiki/log.md`.
