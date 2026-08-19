@@ -141,11 +141,11 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = draftMachine,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.Save -> {
                     repository.save(command.title)
-                    dispatchEvent(DraftEvent.SaveCompleted)
+                    send(DraftEvent.SaveCompleted)
                 }
             }
         },
@@ -153,8 +153,8 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
+    fun save() = host.send(DraftEvent.SaveClicked)
 }
 ```
 

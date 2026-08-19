@@ -19,11 +19,39 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AfsmHostTest {
+    @Test
+    fun `trySend returns true when event is accepted and false when queue is full or closed`() = runTest {
+        val hostScope = newHostScope()
+        val eventGate = CompletableDeferred<Unit>()
+        val host = AfsmHost<TraceState, TraceEvent, TraceCommand>(
+            initialState = TraceState(),
+            reducer = AfsmReducer { state: TraceState, event: TraceEvent ->
+                when (event) {
+                    TraceEvent.A -> Afsm.transitioned(state = state.record("A"))
+                    TraceEvent.B -> Afsm.transitioned(state = state.record("B"))
+                    TraceEvent.C -> Afsm.transitioned(state = state.record("C"))
+                }
+            },
+            commandHandler = AfsmCommandHandler.none(),
+            scope = hostScope,
+            config = AfsmConfig(eventQueueCapacity = 1),
+        )
+
+        assertTrue(host.trySend(TraceEvent.A))
+        advanceUntilIdle()
+        assertEquals(listOf("A"), host.state.value.entries)
+
+        host.close()
+        assertFalse(host.trySend(TraceEvent.B))
+        hostScope.cancel()
+    }
+
     @Test
     fun `command handler exposes send as the result event capability`() = runTest {
         val sentEvents = mutableListOf<String>()

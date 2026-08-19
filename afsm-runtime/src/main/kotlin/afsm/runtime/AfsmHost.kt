@@ -153,22 +153,6 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
         send(event)
     }
 
-    @Deprecated(
-        message = "Use send(event) instead.",
-        replaceWith = ReplaceWith("send(event)"),
-    )
-    public fun dispatch(event: E) {
-        send(event)
-    }
-
-    @Deprecated(
-        message = "Use trySend(event) instead.",
-        replaceWith = ReplaceWith("trySend(event)"),
-    )
-    public fun tryDispatch(event: E): Boolean {
-        return trySend(event)
-    }
-
     /**
      * Stops the host. Android ViewModel users normally let viewModelScope own
      * the lifetime instead of calling this directly.

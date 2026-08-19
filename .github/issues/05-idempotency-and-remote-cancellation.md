@@ -19,7 +19,7 @@
 // 멱등성과 네트워크 취소가 보장되는 Safe Command Handler
 val host = afsmHost(
     machine = paymentMachine,
-    commandHandler = safeHttpCommandHandler(okHttpClient) { command, dispatchEvent, abortSignal ->
+    commandHandler = safeHttpCommandHandler(okHttpClient) { command, send, abortSignal ->
         when (command) {
             is PaymentCommand.Execute -> {
                 // abortSignal이 OkHttp의 Call.cancel()과 자동 바인딩됨
@@ -27,7 +27,7 @@ val host = afsmHost(
                     idempotencyKey = command.idempotencyKey,
                     abortSignal = abortSignal
                 )
-                dispatchEvent(PaymentEvent.Success(response))
+                send(PaymentEvent.Success(response))
             }
         }
     }

@@ -32,15 +32,22 @@ if [[ "$configured_version" != "$release_version" ]]; then
 fi
 
 staging_dir="build/central-staging-repository"
+plugin_staging_dir="afsm-graph-gradle-plugin/build/central-staging-repository"
 bundle_path="build/afsm-${release_version}-central-bundle.zip"
 
-rm -rf "$staging_dir"
+rm -rf "$staging_dir" "$plugin_staging_dir"
 rm -f "$bundle_path"
 
 export ORG_GRADLE_PROJECT_signingInMemoryKey="$AFSM_SIGNING_KEY"
 export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="$AFSM_SIGNING_PASSWORD"
 
 ./gradlew publishAllPublicationsToCentralStagingRepository --no-daemon --stacktrace
+./gradlew -p afsm-graph-gradle-plugin publishAllPublicationsToCentralStagingRepository --no-daemon --stacktrace
+
+if [[ -d "$plugin_staging_dir" ]]; then
+  mkdir -p "$staging_dir"
+  cp -R "$plugin_staging_dir/"* "$staging_dir/"
+fi
 
 if ! find "$staging_dir" -type f -path "*/${release_version}/*.asc" -print -quit | grep -q .; then
   echo "No PGP signatures were generated in $staging_dir." >&2

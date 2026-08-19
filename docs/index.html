@@ -1603,22 +1603,12 @@
 
           <ol class="step-list">
             <li class="step">
-              <h3><span data-lang="en" lang="en">Publish and verify the snapshot</span><span data-lang="ko" lang="ko">스냅샷 게시 및 검증</span></h3>
-              <p><span data-lang="en" lang="en">Run the authoritative local release gate from the Afsm checkout.</span><span data-lang="ko" lang="ko">Afsm 저장소에서 공식 로컬 릴리스 검증을 실행합니다.</span></p>
-              <div class="code-block">
-                <div class="code-head"><span>Terminal</span><button class="copy-button" type="button" data-copy-target="install-publish"><span data-lang="en" lang="en">Copy</span><span data-lang="ko" lang="ko">복사</span></button></div>
-                <pre><code id="install-publish">./scripts/verify-release-local.sh --no-daemon</code></pre>
-              </div>
-            </li>
-
-            <li class="step">
-              <h3><span data-lang="en" lang="en">Add dependencies</span><span data-lang="ko" lang="ko">의존성 추가</span></h3>
-              <p><span data-lang="en" lang="en">Add <code>mavenLocal()</code> to plugin and dependency repositories in the consuming project.</span><span data-lang="ko" lang="ko">사용할 프로젝트의 plugin 및 dependency repository에 <code>mavenLocal()</code>을 추가합니다.</span></p>
+              <h3><span data-lang="en" lang="en">Verify Maven Central repository</span><span data-lang="ko" lang="ko">Maven Central 저장소 확인</span></h3>
+              <p><span data-lang="en" lang="en">Ensure <code>mavenCentral()</code> is present in plugin and dependency repositories.</span><span data-lang="ko" lang="ko">프로젝트의 plugin 및 dependency repository에 <code>mavenCentral()</code>이 포함되어 있는지 확인합니다.</span></p>
               <div class="code-block">
                 <div class="code-head"><span>settings.gradle.kts</span><button class="copy-button" type="button" data-copy-target="install-repos"><span data-lang="en" lang="en">Copy</span><span data-lang="ko" lang="ko">복사</span></button></div>
                 <pre><code id="install-repos">pluginManagement {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -1627,7 +1617,6 @@
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }

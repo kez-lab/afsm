@@ -7,7 +7,7 @@ GRADLE_ARGS=("$@")
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" \
   test \
   --stacktrace \
-  "${GRADLE_ARGS[@]}"
+  ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
 
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR" \
   :afsm-core:test \
@@ -20,6 +20,6 @@ GRADLE_ARGS=("$@")
   :sample-shop:verifyAfsmMmd \
   apiCheck \
   --stacktrace \
-  "${GRADLE_ARGS[@]}"
+  ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
 
-"$ROOT_DIR/scripts/verify-consumer-smoke.sh" "${GRADLE_ARGS[@]}"
+"$ROOT_DIR/scripts/verify-consumer-smoke.sh" ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
