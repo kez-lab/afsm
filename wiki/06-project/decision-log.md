@@ -5,6 +5,20 @@ updated: 2026-07-25
 
 # Decision Log
 
+## [2026-08-20] Decouple pure state transitions from asynchronous ViewModel command execution
+
+Decision: Keep state machines 100% pure Kotlin functions `(State, Event) -> (NextState, Commands)` and delegate all repository, network, and database I/O to the ViewModel command handler.
+
+Rationale:
+
+- **Mock-Free Sub-millisecond Testing**: Embedding side-effects in state machines forces heavy coroutine test dispatchers, virtual time, and repository mocks into every transition test. Pure state machines test with pure data in sub-millisecond runs.
+- **Single Source of Flow Truth**: Screen flow rules and phase lifecycles live exclusively in `*StateMachine.kt` and the auto-generated Mermaid diagram. The ViewModel becomes a thin 5-line adapter without conditional branching logic (`if/else`).
+- **Selective Adoption**: Simple screens (`Loading -> Content / Error`) should remain ordinary `ViewModel + StateFlow`. FSM ceremonies are reserved for multi-step, high-branching flows with retries, stale async results, and complex restoration rules.
+
+Consequences:
+
+- Documented in `README.md`, `README.ko.md`, `docs/modeling-rules.md`, `docs/modeling-rules.ko.md`, and [GitHub Discussions #62](https://github.com/kez-lab/afsm/discussions/62).
+
 ## [2026-07-13] Name command result capability dispatchEvent
 
 Decision: Name the second `AfsmCommandHandler.handle` parameter and maintained

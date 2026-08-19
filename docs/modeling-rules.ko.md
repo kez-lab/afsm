@@ -43,6 +43,16 @@ phase(CheckoutPhase.ProductLoading) {
 
 이렇게 하면 상태 수집(Re-collection) 과정에서 작업이 불필요하게 재실행되는 위험 없이, 명시적인 비즈니스 Phase와 작업을 직관적으로 연결할 수 있습니다.
 
+### Command ➔ Event 핑퐁 루프가 의도적인 이유
+
+Afsm은 StateMachine(순수 상태 전이)과 ViewModel(I/O 실행)을 의도적으로 분리합니다:
+
+1. **모킹 없는 0.1ms 초고속 JVM 단위 테스트**: 머신 내부에서 Repository를 직접 부르거나 코루틴을 돌리지 않으므로, 복잡한 Mockito나 가상 시간 조작 없이 모든 분기(`Handled`, `Ignored`, `Invalid`)를 순수 데이터만으로 서브 밀리초 단위로 100% 검증할 수 있습니다.
+2. **상태 전이 단일화 (Single Source of Truth)**: 화면의 모든 비즈니스 흐름은 `*StateMachine.kt`와 Mermaid 다이어그램 한 곳에만 존재합니다. ViewModel은 비즈니스 판단(`if/else`) 없이 Command를 실행하고 결과 Event를 넘겨주는 얇은 어댑터(Thin Bridge)가 되어 복잡성이 사라집니다.
+3. **선택적 적용**: 단순한 조회/표시 화면(`Loading -> Content / Error`)에는 일반 `ViewModel + StateFlow`를 권장합니다. 다단계 고분기, 결제 재시도, stale 응답 방어가 필요한 복잡한 화면에 Afsm을 적용할 때 진가가 발휘됩니다.
+
+자세한 토론은 [Architecture FAQ Discussion #62](https://github.com/kez-lab/afsm/discussions/62)에서 확인할 수 있습니다.
+
 ---
 
 ## UI 동작을 위한 제4의 출력 타입(Effect)은 두지 않습니다

@@ -5,9 +5,10 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
+[![Discussions](https://img.shields.io/badge/discussions-join-purple?logo=github)](https://github.com/kez-lab/afsm/discussions)
 [![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
-**English** | [한국어](README.ko.md) | [Documentation Hub (EN/KO)](https://kez-lab.org/afsm/)
+**English** | [한국어](README.ko.md) | [Documentation Hub (EN/KO)](https://kez-lab.org/afsm/) | [Discussions](https://github.com/kez-lab/afsm/discussions)
 
 > 🚀 **Live Interactive Demo:** Experience state transitions, event processing, and live data traces directly in your browser at **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**.
 
@@ -399,6 +400,18 @@ the Maven Local consumer smoke build in
 Afsm is a public pre-1.0 beta. APIs may change when usability or safety evidence
 shows that a better design serves real Android teams; each breaking change will
 carry API, documentation, and migration updates.
+
+## Architecture FAQ
+
+### Isn't the StateMachine ➔ Command ➔ ViewModel ➔ Event loop too much back-and-forth?
+
+Afsm purposefully decouples pure state transitions from asynchronous I/O:
+
+1. **0.1ms Mock-Free JVM Tests**: Because the machine does not call repositories or run coroutines, every transition, edge-case, and duplicate event defense is tested with pure data in sub-millisecond unit tests without Mockito, test dispatchers, or coroutine harnesses.
+2. **Whole-Flow Visibility**: All screen flow rules live in `*StateMachine.kt` and the auto-generated Mermaid diagram. The ViewModel becomes a thin 5-line adapter that executes external work and sends result events without containing business decision branches (`if/else`).
+3. **Selective Adoption**: For simple loading/content/error screens, keep ordinary `ViewModel + StateFlow`. Use Afsm when multi-step branches, retries, or stale async results make explicit phase transitions valuable.
+
+Join the discussion at [GitHub Discussions #62](https://github.com/kez-lab/afsm/discussions/62).
 
 ## Known Limitations
 

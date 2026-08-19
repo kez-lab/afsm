@@ -1911,3 +1911,10 @@
 - Action: Implemented an In-Page SPA Markdown Documentation Engine in `docs/index.html` with hash routing (`#/guide/<name>`), dynamic sticky Table of Contents, code blocks with syntax highlighting and copy buttons, GitHub alert callouts, and sequential pagination. Created Korean markdown companion files (`docs/*.ko.md`) for all 12 core guides (`getting-started`, `modeling-rules`, `testing-guide`, `graph-generation`, `restoration-command-ui-policy`, `afsm-public-api`, `release-readiness`, `auth-walkthrough`, `checkout-walkthrough`, `product-editor-walkthrough`, `sample-shop-afsm-guide`, `examples`). Synchronized global EN/KO language toggle with active guide rendering.
 - Verification: `./gradlew apiCheck check verifyAfsmMmd` and `./scripts/verify-release-local.sh` pass with 100% green tests.
 - Updated: `docs/index.html`, `docs/*.ko.md`, `wiki/log.md`.
+
+## [2026-08-20] community+docs | Enable GitHub Discussions and publish Architecture FAQ
+
+- Source: User architectural discussion exploring the FSM ➔ Command ➔ ViewModel ➔ Event decoupling trade-off.
+- Action: Enabled GitHub Discussions on `kez-lab/afsm`, published inaugural Q&A discussion [#62](https://github.com/kez-lab/afsm/discussions/62), added Architecture FAQ section to `README.md`, `README.ko.md`, `docs/modeling-rules.md`, `docs/modeling-rules.ko.md`, added GitHub Discussions badge, recorded ADR in `wiki/06-project/decision-log.md`, and synchronized live web assets.
+- Verification: `./gradlew apiCheck check verifyAfsmMmd` passes with 100% green tests.
+- Updated: `README.md`, `README.ko.md`, `docs/modeling-rules.md`, `docs/modeling-rules.ko.md`, `docs/js/guide-data.js`, `wiki/06-project/decision-log.md`, `wiki/log.md`.

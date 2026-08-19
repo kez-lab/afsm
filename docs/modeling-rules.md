@@ -44,6 +44,16 @@ phase(CheckoutPhase.ProductLoading) {
 This connects work to a named business phase without making state observation
 itself execute the work.
 
+### Why the Command ➔ Event Loop is intentional
+
+Afsm purposefully separates the StateMachine (pure transitions) from the ViewModel (I/O execution):
+
+1. **0.1ms Mock-Free JVM Tests**: Because the machine does not call repositories or run coroutines, every transition, edge-case, and duplicate event defense is tested with pure data in sub-millisecond unit tests without Mockito or coroutine test harnesses.
+2. **Whole-Flow Visibility**: All screen flow rules live in `*StateMachine.kt` and the auto-generated Mermaid diagram. The ViewModel becomes a thin 5-line adapter that executes external work and sends result events without containing business decision branches (`if/else`).
+3. **Selective Adoption**: For simple loading/content/error screens, keep ordinary `ViewModel + StateFlow`. Use Afsm when multi-step branches, retries, or stale async results make explicit phase transitions valuable.
+
+See the [Architecture FAQ Discussion](https://github.com/kez-lab/afsm/discussions/62) for the full design discussion.
+
 ## UI actions do not need a fourth output type
 
 - Persist business completion in state.

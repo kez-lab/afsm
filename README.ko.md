@@ -5,9 +5,10 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
+[![Discussions](https://img.shields.io/badge/discussions-join-purple?logo=github)](https://github.com/kez-lab/afsm/discussions)
 [![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
-[English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/)
+[English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/) | [토론방 (Discussions)](https://github.com/kez-lab/afsm/discussions)
 
 > 🚀 **라이브 인터랙티브 데모:** 웹 브라우저에서 버튼을 누르며 상태 전이와 데이터 변화를 직접 시뮬레이션해 보세요: **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**
 
@@ -398,6 +399,18 @@ consumer smoke 빌드를 [CI](.github/workflows/ci.yml)에서 실행합니다.
 Afsm은 pre-1.0 공개 베타입니다. 실제 Android 팀의 사용성과 안전성을 더 높인다는
 근거가 있다면 API는 변경될 수 있으며, 호환성을 깨는 변경에는 API·문서·마이그레이션
 안내를 함께 제공합니다.
+
+## 아키텍처 FAQ
+
+### StateMachine ➔ Command ➔ ViewModel ➔ Event 핑퐁 루프가 너무 번거롭지 않나요?
+
+Afsm은 순수 상태 전이와 비동기 I/O를 의도적으로 분리합니다:
+
+1. **모킹 없는 0.1ms 초고속 JVM 단위 테스트**: 머신 내부에서 Repository를 직접 부르거나 코루틴을 돌리지 않으므로, 복잡한 Mockito나 가상 시간 조작 없이 모든 전이와 엣지 케이스를 순수 데이터만으로 서브 밀리초 단위로 100% 검증할 수 있습니다.
+2. **상태 전이 단일화**: 화면의 모든 비즈니스 흐름은 `*StateMachine.kt`와 Mermaid 다이어그램 한 곳에만 존재합니다. ViewModel은 비즈니스 판단(`if/else`) 없이 Command를 실행하고 결과 Event를 넘겨주는 얇은 어댑터(Thin Bridge)가 되어 복잡성이 사라집니다.
+3. **선택적 적용**: 단순한 조회/표시 화면(`Loading -> Content / Error`)에는 일반 `ViewModel + StateFlow`를 권장합니다. 다단계 고분기, 결제 재시도, stale 응답 방어가 필요한 복잡한 화면에 Afsm을 적용할 때 진가가 발휘됩니다.
+
+자세한 토론은 [GitHub Discussions #62](https://github.com/kez-lab/afsm/discussions/62)에서 참여할 수 있습니다.
 
 ## 알려진 한계
 
