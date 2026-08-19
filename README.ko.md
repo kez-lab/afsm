@@ -402,13 +402,13 @@ Afsm은 pre-1.0 공개 베타입니다. 실제 Android 팀의 사용성과 안�
 
 ## 아키텍처 FAQ
 
-### StateMachine ➔ Command ➔ ViewModel ➔ Event 핑퐁 루프가 너무 번거롭지 않나요?
+### StateMachine ➔ Command ➔ ViewModel ➔ Event 구조가 번거롭게 느껴지지 않나요?
 
-Afsm은 순수 상태 전이와 비동기 I/O를 의도적으로 분리합니다:
+Afsm은 상태 머신(순수 비즈니스 규칙)과 ViewModel(비동기 I/O 실행)을 명확히 분리합니다:
 
-1. **모킹 없는 0.1ms 초고속 JVM 단위 테스트**: 머신 내부에서 Repository를 직접 부르거나 코루틴을 돌리지 않으므로, 복잡한 Mockito나 가상 시간 조작 없이 모든 전이와 엣지 케이스를 순수 데이터만으로 서브 밀리초 단위로 100% 검증할 수 있습니다.
-2. **상태 전이 단일화**: 화면의 모든 비즈니스 흐름은 `*StateMachine.kt`와 Mermaid 다이어그램 한 곳에만 존재합니다. ViewModel은 비즈니스 판단(`if/else`) 없이 Command를 실행하고 결과 Event를 넘겨주는 얇은 어댑터(Thin Bridge)가 되어 복잡성이 사라집니다.
-3. **선택적 적용**: 단순한 조회/표시 화면(`Loading -> Content / Error`)에는 일반 `ViewModel + StateFlow`를 권장합니다. 다단계 고분기, 결제 재시도, stale 응답 방어가 필요한 복잡한 화면에 Afsm을 적용할 때 진가가 발휘됩니다.
+1. **모킹 없는 0.1ms 단위의 순수 JVM 단위 테스트**: 머신 내부에서 Repository를 직접 호출하거나 코루틴을 실행하지 않으므로, 복잡한 Mockito나 테스트 디스패처 없이 모든 전이와 엣지 케이스를 순수 데이터만으로 서브 밀리초 단위로 100% 검증할 수 있습니다.
+2. **상태 전이 규칙의 단일 공급원 (Single Source of Truth)**: 화면의 모든 비즈니스 흐름은 `*StateMachine.kt`와 Mermaid 다이어그램 한곳에만 존재합니다. ViewModel은 비즈니스 분기(`if/else`) 없이 Command를 실행하고 결과 Event를 회신하는 단순 어댑터(Thin Bridge)가 되어 복잡성이 사라집니다.
+3. **화면 복잡도에 따른 유연한 선택**: 단순한 조회/표시 화면(`Loading -> Content / Error`)에는 일반 `ViewModel + StateFlow` 패턴을 권장합니다. 다단계 고분기, 결제 재시도, 늦게 도착한 비동기 응답(Stale result) 방어가 필요한 복잡한 화면에 Afsm을 적용할 때 진가가 발휘됩니다.
 
 자세한 토론은 [GitHub Discussions #62](https://github.com/kez-lab/afsm/discussions/62)에서 참여할 수 있습니다.
 
