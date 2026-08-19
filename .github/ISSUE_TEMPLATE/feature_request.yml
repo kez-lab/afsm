@@ -1,0 +1,31 @@
+name: 💡 Feature Request / RFC
+description: Propose a new DSL feature, architecture enhancement, or tool improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing an enhancement to Afsm! Please review existing issues and wiki pages first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement / Motivation
+      description: Is your feature request related to a problem or usability friction? (e.g. I'm always frustrated when...)
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution / API Design
+      description: Describe the solution you'd like and what the Kotlin API or DSL would look like.
+      placeholder: |
+        ```kotlin
+        // Example API usage
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or features you've considered.
