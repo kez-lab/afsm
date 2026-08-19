@@ -62,8 +62,8 @@ class CheckoutViewModel(...) : ViewModel() {
 
     val state: StateFlow<CheckoutState> = host.state
 
-    fun pay() = host.dispatch(CheckoutEvent.PayClicked)
-    fun retry() = host.dispatch(CheckoutEvent.RetryClicked)
+    fun pay() = host.send(CheckoutEvent.PayClicked)
+    fun retry() = host.send(CheckoutEvent.RetryClicked)
 }
 ```
 

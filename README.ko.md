@@ -1,9 +1,9 @@
 # Afsm
 
-![Status](https://img.shields.io/badge/status-internal%20beta-orange)
+![Status](https://img.shields.io/badge/status-public%20beta-blue)
 ![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
-![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
+![Distribution](https://img.shields.io/badge/distribution-Maven%20Central-blue)
 
 [English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/)
 
@@ -142,11 +142,11 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = draftMachine,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.SaveDraft -> {
                     repository.save(command.title)
-                    dispatchEvent(DraftEvent.DraftSaveCompleted)
+                    send(DraftEvent.DraftSaveCompleted)
                 }
             }
         },
@@ -154,8 +154,8 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
+    fun save() = host.send(DraftEvent.SaveClicked)
 }
 ```
 
@@ -224,7 +224,7 @@ baseline 디렉터리가 있으면 `verifyAfsmMmd`가 `check`에 연결되므로
 ```kotlin
 private val host = afsmHost(
     machine = draftMachine,
-    commandHandler = { command, dispatchEvent -> /* ... */ },
+    commandHandler = { command, send -> /* ... */ },
     config = if (BuildConfig.DEBUG) {
         AfsmConfig.strict(logger = androidAfsmLogger)
     } else {
@@ -268,9 +268,24 @@ State/Event/Command 모델링, 순수 전이 테스트, ViewModel 연결, 복원
 $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main/.agents/skills/use-afsm
 ```
 
-스킬은 공개 좌표를 추측하지 않고 consumer 프로젝트에 이미 설정된 Afsm
-버전과 배포 경로를 먼저 확인합니다. Afsm은 아직 Maven Local 또는 직접
-프로젝트 모듈로 전달되는 internal beta입니다.
+스킬은 consumer 프로젝트의 기존 Afsm 버전과 배포 경로를 먼저 확인합니다.
+Afsm은 Maven Central로 배포되는 pre-1.0 공개 베타이며, 이후 minor 릴리스에서
+호환성이 깨질 경우 마이그레이션 안내를 함께 제공합니다.
+
+## 설치
+
+```kotlin
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0")
+    implementation("io.github.afsm:afsm-runtime:0.1.0")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0")
+    testImplementation("io.github.afsm:afsm-test:0.1.0")
+}
+```
+
+그래프 생성을 사용할 때는 `id("io.github.afsm.graph") version "0.1.0"`과
+`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`을 추가하세요. 별도 저장소는
+필요하지 않습니다. Afsm은 [Apache-2.0](LICENSE)으로 배포됩니다.
 
 ## 모듈
 
@@ -283,7 +298,7 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 | `afsm-graph-ksp` | 생성 graph registry |
 | `afsm-graph-gradle-plugin` | `.mmd` export task |
 | `sample-shop` | Android reference flow |
-| `consumer-smoke` | 외부 Maven Local 컴파일·동작 gate |
+| `consumer-smoke` | 외부 consumer 컴파일·동작 gate |
 
 ## 빌드와 검증
 
@@ -296,8 +311,9 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 모든 pull request는 동일한 단위 테스트, `apiCheck`, 그래프 검증, Maven Local
 consumer smoke 빌드를 [CI](.github/workflows/ci.yml)에서 실행합니다.
 
-Afsm은 아직 공개 배포되지 않았습니다. 실제 Android 팀의 사용성과 안전성을
-더 높인다는 근거가 있다면 API는 변경될 수 있습니다.
+Afsm은 pre-1.0 공개 베타입니다. 실제 Android 팀의 사용성과 안전성을 더 높인다는
+근거가 있다면 API는 변경될 수 있으며, 호환성을 깨는 변경에는 API·문서·마이그레이션
+안내를 함께 제공합니다.
 
 ## 알려진 한계
 

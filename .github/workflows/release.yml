@@ -1,0 +1,56 @@
+name: Publish release to Maven Central
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version in gradle.properties and tag v<version>
+        required: true
+        type: string
+
+concurrency:
+  group: maven-central-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Validate, publish, and consume ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    environment: maven-central
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ inputs.version }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify release version
+        run: |
+          test "$(sed -n 's/^afsmVersion=//p' gradle.properties)" = "${{ inputs.version }}"
+          test "${{ inputs.version }}" = "${{ inputs.version%-SNAPSHOT}}"
+
+      - name: Run the local release gate
+        run: ./scripts/verify-release-local.sh --no-daemon
+
+      - name: Publish to Maven Central
+        id: central
+        env:
+          AFSM_CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          AFSM_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          AFSM_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          AFSM_SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: ./scripts/publish-central.sh "${{ inputs.version }}"
+
+      - name: Verify consumption from Maven Central
+        run: ./scripts/verify-central-release.sh "${{ inputs.version }}"

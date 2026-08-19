@@ -106,8 +106,8 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
      * When the queue cannot accept the event, [AfsmConfig.overflowPolicy]
      * decides between recording a diagnostic and throwing.
      */
-    public fun dispatch(event: E) {
-        if (tryDispatch(event)) {
+    public fun send(event: E) {
+        if (trySend(event)) {
             return
         }
 
@@ -121,7 +121,7 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
             } else {
                 "hostStopped"
             },
-            message = "Afsm event queue rejected a dispatched event.",
+            message = "Afsm event queue rejected a sent event.",
             metadata = mapOf(
                 "capacity" to config.eventQueueCapacity.toString(),
                 "hostActive" to isActive.toString(),
@@ -140,8 +140,17 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
      *
      * Returns `false` when the host is closed or the event queue is full.
      */
-    public fun tryDispatch(event: E): Boolean {
+    public fun trySend(event: E): Boolean {
         return eventQueue.trySend(event).isSuccess
+    }
+
+    /**
+     * Queues an event for serialized processing.
+     *
+     * Enables function invocation syntax on the host: `host(event)`.
+     */
+    public operator fun invoke(event: E) {
+        send(event)
     }
 
     /**
@@ -301,10 +310,10 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
         event: E,
         command: C,
         transition: AfsmTransition<S, C>,
-        dispatchAllowed: () -> Boolean = { true },
+        sendAllowed: () -> Boolean = { true },
     ) {
-        val dispatchEvent: (E) -> Unit = { nextEvent ->
-            if (!dispatchAllowed()) {
+        val send: suspend (E) -> Unit = { nextEvent ->
+            if (!sendAllowed()) {
                 throw CancellationException(
                     "Afsm invocation result was rejected after cancellation.",
                 )
@@ -319,10 +328,10 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
 
         try {
             if (config.commandContext == EmptyCoroutineContext) {
-                commandHandler.handle(command = command, dispatchEvent = dispatchEvent)
+                commandHandler.handle(command = command, send = send)
             } else {
                 withContext(config.commandContext) {
-                    commandHandler.handle(command = command, dispatchEvent = dispatchEvent)
+                    commandHandler.handle(command = command, send = send)
                 }
             }
         } catch (throwable: CancellationException) {
@@ -366,7 +375,7 @@ public class AfsmHost<S : Any, E : Any, C : Any>(
                     event = event,
                     command = invocation.command,
                     transition = transition,
-                    dispatchAllowed = { job.isActive },
+                    sendAllowed = { job.isActive },
                 )
             }
             activeInvocations[invocation.key] = job

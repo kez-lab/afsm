@@ -20,6 +20,11 @@ kotlin {
     jvmToolchain(17)
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 dependencies {
     testImplementation(gradleTestKit())
     testImplementation(kotlin("test-junit"))
@@ -43,3 +48,5 @@ tasks.processResources {
         expand("afsmVersion" to afsmVersion)
     }
 }
+
+apply(from = rootProject.file("../gradle/central-publish.gradle.kts"))

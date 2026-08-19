@@ -17,21 +17,21 @@ class ProductEditorViewModel(
     private val host = afsmHost(
         machine = productEditorStateMachine,
         config = shopAfsmConfig(),
-        commandHandler = { command: ProductEditorCommand, dispatchEvent ->
+        commandHandler = { command: ProductEditorCommand, send ->
             when (command) {
                 is ProductEditorCommand.SaveDraft -> {
                     delay(120)
-                    dispatchEvent(ProductEditorEvent.DraftSaveCompleted)
+                    send(ProductEditorEvent.DraftSaveCompleted)
                 }
 
                 is ProductEditorCommand.StartImageUpload -> {
                     try {
                         val uploadToken = imageUploader.upload(command.draft)
-                        dispatchEvent(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
+                        send(ProductEditorEvent.ImageUploadSucceeded(uploadToken))
                     } catch (cancellation: CancellationException) {
                         throw cancellation
                     } catch (_: Exception) {
-                        dispatchEvent(
+                        send(
                             ProductEditorEvent.ImageUploadFailed(
                                 message = "Image upload failed.",
                             ),
@@ -42,13 +42,13 @@ class ProductEditorViewModel(
                 is ProductEditorCommand.StartReviewSubmission -> {
                     delay(250)
                     if (command.draft.reviewAttempt == 1) {
-                        dispatchEvent(
+                        send(
                             ProductEditorEvent.ReviewRejected(
                                 "Mock reviewer asks for one resubmission.",
                             ),
                         )
                     } else {
-                        dispatchEvent(ProductEditorEvent.ReviewApproved)
+                        send(ProductEditorEvent.ReviewApproved)
                     }
                 }
 
@@ -56,7 +56,7 @@ class ProductEditorViewModel(
                     val form = command.draft.form
                     val priceCents = form.priceCentsOrNull()
                     if (priceCents == null) {
-                        dispatchEvent(ProductEditorEvent.PublishFailed("Enter a valid price."))
+                        send(ProductEditorEvent.PublishFailed("Enter a valid price."))
                     } else {
                         val productId = productRepository.addProduct(
                             title = form.title,
@@ -64,7 +64,7 @@ class ProductEditorViewModel(
                             priceCents = priceCents,
                             sellerUserId = sessionRepository.currentSession()?.userId,
                         )
-                        dispatchEvent(ProductEditorEvent.PublishSucceeded(productId))
+                        send(ProductEditorEvent.PublishSucceeded(productId))
                     }
                 }
             }
@@ -73,23 +73,23 @@ class ProductEditorViewModel(
 
     val state: StateFlow<ProductEditorState> = host.state
 
-    fun updateTitle(value: String) = dispatch(ProductEditorEvent.TitleChanged(value))
+    fun updateTitle(value: String) = send(ProductEditorEvent.TitleChanged(value))
 
-    fun updateDescription(value: String) = dispatch(ProductEditorEvent.DescriptionChanged(value))
+    fun updateDescription(value: String) = send(ProductEditorEvent.DescriptionChanged(value))
 
-    fun updatePrice(value: String) = dispatch(ProductEditorEvent.PriceChanged(value))
+    fun updatePrice(value: String) = send(ProductEditorEvent.PriceChanged(value))
 
-    fun saveDraft() = dispatch(ProductEditorEvent.SaveDraftClicked)
+    fun saveDraft() = send(ProductEditorEvent.SaveDraftClicked)
 
-    fun continueEditing() = dispatch(ProductEditorEvent.ContinueEditingClicked)
+    fun continueEditing() = send(ProductEditorEvent.ContinueEditingClicked)
 
-    fun submitForReview() = dispatch(ProductEditorEvent.SubmitClicked)
+    fun submitForReview() = send(ProductEditorEvent.SubmitClicked)
 
-    fun resubmitForReview() = dispatch(ProductEditorEvent.ResubmitClicked)
+    fun resubmitForReview() = send(ProductEditorEvent.ResubmitClicked)
 
-    fun publish() = dispatch(ProductEditorEvent.PublishClicked)
+    fun publish() = send(ProductEditorEvent.PublishClicked)
 
-    fun cancelUpload() = dispatch(ProductEditorEvent.CancelUploadClicked)
+    fun cancelUpload() = send(ProductEditorEvent.CancelUploadClicked)
 
-    private fun dispatch(event: ProductEditorEvent) = host.dispatch(event)
+    private fun send(event: ProductEditorEvent) = host.send(event)
 }

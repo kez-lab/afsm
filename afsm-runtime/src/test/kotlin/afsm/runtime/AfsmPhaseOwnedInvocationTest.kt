@@ -34,7 +34,7 @@ class AfsmPhaseOwnedInvocationTest {
         val host = AfsmHost(
             initialState = InvocationState.Editing,
             reducer = invocationReducer(),
-            commandHandler = AfsmCommandHandler { command: InvocationCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: InvocationCommand, send ->
                 when (command) {
                     InvocationCommand.Upload -> {
                         uploadStarted.complete(Unit)
@@ -44,7 +44,7 @@ class AfsmPhaseOwnedInvocationTest {
                             uploadCancelled.complete(Unit)
                             withContext(NonCancellable) {
                                 lateResultAttempted.complete(Unit)
-                                dispatchEvent(InvocationEvent.UploadCompleted)
+                                send(InvocationEvent.UploadCompleted)
                             }
                         }
                     }
@@ -60,7 +60,7 @@ class AfsmPhaseOwnedInvocationTest {
             ),
         )
 
-        host.dispatch(InvocationEvent.StartClicked)
+        host.send(InvocationEvent.StartClicked)
         runCurrent()
 
         assertTrue(uploadStarted.isCompleted)
@@ -70,11 +70,11 @@ class AfsmPhaseOwnedInvocationTest {
         )
         assertEquals(InvocationState.Uploading, host.state.value)
 
-        host.dispatch(InvocationEvent.EditWhileUploading)
+        host.send(InvocationEvent.EditWhileUploading)
         runCurrent()
         assertEquals(InvocationState.UploadingEdited, host.state.value)
 
-        host.dispatch(InvocationEvent.CancelClicked)
+        host.send(InvocationEvent.CancelClicked)
         runCurrent()
 
         assertTrue(uploadCancelled.isCompleted)
@@ -105,7 +105,7 @@ class AfsmPhaseOwnedInvocationTest {
             scope = hostScope,
         )
 
-        host.dispatch(InvocationEvent.StartClicked)
+        host.send(InvocationEvent.StartClicked)
         runCurrent()
         assertTrue(uploadStarted.isCompleted)
 

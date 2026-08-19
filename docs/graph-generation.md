@@ -43,7 +43,7 @@ plugins {
 }
 
 dependencies {
-    ksp("io.github.afsm:afsm-graph-ksp:0.1.0-SNAPSHOT")
+    ksp("io.github.afsm:afsm-graph-ksp:0.1.0")
 }
 ```
 

@@ -19,28 +19,56 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AfsmHostTest {
     @Test
-    fun `command handler exposes dispatchEvent as the result event capability`() = runTest {
-        val dispatchedEvents = mutableListOf<String>()
-        val handler = AfsmCommandHandler<String, String> { _, dispatchEvent ->
-            dispatchEvent("saved")
+    fun `trySend returns true when event is accepted and false when queue is full or closed`() = runTest {
+        val hostScope = newHostScope()
+        val eventGate = CompletableDeferred<Unit>()
+        val host = AfsmHost<TraceState, TraceEvent, TraceCommand>(
+            initialState = TraceState(),
+            reducer = AfsmReducer { state: TraceState, event: TraceEvent ->
+                when (event) {
+                    TraceEvent.A -> Afsm.transitioned(state = state.record("A"))
+                    TraceEvent.B -> Afsm.transitioned(state = state.record("B"))
+                    TraceEvent.C -> Afsm.transitioned(state = state.record("C"))
+                }
+            },
+            commandHandler = AfsmCommandHandler.none(),
+            scope = hostScope,
+            config = AfsmConfig(eventQueueCapacity = 1),
+        )
+
+        assertTrue(host.trySend(TraceEvent.A))
+        advanceUntilIdle()
+        assertEquals(listOf("A"), host.state.value.entries)
+
+        host.close()
+        assertFalse(host.trySend(TraceEvent.B))
+        hostScope.cancel()
+    }
+
+    @Test
+    fun `command handler exposes send as the result event capability`() = runTest {
+        val sentEvents = mutableListOf<String>()
+        val handler = AfsmCommandHandler<String, String> { _, send ->
+            send("saved")
         }
 
         handler.handle(
             command = "save",
-            dispatchEvent = { event -> dispatchedEvents += event },
+            send = { event -> sentEvents += event },
         )
 
-        assertEquals(listOf("saved"), dispatchedEvents)
+        assertEquals(listOf("saved"), sentEvents)
     }
 
     @Test
-    fun `dispatch processes external and command events in FIFO order without reentrancy`() = runTest {
+    fun `send processes external and command events in FIFO order without reentrancy`() = runTest {
         val hostScope = newHostScope()
         val host: AfsmHost<TraceState, TraceEvent, TraceCommand> = AfsmHost(
             initialState = TraceState(),
@@ -60,16 +88,16 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: TraceCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: TraceCommand, send ->
                 when (command) {
-                    TraceCommand.DispatchC -> dispatchEvent(TraceEvent.C)
+                    TraceCommand.DispatchC -> send(TraceEvent.C)
                 }
             },
             scope = hostScope,
         )
 
-        host.dispatch(TraceEvent.A)
-        host.dispatch(TraceEvent.B)
+        host.send(TraceEvent.A)
+        host(TraceEvent.B) // invoke operator
 
         advanceUntilIdle()
 
@@ -87,27 +115,27 @@ class AfsmHostTest {
             reducer = AfsmReducer { state: WorkState, event: WorkEvent ->
                 when (event) {
                     WorkEvent.Start -> Afsm.transitioned(
-                        state = WorkState.Started,
-                        commands = listOf(WorkCommand.Complete),
+                         state = WorkState.Started,
+                         commands = listOf(WorkCommand.Complete),
                     )
 
                     WorkEvent.Completed -> Afsm.transitioned(
-                        state = WorkState.Completed,
+                         state = WorkState.Completed,
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: WorkCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: WorkCommand, send ->
                 when (command) {
                     WorkCommand.Complete -> {
                         timeline += "command:${host.state.value}"
-                        dispatchEvent(WorkEvent.Completed)
+                        send(WorkEvent.Completed)
                     }
                 }
             },
             scope = hostScope,
         )
 
-        host.dispatch(WorkEvent.Start)
+        host.send(WorkEvent.Start)
         advanceUntilIdle()
 
         assertEquals(WorkState.Completed, host.state.value)
@@ -137,23 +165,23 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { command: ResponsiveCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { command: ResponsiveCommand, send ->
                 when (command) {
                     ResponsiveCommand.LongRunning -> {
                         commandGate.await()
-                        dispatchEvent(ResponsiveEvent.Done)
+                        send(ResponsiveEvent.Done)
                     }
                 }
             },
             scope = hostScope,
         )
 
-        host.dispatch(ResponsiveEvent.Start)
+        host.send(ResponsiveEvent.Start)
         advanceUntilIdle()
 
         assertEquals(ResponsiveState.Working, host.state.value)
 
-        host.dispatch(ResponsiveEvent.Edit)
+        host.send(ResponsiveEvent.Edit)
         advanceUntilIdle()
 
         assertEquals(ResponsiveState.EditedWhileWorking, host.state.value)
@@ -193,7 +221,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(PressureEvent.Start)
+        host.send(PressureEvent.Start)
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmCommandQueueOverflowException>(exceptions.single())
@@ -235,10 +263,10 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatchEvent ->
-                dispatchEvent(PressureEvent.ResultOne)
-                dispatchEvent(PressureEvent.ResultTwo)
-                dispatchEvent(PressureEvent.ResultThree)
+            commandHandler = AfsmCommandHandler { _: PressureCommand, send ->
+                send(PressureEvent.ResultOne)
+                send(PressureEvent.ResultTwo)
+                send(PressureEvent.ResultThree)
             },
             scope = hostScope,
             config = AfsmConfig(
@@ -247,7 +275,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(PressureEvent.Start)
+        host.send(PressureEvent.Start)
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmEventQueueOverflowException>(exceptions.single())
@@ -287,11 +315,11 @@ class AfsmHostTest {
                     )
                 }
             },
-            commandHandler = AfsmCommandHandler { _: PressureCommand, dispatchEvent ->
+            commandHandler = AfsmCommandHandler { _: PressureCommand, send ->
                 commandStarted.complete(Unit)
                 withContext(NonCancellable) {
                     releaseCommand.await()
-                    dispatchEvent(PressureEvent.ResultOne)
+                    send(PressureEvent.ResultOne)
                 }
             },
             scope = hostScope,
@@ -302,7 +330,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(PressureEvent.Start)
+        host.send(PressureEvent.Start)
         advanceUntilIdle()
         commandStarted.await()
 
@@ -346,7 +374,7 @@ class AfsmHostTest {
             scope = hostScope,
         )
 
-        host.dispatch(NoWorkEvent.CancelRequested)
+        host.send(NoWorkEvent.CancelRequested)
         advanceUntilIdle()
 
         assertEquals(NoWorkState.Submitting, host.state.value)
@@ -374,7 +402,7 @@ class AfsmHostTest {
             scope = hostScope,
         )
 
-        host.dispatch(WorkEvent.Start)
+        host.send(WorkEvent.Start)
         advanceUntilIdle()
 
         assertEquals(WorkState.Started, host.state.value)
@@ -405,7 +433,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
         advanceUntilIdle()
 
         assertEquals(DecisionState("current"), host.state.value)
@@ -439,7 +467,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
         advanceUntilIdle()
 
         assertEquals(DecisionState("current"), host.state.value)
@@ -474,7 +502,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
         advanceUntilIdle()
 
         val thrown = assertIs<AfsmInvalidTransitionException>(exceptions.single())
@@ -514,8 +542,8 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(DecisionEvent.Any)
-        host.dispatch(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
         advanceUntilIdle()
 
         assertEquals(DecisionState("afterSecond"), host.state.value)
@@ -551,7 +579,7 @@ class AfsmHostTest {
             ),
         )
 
-        host.dispatch(DecisionEvent.Any)
+        host.send(DecisionEvent.Any)
         advanceUntilIdle()
 
         assertIs<IllegalStateException>(exceptions.single())

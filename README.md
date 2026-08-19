@@ -1,9 +1,9 @@
 # Afsm
 
-![Status](https://img.shields.io/badge/status-internal%20beta-orange)
+![Status](https://img.shields.io/badge/status-public%20beta-blue)
 ![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)
 ![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)
-![Distribution](https://img.shields.io/badge/distribution-Maven%20Local-lightgrey)
+![Distribution](https://img.shields.io/badge/distribution-Maven%20Central-blue)
 
 **English** | [한국어](README.ko.md) | [Documentation (EN/KO)](https://kez-lab.org/afsm/)
 
@@ -141,11 +141,11 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = draftMachine,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.SaveDraft -> {
                     repository.save(command.title)
-                    dispatchEvent(DraftEvent.DraftSaveCompleted)
+                    send(DraftEvent.DraftSaveCompleted)
                 }
             }
         },
@@ -153,8 +153,8 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
+    fun save() = host.send(DraftEvent.SaveClicked)
 }
 ```
 
@@ -223,7 +223,7 @@ screen alive and reports the problem through `AfsmConfig.logger`, which is
 ```kotlin
 private val host = afsmHost(
     machine = draftMachine,
-    commandHandler = { command, dispatchEvent -> /* ... */ },
+    commandHandler = { command, send -> /* ... */ },
     config = if (BuildConfig.DEBUG) {
         AfsmConfig.strict(logger = androidAfsmLogger)
     } else {
@@ -267,8 +267,24 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 ```
 
 The skill checks the consumer's existing Afsm version and distribution path
-instead of guessing public coordinates. Afsm remains an internal beta delivered
-through Maven Local or direct project modules.
+instead of guessing public coordinates. Afsm is delivered through Maven
+Central. It is pre-1.0, so breaking changes may appear in a later
+minor release with migration notes.
+
+## Install
+
+```kotlin
+dependencies {
+    implementation("io.github.afsm:afsm-core:0.1.0")
+    implementation("io.github.afsm:afsm-runtime:0.1.0")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0")
+    testImplementation("io.github.afsm:afsm-test:0.1.0")
+}
+```
+
+For graph generation, add `id("io.github.afsm.graph") version "0.1.0"` and
+`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`. Maven Central is the only
+repository required. Afsm is licensed under [Apache-2.0](LICENSE).
 
 ## Modules
 
@@ -281,7 +297,7 @@ through Maven Local or direct project modules.
 | `afsm-graph-ksp` | Generated graph registry |
 | `afsm-graph-gradle-plugin` | `.mmd` export task |
 | `sample-shop` | Android reference flows |
-| `consumer-smoke` | External Maven Local compile and behavior gate |
+| `consumer-smoke` | External consumer compile and behavior gate |
 
 ## Build and Verify
 
@@ -295,8 +311,9 @@ Every pull request runs the same unit tests, `apiCheck`, graph verification, and
 the Maven Local consumer smoke build in
 [CI](.github/workflows/ci.yml).
 
-Afsm has not been publicly released. APIs may change when usability or safety
-evidence shows that a better design serves real Android teams.
+Afsm is a public pre-1.0 beta. APIs may change when usability or safety evidence
+shows that a better design serves real Android teams; each breaking change will
+carry API, documentation, and migration updates.
 
 ## Known Limitations
 

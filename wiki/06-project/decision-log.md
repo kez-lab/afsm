@@ -1915,3 +1915,21 @@ Consequences:
   unit test runtime classpath, so unit test sources must compile.
 - Enum phases are labelled by entry name, and event handlers shadowed by an
   earlier supertype handler fail the build.
+
+## [2026-08-19] Replace dispatch API with send, trySend, and invoke operator
+
+Decision: Replace `AfsmHost.dispatch` and `tryDispatch` with `AfsmHost.send` and `trySend`, provide `operator fun invoke(event: E) = send(event)` on `AfsmHost`, rename `AfsmCommandHandler` parameter from `dispatchEvent` to `send`, and remove `dispatch`/`tryDispatch` completely without deprecation bridges.
+
+Rationale:
+
+- `dispatch` is Redux legacy jargon that causes confusion with Kotlin Coroutines' `CoroutineDispatcher` (`Dispatchers.IO`, `Dispatchers.Main`) and misleadingly implies immediate/synchronous action when event reduction actually uses an asynchronous FIFO channel queue.
+- `send` aligns perfectly with Kotlin's `Channel.send()` / `Channel.trySend()` message-passing semantics, remains linguistically coherent when an event is ignored/invalidated (no transition occurs), and reads naturally in `commandHandler = { command, send -> send(ResultEvent) }`.
+- `invoke` operator allows concise, boilerplate-free event invocation `host(event)`.
+- Afsm is pre-1.0 and has no external binary stability promise; removing deprecated bridges keeps the public runtime surface minimal and clean.
+
+Consequences:
+
+- `AfsmHost.send(event)` and `trySend(event)` are the exclusive event-sending public methods.
+- `AfsmCommandHandler.handle` parameter is renamed to `send`.
+- All tests, samples, public docs, and agent skills are updated to use `send`.
+- Binary API dumps are updated with the new signatures.

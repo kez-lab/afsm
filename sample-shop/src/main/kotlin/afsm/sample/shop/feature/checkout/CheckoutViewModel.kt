@@ -25,21 +25,21 @@ class CheckoutViewModel(
         machine = checkoutStateMachine,
         config = shopAfsmConfig(),
         initialState = initialState,
-        commandHandler = { command: CheckoutCommand, dispatchEvent ->
+        commandHandler = { command: CheckoutCommand, send ->
             when (command) {
                 is CheckoutCommand.LoadProduct -> {
                     val product = productRepository.findProduct(command.productId)
                     if (product == null) {
-                        dispatchEvent(CheckoutEvent.ProductUnavailable)
+                        send(CheckoutEvent.ProductUnavailable)
                     } else {
-                        dispatchEvent(CheckoutEvent.ProductLoaded(product))
+                        send(CheckoutEvent.ProductLoaded(product))
                     }
                 }
 
                 is CheckoutCommand.SubmitPayment -> {
                     val session = sessionRepository.currentSession()
                     if (session == null) {
-                        dispatchEvent(
+                        send(
                             CheckoutEvent.PaymentFailed(
                                 requestId = command.requestId,
                                 message = "Login is required.",
@@ -54,7 +54,7 @@ class CheckoutViewModel(
                             onSuccess = { receipt ->
                                 savedStateHandle[CheckoutCompletedOrderIdKey] = receipt.orderId
                                 savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
-                                dispatchEvent(
+                                send(
                                     CheckoutEvent.PaymentSucceeded(
                                         requestId = command.requestId,
                                         receipt = receipt,
@@ -63,7 +63,7 @@ class CheckoutViewModel(
                             },
                             onFailure = { error ->
                                 savedStateHandle.remove<Long>(CheckoutPendingPaymentRequestIdKey)
-                                dispatchEvent(
+                                send(
                                     CheckoutEvent.PaymentFailed(
                                         requestId = command.requestId,
                                         message = error.message ?: "Payment failed.",
@@ -81,11 +81,11 @@ class CheckoutViewModel(
 
     init {
         if (initialState.phase == CheckoutPhase.Idle) {
-            host.dispatch(CheckoutEvent.ScreenEntered)
+            host.send(CheckoutEvent.ScreenEntered)
         }
     }
 
-    fun pay() = host.dispatch(CheckoutEvent.PayClicked)
+    fun pay() = host.send(CheckoutEvent.PayClicked)
 
-    fun retry() = host.dispatch(CheckoutEvent.RetryClicked)
+    fun retry() = host.send(CheckoutEvent.RetryClicked)
 }

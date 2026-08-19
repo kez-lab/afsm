@@ -28,8 +28,7 @@ dependencies {
 }
 ```
 
-Afsm is currently verified through Maven Local rather than a public release.
-Do not copy `0.1.0-SNAPSHOT` or add `mavenLocal()` unless the consumer has
+Afsm is published through Maven Central. Do not add `mavenLocal()` unless the consumer has
 explicitly chosen that distribution path.
 
 ## Flow Model
@@ -143,15 +142,15 @@ class DraftViewModel(
     private val host = afsmHost(
         machine = draftMachine,
         initialState = initialState,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.SaveDraft ->
                     repository.save(command.title).fold(
                         onSuccess = {
-                            dispatchEvent(DraftEvent.SaveCompleted)
+                            send(DraftEvent.SaveCompleted)
                         },
                         onFailure = { error ->
-                            dispatchEvent(
+                            send(
                                 DraftEvent.SaveFailed(
                                     error.message ?: "Draft save failed.",
                                 ),
@@ -165,9 +164,9 @@ class DraftViewModel(
     val state: StateFlow<DraftState> = host.state
 
     fun updateTitle(value: String) =
-        host.dispatch(DraftEvent.TitleChanged(value))
+        host.send(DraftEvent.TitleChanged(value))
 
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun save() = host.send(DraftEvent.SaveClicked)
 }
 ```
 

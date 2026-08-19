@@ -8,14 +8,14 @@ in English or Korean, start with the [bilingual documentation hub](index.html).
 
 ## 1. Add the modules
 
-Afsm is currently verified through Maven Local, not publicly released.
+Afsm is available from Maven Central. No extra repository is required.
 
 ```kotlin
 dependencies {
-    implementation("io.github.afsm:afsm-core:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-runtime:0.1.0-SNAPSHOT")
-    implementation("io.github.afsm:afsm-viewmodel:0.1.0-SNAPSHOT")
-    testImplementation("io.github.afsm:afsm-test:0.1.0-SNAPSHOT")
+    implementation("io.github.afsm:afsm-core:0.1.0")
+    implementation("io.github.afsm:afsm-runtime:0.1.0")
+    implementation("io.github.afsm:afsm-viewmodel:0.1.0")
+    testImplementation("io.github.afsm:afsm-test:0.1.0")
 }
 ```
 
@@ -142,12 +142,12 @@ class DraftViewModel(
 ) : ViewModel() {
     private val host = afsmHost(
         machine = draftMachine,
-        commandHandler = { command: DraftCommand, dispatchEvent ->
+        commandHandler = { command: DraftCommand, send ->
             when (command) {
                 is DraftCommand.SaveDraft -> repository.save(command.title).fold(
-                    onSuccess = { dispatchEvent(DraftEvent.DraftSaveCompleted) },
+                    onSuccess = { send(DraftEvent.DraftSaveCompleted) },
                     onFailure = { error ->
-                        dispatchEvent(
+                        send(
                             DraftEvent.DraftSaveFailed(
                                 error.message ?: "Draft save failed.",
                             ),
@@ -160,12 +160,12 @@ class DraftViewModel(
 
     val state: StateFlow<DraftState> = host.state
 
-    fun updateTitle(value: String) = host.dispatch(DraftEvent.TitleChanged(value))
-    fun save() = host.dispatch(DraftEvent.SaveClicked)
+    fun updateTitle(value: String) = host.send(DraftEvent.TitleChanged(value))
+    fun save() = host.send(DraftEvent.SaveClicked)
 }
 ```
 
-`dispatchEvent` is the command handler's capability for returning results to the
+`send` is the command handler's capability for returning results to the
 serialized machine. It is not a generic UI callback.
 
 Expose feature verbs to UI instead of `fun onEvent(event: DraftEvent)`. This

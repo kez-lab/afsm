@@ -19,8 +19,8 @@ if [[ -z "${ANDROID_HOME:-}" && -f "$ROOT_DIR/local.properties" ]]; then
   fi
 fi
 
-"$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal "${GRADLE_ARGS[@]}"
-"$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" publishToMavenLocal "${GRADLE_ARGS[@]}"
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR" publishToMavenLocal ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
+"$ROOT_DIR/gradlew" -p "$ROOT_DIR/afsm-graph-gradle-plugin" publishToMavenLocal ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
 "$ROOT_DIR/gradlew" -p "$ROOT_DIR/consumer-smoke" \
   -PafsmVersion="$AFSM_VERSION" \
   --refresh-dependencies \
@@ -29,7 +29,7 @@ fi
   :app:testDebugUnitTest \
   :app:generateAfsmMmd \
   :app:verifyAfsmMmd \
-  "${GRADLE_ARGS[@]}"
+  ${GRADLE_ARGS[@]+"${GRADLE_ARGS[@]}"}
 
 MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/ConsumerSmoke.mmd"
 QUICKSTART_MMD_FILE="$ROOT_DIR/consumer-smoke/app/build/generated/afsm/mmd/DraftQuickstart.mmd"

@@ -4,6 +4,11 @@ plugins {
     `maven-publish`
 }
 
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+    from(rootProject.file("README.md"))
+}
+
 android {
     namespace = "afsm.viewmodel"
     compileSdk = 36
@@ -50,6 +55,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 from(components["release"])
                 artifactId = "afsm-viewmodel"
+                artifact(javadocJar)
 
                 pom {
                     name.set("Afsm ViewModel")
@@ -59,3 +65,5 @@ afterEvaluate {
         }
     }
 }
+
+apply(from = rootProject.file("gradle/central-publish.gradle.kts"))

@@ -4,9 +4,11 @@ All notable Afsm changes are documented here. Afsm is pre-release; `0.x` APIs
 may change, but every public API change must update API dumps, docs, examples,
 and verification in the same change.
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-08-09
 
 Initial internal-beta candidate.
+
+First public Maven Central release under Apache-2.0.
 
 ### Runtime resilience
 

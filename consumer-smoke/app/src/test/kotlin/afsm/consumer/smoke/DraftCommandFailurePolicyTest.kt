@@ -43,7 +43,7 @@ class DraftCommandFailurePolicyTest {
             ),
         )
 
-        host.dispatch(DraftEvent.SaveClicked)
+        host.send(DraftEvent.SaveClicked)
         advanceUntilIdle()
 
         assertEquals(DraftPhase.Saving, host.state.value.phase)

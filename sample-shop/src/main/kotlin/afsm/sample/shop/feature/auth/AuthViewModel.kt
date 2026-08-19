@@ -14,7 +14,7 @@ class AuthViewModel(
     private val host = afsmHost(
         machine = authStateMachine,
         config = shopAfsmConfig(),
-        commandHandler = { command: AuthCommand, dispatchEvent ->
+        commandHandler = { command: AuthCommand, send ->
             when (command) {
                 is AuthCommand.Login -> {
                     authRepository.login(
@@ -23,10 +23,10 @@ class AuthViewModel(
                     ).fold(
                         onSuccess = { session ->
                             sessionRepository.setSession(session)
-                            dispatchEvent(AuthEvent.AuthSucceeded(session))
+                            send(AuthEvent.AuthSucceeded(session))
                         },
                         onFailure = { error ->
-                            dispatchEvent(AuthEvent.AuthFailed(error.message ?: "Login failed."))
+                            send(AuthEvent.AuthFailed(error.message ?: "Login failed."))
                         },
                     )
                 }
@@ -39,10 +39,10 @@ class AuthViewModel(
                     ).fold(
                         onSuccess = { session ->
                             sessionRepository.setSession(session)
-                            dispatchEvent(AuthEvent.AuthSucceeded(session))
+                            send(AuthEvent.AuthSucceeded(session))
                         },
                         onFailure = { error ->
-                            dispatchEvent(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
+                            send(AuthEvent.AuthFailed(error.message ?: "Registration failed."))
                         },
                     )
                 }
@@ -52,15 +52,15 @@ class AuthViewModel(
 
     val state: StateFlow<AuthState> = host.state
 
-    fun selectMode(mode: AuthMode) = dispatch(AuthEvent.ModeChanged(mode))
+    fun selectMode(mode: AuthMode) = send(AuthEvent.ModeChanged(mode))
 
-    fun updateName(value: String) = dispatch(AuthEvent.NameChanged(value))
+    fun updateName(value: String) = send(AuthEvent.NameChanged(value))
 
-    fun updateEmail(value: String) = dispatch(AuthEvent.EmailChanged(value))
+    fun updateEmail(value: String) = send(AuthEvent.EmailChanged(value))
 
-    fun updatePassword(value: String) = dispatch(AuthEvent.PasswordChanged(value))
+    fun updatePassword(value: String) = send(AuthEvent.PasswordChanged(value))
 
-    fun submit() = dispatch(AuthEvent.SubmitClicked)
+    fun submit() = send(AuthEvent.SubmitClicked)
 
-    private fun dispatch(event: AuthEvent) = host.dispatch(event)
+    private fun send(event: AuthEvent) = host.send(event)
 }

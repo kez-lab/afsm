@@ -1,6 +1,9 @@
 pluginManagement {
     val afsmVersion = providers.gradleProperty("afsmVersion")
-        .orElse("0.1.0-SNAPSHOT")
+        .orElse("0.1.0")
+    val useMavenLocal = providers.gradleProperty("useMavenLocal")
+        .map(String::toBoolean)
+        .orElse(true)
 
     resolutionStrategy {
         eachPlugin {
@@ -11,7 +14,9 @@ pluginManagement {
     }
 
     repositories {
-        mavenLocal()
+        if (useMavenLocal.get()) {
+            mavenLocal()
+        }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -19,9 +24,15 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    val useMavenLocal = providers.gradleProperty("useMavenLocal")
+        .map(String::toBoolean)
+        .orElse(true)
+
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
+        if (useMavenLocal.get()) {
+            mavenLocal()
+        }
         google()
         mavenCentral()
     }

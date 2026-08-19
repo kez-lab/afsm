@@ -73,9 +73,9 @@ internal val consumerSmokeMachine:
 internal class ConsumerSmokeViewModel : ViewModel() {
     val host = afsmHost(
         machine = consumerSmokeMachine,
-        commandHandler = { command: SmokeCommand, dispatchEvent ->
+        commandHandler = { command: SmokeCommand, send ->
             when (command) {
-                is SmokeCommand.SaveTitle -> dispatchEvent(SmokeEvent.Saved)
+                is SmokeCommand.SaveTitle -> send(SmokeEvent.Saved)
             }
         },
     )
@@ -84,11 +84,11 @@ internal class ConsumerSmokeViewModel : ViewModel() {
         get() = host.state.value
 
     fun updateTitle(value: String) {
-        host.dispatch(SmokeEvent.TitleChanged(value))
+        host.send(SmokeEvent.TitleChanged(value))
     }
 
     fun save() {
-        host.dispatch(SmokeEvent.SaveClicked)
+        host.send(SmokeEvent.SaveClicked)
     }
 }
 
