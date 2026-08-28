@@ -36,9 +36,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Verify release version
+        env:
+          AFSM_RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          test "$(sed -n 's/^afsmVersion=//p' gradle.properties)" = "${{ inputs.version }}"
-          test "${{ inputs.version }}" = "${{ inputs.version%-SNAPSHOT}}"
+          test "$(sed -n 's/^afsmVersion=//p' gradle.properties)" = "$AFSM_RELEASE_VERSION"
+          test "$AFSM_RELEASE_VERSION" = "${AFSM_RELEASE_VERSION%-SNAPSHOT}"
 
       - name: Run the local release gate
         run: ./scripts/verify-release-local.sh --no-daemon

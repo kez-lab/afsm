@@ -3548,3 +3548,24 @@ Conclusion:
   to their routes.
 - The final install/click/Refresh/drag/hover smoke remains a human verification
   step.
+
+## [2026-08-29] Release workflow expression parsing fix
+
+Change:
+
+- Passed the manual release version into the validation shell step through
+  `AFSM_RELEASE_VERSION`.
+- Kept the non-SNAPSHOT shell suffix-removal check in Bash instead of placing
+  `${VAR%-SNAPSHOT}` inside a GitHub expression-looking sequence.
+
+Verification:
+
+```text
+GitHub Actions run 33191685630 exposed the previous invalid-workflow error:
+Unexpected symbol: 'version%-SNAPSHOT'
+```
+
+Conclusion:
+
+- Main-branch pushes no longer produce a parser-level failure for the
+  manual-only Maven Central workflow.

@@ -2029,3 +2029,12 @@
   `docs/assets/afsm-graph-preview.png`, `afsm-ide-plugin/`,
   `raw/verification/2026-08-29-afsm-ide-graph-canvas-hardening/README.md`,
   `wiki/00-context/current-state.md`, `wiki/log.md`.
+
+## [2026-08-29] tooling | Fix manual release workflow parsing
+
+- Source: GitHub Actions run `33191685630` failed before creating any job
+  because shell suffix-removal syntax was parsed as a GitHub expression.
+- Action: Passed the workflow input through `AFSM_RELEASE_VERSION` and kept the
+  non-SNAPSHOT check entirely inside Bash.
+- Updated: `.github/workflows/release.yml`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
