@@ -1,6 +1,6 @@
 ---
 title: Open Questions
-updated: 2026-07-17
+updated: 2026-08-27
 ---
 
 # Open Questions
@@ -61,6 +61,12 @@ the engineering pages and `wiki/06-project/decision-log.md`.
 - Should graph generation remain one selected Android unit-test variant per
   module, or support multi-variant and multi-module aggregation before broader
   external adoption?
+- After the explicit-refresh IDE preview is validated in real use, is measured
+  build latency low enough for save-debounced refresh, and what cancellation or
+  coalescing rule should apply while a prior graph build is still running?
+- What source-location metadata should KSP emit before node/edge-to-DSL
+  navigation is added without creating a second PSI interpretation of the
+  machine?
 
 ## Runtime Diagnostics
 

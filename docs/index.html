@@ -78,8 +78,8 @@
     <aside class="sidebar" id="sidebar" aria-label="Documentation navigation" data-aria-en="Documentation navigation" data-aria-ko="문서 탐색">
       <div class="sidebar-status">
         <span class="status-dot" aria-hidden="true"></span>
-        <span data-lang="en" lang="en">Public beta · Maven Central</span>
-        <span data-lang="ko" lang="ko">공개 베타 · Maven Central</span>
+        <span data-lang="en" lang="en">Pre-release · Maven Local</span>
+        <span data-lang="ko" lang="ko">Pre-release · Maven Local</span>
       </div>
 
       <nav>
@@ -140,36 +140,39 @@
             <span data-lang="ko" lang="ko">내부 스냅샷을 설치하고 작은 Draft 머신을 만든 뒤 일반적인 Android ViewModel에서 실행합니다.</span>
           </p>
           <div class="meta-row" aria-label="Compatibility summary">
-            <span class="meta-item">Kotlin 2.0.21</span>
-            <span class="meta-item">JDK 17</span>
+            <span class="meta-item">Kotlin 2.3.21</span>
+            <span class="meta-item">Gradle 9.1.0</span>
+            <span class="meta-item">JBR 25</span>
+            <span class="meta-item">JVM target 17</span>
             <span class="meta-item">minSdk 23</span>
-            <span class="meta-item">AGP 8.10.1</span>
+            <span class="meta-item">AGP 8.13.2</span>
           </div>
           <div class="notice">
             <strong>
-              <span data-lang="en" lang="en">Public pre-1.0 beta</span>
-              <span data-lang="ko" lang="ko">아직 공개 배포 전</span>
+              <span data-lang="en" lang="en">Pre-release snapshot</span>
+              <span data-lang="ko" lang="ko">Pre-release snapshot</span>
             </strong>
-            <span data-lang="en" lang="en">Afsm is available from Maven Central as <code>0.1.0</code>. APIs may change in a later pre-1.0 release when usability or safety evidence supports a better design.</span>
-            <span data-lang="ko" lang="ko">Afsm은 Maven Central에서 <code>0.1.0</code>으로 사용할 수 있습니다. 사용성이나 안전성 근거가 더 나은 설계를 지지하면 이후 pre-1.0 릴리스에서 API가 변경될 수 있습니다.</span>
+            <span data-lang="en" lang="en">The current build is verified through source and Maven Local. APIs may change when usability or safety evidence supports a better design.</span>
+            <span data-lang="ko" lang="ko">현재 빌드는 source와 Maven Local 경로로 검증했습니다. 사용성이나 안전성 근거가 더 나은 설계를 지지하면 API가 변경될 수 있습니다.</span>
           </div>
         </section>
 
         <section class="doc-section" id="installation">
           <h2><a class="anchor-link" href="#installation"><span data-lang="en" lang="en">Installation</span><span data-lang="ko" lang="ko">설치</span></a></h2>
           <p>
-            <span data-lang="en" lang="en">Maven Central is the only repository required. Afsm is distributed under Apache-2.0.</span>
-            <span data-lang="ko" lang="ko">별도 저장소는 필요하지 않습니다. Afsm은 Apache-2.0으로 배포됩니다.</span>
+            <span data-lang="en" lang="en">Publish the source build to Maven Local before adding the modules. Afsm uses Apache-2.0.</span>
+            <span data-lang="ko" lang="ko">모듈을 추가하기 전에 source build를 Maven Local에 게시합니다. Afsm은 Apache-2.0을 사용합니다.</span>
           </p>
 
           <ol class="step-list">
             <li class="step">
-              <h3><span data-lang="en" lang="en">Verify Maven Central repository</span><span data-lang="ko" lang="ko">Maven Central 저장소 확인</span></h3>
-              <p><span data-lang="en" lang="en">Ensure <code>mavenCentral()</code> is present in plugin and dependency repositories.</span><span data-lang="ko" lang="ko">프로젝트의 plugin 및 dependency repository에 <code>mavenCentral()</code>이 포함되어 있는지 확인합니다.</span></p>
+              <h3><span data-lang="en" lang="en">Use Maven Local</span><span data-lang="ko" lang="ko">Maven Local 사용</span></h3>
+              <p><span data-lang="en" lang="en">Publish from the Afsm repository, then add <code>mavenLocal()</code> to plugin and dependency repositories.</span><span data-lang="ko" lang="ko">Afsm 저장소에서 게시한 뒤 plugin 및 dependency repository에 <code>mavenLocal()</code>을 추가합니다.</span></p>
               <div class="code-block">
                 <div class="code-head"><span>settings.gradle.kts</span><button class="copy-button" type="button" data-copy-target="install-repos"><span data-lang="en" lang="en">Copy</span><span data-lang="ko" lang="ko">복사</span></button></div>
                 <pre><code id="install-repos">pluginManagement {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -178,6 +181,7 @@
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }

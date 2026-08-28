@@ -1,6 +1,7 @@
 # Afsm Release Readiness
 
-Afsm is a public pre-1.0 beta published to Maven Central as `0.1.0`.
+Afsm is a pre-release build currently verified through source and Maven Local.
+The `0.1.0` Maven Central release has not been verified as published.
 
 ## Local release gate
 
@@ -46,10 +47,12 @@ The plugin aligns `afsm-graph-ksp` with its own Afsm version.
 
 | Item | Version |
 |---|---|
-| JDK | 17 |
-| Kotlin | 2.0.21 |
-| Android Gradle Plugin | 8.10.1 |
-| KSP | 2.0.21-1.0.28 |
+| Gradle | 9.1.0 |
+| Gradle execution JDK | 25 (verified with Android Studio JBR 25.0.2) |
+| JVM bytecode target | 17 |
+| Kotlin | 2.3.21 |
+| Android Gradle Plugin | 8.13.2 |
+| KSP | 2.3.10 |
 | compileSdk / targetSdk | 36 |
 | minSdk | 23 |
 

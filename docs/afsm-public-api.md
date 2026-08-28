@@ -1,6 +1,6 @@
 # Afsm Public API
 
-Status: public pre-1.0 beta. Afsm may make breaking API changes when usability
+Status: pre-release. Afsm may make breaking API changes when usability
 or safety evidence justifies them; releases carry API, documentation, and
 migration updates together.
 

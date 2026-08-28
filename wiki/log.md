@@ -1918,3 +1918,114 @@
 - Action: Enabled GitHub Discussions on `kez-lab/afsm`, published inaugural Q&A discussion [#62](https://github.com/kez-lab/afsm/discussions/62), added Architecture FAQ section to `README.md`, `README.ko.md`, `docs/modeling-rules.md`, `docs/modeling-rules.ko.md`, added GitHub Discussions badge, recorded ADR in `wiki/06-project/decision-log.md`, and synchronized live web assets.
 - Verification: `./gradlew apiCheck check verifyAfsmMmd` passes with 100% green tests.
 - Updated: `README.md`, `README.ko.md`, `docs/modeling-rules.md`, `docs/modeling-rules.ko.md`, `docs/js/guide-data.js`, `wiki/06-project/decision-log.md`, `wiki/log.md`.
+
+## [2026-08-27] tooling | Accept the Afsm IDE graph preview contract
+
+- Source: User approval to implement a separate Android Studio / IntelliJ
+  `Afsm Graph Preview` and the existing RFC #58 preview prototype criterion.
+- Action: Selected a branch-261 independent IntelliJ Platform plugin, explicit
+  Gradle refresh through the existing compiled topology path, last-good/stale
+  behavior, local strict Mermaid rendering, and a raw-text fallback. Deferred
+  live-save refresh, source navigation, aggregation, tracing, and time travel.
+- Updated: `raw/sources/2026-08-27-intellij-afsm-graph-preview-research.md`,
+  `raw/README.md`, `wiki/03-engineering/afsm-ide-graph-preview.md`,
+  `wiki/03-engineering/afsm-ksp-mmd-generation.md`,
+  `wiki/00-context/open-questions.md`, `wiki/06-project/decision-log.md`,
+  `wiki/index.md`, `wiki/log.md`.
+
+## [2026-08-27] build+tooling | Run Gradle on JBR 25
+
+- Source: Android Studio rejected Gradle 8.11.1 with its embedded JBR 25.0.2,
+  followed by a user request to move the project to Gradle 9.1.0.
+- Action: Upgraded the wrapper and compatible Kotlin/AGP/KSP stack, retained
+  JVM 17 bytecode targets, migrated deprecated compiler target DSL, and fixed a
+  KSP 2.3 regression where the graph processor dependency was registered too
+  late to reach variant classpaths.
+- Verification: The new processor-classpath TestKit test passes and the full
+  `verify-release-local.sh --no-daemon` gate completes under Android Studio's
+  embedded JBR 25, including the separate Maven Local consumer and generated
+  graph checks.
+- Updated: Gradle wrapper/build files, graph plugin/KSP fixtures,
+  `consumer-smoke/`, README badges, `CHANGELOG.md`, public graph and release
+  documentation, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-ksp-mmd-generation.md`,
+  `wiki/06-project/implementation-log.md`, `wiki/log.md`.
+
+## [2026-08-28] tooling | Correct IDE preview gutter and Android Studio 261 refresh behavior
+
+- Restricted `Afsm Graph Preview` to one leaf-level annotation gutter marker
+  and moved document saving into a write action before Gradle Refresh.
+- Added a duplicate-marker regression test and recorded that the current
+  Android Studio runtime lacks JCEF, so Mermaid rendering correctly falls back
+  to raw source until the runtime supplies JCEF.
+
+## [2026-08-28] tooling | Make Afsm IDE graph preview independent of JCEF
+
+- Kept Mermaid as Afsm's generated documentation format but replaced the IDE
+  browser renderer with a restricted Afsm MMD parser and Java2D state-diagram
+  view. The packaged plugin no longer includes Mermaid JavaScript or requires
+  a JCEF-capable IDE runtime.
+
+## [2026-08-28] tooling | Correct Java2D graph-label collisions
+
+- Added symmetric lanes for parallel transitions, padded self loops and the
+  initial marker, and shortened the graph-preview toolbar text.
+
+## [2026-08-29] tooling | Add local interactive graph layout
+
+- Added project-workspace-persisted node drag and transition control handles to
+  the JCEF-free Preview, with Reset Layout and generated endpoints retained.
+
+## [2026-08-29] tooling | Complete graph viewport controls and lane separation
+
+- Added Fit, zoom controls, pointer-centered wheel zoom, canvas panning, and
+  content-aware scroll bounds to the JCEF-free Preview.
+- Grouped forward and reverse transitions into distinct physical lanes,
+  widened the automatic layout for long Afsm event labels, and made
+  self-transition paths adjustable without detaching them from their state.
+
+## [2026-08-29] tooling | Harden Afsm Graph as an inspection canvas
+
+- Replaced fixed placement with ELK Layered layout while keeping Java2D as the
+  JCEF-free renderer and Mermaid as the generated artifact.
+- Added Inspect/Arrange modes, selected-only route handles, connected-topology
+  highlighting, event/guard/command label hierarchy, search, focus, details,
+  layout direction, and responsive controls.
+- Verified the engine and renderer in the Android Studio-specific test runtime,
+  passed Plugin Verifier for AI-261 and IU-261, visually reviewed the dense Auth
+  graph, and packaged upstream notices.
+- Updated: `afsm-ide-plugin/`,
+  `raw/sources/2026-08-29-afsm-graph-canvas-ui-research.md`,
+  `raw/verification/2026-08-29-afsm-ide-graph-canvas-hardening/README.md`,
+  `raw/README.md`, `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-ide-graph-preview.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-08-29] tooling | Give Afsm Graph a full-width directional canvas
+
+- Removed the fixed empty inspector and moved selection context and secondary
+  graph actions into floating canvas overlays.
+- Added source/target/mid-route direction semantics, event-first labels, label
+  hit testing, and hover highlighting for the route and both endpoint states.
+- Passed the full plugin suite, Android Studio-specific renderer/overlay tests,
+  packaging and structure checks, and Plugin Verifier for AI-261 and IU-261.
+- Updated: `afsm-ide-plugin/`,
+  `raw/verification/2026-08-29-afsm-ide-graph-canvas-hardening/README.md`,
+  `wiki/00-context/current-state.md`,
+  `wiki/03-engineering/afsm-ide-graph-preview.md`,
+  `wiki/06-project/decision-log.md`, `wiki/06-project/implementation-log.md`,
+  `wiki/log.md`.
+
+## [2026-08-29] docs | Lead the README with Afsm Graph Preview
+
+- Source: The completed JCEF-free Graph Preview and its full-width Auth visual
+  regression render.
+- Action: Reworked both root README introductions around the IDE graph, added a
+  real plugin-rendered hero image and source-install instructions, and corrected
+  the public boundary from unverified Maven Central/public-beta wording to the
+  current pre-release Maven Local/source-build path.
+- Updated: `README.md`, `README.ko.md`,
+  `docs/assets/afsm-graph-preview.png`, `afsm-ide-plugin/`,
+  `raw/verification/2026-08-29-afsm-ide-graph-canvas-hardening/README.md`,
+  `wiki/00-context/current-state.md`, `wiki/log.md`.

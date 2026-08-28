@@ -3340,3 +3340,211 @@ Conclusion:
   unit tests, KSP processing, and generated `.mmd` assertions pass.
 - Gradle still reports the existing SDK XML version mismatch and deprecation
   warnings; neither warning fails the external consumer gate.
+
+## [2026-08-27] JBR 25 Gradle execution and KSP variant wiring
+
+Change:
+
+- Upgraded the wrapper to Gradle 9.1.0 and refreshed its JAR and launch scripts.
+- Aligned the supported Android toolchain at AGP 8.13.2, Kotlin 2.3.21, and KSP
+  2.3.10 while retaining JVM 17 compilation targets.
+- Replaced deprecated Android `kotlinOptions` blocks with `compilerOptions`.
+- Fixed the graph plugin's default KSP processor dependency registration so a
+  lazy provider reaches variant processor classpaths before KSP finalizes them.
+- Added a TestKit regression for the processor classpath and synchronized the
+  separate Maven Local consumer plus public compatibility documentation.
+
+Verification:
+
+```bash
+JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
+  ./gradlew --version --no-daemon
+JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
+  ./scripts/verify-release-local.sh --no-daemon
+git diff --check
+```
+
+Conclusion:
+
+- JBR 25.0.2 launches Gradle 9.1.0 and the complete graph-plugin, module,
+  sample, API, Maven Local publication, external consumer, KSP, and graph
+  verification gate passes.
+- Gradle 10 deprecation and Android SDK XML version warnings remain visible but
+  do not fail the Gradle 9.1 release gate.
+
+## [2026-08-28] Afsm IDE graph preview marker and refresh corrections
+
+Change:
+
+- Restricted the graph gutter provider to the Kotlin identifier leaf so one
+  `@AfsmGraph` declaration produces one marker instead of duplicate markers
+  from nested PSI nodes.
+- Wrapped pre-Refresh document saving in an IntelliJ write action, satisfying
+  Android Studio 261 threading rules before executing the Gradle task.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration verifyPluginStructure verifyPlugin
+```
+
+Conclusion:
+
+- The focused duplicate-marker regression test and the complete plugin unit,
+  packaging, and structure checks pass. JCEF rendering remains dependent on
+  the IDE runtime providing JCEF.
+
+## [2026-08-28] Afsm IDE preview | JCEF-free Java2D renderer
+
+Change:
+
+- Retained Mermaid `.mmd` as the generated documentation contract but removed
+  Mermaid JavaScript, JCEF, and browser-resource packaging from the IDE plugin.
+- Added a parser for the constrained `stateDiagram-v2` output written by Afsm,
+  plus a deterministic Java2D panel for states, initial state, transitions,
+  self transitions, labels, and entry/exit notes.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration verifyPluginStructure verifyPlugin
+```
+
+Conclusion:
+
+- The preview now has no browser runtime dependency and can render in the
+  Android Studio JBR 25 environment that reports JCEF as unavailable.
+
+## [2026-08-28] Afsm IDE preview | readable parallel transition layout
+
+Change:
+
+- Routed parallel state transitions through separate symmetric curve lanes and
+  label positions, placed self-transition loops inside reserved top padding,
+  and moved the full graph path from the toolbar label into a tooltip.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test --tests io.github.afsm.ide.AfsmDiagramEdgeLanesTest \
+  --tests io.github.afsm.ide.AfsmStateDiagramPanelTest
+```
+
+## [2026-08-29] Afsm IDE preview | interactive local graph layout
+
+Change:
+
+- Added draggable Java2D state nodes and draggable transition control handles.
+- Preserved generated edge endpoints while nodes move, added Reset Layout, and
+  persisted coordinates in project-local IDE workspace properties rather than
+  generated or checked-in MMD files.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration verifyPluginStructure
+```
+
+## [2026-08-29] Afsm IDE preview | viewport and layout refinement
+
+Change:
+
+- Allocated parallel and reverse-direction transitions as one physical lane
+  group so labels and curves no longer converge on the same center line.
+- Increased deterministic state spacing, made self-transition paths draggable,
+  and sized the canvas from persisted node and control-point extents.
+- Added zoom out/in, 100%, Fit, pointer-centered Ctrl/Command-wheel zoom, and
+  background-drag panning. New graph selections fit at no more than 100%.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration verifyPluginStructure verifyPlugin
+```
+
+- Rendered the checked-in `AuthStateMachine.mmd` to an image and visually
+  confirmed that the Login, Register, AuthFailed, and self-transition labels
+  occupy separate readable lanes without clipping.
+
+## [2026-08-29] Afsm IDE preview | inspection canvas and ELK layout
+
+Change:
+
+- Replaced fixed row placement with deterministic ELK Layered layout and
+  persisted routed sections, with left-to-right and top-to-bottom directions.
+- Made Inspect the non-mutating default and restricted node/route movement to
+  explicit Arrange mode. Route handles now appear only for the selected
+  transition and endpoints remain attached while nodes move.
+- Added state and transition selection, connected-topology highlighting,
+  semantic event/guard/command label hierarchy, search, focus, compact detail
+  inspection, responsive two-row controls, and tighter content-aware canvas
+  bounds.
+- Added third-party notices and dedicated Android Studio run/test tasks for the
+  bundled ELK dependency.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration \
+  verifyPluginStructure --rerun-tasks --no-build-cache
+./gradlew testAndroidStudio \
+  --tests io.github.afsm.ide.AfsmDiagramLayoutEngineTest \
+  --tests io.github.afsm.ide.AfsmStateDiagramPanelTest \
+  --rerun-tasks --no-build-cache
+./gradlew verifyPlugin
+```
+
+Conclusion:
+
+- Unit, visual-render, packaging, structure, Android Studio classpath, and
+  Plugin Verifier checks pass. Verifier reports Compatible for AI-261 and
+  IU-261, and the sandbox Android Studio log contains no Afsm class-loading or
+  linkage error.
+- The final install, gutter click, Refresh, and hands-on interaction smoke is
+  still pending and is not inferred from automated evidence.
+
+## [2026-08-29] Afsm IDE preview | full-width canvas and explicit transition direction
+
+Change:
+
+- Removed the permanent selection inspector and gave the Java2D graph the full
+  tool-window width. Selection metadata now appears in a temporary floating
+  context chip, while entity hover exposes the complete state or transition
+  details.
+- Reduced the fixed toolbar to Refresh, search, and graph status. Inspect/
+  Arrange, layout direction, Auto Layout, Focus, zoom, 100%, and Fit now live in
+  a collapsible bottom-right floating action palette.
+- Added source dots, filled target arrowheads, mid-route direction markers,
+  thicker fit-scale edge strokes, event-first labels, label hit testing, and
+  route-plus-endpoint hover highlighting.
+- Removed the canvas-wide instruction tooltip that obscured the diagram.
+
+Verification:
+
+```bash
+cd afsm-ide-plugin
+./gradlew test buildPlugin verifyPluginProjectConfiguration \
+  verifyPluginStructure --rerun-tasks --no-build-cache
+./gradlew testAndroidStudio \
+  --tests io.github.afsm.ide.AfsmDiagramLayoutEngineTest \
+  --tests io.github.afsm.ide.AfsmStateDiagramPanelTest \
+  --tests io.github.afsm.ide.AfsmGraphOverlayPaneTest \
+  --tests io.github.afsm.ide.AfsmTransitionVisualsTest \
+  --rerun-tasks --no-build-cache
+./gradlew verifyPlugin --rerun-tasks --no-build-cache
+```
+
+Conclusion:
+
+- All commands passed. Plugin Verifier reports Compatible for AI-261 and
+  IU-261. The dense Auth render was visually inspected without clipping; long
+  transitions expose repeated direction markers and event labels remain tied
+  to their routes.
+- The final install/click/Refresh/drag/hover smoke remains a human verification
+  step.

@@ -1,16 +1,33 @@
+<div align="center">
+
 # Afsm
 
-[![Status](https://img.shields.io/badge/status-public%20beta-blue.svg)](https://github.com/kez-lab/afsm)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.afsm/afsm-core?color=blue&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.afsm/afsm-core)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
-[![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
-[![Discussions](https://img.shields.io/badge/discussions-join-purple?logo=github)](https://github.com/kez-lab/afsm/discussions)
+**Make complex Android screen flow explicit.**
+
+Pure Kotlin state machines for `ViewModel` flows — readable in code, visible in
+the IDE, and provable in tests.
+
+[![Status](https://img.shields.io/badge/status-pre--release-F59E0B.svg)](CHANGELOG.md)
+[![IDE Graph Preview](https://img.shields.io/badge/Android%20Studio-Graph%20Preview-3DDC84?logo=androidstudio)](afsm-ide-plugin/README.md)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![AGP](https://img.shields.io/badge/AGP-8.13.2-3DDC84?logo=android)](https://developer.android.com)
+[![License](https://img.shields.io/badge/license-Apache--2.0-2563EB.svg)](LICENSE)
 [![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
-**English** | [한국어](README.ko.md) | [Documentation Hub (EN/KO)](https://kez-lab.org/afsm/) | [Discussions](https://github.com/kez-lab/afsm/discussions)
+**English** · [한국어](README.ko.md) · [Live demo & docs](https://kez-lab.org/afsm/) · [Discussions](https://github.com/kez-lab/afsm/discussions)
 
-> 🚀 **Live Interactive Demo:** Experience state transitions, event processing, and live data traces directly in your browser at **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**.
+</div>
+
+<p align="center">
+  <img src="docs/assets/afsm-graph-preview.png" alt="Afsm Graph Preview showing an Auth state machine in Android Studio" width="1200">
+</p>
+
+<p align="center"><sub>The Auth machine rendered by the JCEF-free Afsm Graph Preview.</sub></p>
+
+> [!IMPORTANT]
+> **New: Afsm Graph Preview for Android Studio and IntelliJ IDEA.** Open a
+> generated machine from the gutter, follow event-labelled transitions, inspect
+> state metadata, and arrange the local diagram without changing machine code.
 
 Afsm helps Android teams make complex screen flows easier to read, verify, and
 change safely. It moves business-flow rules scattered across `ViewModel`
@@ -21,6 +38,40 @@ saved-state, repository, and UI adapter.
 Use Afsm for screens with meaningful phases, retries, concurrent or stale async
 results, and rules that depend on the current phase. Keep ordinary
 `ViewModel + StateFlow` for simple screens when it is clearer.
+
+## New — Graph Preview in the IDE
+
+`Afsm Graph Preview` turns the generated machine topology into an inspection
+canvas beside `@AfsmGraph` declarations.
+
+- **Read direction immediately:** source dots, filled target arrows, route
+  markers, and event-first labels keep transition ownership visible at Fit zoom.
+- **Inspect without losing canvas space:** selection context floats over the
+  full-width graph, while hover reveals event, guard, command, and endpoints.
+- **Arrange safely:** drag states or transition routes locally; connections stay
+  attached and Kotlin/Mermaid sources are never rewritten.
+- **Works without JCEF:** the plugin uses a constrained Afsm MMD parser, ELK
+  Layered layout, and Java2D rendering instead of Chromium or Mermaid JS.
+
+Build the pre-release plugin and install the generated ZIP from disk:
+
+```bash
+cd afsm-ide-plugin
+./gradlew buildPlugin
+```
+
+Then select `build/distributions/afsm-ide-plugin-0.1.1-SNAPSHOT.zip` in
+**Settings → Plugins → Install Plugin from Disk**. See the
+[plugin guide](afsm-ide-plugin/README.md) for Refresh, Inspect, Arrange, zoom,
+and compatibility details.
+
+## One Flow, Three Review Surfaces
+
+| Surface | What it makes clear |
+|---|---|
+| **Machine** | Exact state, data, guard, command, and execution order |
+| **Graph Preview** | Whole-flow topology and named transition conditions |
+| **Tests** | Payload behavior and graph-invisible handled/ignored/invalid policy |
 
 ## Why I Started Afsm
 
@@ -353,11 +404,21 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 ```
 
 The skill checks the consumer's existing Afsm version and distribution path
-instead of guessing public coordinates. Afsm is delivered through Maven
-Central. It is pre-1.0, so breaking changes may appear in a later
-minor release with migration notes.
+instead of guessing public coordinates. Afsm is pre-release, so breaking
+changes may appear in a later minor release with migration notes.
 
-## Install
+## Install the Pre-release Build
+
+Remote publication is not the current proof boundary. Publish the repository
+artifacts to Maven Local before trying Afsm in another project:
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal
+```
+
+Add `mavenLocal()` to the consuming project's dependency repositories, then use
+the current repository version:
 
 ```kotlin
 dependencies {
@@ -369,8 +430,10 @@ dependencies {
 ```
 
 For graph generation, add `id("io.github.afsm.graph") version "0.1.0"` and
-`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`. Maven Central is the only
-repository required. Afsm is licensed under [Apache-2.0](LICENSE).
+`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`, with `mavenLocal()` also present
+in `pluginManagement.repositories`. The separate
+[`consumer-smoke`](consumer-smoke/README.md) project is the canonical working
+consumer example. Afsm is licensed under [Apache-2.0](LICENSE).
 
 ## Modules
 
@@ -382,6 +445,7 @@ repository required. Afsm is licensed under [Apache-2.0](LICENSE).
 | `afsm-test` | Transition assertion helpers |
 | `afsm-graph-ksp` | Generated graph registry |
 | `afsm-graph-gradle-plugin` | `.mmd` export task |
+| `afsm-ide-plugin` | Android Studio/IntelliJ Java2D graph preview |
 | `sample-shop` | Android reference flows |
 | `consumer-smoke` | External consumer compile and behavior gate |
 
@@ -397,9 +461,9 @@ Every pull request runs the same unit tests, `apiCheck`, graph verification, and
 the Maven Local consumer smoke build in
 [CI](.github/workflows/ci.yml).
 
-Afsm is a public pre-1.0 beta. APIs may change when usability or safety evidence
-shows that a better design serves real Android teams; each breaking change will
-carry API, documentation, and migration updates.
+Afsm is pre-release. APIs may change when usability or safety evidence shows
+that a better design serves real Android teams; each breaking change will carry
+API, documentation, and migration updates.
 
 ## Architecture FAQ
 

@@ -84,6 +84,14 @@ public class AfsmGraphPlugin : Plugin<Project> {
             AfsmGraphExtension::class.java,
             project.objects,
         )
+        project.configurations.findByName("ksp")?.let {
+            project.dependencies.addProvider(
+                "ksp",
+                extension.processorDependency.filter {
+                    extension.addProcessorDependency.get()
+                },
+            )
+        }
         extension.outputDir.convention(
             project.layout.buildDirectory.dir("generated/afsm/mmd"),
         )
@@ -140,13 +148,11 @@ public class AfsmGraphPlugin : Plugin<Project> {
 
         project.afterEvaluate {
             if (extension.addProcessorDependency.get()) {
-                val kspConfiguration = project.configurations.findByName("ksp")
-                requireNotNull(kspConfiguration) {
+                requireNotNull(project.configurations.findByName("ksp")) {
                     "Afsm graph generation requires the com.google.devtools.ksp plugin. " +
                         "Apply it before io.github.afsm.graph or set " +
                         "afsmGraph.addProcessorDependency=false and configure KSP manually."
                 }
-                project.dependencies.add("ksp", extension.processorDependency.get())
             }
 
             val capitalizedVariant = extension.variant.get().replaceFirstChar { char ->

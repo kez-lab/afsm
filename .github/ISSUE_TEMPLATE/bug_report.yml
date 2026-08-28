@@ -19,7 +19,7 @@ body:
     attributes:
       label: Environment
       description: Kotlin, AGP, and JDK versions
-      placeholder: Kotlin 2.0.21, AGP 8.10.1, JDK 17
+      placeholder: Kotlin 2.3.21, AGP 8.13.2, Gradle JDK 25, JVM target 17
     validations:
       required: true
   - type: textarea

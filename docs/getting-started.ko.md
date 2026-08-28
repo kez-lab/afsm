@@ -8,7 +8,14 @@
 
 ## 1. 모듈 추가
 
-Afsm은 Maven Central을 통해 배포됩니다. 추가 저장소 설정 없이 바로 추가할 수 있습니다.
+Afsm은 현재 pre-release source build입니다. 저장소 clone에서 라이브러리를
+Maven Local에 게시하고, consumer 프로젝트의 dependency repository에
+`mavenLocal()`을 추가하세요.
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal
+```
 
 ```kotlin
 dependencies {

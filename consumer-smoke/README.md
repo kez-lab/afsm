@@ -43,9 +43,10 @@ consumption verification, not sample app behavior coverage.
 
 Current compatibility baseline:
 
-- JDK 17
-- Kotlin 2.0.21
-- Android Gradle Plugin 8.10.1
-- KSP 2.0.21-1.0.28
+- Gradle 9.1.0 (verified on Gradle JDK 25)
+- JVM target 17
+- Kotlin 2.3.21
+- Android Gradle Plugin 8.13.2
+- KSP 2.3.10
 - compileSdk/targetSdk 36
 - minSdk 23

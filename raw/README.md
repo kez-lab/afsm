@@ -5,6 +5,9 @@ This directory stores immutable source material for the project wiki.
 - `conversations/2026-05-01-android-viewmodel-fsm-discussion.md`: source conversation that led to the Android FSM direction.
 - `sources/2026-05-01-llm-wiki-pattern.md`: user-provided LLM Wiki pattern used to structure this project knowledge base.
 - `sources/2026-07-17-android-ui-event-guidance-refresh.md`: refreshed official Android guidance on ViewModel functions, state-produced UI actions, and UI-owned navigation used by the Effect-removal decision.
+- `sources/2026-08-27-intellij-afsm-graph-preview-research.md`: official IntelliJ Platform, Android Studio, JCEF, Plugin Verifier, and Mermaid distribution evidence for the Afsm IDE graph preview.
+- `sources/2026-08-29-afsm-graph-canvas-ui-research.md`: Android Navigation Editor, Stately, IntelliJ diagrams, Qt SCXML, React Flow, and ELK evidence used for the Afsm inspection-canvas redesign.
+- `verification/2026-08-29-afsm-ide-graph-canvas-hardening/`: ELK layout, Java2D interaction, Android Studio classpath, Plugin Verifier, packaging, and visual-render evidence for the hardened preview canvas.
 - `verification/2026-05-09-sample-shop-fsm-smoke/`: Android CLI layout/screenshot evidence for the sample-shop auth and product registration FSM smoke test.
 - `verification/2026-05-09-product-editor-transition-action-rename-smoke/`: Android CLI layout/screenshot evidence after renaming ProductEditor phase states and transition action commands.
 - `verification/2026-05-09-product-editor-executable-dsl-smoke/`: Android CLI layout/screenshot evidence after migrating ProductEditor to the executable DSL.

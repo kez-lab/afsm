@@ -8,7 +8,14 @@ in English or Korean, start with the [bilingual documentation hub](index.html).
 
 ## 1. Add the modules
 
-Afsm is available from Maven Central. No extra repository is required.
+Afsm is currently a pre-release source build. From a repository clone, publish
+the libraries to Maven Local and add `mavenLocal()` to the consuming project's
+dependency repositories:
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal
+```
 
 ```kotlin
 dependencies {

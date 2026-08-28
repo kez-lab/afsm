@@ -39,9 +39,21 @@ plugins {
     id("com.google.devtools.ksp")
     id("io.github.afsm.graph") version "0.1.0"
 }
+```
+
+KSP 플러그인을 Afsm 그래프 플러그인보다 먼저 적용하세요. 그래프 플러그인은
+자신과 버전이 맞는 `afsm-graph-ksp` processor 의존성을 기본으로 추가합니다.
+
+로컬 프로젝트 의존성이나 별도 processor를 사용한다면 기본 추가를 끄고 KSP를
+직접 설정합니다.
+
+```kotlin
+afsmGraph {
+    addProcessorDependency.set(false)
+}
 
 dependencies {
-    ksp("io.github.afsm:afsm-graph-ksp:0.1.0")
+    ksp(project(":afsm-graph-ksp"))
 }
 ```
 

@@ -1,0 +1,28 @@
+<idea-plugin>
+    <id>io.github.afsm.graph-preview</id>
+    <name>Afsm Graph Preview</name>
+    <vendor url="https://github.com/kez-lab/Afsm">Afsm</vendor>
+
+    <description><![CDATA[
+        Preview Afsm-generated state-machine graphs directly in
+        Android Studio and IntelliJ IDEA.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.gradle</depends>
+    <depends>org.jetbrains.kotlin</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="io.github.afsm.ide.AfsmGraphPreviewService"/>
+        <codeInsight.lineMarkerProvider
+                language="kotlin"
+                implementationClass="io.github.afsm.ide.AfsmGraphLineMarkerProvider"/>
+        <toolWindow id="Afsm Graph"
+                    anchor="right"
+                    factoryClass="io.github.afsm.ide.AfsmGraphToolWindowFactory"
+                    icon="/icons/afsmGraph.svg"/>
+    </extensions>
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
+    </extensions>
+</idea-plugin>

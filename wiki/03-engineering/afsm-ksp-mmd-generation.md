@@ -1,6 +1,6 @@
 ---
 title: Afsm KSP MMD Generation
-updated: 2026-07-17
+updated: 2026-08-27
 ---
 
 # Afsm KSP MMD Generation
@@ -36,6 +36,16 @@ runtime objects.
 `generateAfsmMmd`. The processor dependency version is generated from the
 plugin's Afsm version.
 
+The default processor dependency is registered through a lazy provider while
+the plugin is applied, before KSP derives variant processor classpaths. Adding
+it from `afterEvaluate` is too late with KSP 2.3 and can leave
+`kspDebugKotlinProcessorClasspath` empty. `addProcessorDependency=false` keeps
+the provider absent so consumers can still configure KSP manually.
+
+The verified build-tool baseline is Gradle 9.1.0 on JBR 25, AGP 8.13.2,
+Kotlin 2.3.21, and KSP 2.3.10. Library and sample bytecode remains targeted at
+JVM 17; the Gradle execution JVM is a separate setting.
+
 Current output:
 
 ```text
@@ -48,6 +58,10 @@ Flow mode favors phases, external edges, named conditions, and command work.
 Full mode may show more internal transitions. The graph contains no separate UI
 output labels.
 
+The accepted IDE preview reuses this compiled registry and Gradle export path;
+it does not parse the Kotlin DSL into a second topology model. See
+[[afsm-ide-graph-preview|Afsm IDE Graph Preview]].
+
 ## Open Scope
 
 Multi-variant and multi-module aggregation remain open until real adoption
@@ -57,4 +71,6 @@ proves they are required.
 
 Functional tests compile temporary projects for valid top-level/class/object
 sources and invalid declaration shapes. Sample registry and graph tests ensure
-all three reference machines export current topology.
+all three reference machines export current topology. A TestKit regression
+also proves that the default published processor reaches the selected KSP
+variant classpath before compilation.

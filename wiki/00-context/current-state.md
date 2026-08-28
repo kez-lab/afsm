@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-08-05
+updated: 2026-08-29
 ---
 
 # Current State
@@ -53,6 +53,7 @@ Command = typed host-work request emitted by an accepted transition
 | `afsm-test` | Transition decision/state/command assertion helpers |
 | `afsm-graph-ksp` | `@AfsmGraph` discovery and generated registry |
 | `io.github.afsm.graph` | Gradle `.mmd` export integration |
+| `afsm-ide-plugin` | Separate Android Studio/IntelliJ inspection canvas; parses Afsm-generated MMD, uses ELK Layered for deterministic presentation layout, and renders Java2D without JCEF |
 | `sample-shop` | Auth, Checkout, Product Editor reference flows plus ordinary non-Afsm screens |
 | `consumer-smoke` | Separate Maven Local Android consumer, behavior tests, and graph generation |
 | `docs/index.html` | Single-file English/Korean documentation hub with installation, Draft quickstart, Android integration, API reference, guides, search, mobile navigation, and four user-driven examples with live Event/Data/phase traces |
@@ -124,6 +125,10 @@ as a baseline; `verifyAfsmMmd` compares the baseline against the machine on
 
 ## Public Documentation
 
+- The English and Korean root READMEs now lead with the JCEF-free IDE Graph
+  Preview and an image rendered by the plugin's visual test. They describe the
+  current pre-release Maven Local/source-build boundary instead of claiming an
+  unverified remote artifact.
 - The bilingual documentation hub is publicly available at
   <https://kez-lab.org/afsm/>.
 - GitHub Pages deployment remains available through the manual
@@ -140,6 +145,9 @@ as a baseline; `verifyAfsmMmd` compares the baseline against the machine on
 
 - Every pull request runs unit tests, `apiCheck`, graph verification, and the
   Maven Local consumer smoke build through `.github/workflows/ci.yml`.
+- The full local release gate passes with Gradle 9.1.0 running on the embedded
+  JBR 25.0.2, AGP 8.13.2, Kotlin 2.3.21, and KSP 2.3.10 while production
+  bytecode remains targeted at JVM 17.
 - Core/runtime/ViewModel/test/sample/KSP tests and API checks pass after the
   Effect-free migration.
 - Generated Auth, Checkout, and Product Editor graphs match the current
@@ -149,6 +157,11 @@ as a baseline; `verifyAfsmMmd` compares the baseline against the machine on
 - The repo-scoped `use-afsm` skill packages the current Effect-free adoption
   contract and an external implementation pattern without guessing a public
   artifact coordinate.
+- The IDE plugin tests, packaging checks, and Plugin Verifier pass for Android
+  Studio AI-261 and IntelliJ IDEA IU-261. Android Studio-specific tests execute
+  ELK layout, full-width floating canvas chrome, transition direction markers,
+  and Java2D rendering without a classpath conflict. The final install/click/
+  Refresh/interaction smoke remains a human verification step.
 - Prior Android CLI sample evidence proves the dated Product Editor cancellation
   journey, not every later commit.
 - One relayed human response identified the Command/Effect vocabulary cost,
@@ -178,6 +191,7 @@ proof boundary is recorded in the 2026-07-17 completion audit.
 - [[../03-engineering/afsm-v3-executable-dsl|Afsm v3 Executable DSL]]
 - [[../03-engineering/afsm-runtime-dispatch-loop|Afsm Runtime Dispatch Loop]]
 - [[../03-engineering/afsm-viewmodel-integration|Afsm ViewModel Integration]]
+- [[../03-engineering/afsm-ide-graph-preview|Afsm IDE Graph Preview]]
 - [[../06-project/long-term-goal|Afsm Long-Term Goal]]
 - [[../06-project/goal-completion-audit-2026-07-17|Afsm Goal Completion Audit 2026-07-17]]
 - [[open-questions|Open Questions]]

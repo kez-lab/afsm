@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-updated: 2026-07-18
+updated: 2026-08-27
 ---
 
 # Wiki Index
@@ -25,6 +25,7 @@ updated: 2026-07-18
 - [[03-engineering/afsm-first-use-api-experiment-results-2026-07-10|Historical Afsm First-Use API Experiment Results 2026-07-10]] - Dated compile and diagnostic evidence that led to direct graphable properties under the older output model.
 - [[03-engineering/afsm-dynamic-initial-state-experiment|Afsm Dynamic Initial State Experiment]] - Current implemented split between graphable machine rules and genuinely defaultable state for Android runtime inputs.
 - [[03-engineering/afsm-ksp-mmd-generation|Afsm KSP MMD Generation]] - Current KSP discovery and Gradle `.mmd` generation contract.
+- [[03-engineering/afsm-ide-graph-preview|Afsm IDE Graph Preview]] - Accepted IntelliJ/Android Studio gutter, Gradle refresh, and local Mermaid tool-window contract.
 - [[03-engineering/afsm-v3-topology-first-api|Superseded Afsm v3 Phased State API]] - Historical phased-state helper direction superseded by the executable DSL plan.
 - [[03-engineering/afsm-phased-core-spike|Afsm Phased Core Spike]] - Historical compile/test validation for phased state helpers that were later removed from `afsm-core`.
 - [[03-engineering/afsm-v3-terminology-transition-actions|Historical Afsm v3 Terminology and Transition Actions]] - Superseded terminology exploration retained as design history.

@@ -1,16 +1,33 @@
+<div align="center">
+
 # Afsm
 
-[![Status](https://img.shields.io/badge/status-public%20beta-blue.svg)](https://github.com/kez-lab/afsm)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.afsm/afsm-core?color=blue&label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.afsm/afsm-core)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.0.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
-[![Android](https://img.shields.io/badge/android-AGP%208.10.1-3DDC84?logo=android)](https://developer.android.com)
-[![Discussions](https://img.shields.io/badge/discussions-join-purple?logo=github)](https://github.com/kez-lab/afsm/discussions)
+**복잡한 Android 화면 흐름을 명시적으로 만듭니다.**
+
+코드로 읽고, IDE에서 보고, 테스트로 증명하는 `ViewModel` 흐름용 순수
+Kotlin 상태 머신입니다.
+
+[![Status](https://img.shields.io/badge/status-pre--release-F59E0B.svg)](CHANGELOG.md)
+[![IDE Graph Preview](https://img.shields.io/badge/Android%20Studio-Graph%20Preview-3DDC84?logo=androidstudio)](afsm-ide-plugin/README.md)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin)](https://kotlinlang.org)
+[![AGP](https://img.shields.io/badge/AGP-8.13.2-3DDC84?logo=android)](https://developer.android.com)
+[![License](https://img.shields.io/badge/license-Apache--2.0-2563EB.svg)](LICENSE)
 [![CI](https://github.com/kez-lab/afsm/actions/workflows/ci.yml/badge.svg)](https://github.com/kez-lab/afsm/actions/workflows/ci.yml)
 
-[English](README.md) | **한국어** | [공식 문서 (한/영)](https://kez-lab.org/afsm/) | [토론방 (Discussions)](https://github.com/kez-lab/afsm/discussions)
+[English](README.md) · **한국어** · [라이브 데모와 문서](https://kez-lab.org/afsm/) · [Discussions](https://github.com/kez-lab/afsm/discussions)
 
-> 🚀 **라이브 인터랙티브 데모:** 웹 브라우저에서 버튼을 누르며 상태 전이와 데이터 변화를 직접 시뮬레이션해 보세요: **[kez-lab.org/afsm](https://kez-lab.org/afsm/)**
+</div>
+
+<p align="center">
+  <img src="docs/assets/afsm-graph-preview.png" alt="Android Studio에서 Auth 상태 머신을 보여주는 Afsm Graph Preview" width="1200">
+</p>
+
+<p align="center"><sub>JCEF 없이 Afsm Graph Preview가 렌더링한 Auth 머신입니다.</sub></p>
+
+> [!IMPORTANT]
+> **새 기능: Android Studio/IntelliJ IDEA용 Afsm Graph Preview.** gutter에서
+> 생성된 머신을 열고, 이벤트별 전이 방향과 상태 정보를 확인하고, 머신 코드를
+> 바꾸지 않은 채 로컬 다이어그램을 정리할 수 있습니다.
 
 Afsm은 Android 팀이 복잡한 화면 흐름을 더 쉽게 읽고 검증하며 안전하게
 변경할 수 있도록 만드는 도구입니다. `ViewModel`의 `state.copy(...)`,
@@ -21,6 +38,40 @@ state, repository와 UI 어댑터 역할을 그대로 담당합니다.
 의미 있는 단계, 재시도, 동시 또는 오래된 비동기 결과, 현재 단계에 따라
 달라지는 규칙이 있는 화면에 Afsm을 사용하세요. 단순한 화면은 일반
 `ViewModel + StateFlow`가 더 명확하다면 그대로 두는 것이 좋습니다.
+
+## 새 기능 — IDE Graph Preview
+
+`Afsm Graph Preview`는 `@AfsmGraph` 옆에서 생성된 머신 topology를 바로
+살펴볼 수 있는 inspection canvas입니다.
+
+- **전이 방향을 바로 읽습니다.** 시작점, 채워진 도착 화살표, 경로 방향 마커,
+  event 우선 라벨로 Fit 상태에서도 전이 주체와 방향을 구분합니다.
+- **캔버스 공간을 빼앗지 않습니다.** 선택 정보는 전체 폭 그래프 위에 잠시
+  떠 있고, hover로 event, guard, command와 양쪽 상태를 확인합니다.
+- **연결을 유지한 채 정리합니다.** state와 transition route를 로컬에서
+  움직여도 연결은 끊어지지 않으며 Kotlin/Mermaid 파일도 바꾸지 않습니다.
+- **JCEF가 필요 없습니다.** 제한된 Afsm MMD parser, ELK Layered layout,
+  Java2D renderer를 사용하며 Chromium이나 Mermaid JS에 의존하지 않습니다.
+
+pre-release 플러그인을 빌드한 뒤 생성된 ZIP을 설치하세요.
+
+```bash
+cd afsm-ide-plugin
+./gradlew buildPlugin
+```
+
+**Settings → Plugins → Install Plugin from Disk**에서
+`build/distributions/afsm-ide-plugin-0.1.1-SNAPSHOT.zip`을 선택합니다.
+Refresh, Inspect, Arrange, 확대·축소와 호환성 정보는
+[플러그인 가이드](afsm-ide-plugin/README.md)에 정리되어 있습니다.
+
+## 하나의 흐름, 세 가지 검토 화면
+
+| 화면 | 가장 잘 보여주는 것 |
+|---|---|
+| **Machine** | 정확한 state, data, guard, command와 실행 순서 |
+| **Graph Preview** | 전체 흐름 topology와 이름 있는 전이 조건 |
+| **Tests** | payload 동작과 그래프에 보이지 않는 handled/ignored/invalid 정책 |
 
 ## Afsm을 만들기 시작한 이유
 
@@ -354,10 +405,21 @@ $skill-installer Install use-afsm from https://github.com/kez-lab/afsm/tree/main
 ```
 
 스킬은 consumer 프로젝트의 기존 Afsm 버전과 배포 경로를 먼저 확인합니다.
-Afsm은 Maven Central로 배포되는 pre-1.0 공개 베타이며, 이후 minor 릴리스에서
-호환성이 깨질 경우 마이그레이션 안내를 함께 제공합니다.
+Afsm은 pre-release이며, 이후 minor 릴리스에서 호환성이 깨질 경우
+마이그레이션 안내를 함께 제공합니다.
 
-## 설치
+## pre-release 빌드 설치
+
+현재 원격 배포는 검증 완료 범위가 아닙니다. 다른 프로젝트에서 사용하기 전에
+저장소 artifact를 Maven Local에 게시하세요.
+
+```bash
+./gradlew publishToMavenLocal
+./gradlew -p afsm-graph-gradle-plugin publishToMavenLocal
+```
+
+consumer 프로젝트의 dependency repository에 `mavenLocal()`을 추가한 뒤 현재
+저장소 버전을 사용합니다.
 
 ```kotlin
 dependencies {
@@ -369,8 +431,10 @@ dependencies {
 ```
 
 그래프 생성을 사용할 때는 `id("io.github.afsm.graph") version "0.1.0"`과
-`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`을 추가하세요. 별도 저장소는
-필요하지 않습니다. Afsm은 [Apache-2.0](LICENSE)으로 배포됩니다.
+`ksp("io.github.afsm:afsm-graph-ksp:0.1.0")`을 추가하고,
+`pluginManagement.repositories`에도 `mavenLocal()`을 둡니다. 별도의
+[`consumer-smoke`](consumer-smoke/README.md) 프로젝트가 실제로 동작하는 표준
+consumer 예제입니다. Afsm은 [Apache-2.0](LICENSE)으로 배포됩니다.
 
 ## 모듈
 
@@ -382,6 +446,7 @@ dependencies {
 | `afsm-test` | 전이 assertion helper |
 | `afsm-graph-ksp` | 생성 graph registry |
 | `afsm-graph-gradle-plugin` | `.mmd` export task |
+| `afsm-ide-plugin` | Android Studio/IntelliJ Java2D graph preview |
 | `sample-shop` | Android reference flow |
 | `consumer-smoke` | 외부 consumer 컴파일·동작 gate |
 
@@ -396,9 +461,9 @@ dependencies {
 모든 pull request는 동일한 단위 테스트, `apiCheck`, 그래프 검증, Maven Local
 consumer smoke 빌드를 [CI](.github/workflows/ci.yml)에서 실행합니다.
 
-Afsm은 pre-1.0 공개 베타입니다. 실제 Android 팀의 사용성과 안전성을 더 높인다는
-근거가 있다면 API는 변경될 수 있으며, 호환성을 깨는 변경에는 API·문서·마이그레이션
-안내를 함께 제공합니다.
+Afsm은 pre-release입니다. 실제 Android 팀의 사용성과 안전성을 더 높인다는
+근거가 있다면 API는 변경될 수 있으며, 호환성을 깨는 변경에는 API·문서·
+마이그레이션 안내를 함께 제공합니다.
 
 ## 아키텍처 FAQ
 

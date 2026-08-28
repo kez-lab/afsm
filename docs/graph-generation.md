@@ -41,13 +41,23 @@ plugins {
     id("com.google.devtools.ksp")
     id("io.github.afsm.graph")
 }
-
-dependencies {
-    ksp("io.github.afsm:afsm-graph-ksp:0.1.0")
-}
 ```
 
-For the repository sample, the processor is supplied by `project(":afsm-graph-ksp")`.
+Apply KSP before the Afsm graph plugin. The graph plugin adds the matching
+`afsm-graph-ksp` processor dependency by default.
+
+For a local project dependency or a custom processor, disable the default and
+configure KSP explicitly:
+
+```kotlin
+afsmGraph {
+    addProcessorDependency.set(false)
+}
+
+dependencies {
+    ksp(project(":afsm-graph-ksp"))
+}
+```
 
 ## Generate diagrams
 

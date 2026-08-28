@@ -1947,3 +1947,122 @@ Consequences:
 - `AfsmCommandHandler.handle` parameter is renamed to `send`.
 - All tests, samples, public docs, and agent skills are updated to use `send`.
 - Binary API dumps are updated with the new signatures.
+
+## [2026-08-27] Add an isolated IDE graph preview over compiled topology
+
+Status: Accepted
+
+Decision: Add `afsm-ide-plugin` as an independent IntelliJ Platform plugin
+build. A Kotlin `@AfsmGraph` gutter action opens an `Afsm Graph` tool window;
+manual Refresh runs the module's existing `generateAfsmMmd` task and renders
+the resulting Mermaid locally.
+
+Rationale:
+
+- Phase-local rules make the full flow hard to discover until the generated
+  graph is found and explained; the preview brings the existing review
+  artifact to the machine source without changing machine semantics.
+- The executable DSL is ordinary Kotlin. PSI cannot faithfully reconstruct
+  helper-driven declarations, runtime-derived labels, and validation without
+  becoming a second interpreter that can drift from `machine.topology`.
+- Running the current Gradle exporter preserves KSP, compilation, machine
+  construction, Flow/Full rendering, and error diagnostics as one source of
+  truth while keeping consuming classes outside the IDE process.
+- IntelliJ Platform 2026.1 requires Java 21 and current plugin tooling requires
+  Gradle 9, while Afsm's Android/library gate remains on its existing root
+  Gradle/JDK contract. A separate build prevents tooling requirements from
+  changing Maven and Android verification.
+
+Consequences:
+
+- The first slice covers gutter selection, explicit refresh, last-good/stale
+  behavior, a JCEF Mermaid view, and raw-text fallback.
+- `updateAfsmMmd` is never automatic; baseline changes remain explicit and
+  reviewable.
+- Mermaid is pinned and bundled with its MIT license; the preview loads no CDN.
+- Compatibility starts at IntelliJ Platform branch 261 and must be checked
+  against both IntelliJ IDEA and Android Studio before it is claimed.
+- Save-time refresh, source navigation, multi-variant aggregation, tracing,
+  replay, and time travel remain separate follow-up decisions.
+
+## [2026-08-29] Persist manual Afsm graph-preview layout without changing topology
+
+Status: Accepted
+
+Decision: Let the Java2D Preview persist per-project node positions and
+transition control points in local IDE workspace settings. Manual movement
+changes only presentation coordinates; every transition remains attached to the
+generated source and target state, and Refresh never writes MMD baselines.
+
+Rationale:
+
+- Dense real flows need reviewer-controlled readability beyond automatic
+  layout, especially for parallel transitions and long labels.
+- Storing layout outside the generated graph preserves the compiled topology
+  as source of truth and avoids graph-only semantic edits.
+
+Consequences:
+
+- Nodes are draggable, and orange handles move a transition curve without
+  detaching its endpoints.
+- The tool window provides Reset Layout to restore deterministic placement.
+- Workspace layout is local developer state, not a source-controlled artifact.
+
+## [2026-08-29] Make Afsm Graph an inspection canvas with explicit arrangement
+
+Status: Accepted
+
+Decision: Treat the IDE graph as a read-only semantic view of compiled Afsm
+topology. `Inspect` is the default mode; an explicit `Arrange` mode may change
+only local node and edge-route coordinates. Use the pure-Java ELK Layered
+engine to compute deterministic default layout and routing while keeping the
+Java2D renderer and generated MMD source-of-truth boundary.
+
+Rationale:
+
+- Android Navigation Editor, Stately, IntelliJ diagrams, and Qt SCXML all use
+  selection and details to make dense graphs navigable, but their authoring
+  affordances are unsafe for a graph derived from executable Kotlin topology.
+- Always-visible drag handles look like graph semantics and clutter the exact
+  paths they are meant to clarify.
+- The hand-built row/column layout cannot scale to cycles, reverse edges,
+  multi-edges, labels, and larger real machines without recreating a mature
+  layout engine.
+- IntelliJ's diagram provider is undocumented and tied to Ultimate; public
+  Swing plus pure Java layout preserves Android Studio compatibility.
+
+Consequences:
+
+- State and transition creation, deletion, and reconnection are not supported.
+- Selection, search/focus, layout direction, zoom, and fit are inspection
+  features and never modify generated artifacts.
+- Manual movement is locally persisted and available only in Arrange mode.
+- ELK `0.12.0` is bundled only if license notices, archive size, performance,
+  and Android Studio/IntelliJ Plugin Verifier checks pass.
+
+## [2026-08-29] Give the graph full width and float secondary controls
+
+Status: Accepted
+
+Decision: Remove the always-visible selection inspector from the Afsm Graph
+tool window. Preserve inspection through entity hover tooltips and a compact
+selection-only context chip. Keep Refresh, search, and graph identity in the
+top bar, and move secondary canvas actions into a collapsible bottom-right
+floating action palette.
+
+Rationale:
+
+- The empty inspector permanently consumes graph width and forces a lower Fit
+  zoom even when no state or transition is selected.
+- Event ownership and direction are better answered on the route itself through
+  stronger markers, labels, hover, and endpoint highlighting than through a
+  distant text column.
+- Layout, focus, and zoom are canvas actions. Floating them over the workspace
+  preserves discoverability without making the tool bar the dominant visual.
+
+Consequences:
+
+- No empty `Select a state or transition` region is shown.
+- Selection metadata remains available but never changes canvas geometry.
+- Transition lines gain source dots, filled terminal arrows, mid-route
+  direction markers, and hover emphasis; these are presentation semantics only.

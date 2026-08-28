@@ -4,11 +4,22 @@ All notable Afsm changes are documented here. Afsm is pre-release; `0.x` APIs
 may change, but every public API change must update API dumps, docs, examples,
 and verification in the same change.
 
+## Unreleased
+
+### Build and tooling
+
+- Upgraded the build to Gradle 9.1.0, Kotlin 2.3.21, KSP 2.3.10, and Android
+  Gradle Plugin 8.13.2 so Gradle can run on Android Studio's embedded JBR 25.
+  Kotlin and Java bytecode targets remain JVM 17.
+- Fixed the graph plugin's default KSP processor dependency registration so it
+  reaches Android variant processor classpaths with KSP 2.3.
+
 ## 0.1.0 - 2026-08-09
 
 Initial internal-beta candidate.
 
-First public Maven Central release under Apache-2.0.
+The source and Maven Local candidate use Apache-2.0. Remote publication was not
+completed for this version.
 
 ### Runtime resilience
 

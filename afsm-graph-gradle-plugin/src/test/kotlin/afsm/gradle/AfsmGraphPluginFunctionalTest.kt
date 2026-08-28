@@ -21,6 +21,36 @@ class AfsmGraphPluginFunctionalTest {
     }
 
     @Test
+    fun `default processor dependency reaches KSP variant classpath`() {
+        val projectDir = createAndroidProject(applyKsp = true)
+        projectDir.resolve("app/build.gradle.kts").appendText(
+            """
+
+            tasks.register("printAfsmKspProcessorDependency") {
+                doLast {
+                    val dependencies = configurations
+                        .getByName("kspDebugKotlinProcessorClasspath")
+                        .allDependencies
+                        .map { dependency ->
+                            "${'$'}{dependency.group}:${'$'}{dependency.name}:${'$'}{dependency.version}"
+                        }
+                    println("AFSM_KSP_PROCESSORS=${'$'}dependencies")
+                }
+            }
+            """.trimIndent(),
+        )
+
+        val result = gradle(projectDir)
+            .withArguments(":app:printAfsmKspProcessorDependency", "--stacktrace")
+            .build()
+
+        assertContains(
+            result.output,
+            "io.github.afsm:afsm-graph-ksp:${sharedAfsmVersion()}",
+        )
+    }
+
+    @Test
     fun `generateAfsmMmd does not run the module unit tests`() {
         val projectDir = createAndroidProject(
             applyKsp = true,
@@ -251,10 +281,10 @@ class AfsmGraphPluginFunctionalTest {
             "build.gradle.kts",
             """
             plugins {
-                id("com.android.application") version "8.10.1" apply false
-                id("com.android.library") version "8.10.1" apply false
-                id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
-                kotlin("android") version "2.0.21" apply false
+                id("com.android.application") version "8.13.2" apply false
+                id("com.android.library") version "8.13.2" apply false
+                id("com.google.devtools.ksp") version "2.3.10" apply false
+                kotlin("android") version "2.3.21" apply false
             }
             """.trimIndent(),
         )
@@ -281,9 +311,11 @@ class AfsmGraphPluginFunctionalTest {
                     sourceCompatibility = JavaVersion.VERSION_17
                     targetCompatibility = JavaVersion.VERSION_17
                 }
+            }
 
-                kotlinOptions {
-                    jvmTarget = "17"
+            kotlin {
+                compilerOptions {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
                 }
             }
 

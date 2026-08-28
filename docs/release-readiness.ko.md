@@ -1,6 +1,7 @@
 # Afsm 릴리스 준비 상태 (Release Readiness)
 
-Afsm은 Maven Central에 `0.1.0`으로 공개된 pre-1.0 베타 버전입니다.
+Afsm은 현재 source와 Maven Local 경로로 검증된 pre-release 빌드입니다.
+Maven Central `0.1.0` 공개는 아직 확인되지 않았습니다.
 
 ---
 
@@ -45,9 +46,11 @@ plugins {
 
 | 항목 | 버전 |
 |---|---|
-| JDK | 17 |
-| Kotlin | 2.0.21 |
-| Android Gradle Plugin | 8.10.1 |
-| KSP | 2.0.21-1.0.28 |
+| Gradle | 9.1.0 |
+| Gradle 실행 JDK | 25 (Android Studio JBR 25.0.2로 검증) |
+| JVM 바이트코드 타깃 | 17 |
+| Kotlin | 2.3.21 |
+| Android Gradle Plugin | 8.13.2 |
+| KSP | 2.3.10 |
 | compileSdk / targetSdk | 36 |
 | minSdk | 23 |

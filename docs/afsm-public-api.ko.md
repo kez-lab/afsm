@@ -1,6 +1,6 @@
 # Afsm 전체 공개 API (Public API Reference)
 
-상태: 공개 pre-1.0 베타.
+상태: pre-release.
 
 ---
 
