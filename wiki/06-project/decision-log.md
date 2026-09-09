@@ -2066,3 +2066,10 @@ Consequences:
 - Selection metadata remains available but never changes canvas geometry.
 - Transition lines gain source dots, filled terminal arrows, mid-route
   direction markers, and hover emphasis; these are presentation semantics only.
+
+## 2026-09-09 — Documentation reading experience
+
+Keep the static Pages delivery and bilingual guide corpus. Improve body search,
+keyboard navigation, persistent themes, and guide-preserving section URLs without
+introducing a framework build. The simulator owns its mutable state after the
+JavaScript split; the app shell calls its public bridge only.

@@ -52,11 +52,27 @@
         { en: 'Examples', ko: '예제', groupEn: 'Learning path', groupKo: '학습 순서', href: '#examples', keywords: 'draft auth checkout product editor sample 예제' },
       ];
 
-      let activeExampleKey = 'draft';
-      let activeTraceState = null;
-      let traceSequence = 0;
 
       const getLanguage = () => root.dataset.language || 'en';
+      const scrollBehavior = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+      const themeButton = document.querySelector('#theme-toggle');
+      const systemTheme = matchMedia('(prefers-color-scheme: dark)');
+      let explicitTheme = false;
+      try { explicitTheme = ['light', 'dark'].includes(localStorage.getItem('afsm-docs-theme')); } catch (_) {}
+      const applyTheme = theme => {
+        root.dataset.theme = theme;
+        themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+        document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#111916' : '#ffffff';
+      };
+      applyTheme(root.dataset.theme || (systemTheme.matches ? 'dark' : 'light'));
+      themeButton.addEventListener('click', () => {
+        explicitTheme = true;
+        applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+        try { localStorage.setItem('afsm-docs-theme', root.dataset.theme); } catch (_) {}
+      });
+      systemTheme.addEventListener('change', event => {
+        if (!explicitTheme) applyTheme(event.matches ? 'dark' : 'light');
+      });
 
       const updateLocalizedAttributes = language => {
         document.querySelectorAll('[data-aria-en]').forEach(element => {
@@ -105,6 +121,7 @@
 
       const closeSearch = () => {
         searchResults.classList.remove('is-open');
+        searchInput.setAttribute('aria-expanded', 'false');
         searchResults.replaceChildren();
       };
 
@@ -114,13 +131,24 @@
         searchResults.replaceChildren();
         if (!normalized) {
           searchResults.classList.remove('is-open');
+        searchInput.setAttribute('aria-expanded', 'false');
           return;
         }
 
-        const matches = searchItems.filter(item => {
-          const haystack = `${item.en} ${item.ko} ${item.keywords}`.toLowerCase();
-          return haystack.includes(normalized);
-        }).slice(0, 8);
+        const tokens = normalized.split(/\s+/);
+        const matches = searchItems.map(item => {
+          const guide = guideData[item.href.replace('#/guide/', '')];
+          const content = guide ? (guide[language] || guide.en || '') : '';
+          const title = `${item.en} ${item.ko} ${item.keywords}`.toLowerCase();
+          const haystack = `${title} ${content.toLowerCase()}`;
+          const score = tokens.every(token => haystack.includes(token))
+            ? 1 + tokens.filter(token => title.includes(token)).length * 5 : 0;
+          const index = content.toLowerCase().indexOf(tokens[0]);
+          const excerpt = index >= 0 ? content.slice(Math.max(0, index - 45), index + 125).replace(/[`#*\n]/g, ' ').trim() : '';
+          return { ...item, score, excerpt };
+        }).filter(item => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
+        document.querySelector('#search-status').textContent = language === 'ko'
+          ? `${matches.length}개 검색 결과` : `${matches.length} search results`;
 
         if (!matches.length) {
           const empty = document.createElement('li');
@@ -137,6 +165,12 @@
             title.textContent = language === 'ko' ? item.ko : item.en;
             group.textContent = language === 'ko' ? item.groupKo : item.groupEn;
             link.append(title, group);
+            if (item.excerpt) {
+              const excerpt = document.createElement('p');
+              excerpt.className = 'search-excerpt';
+              excerpt.textContent = item.excerpt;
+              link.append(excerpt);
+            }
             link.addEventListener('click', () => {
               closeSearch();
               closeMenu();
@@ -146,6 +180,7 @@
           });
         }
         searchResults.classList.add('is-open');
+        searchInput.setAttribute('aria-expanded', 'true');
       }
 
       menuButton.addEventListener('click', () => {
@@ -166,14 +201,29 @@
       document.addEventListener('keydown', event => {
         const target = event.target;
         const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
-        if (event.key === '/' && !isTyping) {
+        if ((event.key === '/' && !isTyping) || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k')) {
           event.preventDefault();
           searchInput.focus();
         }
+        if (searchResults.classList.contains('is-open') && event.target.closest('.search-wrap')) {
+          const links = [...searchResults.querySelectorAll('a')];
+          const current = links.indexOf(document.activeElement);
+          if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && links.length) {
+            event.preventDefault();
+            const next = current < 0 ? (event.key === 'ArrowDown' ? 0 : links.length - 1)
+              : (current + (event.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+            links[next].focus();
+          }
+          if (event.key === 'Enter' && document.activeElement === searchInput && links.length) {
+            event.preventDefault();
+            links[0].click();
+          }
+        }
         if (event.key === 'Escape') {
+          const searching = event.target.closest('.search-wrap');
           closeSearch();
           closeMenu();
-          searchInput.blur();
+          if (searching) searchInput.focus();
         }
       });
 
@@ -265,7 +315,7 @@
           const level = hashes.length;
           const cleanText = headingText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`([^`]+)`/g, '$1');
           const slug = cleanText.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)/g, '');
-          return `<h${level} id="${slug}">${inlineMarkdown(headingText)}<a class="anchor-link" href="#${slug}" aria-hidden="true"></a></h${level}>`;
+          return `<h${level} id="${slug}">${inlineMarkdown(headingText)}<a class="anchor-link" href="#/guide/${activeGuideKey}#${slug}" aria-label="${escapeHtml(cleanText)}"></a></h${level}>`;
         });
 
         text = text.replace(/^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n((?:>.*(?:\n|$))*)/gim, (match, type, content) => {
@@ -348,7 +398,7 @@
         headings.forEach(h => {
           const li = document.createElement('li');
           const a = document.createElement('a');
-          a.href = `#${h.id}`;
+          a.href = `#/guide/${activeGuideKey}#${h.id}`;
           a.textContent = h.textContent.replace('#', '').trim();
           if (h.tagName === 'H3') {
             li.style.paddingLeft = '14px';
@@ -356,7 +406,7 @@
           }
           a.addEventListener('click', (e) => {
             e.preventDefault();
-            h.scrollIntoView({ behavior: 'smooth' });
+            h.scrollIntoView({ behavior: scrollBehavior() });
             history.replaceState(null, '', `#/guide/${activeGuideKey}#${h.id}`);
           });
           li.append(a);
@@ -379,6 +429,7 @@
         guideBreadcrumbCategory.textContent = guide.category[lang] || guide.category.en;
         guideBreadcrumbTitle.textContent = guide.title[lang] || guide.title.en;
         guideTitle.textContent = guide.title[lang] || guide.title.en;
+        document.title = `${guideTitle.textContent} · Afsm Docs`;
         guideLead.textContent = guide.lead[lang] || guide.lead.en;
         guideGithubLink.href = `https://github.com/kez-lab/afsm/blob/main/docs/${lang === 'ko' ? guide.github.replace('.md', '.ko.md') : guide.github}`;
         guideGithubLink.querySelector('span').textContent = lang === 'ko' ? 'GitHub에서 보기 ↗' : 'View on GitHub ↗';
@@ -445,7 +496,7 @@
         if (targetAnchor) {
           const targetEl = document.getElementById(targetAnchor);
           if (targetEl) {
-            targetEl.scrollIntoView({ behavior: 'smooth' });
+            targetEl.scrollIntoView({ behavior: scrollBehavior() });
             return;
           }
         }
@@ -454,6 +505,7 @@
 
       function renderHub(sectionId) {
         activeGuideKey = null;
+        document.title = getLanguage() === 'ko' ? 'Afsm 시작하기 · Afsm Docs' : 'Getting started · Afsm Docs';
         guideArticle.hidden = true;
         hubArticle.hidden = false;
 
@@ -466,7 +518,7 @@
                 const target = document.querySelector(targetHref);
                 if (target) {
                   e.preventDefault();
-                  target.scrollIntoView({ behavior: 'smooth' });
+                  target.scrollIntoView({ behavior: scrollBehavior() });
                   history.replaceState(null, '', targetHref);
                 }
               }
@@ -484,7 +536,7 @@
         if (sectionId && sectionId !== 'overview') {
           const target = document.getElementById(sectionId);
           if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
+            target.scrollIntoView({ behavior: scrollBehavior() });
             return;
           }
         }
@@ -498,7 +550,8 @@
         if (hash.startsWith('#/guide/')) {
           const parts = hash.slice('#/guide/'.length).split('#');
           const guideKey = parts[0];
-          const anchor = parts[1] || null;
+          let anchor = parts[1] || null;
+          try { if (anchor) anchor = decodeURIComponent(anchor); } catch (_) { /* Malformed URLs fall back to the guide. */ }
           renderGuide(guideKey, anchor);
         } else {
           const sectionId = hash.replace(/^#/, '');
@@ -526,14 +579,14 @@
           const visible = entries
             .filter(entry => entry.isIntersecting)
             .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-          if (!visible) return;
+          if (!visible || activeGuideKey) return;
           const id = visible.target.id;
           navLinks.forEach(link => {
             const active = link.getAttribute('href') === `#${id}`;
             link.classList.toggle('is-active', active);
             active ? link.setAttribute('aria-current', 'location') : link.removeAttribute('aria-current');
           });
-          tocLinks.forEach(link => link.classList.toggle('is-active', link.getAttribute('href') === `#${id}`));
+          document.querySelectorAll('[data-toc-link]').forEach(link => link.classList.toggle('is-active', link.getAttribute('href') === `#${id}`));
         }, { rootMargin: '-20% 0px -65% 0px', threshold: 0 });
         observedSections.forEach(section => observer.observe(section));
       }

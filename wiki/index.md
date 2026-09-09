@@ -14,6 +14,10 @@ updated: 2026-08-27
 
 - [[01-product/android-fsm-library-strategy|Android FSM Library Strategy]] - Product goal, users, positioning, MVP, and success criteria.
 
+## Design
+
+- [[02-design/documentation-website|Documentation Website]] - Bilingual search, reading surfaces, routes, themes, and local verification boundary.
+
 ## Engineering
 
 - [[03-engineering/afsm-public-api-draft|Historical Afsm Public API Draft]] - Superseded initial API and module proposal retained as design history.

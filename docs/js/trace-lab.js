@@ -14,6 +14,10 @@
   const traceProgress = document.querySelector('#trace-progress');
   const traceResetButton = document.querySelector('#trace-reset');
 
+  let activeExampleKey = 'draft';
+  let activeTraceState = null;
+  let traceSequence = 0;
+
   const getLanguage = () => root.dataset.language || 'en';
 
   const traceExamples = {

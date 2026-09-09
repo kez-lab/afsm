@@ -1,6 +1,6 @@
 ---
 title: Current State
-updated: 2026-08-29
+updated: 2026-09-09
 ---
 
 # Current State
@@ -56,7 +56,7 @@ Command = typed host-work request emitted by an accepted transition
 | `afsm-ide-plugin` | Separate Android Studio/IntelliJ inspection canvas; parses Afsm-generated MMD, uses ELK Layered for deterministic presentation layout, and renders Java2D without JCEF |
 | `sample-shop` | Auth, Checkout, Product Editor reference flows plus ordinary non-Afsm screens |
 | `consumer-smoke` | Separate Maven Local Android consumer, behavior tests, and graph generation |
-| `docs/index.html` | Single-file English/Korean documentation hub with installation, Draft quickstart, Android integration, API reference, guides, search, mobile navigation, and four user-driven examples with live Event/Data/phase traces |
+| `docs/index.html` | Static English/Korean documentation hub with installation, Draft quickstart, Android integration, API reference, guides, full-text search with keyboard navigation, persistent light/dark themes, shareable guide sections, mobile navigation, and four user-driven examples with live Event/Data/phase traces |
 | `.agents/skills/use-afsm` | English Codex skill for fit assessment, external-project modeling, ViewModel integration, restoration safety, tests, and graph review |
 
 Five library modules use explicit API mode/API validation: `afsm-core`,

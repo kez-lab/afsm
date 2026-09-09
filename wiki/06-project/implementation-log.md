@@ -3569,3 +3569,13 @@ Conclusion:
 
 - Main-branch pushes no longer produce a parser-level failure for the
   manual-only Maven Central workflow.
+
+## [2026-09-09] implementation | Documentation reading and navigation
+
+- Added bilingual body search with excerpts and keyboard navigation, theme switching,
+  guide-aware heading URLs/titles, and mobile reading refinements.
+- Fixed pre-existing trace initialization ReferenceError with a failing-then-passing
+  regression in `scripts/check-docs.mjs`.
+- Verified JS syntax, regression, diff whitespace, and local desktop/mobile browser
+  interactions; public deployment remains a separate next task.
+- Canonical contract: [[02-design/documentation-website|Documentation Website]].
