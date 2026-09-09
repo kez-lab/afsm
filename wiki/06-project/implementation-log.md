@@ -3579,3 +3579,10 @@ Conclusion:
 - Verified JS syntax, regression, diff whitespace, and local desktop/mobile browser
   interactions; public deployment remains a separate next task.
 - Canonical contract: [[02-design/documentation-website|Documentation Website]].
+
+## [2026-09-09] verification | Documentation deployed
+
+- Published `2bd508c` to main; Pages run `34352408410` succeeded.
+- Verified https://kez-lab.org/afsm/ with exact HTML/CSS/JS byte comparison,
+  Korean body search, keyboard guide navigation, and no browser console errors.
+- Evidence: `raw/verification/2026-09-09-docs-deployment/README.md`.

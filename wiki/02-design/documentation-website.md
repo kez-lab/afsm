@@ -22,8 +22,7 @@ GitHub Pages publishes `docs/`; no framework build is required.
 
 ## Evidence boundary
 
-Local browser verification is separate from public deployment. July 2026 public
-proof remains historical; a new release needs its own Pages verification.
+Local browser verification is separate from public deployment. The 2026-09-09 deployment of `2bd508c` passed Pages and public HTTPS verification.
 
 ## Verification (2026-09-09)
 
@@ -34,4 +33,8 @@ proof remains historical; a new release needs its own Pages verification.
   navigation, guide titles, encoded Korean section reload, persisted dark theme,
   mobile menu, and Draft Editing → Saving with user-entered title verified.
 - Desktop and 390px mobile had no horizontal page overflow. Light/dark screenshots
-  were visually reviewed. No public deployment was performed.
+  were visually reviewed.
+- Public deployment: [Pages run](https://github.com/kez-lab/afsm/actions/runs/34352408410)
+  succeeded; all four changed web assets matched repository bytes over HTTPS.
+  Public body search and keyboard navigation to Checkout passed without console
+  errors. [Evidence](../../raw/verification/2026-09-09-docs-deployment/README.md).

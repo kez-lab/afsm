@@ -32,3 +32,5 @@ This directory stores immutable source material for the project wiki.
 - `verification/2026-07-18-github-pages-docs/`: commit-pinned Pages workflow, deployment status, public HTTP/HTTPS responses, and browser interaction evidence for the bilingual documentation hub.
 
 Raw files are source-of-truth evidence. The maintained synthesis lives in `wiki/`.
+
+- [2026-09-09 documentation deployment](verification/2026-09-09-docs-deployment/README.md) — Pages success and public HTTPS/browser evidence.
